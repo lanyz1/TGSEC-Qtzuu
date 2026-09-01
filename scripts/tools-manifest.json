@@ -1,0 +1,91 @@
+{
+  "version": 1.0,
+  "description": "TGSEC 学习渗透套件 - 工具清单(80+ 工具,按用途分类)",
+  "updated": "2026-09-01",
+  "channels": {
+    "apt": "sudo apt-get install -y <pkg>",
+    "pipx": "pipx install <pkg>",
+    "uv": "uv tool install <pkg>",
+    "npx": "npx -y <pkg>",
+    "go": "go install <pkg>@latest",
+    "gobin": "下载 GitHub release 二进制到 ~/tools/bin",
+    "git": "git clone <repo> <target_dir>"
+  },
+  "tools": {
+    "recon": [
+      {"name": "subfinder", "pkg": "github.com/projectdiscovery/subfinder/v2/cmd/subfinder", "channel": "gobin", "purpose": "子域名枚举"},
+      {"name": "amass", "pkg": "github.com/OWASP/Amass", "channel": "gobin", "purpose": "子域名枚举(主动+被动)"},
+      {"name": "httpx", "pkg": "github.com/projectdiscovery/httpx/cmd/httpx", "channel": "gobin", "purpose": "HTTP 探活/指纹"},
+      {"name": "nuclei", "pkg": "github.com/projectdiscovery/nuclei/v2/cmd/nuclei", "channel": "gobin", "purpose": "模板漏洞扫描"},
+      {"name": "nmap", "pkg": "nmap", "channel": "apt", "purpose": "端口/服务扫描"},
+      {"name": "masscan", "pkg": "masscan", "channel": "apt", "purpose": "全网段高速扫描"},
+      {"name": "katana", "pkg": "github.com/projectdiscovery/katana/cmd/katana", "channel": "gobin", "purpose": "爬虫/URL 发现"},
+      {"name": "ffuf", "pkg": "github.com/ffuf/ffuf", "channel": "gobin", "purpose": "目录/参数模糊"},
+      {"name": "gau", "pkg": "github.com/lc/gau/v2/cmd/gau", "channel": "gobin", "purpose": "历史 URL 收集"},
+      {"name": "dnsx", "pkg": "github.com/projectdiscovery/dnsx/cmd/dnsx", "channel": "gobin", "purpose": "DNS 解析/枚举"},
+      {"name": "naabu", "pkg": "github.com/projectdiscovery/naabu/v2/cmd/naabu", "channel": "gobin", "purpose": "快速端口扫描"},
+      {"name": "whois", "pkg": "whois", "channel": "apt", "purpose": "域名信息"}
+    ],
+    "web-attack": [
+      {"name": "sqlmap", "pkg": "sqlmap", "channel": "git", "url": "https://github.com/sqlmapproject/sqlmap", "purpose": "SQL 注入利用"},
+      {"name": "xray", "pkg": "xray", "channel": "gobin", "purpose": "Web 漏洞扫描"},
+      {"name": "crawlergo", "pkg": "crawlergo", "channel": "gobin", "purpose": "爬虫"},
+      {"name": "corskit", "pkg": "corskit", "channel": "gobin", "purpose": "CORS 检测"},
+      {"name": "dalfox", "pkg": "github.com/hahwul/dalfox/v2", "channel": "gobin", "purpose": "XSS 扫描"},
+      {"name": "ssrf-sheriff", "pkg": "ssrf-sheriff", "channel": "gobin", "purpose": "SSRF 检测"},
+      {"name": "wafw00f", "pkg": "wafw00f", "channel": "pipx", "purpose": "WAF 指纹"},
+      {"name": "argo", "pkg": "argo", "channel": "gobin", "purpose": "参数替换模糊"}
+    ],
+    "api-auth": [
+      {"name": "jwt-analyzer", "pkg": "secatlas-tools/jwt-analyzer.py", "channel": "local", "purpose": "JWT 分析(alg:none/RS→HS/爆破)"},
+      {"name": "nuclei-api", "pkg": "nuclei", "channel": "gobin", "purpose": "API 模板扫描"}
+    ],
+    "ad-lateral": [
+      {"name": "impacket", "pkg": "impacket", "channel": "pipx", "purpose": "AD 攻防套件(Kerberos/SMB/LDAP)"},
+      {"name": "bloodhound", "pkg": "bloodhound", "channel": "gobin", "purpose": "AD 域分析"},
+      {"name": "kerbrute", "pkg": "github.com/ropnop/kerbrute", "channel": "gobin", "purpose": "Kerberos 用户枚举/爆破"},
+      {"name": "netexec", "pkg": "github.com/Pennyw0rth/NetExec", "channel": "gobin", "purpose": "内网执行引擎"},
+      {"name": "crackmapexec", "pkg": "crackmapexec", "channel": "pipx", "purpose": "内网综合工具"},
+      {"name": "ldapdomaindump", "pkg": "ldapdomaindump", "channel": "pipx", "purpose": "LDAP 域信息导出"}
+    ],
+    "payload-tools": [
+      {"name": "hashcat", "pkg": "hashcat", "channel": "apt", "purpose": "GPU 口令破解"},
+      {"name": "john", "pkg": "john", "channel": "apt", "purpose": "CPU 口令破解"},
+      {"name": "hydra", "pkg": "hydra", "channel": "apt", "purpose": "在线爆破"},
+      {"name": "responder", "pkg": "responder", "channel": "gobin", "purpose": "LLMNR/NBT-NS 欺骗"},
+      {"name": "ysoserial", "pkg": "ysoserial", "channel": "gobin", "purpose": "Java 反序列化 payload"},
+      {"name": "phpggc", "pkg": "phpggc", "channel": "gobin", "purpose": "PHP POP 链"}
+    ],
+    "mobile": [
+      {"name": "jadx", "pkg": "jadx", "channel": "gobin", "purpose": "APK 反编译"},
+      {"name": "apktool", "pkg": "apktool", "channel": "gobin", "purpose": "APK 拆包/重打包"},
+      {"name": "frida", "pkg": "frida-tools", "channel": "pipx", "purpose": "动态 Hook"},
+      {"name": "objection", "pkg": "objection", "channel": "pipx", "purpose": "运行时渗透"},
+      {"name": "mobsf", "pkg": "mobsf", "channel": "pipx", "purpose": "移动应用静态分析"}
+    ],
+    "reverse-pwn": [
+      {"name": "radare2", "pkg": "radare2", "channel": "apt", "purpose": "二进制逆向"},
+      {"name": "ghidra", "pkg": "ghidra", "channel": "gobin", "purpose": "反汇编/反编译"},
+      {"name": "pwntools", "pkg": "pwntools", "channel": "pipx", "purpose": "Pwn 开发框架"},
+      {"name": "ropper", "pkg": "ropper", "channel": "pipx", "purpose": "ROP 链构造"},
+      {"name": "binwalk", "pkg": "binwalk", "channel": "apt", "purpose": "固件提取"},
+      {"name": "yara", "pkg": "yara", "channel": "apt", "purpose": "恶意样本匹配"},
+      {"name": "angr", "pkg": "angr", "channel": "pipx", "purpose": "符号执行"}
+    ],
+    "pivoting-tunneling": [
+      {"name": "chisel", "pkg": "chisel", "channel": "gobin", "purpose": "HTTP/WS 隧道"},
+      {"name": "proxychains4", "pkg": "proxychains4", "channel": "apt", "purpose": "代理链"},
+      {"name": "socks5", "pkg": "ssh", "channel": "system", "purpose": "SSH 动态转发(需系统自带)"}
+    ],
+    "cloud": [
+      {"name": "awscli", "pkg": "awscli", "channel": "pipx", "purpose": "AWS 接口"},
+      {"name": "kubectl", "pkg": "kubectl", "channel": "gobin", "purpose": "K8s 接口"},
+      {"name": "cloudfox", "pkg": "github.com/BishopFox/cloudfox", "channel": "gobin", "purpose": "云权限枚举"},
+      {"name": "pacu", "pkg": "pacu", "channel": "pipx", "purpose": "AWS 利用框架"}
+    ],
+    "ai-security": [
+      {"name": "llm-attacker", "pkg": "llm-attacker", "channel": "gobin", "purpose": "LLM 攻击测试"},
+      {"name": "garak", "pkg": "garak", "channel": "pipx", "purpose": "LLM 漏洞扫描"}
+    ]
+  }
+}

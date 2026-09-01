@@ -1,0 +1,52 @@
+{
+  "skill_id": "xss-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "xss",
+        "cross-site scripting",
+        "dom xss"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "类型搜索",
+      "keywords": [
+        "reflected",
+        "stored",
+        "csp"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被CSRF召回",
+      "keywords": [
+        "csrf",
+        "samesite"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "xss-scenario",
+      "scenario": "目标搜索框输入的内容会回显在页面中，但 <script> 被过滤。请搜索 XSS 攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "xss|cross-site scripting|跨站脚本"
+        },
+        {
+          "tool": "read_skill",
+          "id": "xss-methodology"
+        }
+      ]
+    }
+  ]
+}

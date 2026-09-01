@@ -1,0 +1,21 @@
+name: Bug Report
+description: Report a vulnerability technique error or tool bug
+title: "[BUG] "
+labels: [bug]
+body:
+  - type: input
+    attributes:
+      label: "Which file/technique?"
+      placeholder: "e.g., techniques/jwt/alg-none.yaml"
+  - type: textarea
+    attributes:
+      label: "What's wrong?"
+      description: "Clear description of the issue."
+  - type: textarea
+    attributes:
+      label: "Expected behavior"
+      description: "What should be correct."
+  - type: textarea
+    attributes:
+      label: "References"
+      description: "Any references or proof."

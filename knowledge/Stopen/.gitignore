@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Build
+/dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Stopen runtime data (sensitive: DB with session data, encrypted API keys)
+stopen/storage/*.db
+stopen/storage/*.db-shm
+stopen/storage/*.db-wal
+stopen/storage/*.key
+stopen/storage/*.enc
+stopen/storage/.auth_secret
+stopen/storage/auth_config.json
+stopen/storage/logs/
+stopen/storage/reports/
+stopen/storage/pocs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+/logs/
+
+# Claude code worktrees
+.claude/

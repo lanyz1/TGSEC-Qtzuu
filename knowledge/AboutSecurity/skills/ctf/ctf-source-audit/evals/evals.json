@@ -1,0 +1,76 @@
+{
+  "skill_name": "ctf-source-audit",
+  "evals": [
+    {
+      "id": 1,
+      "name": "source-audit-php-weak-comparison",
+      "prompt": "CTF PHP 源码中有：if ($_GET['password'] == '0e123456789') { echo $flag; }。请解释这个漏洞并给出绕过 payload。",
+      "expected_output": "PHP 弱比较：0e 开头字符串被当作科学计数法 0，任何 0e 开头 MD5 都等于 0",
+      "expectations": [
+        "弱比较|==|类型转换|0e科学计数法",
+        "0e|科学计数法|等于0|数值比较",
+        "0e215962017|0e830400451|MD5碰撞|已知值",
+        "===|强比较|应该用强比较|修复方法",
+        "password=0|0==0|true|数字0也行"
+      ],
+      "required_terms": [
+        "===",
+        "true"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "source-audit-php-array-bypass",
+      "prompt": "CTF PHP 源码：if ($a != $b && md5($a) === md5($b)) { echo $flag; }。请描述绕过方法。",
+      "expected_output": "数组绕过：md5(array) 返回 NULL，NULL===NULL 为 true",
+      "expectations": [
+        "数组|array|a[]=1&b[]=2|数组绕过",
+        "md5(array)|NULL|返回null",
+        "NULL===NULL|true|强比较也通过",
+        "!=|不等|不同数组|值不同",
+        "a[]=|b[]=|GET参数数组语法"
+      ],
+      "required_terms": [
+        "md5(array)",
+        "a[]=1&b[]=2",
+        "NULL"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "source-audit-variable-overwrite",
+      "prompt": "CTF PHP 源码中有 extract($_GET); 然后 if ($admin === 'yes') { echo $flag; }。但 $admin 初始值为 'no'。请描述攻击方法。",
+      "expected_output": "extract() 变量覆盖：GET 参数直接覆盖 PHP 变量",
+      "expectations": [
+        "extract|变量覆盖|$_GET注入变量",
+        "?admin=yes|GET参数覆盖|直接覆盖$admin",
+        "parse_str|$$|其他变量覆盖方式",
+        "register_globals|历史漏洞|类似原理",
+        "危险函数|extract($_GET)|不安全模式"
+      ],
+      "required_terms": [
+        "parse_str",
+        "register_globals",
+        "extract($_GET)"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "source-audit-python-ssti",
+      "prompt": "CTF Python Flask 源码中有 return render_template_string('Hello ' + request.args.get('name', 'guest'))。请分析漏洞和利用方法。",
+      "expected_output": "render_template_string 接受用户输入 → SSTI",
+      "expectations": [
+        "render_template_string|用户输入|SSTI|模板注入",
+        "{{7*7}}|49|确认注入|Jinja2",
+        "config|SECRET_KEY|__class__|信息泄露",
+        "__mro__|__subclasses__|RCE链|命令执行",
+        "render_template|安全|文件模板|区别"
+      ],
+      "required_terms": [
+        "SECRET_KEY",
+        "render_template_string",
+        "render_template"
+      ]
+    }
+  ]
+}

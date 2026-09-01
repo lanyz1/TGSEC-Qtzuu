@@ -1,0 +1,52 @@
+{
+  "skill_id": "report-generate",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "report",
+        "报告",
+        "渗透测试报告"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "内容搜索",
+      "keywords": [
+        "风险评级",
+        "修复建议",
+        "summary"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被exploit召回",
+      "keywords": [
+        "binary exploit",
+        "heap overflow"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "report-generate-scenario",
+      "scenario": "渗透测试完成，需要生成专业的测试报告。请搜索报告生成方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "report|报告|generate|生成"
+        },
+        {
+          "tool": "read_skill",
+          "id": "report-generate"
+        }
+      ]
+    }
+  ]
+}

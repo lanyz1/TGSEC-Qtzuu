@@ -1,0 +1,81 @@
+# 案例：USDT Approval 伪装充值上分（链上对账缺陷）—— 事故复盘（脱敏）
+
+target:
+  url: "TARGET_HOST"
+  type: "authorized"
+  name: "某 USDT 充值博彩预测平台（Telegram Mini App）"
+  tech_stack:
+    - "TRC20 USDT 链上充值 + 自动对账上分"
+    - "block_scanner（主检测，只解析 transfer）"
+    - "deposit_monitor（对账兜底，调 TronGrid trc20 接口）"
+    - "OKPay 代付渠道"
+  fingerprint:
+    deposit_channel: "TRC20 地址充值（用户获取独立充值地址）"
+    confirm_logic: "solidity 回执 SUCCESS 即确认"
+
+attack_surface:
+  - "链上充值对账：TronGrid /v1/accounts/{addr}/transactions/trc20?only_to=true"
+  - "对账落库未过滤事件类型（Transfer vs Approval）"
+  - "上分确认仅校验 solidity SUCCESS，不校验等额 Transfer 事件"
+  - "提现/代付流程与充值上分解耦（OKPay）"
+
+incident_summary: |
+  攻击者未向平台充值地址转账 USDT，而是对充值地址发起 USDT 合约 approve（授权）交易，
+  授权额度被对账兜底误识别为到账金额并上分。充值地址链上从未收到 USDT，
+  用户下注后经 OKPay 提现代付，造成资损。
+
+techniques_tried:
+  - technique: "多签/转账伪装"
+    result: "failed"
+    detail: "非多签交易，也非『转账被认成充值』——链上三笔均为 approve（授权），充值地址从未收到 USDT"
+  - technique: "approve 授权额度伪装充值（事件类型混淆）"
+    result: "success"
+    detail: "owner 对平台充值地址 approve(1000/5000/10000 USDT) 三次；TronGrid trc20 only_to=true 把 spender 当 to 命中充值地址；落库未过滤 type==Transfer，授权额度误写为充值金额并上分"
+  - technique: "上分确认绕过（solidity 校验缺失）"
+    result: "success"
+    detail: "is_deposit_confirmed 仅校验 solidity 回执 SUCCESS——approve 同样返回 SUCCESS，缺少『对本地址等额 USDT Transfer 事件』校验"
+
+success_path:
+  - step: 1
+    action: "攻击者发起 USDT 合约 approve(平台充值地址, N USDT)，N=1000/5000/10000 共 3 次"
+    payload: "方法选择器 095ea7b3（approve(address,uint256)），非 a9059cbb（transfer）"
+    finding: "链上事件为 Approval（topic 8c5be1e5…）而非 Transfer（topic ddf252ad…）"
+  - step: 2
+    action: "TronGrid trc20 接口返回事件"
+    finding: "接口同时返回 Transfer 和 Approval；Approval 的 spender 填在 to 字段 → only_to=true 时充值地址命中"
+  - step: 3
+    action: "deposit_monitor 对账落库"
+    finding: "未过滤事件类型，把授权额度 value 写入 deposits.amount"
+  - step: 4
+    action: "上分确认"
+    finding: "solidity SUCCESS 判定通过；平台余额增加，链上分文未进（充值地址余额 0、无归集记录）"
+  - step: 5
+    action: "用户下注 → 走 OKPay 提现代付"
+    finding: "平台资损：误上分合计 16000 USDT → 108000 CNY（汇率 6.75）"
+
+impact:
+  - "全库 95 笔链上充值核验：92 笔真实 Transfer + 3 笔 Approval 假充值（同一攻击者）"
+  - "误上分：16000 USDT → 108000 CNY（汇率 6.75）"
+  - "已确认流出 ≥ 22300 CNY（两笔已出款）；另两笔 confirming 待代付渠道核实"
+
+remediation:
+  - "落库只认 type=Transfer，拒绝 Approval/其他事件类型"
+  - "上分前校验：solidity SUCCESS + 本地址等额 USDT Transfer 事件"
+  - "不匹配标记 invalid，不再重试；攻击用户封禁"
+  - "驳回单退回余额调账清零（ledger 留痕不删历史）"
+
+techniques_learned:
+  - "solidity 回执 SUCCESS ≠ 资金到账：approve 也会返回 SUCCESS，必须校验对应 Transfer 事件"
+  - "TronGrid trc20 接口 only_to=true 会把 Approval 的 spender 当作 to，事件类型过滤是硬性要求"
+  - "充值确认与上分必须绑定『等额真实入账事件』，不能只信对账接口的金额字段"
+  - "链上支付类攻击手法（approve 伪装充值）对灰产平台是高发面，对账逻辑需按方法选择器/事件 topic 白名单校验"
+
+fingerprint_triggers:
+  - "平台有 TRC20/ERC20 地址充值 + 自动上分 → 测试 approve 伪装充值（构造 095ea7b3 交易观察是否上分）"
+  - "对账用 TronGrid trc20 only_to=true 接口 → 确认是否过滤事件类型（Approval 可命中 spender）"
+  - "上分确认逻辑只有 solidity 校验 → 用 approve 交易验证是否存在『无真实 Transfer 也上分』缺陷"
+
+sources:
+  - agent: "骡子"
+    date: "2026-07-30"
+    note: "事故复盘学习入库，标识已脱敏（映射见本地）"

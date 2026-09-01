@@ -1,0 +1,54 @@
+{
+  "skill_id": "persist-maintain",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "persist",
+        "持久化",
+        "backdoor",
+        "后门"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "webshell",
+        "cron",
+        "scheduled task",
+        "维持访问"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被recon召回",
+      "keywords": [
+        "subdomain",
+        "fingerprint"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "persist-maintain-scenario",
+      "scenario": "需要在目标系统建立持久化后门。请搜索持久化维护方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "persist|maintain|持久化|后门|backdoor"
+        },
+        {
+          "tool": "read_skill",
+          "id": "persist-maintain"
+        }
+      ]
+    }
+  ]
+}

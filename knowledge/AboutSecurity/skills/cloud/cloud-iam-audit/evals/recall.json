@@ -1,0 +1,54 @@
+{
+  "skill_id": "cloud-iam-audit",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "cloud iam",
+        "iam audit",
+        "权限",
+        "凭据"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "云厂商搜索",
+      "keywords": [
+        "aws",
+        "azure",
+        "gcp",
+        "提权"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被web漏洞召回",
+      "keywords": [
+        "sql injection",
+        "xss"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "cloud-iam-audit-scenario",
+      "scenario": "目标 AWS 环境中发现了一个 IAM 用户有 iam:PassRole 权限。请搜索 IAM 提权相关的方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "iam|cloud|权限提升|privilege"
+        },
+        {
+          "tool": "read_skill",
+          "id": "cloud-iam-audit"
+        }
+      ]
+    }
+  ]
+}

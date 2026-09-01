@@ -1,0 +1,54 @@
+{
+  "skill_name": "passive-recon",
+  "evals": [
+    {
+      "id": 1,
+      "name": "passive-three-engine-query-syntax",
+      "prompt": "你需要查找 target.com 域名下所有运行 Apache Tomcat 的资产。请分别写出 FOFA、Quake、Hunter 三个引擎的查询语句。",
+      "expected_output": "三引擎语法不同：FOFA用&&和app=，Quake用AND和app:，Hunter有自己的语法",
+      "expectations": [
+        "domain=\"target.com\"|FOFA|双引号等号",
+        "app=\"Apache Tomcat\"|app=|FOFA组件查询",
+        "domain:\"target.com\"|Quake|冒号语法",
+        "AND|Quake用AND|布尔运算符",
+        "三个引擎|语法不同|分别查询"
+      ],
+      "required_terms": [
+        "app=",
+        "FOFA",
+        "AND"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "passive-cross-compare-methodology",
+      "prompt": "你用 FOFA 搜到 target.com 有 15 个子域名，用 Quake 搜到 12 个，其中 8 个重叠。FOFA 独有 7 个，Quake 独有 4 个。你如何分析这些差异？",
+      "expected_output": "单引擎独有的可能是新上线/已下线资产，需要交叉验证。FOFA独有的7个可能Quake未收录（新资产或小众端口）",
+      "expectations": [
+        "去重合并|交叉比对|三引擎合并",
+        "单引擎独有|可能新上线|可能已下线",
+        "数据时效性|收录时间不同|更新频率",
+        "各有侧重|互相补充|覆盖率",
+        "标注来源|标记仅单一引擎|需验证"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "passive-zero-contact-principle",
+      "prompt": "老板要求你对 competitor.com 做信息收集，但明确说'不能触碰目标任何服务器'。你能用哪些方法？哪些方法绝对不能用？",
+      "expected_output": "可用：FOFA/Quake/Hunter搜索、crt.sh证书透明度、GitHub搜索、WHOIS。不能用：nmap/masscan端口扫描、目录扫描、直接HTTP请求",
+      "expectations": [
+        "FOFA|Quake|Hunter|搜索引擎|可用",
+        "crt.sh|证书透明度|证书搜索|被动",
+        "不能扫描|不能直接访问|不能端口扫描",
+        "零接触|被动|不留痕迹|无日志",
+        "WHOIS|DNS历史|GitHub搜索|公开来源"
+      ],
+      "required_terms": [
+        "FOFA",
+        "WHOIS",
+        "DNS历史"
+      ]
+    }
+  ]
+}

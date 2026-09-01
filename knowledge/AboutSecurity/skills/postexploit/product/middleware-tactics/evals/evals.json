@@ -1,0 +1,20 @@
+{
+  "skill_name": "middleware-exploit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "发现目标 8080 端口运行 Tomcat，/manager/html 能访问但需要密码。怎么突破？",
+      "expected_output": "尝试默认弱口令 tomcat/tomcat, admin/admin 等，成功后部署 WAR webshell 获取 RCE"
+    },
+    {
+      "id": 2,
+      "prompt": "nmap 显示目标开放了 8009 端口 (AJP)，目标是 Tomcat，怎么利用？",
+      "expected_output": "Ghostcat CVE-2020-1938，用 ajpShooter 读取 /WEB-INF/web.xml 获取敏感配置"
+    },
+    {
+      "id": 3,
+      "prompt": "IIS 服务器，发现 WebDAV 启用且 PUT 方法可用，怎么获取 webshell？",
+      "expected_output": "PUT 上传 .txt 文件（含 ASP 代码），然后 MOVE 重命名为 .asp 绕过上传限制"
+    }
+  ]
+}

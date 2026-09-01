@@ -1,0 +1,49 @@
+# 案例模板 - 复制此文件创建新案例
+# 保存路径: blackmule/cases/{type}/{YYYYMMDD}-{name}.yaml
+
+# === 目标信息 ===
+target:
+  url: "http://target.example.com"      # 目标URL
+  type: "lab"                           # lab / ctf / bug-bounty / authorized
+  name: "目标名称"
+  tech_stack:                            # 技术栈
+    - "技术1"
+    - "技术2"
+  ports: [80, 443]
+  fingerprint:                           # 关键指纹
+    server_header: "Apache/2.4"
+    auth_type: "JWT"
+    has_api: true
+
+# === 攻击面 ===
+attack_surface:
+  - "攻击面1"
+  - "攻击面2"
+
+# === 尝试的技术（含失败记录，也很重要！）===
+techniques_tried:
+  - technique: "技术名称"
+    result: "success"                    # success / failed / partial
+    detail: "具体发生了什么"
+
+# === 成功路径 ===
+success_path:
+  - step: 1
+    action: "做了什么"
+    payload: "用的payload（如适用）"
+    finding: "发现了什么"
+
+# === 可迁移经验 ===
+techniques_learned:
+  - "经验1"
+  - "经验2"
+
+# === 指纹触发规则（最重要的产出！）===
+fingerprint_triggers:
+  - "观察到的指纹 → 推荐使用的技术"
+  - "X-Powered-By: Express + SPA → JS逆向 + API枚举"
+
+# === 来源 ===
+sources:
+  - agent: "你的Agent名称"
+    date: "YYYY-MM-DD"

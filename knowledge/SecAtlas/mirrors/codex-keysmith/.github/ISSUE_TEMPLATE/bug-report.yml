@@ -1,0 +1,119 @@
+name: Bug report / Bug 报告
+description: Report a reproducible problem / 报告可复现的问题
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请先删除 token、cookie、用户名、私人路径、完整配置和 Prompt Bank 响应。安全漏洞请使用 [Private vulnerability reporting](https://github.com/Jia-Ethan/codex-keysmith/security/advisories/new)，不要在这里公开。
+
+        Remove tokens, cookies, usernames, private paths, complete configuration, and prompt-bank responses. Report vulnerabilities through [Private vulnerability reporting](https://github.com/Jia-Ethan/codex-keysmith/security/advisories/new), not here.
+
+  - type: input
+    id: keysmith-version
+    attributes:
+      label: codex-keysmith 版本 / Version
+      description: Paste the output of `python3 codex-instruct.py --version` (or `py -3 ... --version` on Windows).
+      placeholder: codex-instruct.py 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: release-and-commit
+    attributes:
+      label: Release tag 与 commit / Release tag and commit
+      description: Provide the fixed Release tag and commit SHA. If this came from main, write Unreleased plus the full SHA.
+      placeholder: v0.1.0 / 0123456789abcdef0123456789abcdef01234567
+    validations:
+      required: true
+
+  - type: input
+    id: operating-system
+    attributes:
+      label: 操作系统 / Operating system
+      placeholder: macOS 15.5, Ubuntu 24.04, or Windows 11
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python 版本 / Python version
+      placeholder: Python 3.14.0
+    validations:
+      required: true
+
+  - type: input
+    id: codex-version
+    attributes:
+      label: Codex CLI 版本 / Codex CLI version
+      placeholder: codex-cli 0.144.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operation
+    attributes:
+      label: 操作模式 / Operation
+      options:
+        - status
+        - dry-run
+        - deploy (--yes)
+        - recover preview
+        - recover (--yes)
+        - restore-hooks
+        - uninstall preview
+        - uninstall (--yes)
+        - prompt-bank
+        - release build
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤 / Reproduction steps
+      description: Provide the smallest sequence that reproduces the problem.
+      placeholder: |
+        1. Run ...
+        2. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期结果 / Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果 / Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostic-output
+    attributes:
+      label: 脱敏后的 status / dry-run / recover preview / error 输出 / Redacted diagnostic output
+      description: Include `--status`, `--dry-run`, and `--recover` preview where applicable. Explain why they are unavailable if the failure prevents them.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息 / Additional context
+      description: Add only directly relevant information, such as whether a manifest, `.codex-keysmith-transaction-<id>`, or other residue exists. Report transaction ID and node types only; do not paste complete journal, snapshots, config, or prompt content.
+
+  - type: checkboxes
+    id: redaction
+    attributes:
+      label: 脱敏确认 / Redaction confirmation
+      options:
+        - label: I removed tokens, cookies, usernames, private paths, complete configuration, and prompt-bank response content. / 我已删除这些敏感信息。
+          required: true

@@ -1,0 +1,58 @@
+{
+  "skill_name": "subdomain-deep",
+  "evals": [
+    {
+      "id": 1,
+      "name": "subdomain-wildcard-dns-detection",
+      "prompt": "你对 target.com 进行子域名枚举，发现无论输入什么子域名（包括 random12345.target.com）都能解析到 1.2.3.4。这说明什么？你应该如何处理？",
+      "expected_output": "这是通配符 DNS 记录（*.target.com → 1.2.3.4）。需要过滤掉解析到 1.2.3.4 的结果，改用字典枚举+内容比对确认真实子域",
+      "expectations": [
+        "通配符|wildcard|泛解析|*.target.com",
+        "过滤|排除|移除|通配符IP的结果",
+        "random12345|任意子域|都能解析|说明泛解析",
+        "字典枚举|内容比对|HTTP响应对比|区分真假",
+        "1.2.3.4|通配符IP|默认IP|需要排除"
+      ],
+      "required_terms": [
+        "HTTP响应对比",
+        "random12345"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "subdomain-three-source-union",
+      "prompt": "你只用 DNS 爆破找到 target.com 的 20 个子域名。leader 说覆盖率不够。除了增加字典，你还有哪两类互补的子域名发现源？",
+      "expected_output": "OSINT引擎（FOFA/Quake搜索实际网络扫描数据）+ 爬虫（从HTML/JS中提取子域名引用）。三源联合可覆盖70-90%",
+      "expectations": [
+        "OSINT引擎|搜索引擎|FOFA|Quake|网络空间搜索",
+        "爬虫|crawler|HTML提取|JS中的域名",
+        "三种来源|三源联合|多源|交叉",
+        "DNS枚举遗漏|DNS不全|补充发现",
+        "去重合并|结果合并|交叉验证"
+      ],
+      "required_terms": [
+        "OSINT引擎",
+        "FOFA",
+        "DNS枚举遗漏"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "subdomain-cname-cdn-identification",
+      "prompt": "子域名枚举时发现 api.target.com 的 CNAME 指向 d1234.cloudfront.net，而 staging.target.com 的 CNAME 指向 staging-target.s3.amazonaws.com 但 404。这两个发现分别意味着什么？",
+      "expected_output": "api → CloudFront CDN保护（可能需要找源IP绕过WAF）。staging → S3 bucket 404 = 可能的子域接管（subdomain takeover）",
+      "expectations": [
+        "cloudfront|CDN|CDN保护|绕过WAF",
+        "S3|bucket|s3.amazonaws.com",
+        "子域接管|subdomain takeover|接管|dangling CNAME",
+        "404|不存在|bucket未声明|可以注册",
+        "CNAME|指向|域名解析链"
+      ],
+      "required_terms": [
+        "s3.amazonaws.com",
+        "CDN",
+        "CNAME"
+      ]
+    }
+  ]
+}

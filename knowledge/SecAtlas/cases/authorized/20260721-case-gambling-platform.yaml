@@ -1,0 +1,88 @@
+# 案例：某博彩平台渗透（脱敏）
+
+target:
+  url: "TARGET_HOST"
+  type: "authorized"
+  name: "某 Telegram Mini App 博彩平台"
+  tech_stack:
+    - "RuoYi v3.9.0 (Spring Boot)"
+    - "Vue.js uni-app"
+    - "nginx + QUIC/HTTP3"
+    - "MySQL + Redis"
+    - "Telegram Mini App"
+  ports: [22, 80, 443]
+  fingerprint:
+    server_header: "nginx"
+    framework: "RuoYi v3.9.0"
+    api_prefix: "/prod-api"
+    swagger: "Springfox 3.0.0"
+    auth_type: "JWT + Telegram initData HMAC"
+    captcha_type: "RuoYi 数学计算 (加减)"
+
+attack_surface:
+  - "REST API (/prod-api/)"
+  - "Swagger UI (/prod-api/swagger-ui/index.html)"
+  - "未授权配置读写接口"
+  - "验证码接口 (/prod-api/captchaImage)"
+  - "用户注册/登录 (/prod-api/register, /prod-api/login)"
+  - "支付回调接口 (OKPay, Bobi)"
+  - "SSL证书多域名泄露 (8个关联域名)"
+
+techniques_tried:
+  - technique: "Swagger API文档枚举"
+    result: "partial"
+    detail: "Swagger UI页面可访问但API docs JSON需认证"
+
+  - technique: "RuoYi默认JWT密钥爆破"
+    result: "failed"
+    detail: "abcdefghijklmnopqrstuvwxyz等默认密钥均无效，JWT需Redis session配合"
+
+  - technique: "SQL注入 (login/register/GET参数)"
+    result: "failed"
+    detail: "MyBatis #{} 参数化查询有效防护"
+
+  - technique: "任意文件读取 (common/download/resource)"
+    result: "failed"
+    detail: "所有common端点均需认证"
+
+  - technique: "未授权配置写入 (updateSysBasicInfo)"
+    result: "success"
+    detail: "PUT端点无需认证，可修改全部系统配置字段"
+
+  - technique: "2captcha验证码绕过"
+    result: "success"
+    detail: "RuoYi数学验证码被2captcha识别，需处理表达式计算答案"
+
+  - technique: "汇率操纵+充值放大"
+    result: "success"
+    detail: "改usdtToCnyRate→6.8→10000，充5 USDT到账50000内部币(正常应为34)"
+
+  - technique: "支付网关密钥替换"
+    result: "success"
+    detail: "替换OKPay/Bobi支付网关密钥为攻击者密钥，截获回调通知"
+
+success_path:
+  - step: 1
+    action: "Swagger探路→发现RuoYi框架"
+    finding: "确认RuoYi v3.9.0，/prod-api/路由前缀"
+
+  - step: 2
+    action: "遍历未授权端点→发现配置写入"
+    finding: "PUT /prod-api/system/config/updateSysBasicInfo 无需认证"
+
+  - step: 3
+    action: "修改usdtToCnyRate实现充值放大"
+    finding: "汇率从6.8改为10000，充值金额放大1470倍"
+
+  - step: 4
+    action: "替换支付网关密钥→拦截回调"
+    finding: "支付成功通知被劫持到攻击者服务器"
+
+lessons:
+  - "RuoYi框架的updateSysBasicInfo端点经常未加认证注解"
+  - "支付回调key存储在系统配置表中，配合未授权写可实现支付劫持"
+  - "汇率字段浮点数乘以整数充值金额可实现任意金额放大"
+  - "2captcha可解RuoYi数学表达式验证码，答案需计算后提交"
+
+tags: [gambling, ruoyi, unauthorized-config-write, 2captcha, payment-hijack, exchange-rate-manipulation]
+date: "2026-07-21"

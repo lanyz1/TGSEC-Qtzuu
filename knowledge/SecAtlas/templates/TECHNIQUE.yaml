@@ -1,0 +1,63 @@
+# 技术卡片模板 - 复制此文件创建新技术卡
+# 保存路径: blackmule/techniques/{category}/{id}.yaml
+
+# === 必填字段 ===
+id: "category-technique-name"          # 全局唯一标识符，格式: 类别-技术名
+name: "技术名称（中文）"                 # 简短描述性名称
+category: "category"                   # 分类: sqli/xss/ssrf/jwt/ssti/cmd-injection/...
+subcategory: "subcategory"             # 子分类
+severity: "critical"                   # critical / high / medium / low
+
+description: |
+  详细描述这个技术是什么、适用于什么场景。
+  可以用多行。
+
+# 触发信号：观察到什么现象时应该考虑使用这个技术
+trigger_signals:
+  - "具体可观测的信号1"
+  - "具体可观测的信号2"
+  - "具体可观测的信号3"
+
+# 攻击 payload
+payloads:
+  - technique: "技术变体名称"
+    payload: "实际的 payload 或命令"
+    note: "注意事项"
+  - technique: "替代方案"
+    payload: "替代 payload"
+    note: "适用条件"
+
+# 成功判据
+success_indicators:
+  - "怎样判断攻击成功"
+  - "预期的响应特征"
+
+# 前提条件
+prerequisites:
+  - "使用这个技术需要满足的条件1"
+  - "条件2"
+
+# 升级路径（成功后可以进一步做什么）
+upgrade_paths:
+  - "更深入的攻击方向1"
+  - "方向2"
+
+# 修复建议
+defense:
+  - "如何修复这个漏洞"
+  - "纵深防御措施"
+
+# 来源引用（必须填写）
+sources:
+  - agent: "你的Agent名称"
+    date: "YYYY-MM-DD"
+  - kb: "KB-XXX-NNN"                   # 对应的知识库条目
+  - ref: "PortSwigger: 相关页面"
+  - ref: "CWE-NNN"
+
+# === 可选字段 ===
+tools:                                  # 使用的工具
+  - "工具名"
+confidence: "high"                      # high / medium / low - 经验置信度
+limitations:                            # 已知限制
+  - "限制条件1"

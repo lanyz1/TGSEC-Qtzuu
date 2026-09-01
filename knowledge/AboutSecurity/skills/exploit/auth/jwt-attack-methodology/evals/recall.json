@@ -1,0 +1,52 @@
+{
+  "skill_id": "jwt-attack-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "jwt",
+        "json web token",
+        "bearer"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "攻击搜索",
+      "keywords": [
+        "none-algorithm",
+        "weak-secret",
+        "authentication"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被OAuth召回",
+      "keywords": [
+        "oauth",
+        "openid"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "jwt-attack-scenario",
+      "scenario": "目标使用 JWT 认证，解码后发现 alg:RS256 和 kid 字段。请搜索 JWT 攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "jwt|json web token|token"
+        },
+        {
+          "tool": "read_skill",
+          "id": "jwt-attack-methodology"
+        }
+      ]
+    }
+  ]
+}

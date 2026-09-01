@@ -1,0 +1,58 @@
+{
+  "skill_name": "target-profiling",
+  "evals": [
+    {
+      "id": 1,
+      "name": "profiling-four-tier-risk-classification",
+      "prompt": "侦察发现以下资产：1) admin.target.com:8443 (Tomcat Manager) 2) www.target.com (企业官网) 3) cdn.target.com (静态资源) 4) dev-api.target.com (返回 Spring Boot Actuator)。请按风险等级从高到低排序并说明理由。",
+      "expected_output": "极高: admin(管理后台)+dev-api(开发环境+Actuator暴露) > 中: www(标准Web) > 低: cdn(静态资源)",
+      "expectations": [
+        "极高|admin|管理后台|Tomcat Manager",
+        "极高|dev|开发环境|Actuator|安全措施弱",
+        "中风险|www|标准Web|需手动测试",
+        "低风险|cdn|静态资源|无动态内容",
+        "管理后台|开发测试|优先攻击"
+      ],
+      "required_terms": [
+        "admin",
+        "dev",
+        "标准Web"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "profiling-subnet-topology-inference",
+      "prompt": "子域名解析结果显示：web1.target.com→10.0.1.10, web2.target.com→10.0.1.11, db.target.com→10.0.2.20, vpn.target.com→203.0.113.5。你能从 IP 分布推断出什么网络架构信息？",
+      "expected_output": "10.0.1.x = Web服务器段, 10.0.2.x = 数据库段（不同子网隔离）, 203.0.113.5 = 公网IP（VPN入口）。Web→DB可能有横向移动路径",
+      "expectations": [
+        "10.0.1|Web段|同一子网|Web服务器",
+        "10.0.2|数据库段|不同子网|网络隔离",
+        "子网|VLAN|网段隔离|网络拓扑",
+        "横向移动|从Web到DB|跨网段",
+        "VPN|公网IP|外部入口|203.0.113"
+      ],
+      "required_terms": [
+        "10.0.1",
+        "10.0.2",
+        "VPN"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "profiling-info-gap-identification",
+      "prompt": "你完成了目标画像：发现 3 个 Web 应用、2 个数据库端口、1 个 VPN。但你注意到 DNS 枚举只用了字典爆破，端口扫描只扫了 Top 1000。你的信息缺口报告应该指出哪些不足？",
+      "expected_output": "子域名来源单一（缺OSINT+爬虫补充），端口扫描不全面（缺全端口扫描），缺少非标准端口30000+的发现",
+      "expectations": [
+        "子域名来源单一|缺OSINT|缺爬虫|覆盖不足",
+        "端口不全|Top 1000|全端口|65535",
+        "非标准端口|30000+|高端口|隐藏服务",
+        "信息缺口|不足|需补充|遗漏",
+        "推荐补充|建议|下一步侦察"
+      ],
+      "required_terms": [
+        "缺OSINT",
+        "Top 1000"
+      ]
+    }
+  ]
+}

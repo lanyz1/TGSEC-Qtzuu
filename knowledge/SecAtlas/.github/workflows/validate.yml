@@ -1,0 +1,29 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate YAML syntax
+        run: |
+          find techniques -name "*.yaml" | while read f; do
+            python3 -c "import yaml; yaml.safe_load(open('$f'))" || exit 1
+          done
+      - name: Validate cases
+        run: |
+          find cases -name "*.yaml" | while read f; do
+            python3 -c "import yaml; yaml.safe_load(open('$f'))" || exit 1
+          done
+      - name: Check broken links
+        run: |
+          if grep -rn "blackmule/" README.md CAPABILITY.md MASTER_INDEX.md AGENTS.md; then
+            echo "Found stale blackmule/ path references"
+            exit 1
+          fi

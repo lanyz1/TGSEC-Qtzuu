@@ -1,0 +1,52 @@
+{
+  "skill_id": "ctf-osint",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "ctf osint",
+        "开源情报",
+        "geolocation"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "社交媒体",
+        "dorking",
+        "图片搜索"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被pwn召回",
+      "keywords": [
+        "binary exploit",
+        "overflow"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-osint-scenario",
+      "scenario": "CTF OSINT 题要求根据一张照片定位拍摄地点。请搜索 OSINT 方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "osint|开源情报|信息收集"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-osint"
+        }
+      ]
+    }
+  ]
+}

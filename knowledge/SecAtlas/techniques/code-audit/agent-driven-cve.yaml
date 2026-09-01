@@ -1,0 +1,104 @@
+# 技术卡片: Agent 驱动全自动 CVE 挖掘 (AutoCVE 架构)
+# 分类: code-audit / agent / automation
+# 版本: 1.0
+# 日期: 2026-07-23
+# 来源: larlarua/AutoCVE v1.0.5 (1.1k stars, AGPL-3.0)
+
+id: "code-audit-agent-driven-cve"
+name: "Multi-Agent 自动化 CVE 挖掘工作流"
+category: "code-audit"
+subcategory: "agent-automation"
+severity: "info"
+
+description: |
+  AutoCVE 的核心架构：通过 Orchestrator 统一调度多个专项 Agent
+  协同完成源码审计和 CVE 挖掘。ReAct Loop + Nudge 纠偏 +
+  FinalizeFinding 结构化终止，实现端到端自动化。
+
+  实战成果：7 天内发现 30 个 CVE，覆盖 14 个开源项目，最高 CVSS 9.9。
+
+trigger_signals:
+  - "需要自动化 CVE 挖掘流程"
+  - "Multi-Agent 审计编排设计参考"
+  - "Agent 偏离时如何纠偏（Nudge 机制）"
+
+# 核心架构
+architecture:
+  agents:
+    - name: "Orchestrator"
+      role: "统一调度，分配任务"
+    - name: "Recon"
+      role: "信息收集，项目结构分析"
+    - name: "Scan"
+      role: "工具扫描（SAST 等）"
+    - name: "Triage"
+      role: "误报过滤，初步研判"
+    - name: "Finding"
+      role: "深度源码分析，漏洞挖掘"
+      note: "核心 Agent — ReAct Loop + 专项工具"
+    - name: "Verification"
+      role: "动态验证，PoC 构造"
+
+  workflow: "Orchestrator → Recon → Scan → Triage → Finding → Verification → Merge"
+
+  modes:
+    - name: "增强扫描 (Enhanced Scan)"
+      agents: "Scan → Triage"
+      use: "快速分析工具扫描结果并过滤误报"
+    - name: "智能审计 (Smart Audit)"
+      agents: "Finding"
+      use: "深度挖掘高价值漏洞，CVE/0day 研究"
+    - name: "综合审计 (Comprehensive Audit)"
+      agents: "Scan → Triage + Finding"
+      use: "融合工具扫描与源码分析，全量审计"
+
+# 可迁移的关键机制
+key_mechanisms:
+  react_loop:
+    mechanism: "ReAct Loop"
+    description: "Agent 在 Thought → Action → Observation 循环中自主决策"
+    hermes_mapping: "chain-ops 的观察→解释→组合→判别循环"
+
+  nudge:
+    mechanism: "Nudge 纠偏"
+    description: "当 Agent 偏离审计目标或进入死循环时，外部注入方向提示"
+    hermes_mapping: "penetest-orchestrator 的目标锁定 + pentagi-lessons 的卡死恢复"
+
+  finalize:
+    mechanism: "FinalizeFinding"
+    description: "结构化终止条件 — 漏洞证据充分后自动生成 CVE 报告"
+    hermes_mapping: "finding-verification 的证据门槛 + evidence-contract 的交付模板"
+
+  project_selection:
+    mechanism: "项目筛选规则 (SeletItem.yml)"
+    description: "按 stars/语言/活跃度/代码量筛选高价值审计目标"
+    hermes_mapping: "recon-entry-ops 的目标优先级排序"
+
+# 对照：黑骡现有能力 vs AutoCVE
+hermes_gap_analysis:
+  covered:
+    - "Multi-Agent 编排: pentest-orchestrator 已有 Orchestrator 角色"
+    - "ReAct 循环: chain-ops 核心循环"
+    - "漏洞验证: finding-verification 已有证据门槛"
+    - "误报过滤: chain-ops 服务降级树"
+  gaps:
+    - "Nudge 自动纠偏: 当前靠 pentagi-lessons 人工介入，无自动 Nudge"
+    - "FinalizeFinding 协议: 缺乏标准化的漏洞终止条件声明"
+    - "项目自动化筛选: 缺乏 rules/ 级别的目标价值评分"
+    - "CVE 报告生成: 缺乏自动化 CVE 申报模板"
+
+tools:
+  - "AutoCVE (参考架构)"
+  - "SAST 工具集"
+
+confidence: "high"
+limitations:
+  - "AutoCVE 为独立平台，不能直接集成到 Hermes"
+  - "方法论可迁移，但需要适配 Hermes Skill 体系"
+  - "30 CVE 的主要漏洞类型：越权、SSRF、XSS — 模式相对常规"
+
+sources:
+  - agent: "blackmule"
+    date: "2026-07-23"
+  - ref: "larlarua/AutoCVE: https://github.com/larlarua/AutoCVE"
+  - ref: "AutoCVE 成果: 30 CVEs across 14 projects in 7 days"

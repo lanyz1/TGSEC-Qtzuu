@@ -1,0 +1,62 @@
+# 案例：某TG监控后台 未授权数据导出（脱敏）
+
+target:
+  url: "TARGET_HOST"
+  type: "authorized"
+  name: "某 TG 关键词监控与群发系统"
+  tech_stack:
+    - "FastAPI (Python)"
+    - "uvicorn"
+    - "Session Cookie 认证"
+  ports: [443]
+  fingerprint:
+    server_header: "uvicorn"
+    auth_type: "Session Cookie"
+    has_api: true
+    openapi_exposed: true
+
+attack_surface:
+  - "GET /openapi.json — 完整 API 文档公开，100+ 端点含路径/参数定义"
+  - "GET /dm/queue/export/sent — 无认证直接返回 CSV 数据"
+  - "POST /login — Session 认证登录端点（form 格式）"
+  - "GET /dm/queue/export/queued, /failed — 其他队列导出端点"
+  - "POST /keywords/add, /blacklist/add, /dm/queue/delete_scope — 写操作"
+
+techniques_tried:
+  - technique: "openapi.json 枚举所有端点"
+    result: "success"
+    detail: "GET /openapi.json 无需认证，返回完整 FastAPI 规范，100+ 端点"
+
+  - technique: "遍历 export 类端点测试无认证访问"
+    result: "success"
+    detail: "GET /dm/queue/export/sent 直接返回 1.35MB CSV 数据"
+
+  - technique: "写操作无认证测试"
+    result: "failed"
+    detail: "POST /keywords/add、/blacklist/add 等返回 HTML 登录页，session 保护有效"
+
+  - technique: "密码爆破登录"
+    result: "failed"
+    detail: "form-encoded POST /login 测试常用密码，返回 401"
+
+  - technique: "假 session 构造"
+    result: "failed"
+    detail: "Cookie: session=admin 等无效，服务端校验 session 值"
+
+success_path:
+  - step: 1
+    action: "获取完整 API 文档"
+    finding: "GET /openapi.json 返回 100+ 端点，含路径/参数/响应格式"
+
+  - step: 2
+    action: "遍历含 export/download 关键词的 GET 端点"
+    finding: "/dm/queue/export/sent 无认证直接返回数据"
+
+lessons:
+  - "FastAPI 开发模式默认暴露 /openapi.json — 等于交出完整攻击面地图"
+  - "export/download 类端点容易遗漏认证检查"
+  - "读操作（GET export）无认证 + 写操作有认证的模式在产品中常见"
+  - "针对敏感数据的 GET 端点应逐个做认证审计，不能假设全局中间件覆盖"
+
+tags: [fastapi, openapi-exposure, unauthorized-export, idor, api-enum]
+date: "2026-07-21"

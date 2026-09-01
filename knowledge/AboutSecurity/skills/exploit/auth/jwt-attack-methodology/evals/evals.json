@@ -1,0 +1,76 @@
+{
+  "skill_name": "jwt-attack-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "jwt-kid-sql-injection",
+      "prompt": "JWT Header 中有 kid 字段：{\"alg\":\"HS256\",\"kid\":\"key1\"}。服务端根据 kid 从数据库查询对应密钥来验证签名。请描述如何利用 kid 参数进行 SQL 注入来伪造 JWT。",
+      "expected_output": "kid SQL 注入：注入 UNION SELECT 返回攻击者控制的密钥值",
+      "expectations": [
+        "kid|SQL注入|UNION SELECT|注入密钥查询",
+        "my-secret-key|自定义密钥值|UNION SELECT 'attacker-key'",
+        "用注入的密钥签名|HS256|伪造token",
+        "role|admin|Claims篡改|提权",
+        "1' UNION SELECT|-- |闭合SQL语句"
+      ],
+      "required_terms": [
+        "UNION SELECT",
+        "SQL注入",
+        "1' UNION SELECT"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "jwt-kid-path-traversal",
+      "prompt": "JWT 使用 kid 字段指定密钥文件路径。当前 kid 值为 'keys/key1.pem'。请描述如何利用路径穿越来使用一个已知内容的文件作为密钥。",
+      "expected_output": "kid 路径穿越到 /dev/null，用空字符串作为密钥签名",
+      "expectations": [
+        "/dev/null|空文件|空内容|已知文件",
+        "../../dev/null|路径穿越|kid路径注入",
+        "空字符串|''|空密钥签名",
+        "python|jwt.encode|空密钥|HS256",
+        "../../etc/hostname|/proc/version|其他已知内容文件"
+      ],
+      "required_terms": [
+        "/dev/null",
+        "../../dev/null",
+        "jwt.encode"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "jwt-rs256-hs256-confusion",
+      "prompt": "JWT Header 显示 alg:RS256。你通过 /.well-known/jwks.json 获取了 RSA 公钥。alg:none 攻击不成功。请描述 RS256→HS256 算法混淆攻击的原理和具体步骤。",
+      "expected_output": "RS256→HS256 混淆：用公钥作为 HMAC 密钥签名",
+      "expectations": [
+        "RS256改HS256|算法切换|修改alg字段",
+        "公钥|作为HMAC密钥|对称密钥|签名",
+        "服务端|不验证alg|用公钥验HS256|通过",
+        "攻击者有公钥|公钥是公开的|可获取",
+        "jwt.encode|pubkey|algorithm='HS256'|代码"
+      ],
+      "required_terms": [
+        "jwt.encode",
+        "algorithm='HS256'",
+        "修改alg字段"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "jwt-jku-x5u-exploitation",
+      "prompt": "JWT Header 中有 jku 字段（JWK Set URL），指向 https://target.com/.well-known/jwks.json。请描述如何利用 jku 参数伪造 JWT。",
+      "expected_output": "jku URL 替换攻击",
+      "expectations": [
+        "jku|替换URL|指向攻击者服务器|自定义JWKS",
+        "生成RSA密钥对|自己的公私钥|密钥对",
+        "公钥发布|托管JWKS|攻击者控制",
+        "私钥签名|用自己的私钥|RS256",
+        "服务端|从jku获取公钥|验证通过"
+      ],
+      "required_terms": [
+        "jku",
+        "RS256"
+      ]
+    }
+  ]
+}

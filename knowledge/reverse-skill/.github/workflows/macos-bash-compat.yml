@@ -1,0 +1,74 @@
+name: macOS Bash compatibility
+
+on:
+  pull_request:
+    paths:
+      - 'skills/scripts/**/*.sh'
+      - 'skills/scripts/*.sh'
+      - '.github/workflows/macos-bash-compat.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'skills/scripts/**/*.sh'
+      - 'skills/scripts/*.sh'
+      - '.github/workflows/macos-bash-compat.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  system-bash:
+    name: system Bash compatibility
+    runs-on: macos-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Show system Bash version
+        shell: bash
+        run: /bin/bash --version | head -n 1
+
+      - name: Parse all tracked shell scripts with system Bash
+        shell: bash
+        run: |
+          set -e
+          git ls-files '*.sh' | while IFS= read -r f; do
+            /bin/bash -n "$f"
+            echo "syntax OK: $f"
+          done
+
+      - name: Client-neutral bootstrap/discovery
+        shell: bash
+        run: /bin/bash skills/scripts/test-client-neutral-bootstrap.sh
+
+      - name: Exercise structured router and case contract
+        shell: bash
+        run: |
+          set -e
+          scratch="$(mktemp -d)"
+          trap 'rm -rf "$scratch"' EXIT
+
+          /bin/bash skills/scripts/master-route.sh \
+            --hint "apk reverse with jadx" \
+            --out-dir "$scratch/route"
+          grep -Eq '^- primary: R1$' "$scratch/route/route-scope.md"
+
+          /bin/bash skills/scripts/case-init.sh \
+            --hint "authorized web review" \
+            --case-name "network-default" \
+            --package-root "$scratch/project" \
+            --auth-granted \
+            --target-url "https://example.test/"
+          grep -Eq '^- mode: authorized_target_only$' "$scratch/project/work/network-default/scope.md"
+          grep -Eq '^- ready_for_act: true$' "$scratch/project/work/network-default/scope.md"
+          /bin/bash skills/scripts/case-guard.sh \
+            --case-root "$scratch/project/work/network-default"
+
+          /bin/bash skills/scripts/case-init.sh \
+            --hint "authorized web review" \
+            --case-name "uppercase-network" \
+            --package-root "$scratch/project" \
+            --auth-granted \
+            --network-profile "AUTHORIZED_TARGET_ONLY" \
+            --target-url "https://example.test/"
+          grep -Eq '^- mode: authorized_target_only$' "$scratch/project/work/uppercase-network/scope.md"

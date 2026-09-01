@@ -1,0 +1,244 @@
+# 案例：nova.example.com — Next.js + Fastify BFF 开放平台渗透（站主授权自测，脱敏；2026-08-08 首轮 + 08-10 三轮复测/深挖）
+
+target:
+  url: "https://nova.example.com"
+  type: "authorized"
+  name: "开放平台（加拿大28/PC28 开奖、走势、算法大厅、开放 API、云端飞投）"
+  tech_stack:
+    - "Next.js (App Router, turbopack) SSR 前端"
+    - "Fastify BFF（/bff/*，站内浏览器特征校验）"
+    - "开放 API（/api/*，X-Api-Key 鉴权，免费不限流，源站 IP 软限 120/分）"
+    - "Cloudflare CDN + Turnstile 人机验证（sitekey 0x4AAAA 前缀）"
+    - "Umami 埋点（/u/api/*，08-10 复测已下线 404）"
+    - "独立 Vite SPA 子应用（/bet/ 云端飞投控制台）"
+  ports: [443]
+  fingerprint:
+    framework: "与预测平台系同族业务（PC28），架构全新：无 HMAC 签名，X-Api-Key + BFF 模式"
+    api_prefix: "/bff（内部）+ /api（开放）"
+    auth_type: "JWT HS256 15min（cookie pc28_at + 30d pc28_rt 轮换）+ Turnstile"
+    captcha_type: "Cloudflare Turnstile（2captcha TurnstileTaskProxyless 可解）"
+    error_signature: "FST_ERR_CTP_* / Route GET:/xxx not found = Fastify"
+    rate_limit_headers: "x-ratelimit-limit/remaining/reset + 429（IP 维度，信任 X-Forwarded-For —— 可伪造绕过，见 findings）"
+
+attack_surface:
+  - "BFF 站内浏览器校验（Sec-Fetch-* 头检测，403 仅限站内浏览器）"
+  - "开放 API Key 生命周期（/bff/openapi/keys 增删改查，明文一次展示）"
+  - "算法大厅/详情（/bff/mode/hall、/bff/mode/algorithms/:id REST 路径参数）"
+  - "算法创建/编辑（POST/PATCH /bff/mode/algorithms，steps 公式 token 数组，回测表达式引擎）"
+  - "云端飞投 TG 账号绑定（/bff/bet/tg-accounts/*，bind/start|verify|2fa|qr）+ 排行榜（/bff/bet/leaderboard）"
+  - "运营管理面 /bff/ops/*（auth/login|totp、users、algorithms、dashboard、audit 等 9 端点；08-10 复测已从公网下线 404）"
+  - "数据导出 /bff/market/download（type=draws|keno|statistics，format=xml|xls|csv，scope=limit|day|range|all）"
+  - "AI 辅助面（/bff/mode/ai-review、ai-draft/stream、test-draft；服务端调 LLM）"
+  - "卡密兑换 /bff/auth/redeem + 邀请 /bff/auth/invite-info"
+  - "TG 自动登录 /bff/auth/telegram/webapp（initData HMAC 校验）"
+
+techniques_tried:
+  - technique: "BFF 浏览器校验绕过（无特征头 → 403 仅限站内浏览器）"
+    result: "success"
+    detail: "关键头 Sec-Fetch-Dest: empty（+ same-origin/cors）；Referer/Origin 伪造无效。带全头后 403 变 401/404 正常语义；枚举 46 词全 403 是缺头误报"
+
+  - technique: "认证注册（无 TG 收码能力卡点）"
+    result: "success"
+    detail: "平台同时支持 Telegram OTP 与密码注册；密码注册 {mode:password, username, displayName, password, cfTurnstileToken} 无需 TG 收码；Turnstile 用 2captcha TurnstileTaskProxyless 打码（sitekey 从页面 chunk JS 提取）；假 token → TURNSTILE_FAILED 证实服务端真校验"
+
+  - technique: "API Key IDOR（跨账号 PATCH/DELETE key）"
+    result: "failed"
+    detail: "他人 key id 操作 → 404 'Key 不存在或已删除'，按归属过滤，防护有效"
+
+  - technique: "私有算法越权（他人读/编辑）"
+    result: "failed"
+    detail: "匿名/他人读私有算法 404；非 owner PATCH（改名）404；私有算法不进大厅（q 搜索无结果）"
+
+  - technique: "公式泄露（steps 字段）"
+    result: "failed"
+    detail: "三视角验证（匿名/他人/owner）：他人 steps:null，owner steps 完整 —— 服务端按 isOwner 剥离，防护有效"
+
+  - technique: "profile 字段注入提权"
+    result: "failed"
+    detail: "PATCH /bff/auth/profile 带 role:admin / memberTier:vip → 400 未知字段被拒（schema 白名单），displayName 正常生效"
+
+  - technique: "JWT 弱密钥穷举 + alg-none + 篡改"
+    result: "failed"
+    detail: "第三轮实测：77 个常见弱密钥无一命中（HS256 强随机）；alg:none/None/NONE 全拒；篡改 sub → 401。refresh 用 pc28_rt 30d 轮换 token，旧 rt 用一次即 401「登录已失效」（重放检测完善）"
+
+  - technique: "TG 自动登录 initData 伪造"
+    result: "failed"
+    detail: "POST /bff/auth/telegram/webapp 无 hash / 假 hash → 401 INIT_DATA_INVALID（HMAC 真校验），无绕过"
+
+  - technique: "刷榜/数据伪造（创建算法注入 stats/favoriteCount/viewCount）"
+    result: "failed"
+    detail: "创建 body 带 stats 全量假数据 → 响应与服务端重算一致（提交值被忽略）；favoriteCount/viewCount 注入无效果；favorites toggle 正常但无法刷量；viewCount 匿名访问不增。统计全部服务端重算"
+
+  - technique: "表达式引擎注入（回测 RCE）"
+    result: "failed"
+    detail: "steps token 校验白名单（head/sqrt/pow 等数学函数），步骤上限 256（防计算 DoS），无任意函数调用/代码执行面"
+
+  - technique: "存储 XSS（displayName/昵称字段）"
+    result: "failed"
+    detail: "displayName 接受 <img onerror> 原样存储（API 200），但前端 React 全文本插值、无业务 dangerouslySetInnerHTML/v-html → 不触发（已恢复原名）"
+
+  - technique: "运营管理面探测 /bff/ops/*（第三轮）"
+    result: "partial"
+    detail: "从 /app chunk 挖出 9 个真实管理端点（auth/login、auth/refresh、auth/totp、users、algorithms、dashboard、announcements、audit）；两步登录（密码→TOTP），Zod schema 细节泄露（username≥2/password≥6）；鉴权有效：匿名 401 SYSTEM_LOGIN_REQUIRED、普通用户 401 OPS_LOGIN_REQUIRED，登录统一 401 无账号枚举、无绕过；修复建议隔离公网；**08-10 复测已全部 404（下线）**"
+
+  - technique: "导出接口 DoS（limit 无上限）"
+    result: "partial"
+    detail: "limit=999999999 → 全量 346 万期 42.5MB/21s 流式导出；scope=all 30.8MB/40s；大 range 把后端打到 502。文档声明 maxLimit=100000 但后端不强制。**定级修正**：数据本身公开（开放 API 免费不限量 + 导出是产品功能），单请求非并发压测，不标 DoS，按低危观察项（实现与声明不一致）；08-10 复测：匿名 401（加登录门槛），登录态仍可全量导出"
+
+  - technique: "API Key maxActive 竞态绕过（并发创建）"
+    result: "success"
+    detail: "10 并发 POST /bff/openapi/keys → 5 个全成功，总数 6 > maxActive 5（应用层 count 检查非原子，无唯一约束兜底）；影响有限（自限绕过），临时 key 已删"
+
+  - technique: "参数格式校验（无效 id）"
+    result: "partial"
+    detail: "第三轮 /bff/mode/algorithms/909（数字 no）→ 500 INTERNAL；/bff/bet/tg-accounts/abc/{bet-targets,prefs,strategies/regular-bet} → 500（路由参数无格式校验）；08-10 复测统一 404（已修复）"
+
+  - technique: "限速绕过（X-Forwarded-For 伪造）"
+    result: "success"
+    detail: "关键发现。登录接口：无 XFF 第 2 次请求即 429（retry in 13 minutes）；伪造 X-Forwarded-For 后请求全部放行（400 TURNSTILE_FAILED 而非 429）——限速按 IP 且信任 XFF。其他头无效：X-Real-IP/True-Client-IP 不绕过，CF-Connecting-IP 伪造被 Cloudflare 层 403 拦截。影响：登录限速屏障失效 → 配合 Turnstile 打码 + 弱密码可爆破任意账号；同时放大 redeem/bind 等接口滥用"
+
+  - technique: "限速维度判定（号码 vs IP）"
+    result: "success"
+    detail: "bind/start 发码限速（429 BIND_RATE_LIMITED，约 1 分钟窗口）为**号码维度**：XFF 换 IP 同号仍 429，换手机号立即 200 发码 → 轮换号码可对任意手机号刷 TG 登录码（骚扰面残余，低-中危）；OTP send 面更严格：Turnstile 前置 + TELEGRAM_UNREACHABLE（目标 TG 未私聊 bot 不发码），OTP 骚扰不可行"
+
+  - technique: "排行榜隐私泄露（leaderboard）"
+    result: "success"
+    detail: "/bff/bet/leaderboard（登录可见）返回 entryKey（内部用户标识）+ systemNickname + **tgNickname（TG 昵称）** + 完整头像 base64 内嵌 + 下注目标标题；任何注册用户可拉取全部飞投用户 TG 身份画像（复测未修）"
+
+  - technique: "AI 面提示注入/滥用"
+    result: "partial"
+    detail: "ai-review/test-draft/ai-draft/stream 服务端调 LLM（deepseek-v4-flash）；提示注入检测存在（非法 token value 直接报「存在提示注入风险」拒绝）；ai-review 无调用频控 = 低成本滥用面；test-draft 步骤上限 256"
+
+  - technique: "卡密兑换（redeem）"
+    result: "partial"
+    detail: "连发 6+ 错误卡密无 429（无业务限速）；统一 ACTIVATION_CODE_INVALID 无枚举；格式 8-32 大写字母数字（空间不可枚举），双花/枚举不可验证"
+
+  - technique: "中间件绕过（x-middleware-subrequest）"
+    result: "failed"
+    detail: "CVE-2025-29927 类头全试（middleware/pages/_middleware/src/middleware）→ 401，Next.js 中间件绕过不成立"
+
+  - technique: "飞投 TG 账号越权"
+    result: "failed"
+    detail: "tg-accounts 匿名 401；随机 id → 404 '账号不存在或不属于你'（归属校验）；完整绑定需真实 TG 账号扫码/收码，未测"
+
+  - technique: "匿名资源枚举（大厅列表）"
+    result: "success"
+    detail: "/bff/mode/hall 匿名全量算法列表；第二轮泄露 ownerId(UUID)/ownerDisplayName/createdAt，**第三轮已修复**（字段只剩 id/no/name/category/stats 等，新增算法 UUID——公开数据无害）；08-10 总量 9411，翻页 page>200 空（深分页限制）"
+
+  - technique: "验证码发送接口滥用探测"
+    result: "partial"
+    detail: "第二轮：bind/start 任意格式正确手机号 → 200 needs_code 触发发码，未见限流；第三轮已加固：confirm:true 确认参数 + 429 限速（号码维度，见限速维度条目）；残余骚扰面"
+
+  - technique: "敏感文件/管理面"
+    result: "failed"
+    detail: ".env/.git/swagger/actuator 全假 200 或 404；admin 路由仅前端守卫（降级用户中心页）；无子域（admin 前端不在公网）；/bff/upload 等上传面全 404；avatarUrl 不可 PATCH（无 SSRF 面）"
+
+success_path:
+  - step: 1
+    action: "资产画像 + 架构识别"
+    finding: "Next.js turbopack 特征 + FST_ERR_CTP 错误码 = Fastify BFF；sitemap.xml / llms.txt / developers/open-api.llms.md 直接给出全站路由与 API 契约（Key 形态/限速/错误码/白名单路径）——读文档优先于黑盒猜；08-10 文档更新日与审计同日，契约始终可用"
+
+  - step: 2
+    action: "BFF 接口枚举（带全浏览器头 + 登录 cookie）"
+    finding: "Fastify 'Route GET:/xxx not found' 404 特征区分真路由；/bff/ 面 = auth/* + market/* + mode/* + openapi/keys + bet/tg-accounts/* + ops/*（第三轮）"
+
+  - step: 3
+    action: "Turnstile 打码 + 密码注册拿账号"
+    payload: "2captcha TurnstileTaskProxyless → token；POST /bff/auth/register {mode:password, username, displayName, password, cfTurnstileToken}"
+    finding: "注册即发 pc28_at JWT cookie（15min）+ pc28_rt（30d）；登录后 /bff/openapi/keys 创建个人 Key（'前缀_'+16hex，明文只返回一次）；测试账号跨多轮复用（打码登录脚本固化）"
+
+  - step: 4
+    action: "开放 API 全量测试（带 Key）"
+    finding: "12 个数据接口全通；pageSize 截断 50；sf 算法详情 predict/records 全公开（产品设计）；无公式字段；sort/q/category 注入全部静默降级（参数化干净）"
+
+  - step: 5
+    action: "权限模型九项验证（两账号交叉 + 匿名）"
+    finding: "IDOR/越权/字段注入/私有隔离全部拦截，权限模型完整；08-10 复测无回归"
+
+  - step: 6
+    action: "飞投子应用（/bet/ Vite SPA）接口发现"
+    finding: "页面加载抓 /bff/bet/tg-accounts（quota 3）+ 懒加载 chunk 挖出绑定流程接口族（bind/start|verify|2fa|qr|cancel|release-and-finalize、bet-targets CRUD、strategies/*）；归属校验有效，完整绑定需真实 TG 账号未测"
+
+  - step: 7
+    action: "修复状态复测（08-10 三轮，对方持续加固）"
+    finding: "跟踪闭环：ops 面下线✅、无效 id 500→404✅、bind/start 加 confirm+限速✅、hall 去 ownerId✅、Umami 下线✅、导出匿名 401✅；未修：导出登录态 limit 无上限⚠️、leaderboard 隐私⚠️、bind 号码维度换号绕过⚠️、XFF 限速绕过（新增）⚠️"
+
+findings:
+  - severity: "medium"
+    title: "登录/接口限速可被 X-Forwarded-For 完全绕过（08-10 新增，本轮最高价值）"
+    detail: "登录接口无 XFF 第 2 次请求即 429（retry in 13 minutes）；伪造 X-Forwarded-For 后请求全部放行。限速按 IP 且信任 XFF。X-Real-IP/True-Client-IP 无效；CF-Connecting-IP 伪造被 Cloudflare 拦截。影响：登录限速屏障失效 → Turnstile 打码 + 弱密码 = 任意账号可爆破；放大 redeem/bind 滥用"
+    fix: "源站限速使用 Cloudflare 回源真实 IP（受信头），或直接 Cloudflare 规则层限速；禁止信任客户端可伪造头"
+
+  - severity: "medium"
+    title: "运营管理 API 面公网暴露 /bff/ops/*（08-10 复测已下线）"
+    detail: "9 个管理端点（auth/login|totp、users、algorithms、dashboard、audit、announcements）与主站同 BFF 公网暴露；两步登录（密码→TOTP）鉴权有效无绕过，但路由指纹暴露管理面存在；复测日已全部 404"
+    fix: "ops 面独立端口/内网隔离，减少公网指纹"
+
+  - severity: "medium"
+    title: "飞投排行榜隐私泄露（08-10 新增，复测未修）"
+    detail: "/bff/bet/leaderboard 返回 entryKey + systemNickname + tgNickname（TG 昵称）+ 完整头像 base64 + 下注目标标题；任何注册用户可批量收集飞投用户 TG 身份画像"
+    fix: "头像转缩略图/外链、TG 昵称脱敏、entryKey 不对外、字段最小化"
+
+  - severity: "low-medium"
+    title: "TG 账号绑定发码骚扰面（已加固，残余号码维度绕过）"
+    detail: "第三轮已加 confirm:true 确认参数 + 429 限速（BIND_RATE_LIMITED 约 1 分钟窗口）；限速为号码维度——XFF 换 IP 同号仍 429，但换手机号立即发码，轮换号码可对任意手机号刷 TG 登录码"
+    fix: "限速改 IP + 号码双维度；接码量监控"
+
+  - severity: "low"
+    title: "数据导出 limit 无后端上限（实现与声明不一致，观察项）"
+    detail: "limit=999999999 → 全量 346 万期 42.5MB/21s；scope=all 30.8MB/40s；大 range 502。文档声明 maxLimit=100000 未强制。数据本身公开（开放 API 免费不限量 + 导出是产品功能），未实测并发影响，不标 DoS；08-10 复测匿名已 401，登录态仍可全量"
+    fix: "后端强制 limit ≤100000 + 导出限频（顺手对齐，不紧急）"
+
+  - severity: "low"
+    title: "API Key maxActive=5 竞态绕过（08-10 新增）"
+    detail: "10 并发创建 key → 5 个全成功，总数 6 > 5（count 检查非原子，无唯一约束兜底）；自限绕过，影响有限"
+    fix: "事务/唯一约束或原子计数"
+
+  - severity: "low"
+    title: "卡密兑换接口无业务限速（08-10 新增）"
+    detail: "/bff/auth/redeem 连发错误卡密无 429；格式 8-32 大写字母数字空间不可枚举，无双花/枚举证据；成本面：无验证码无频控可无限试探"
+    fix: "兑换接口加频控 + 失败计数"
+
+  - severity: "low"
+    title: "算法大厅/详情匿名可读泄露用户画像"
+    detail: "/bff/mode/hall + /bff/mode/algorithms/:id 匿名返回 ownerDisplayName/createdAt/下期预测/统计；ownerId 第三轮已剥离；9411 算法可全量枚举（翻页 page>200 受限）"
+    fix: "匿名响应剥离 ownerId（已修）；ownerDisplayName 按产品需求保留"
+
+  - severity: "info"
+    title: "AI 辅助面暴露但防护有效（08-10 新增）"
+    detail: "ai-review/test-draft/ai-draft/stream 服务端调 LLM：提示注入检测存在（非法 token 报「存在提示注入风险」）、回测步骤上限 256；ai-review 无调用频控 = 低成本滥用面"
+    fix: "AI 接口加频控/配额"
+
+  - severity: "info"
+    title: "测试痕迹（站主自测，供清理）"
+    detail: "测试账号（多轮复用，密码/displayName 已恢复原状）+ 一个 API Key（保留作复测资产）+ 临时资源（race keys、XSS probe 算法等）已全部删除"
+    fix: "验收后吊销测试 Key、删除测试账号"
+
+techniques_learned:
+  - "Next.js + Fastify BFF 架构渗透完整流程：识别（turbopack + FST_ERR）→ BFF 枚举（Sec-Fetch-Dest 头）→ 密码注册绕 TG 收码 + Turnstile 打码 → 页面专属 chunk diff 挖接口 → REST 路径参数详情 → 权限模型九项验证"
+  - "Sec-Fetch-Dest: empty 是 BFF 浏览器校验绕过关键头（Referer/Origin 无效）；枚举前必须带全头否则全 403 误报"
+  - "2captcha TurnstileTaskProxyless 解 Cloudflare Turnstile（sitekey 0x4AAAA 前缀从 JS 提取）"
+  - "平台有密码注册模式时优先走它，绕开 TG 验证码收码卡点"
+  - "限速绕过测试法：先无伪造头打 2-3 次拿 429 基线（记录 x-ratelimit-* 头），再逐个伪造 X-Forwarded-For/X-Real-IP/True-Client-IP/CF-Connecting-IP 对照；伪造后不再 429 = 限速信任可伪造头。CF-Connecting-IP 伪造会被 CF 层 403 拦截（真源站头）"
+  - "限速维度判定：同号换 IP 仍 429 = 号码/账号维度；同 IP 换号放行 = IP 维度；两者都可通过对照实验区分"
+  - "修复验证闭环：对方按报告加固后逐项复测分层（匿名/登录态/接口面），记录 已修复/部分修复/未修复 三态，修复优先级按剩余影响排序"
+  - "刷榜/数据伪造面排除：创建接口注入 stats/favoriteCount/viewCount 全被服务端重算忽略 = 统计字段只读，直接排除数据伪造面"
+  - "表达式引擎注入面排除：白名单函数 + 步骤数上限 = 计算型引擎防 RCE 标配，测完即排除"
+  - "权限模型验证模板：私有 404 / 公式 isOwner 剥离 / 编辑 404 / Key IDOR 404 / 字段注入 400 —— 全绿才下'防护完整'结论"
+
+fingerprint_triggers:
+  - "_next/static/chunks + turbopack-*.js + FST_ERR_CTP_* 错误码 → Next.js + Fastify BFF 架构"
+  - "403 {'code':'FORBIDDEN','message':'仅限站内浏览器'} → BFF 浏览器特征校验，补 Sec-Fetch-Dest: empty"
+  - "Cloudflare Turnstile（0x4AAAA 前缀 sitekey）→ 2captcha TurnstileTaskProxyless 打码"
+  - "/u/api/send + /u/api/config（privateMode 字段）→ Umami 埋点，非私有模式可匿名注入（本案例已下线）"
+  - "llms.txt / developers/open-api.llms.md / docs 页 → 平台主动提供 AI 契约文档，API 面全公开，先读文档"
+  - "响应头 x-ratelimit-limit/remaining/reset + 429 → 记录无伪造头基线，再测 XFF 类头是否可绕过（信任 XFF = 限速可破）"
+  - "错误码 BIND_RATE_LIMITED / TELEGRAM_UNREACHABLE → 发码类接口有号码维度限速/可达性前置校验，骚扰面按号码维度评估"
+
+sources:
+  - agent: "骡子"
+    date: "2026-08-08"
+    note: "首轮 + 第二轮（注册登录越权矩阵）"
+  - agent: "骡子"
+    date: "2026-08-10"
+    note: "第三~六轮：黑盒审计/深入审计/复测/高危深挖（ops 面、导出 DoS、XFF 限速绕过、刷榜排除、表达式引擎排除）"

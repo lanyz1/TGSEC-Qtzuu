@@ -1,0 +1,55 @@
+{
+  "skill_id": "lfi-rfi-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "精确关键词搜索",
+      "keywords": [
+        "lfi",
+        "rfi",
+        "file inclusion",
+        "文件包含",
+        "local file inclusion"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术关键词",
+      "keywords": [
+        "php://filter",
+        "path traversal",
+        "目录穿越",
+        "wrapper"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被 webshell 生成召回",
+      "keywords": [
+        "webshell generate",
+        "shellcode loader"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "lfi-rfi-scenario",
+      "scenario": "目标 URL /page?file=about.html 可能存在文件包含漏洞，输入 ../../etc/passwd 被过滤。请搜索 LFI/RFI 方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "lfi|rfi|file inclusion|文件包含"
+        },
+        {
+          "tool": "read_skill",
+          "id": "lfi-rfi-methodology"
+        }
+      ]
+    }
+  ]
+}

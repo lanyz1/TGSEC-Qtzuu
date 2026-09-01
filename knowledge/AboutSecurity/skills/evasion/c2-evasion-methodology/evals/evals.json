@@ -1,0 +1,41 @@
+{
+  "skill_name": "c2-evasion-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "c2-yara-analysis",
+      "prompt": "Cobalt Strike beacon 被 YARA 规则检测：rule CobaltStrikeBeacon { strings: $s1 = \"cobaltstrike\" ascii $a1 = \"%s\\\\system32\\\\%s\" ascii ... }。请描述你如何分析这个 YARA 规则，定位源码中的问题特征，以及按优先级排序的修改方案。",
+      "expected_output": "逐规则分析 pattern，定位源码对应位置，提出编译器标志优先的免杀策略",
+      "expectations": [
+        "逐规则分析|pattern|strings|定位特征",
+        "源码位置|定位|grep|对应代码行",
+        "编译器标志|优先|strip|UPX",
+        "字符串混淆|XOR|加密|运行时解密",
+        "验证|重新扫描|YARA|确认绕过"
+      ],
+      "required_terms": [
+        "XOR",
+        "YARA",
+        "pattern"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "c2-string-obfuscation",
+      "prompt": "C2 源码中包含多个硬编码敏感字符串（如 'Mozilla/5.0'、'/api/beacon'、密钥等）。请描述识别和混淆这些字符串的方法。",
+      "expected_output": "strings 命令识别，XOR/AES 运行时解密，编译后验证",
+      "expectations": [
+        "strings|识别|硬编码|敏感字符串",
+        "XOR|AES|加密|运行时解密",
+        "编译通过|功能正常|不影响运行",
+        "自动化|脚本批量替换|非手动",
+        "验证|YARA|VirusTotal|检测率"
+      ],
+      "required_terms": [
+        "XOR",
+        "YARA",
+        "VirusTotal"
+      ]
+    }
+  ]
+}

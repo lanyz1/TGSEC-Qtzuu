@@ -1,0 +1,21 @@
+name: Technique Request
+description: Request a new attack technique card
+title: "[TECH] "
+labels: [enhancement]
+body:
+  - type: input
+    attributes:
+      label: "Technique name"
+      placeholder: "e.g., WebSocket CSRF via Origin bypass"
+  - type: dropdown
+    attributes:
+      label: "Category"
+      options: [sqli, xss, ssrf, jwt, ssti, cmd-injection, idor, deserialization, request-smuggling, cache-poisoning, other]
+  - type: textarea
+    attributes:
+      label: "Brief description"
+      description: "What the technique does."
+  - type: textarea
+    attributes:
+      label: "References"
+      description: "Any PortSwigger/HackTricks/CWE links."

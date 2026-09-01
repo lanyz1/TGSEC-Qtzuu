@@ -1,0 +1,105 @@
+# 案例: Echoes of Heap (PHP Heap Exploitation)
+# 日期: 2026-07-20
+# 状态: 部分成功，最终利用阻塞
+
+target:
+  url: "http://203.0.113.10:30076"
+  type: ctf
+  subtype: pwn
+  name: "Echoes of Heap"
+  tech_stack:
+    - "Apache/2.4.65 (Debian)"
+    - "PHP 8.1.34"
+    - "Zend Engine 4.1.34"
+    - "custom_auth.so (自编译PHP扩展)"
+    - "zend_mm allocator (slab=256KB)"
+  ports: [30076]
+  fingerprint:
+    server_header: "Apache/2.4.65 (Debian)"
+    x_headers:
+      X_PHP_Version: "8.1.34"
+      X_Alloc_Bins: "8,16,24,...,2048"
+      X_Slab_Size: "262144"
+      X_Hint: "zend_mm small bins. good luck."
+
+attack_surface:
+  - "POST / 登录认证端点"
+  - "/index.php.bak - 源码泄露入口"
+  - "/custom_auth.so - 自编译PHP扩展"
+  - "off-by-one heap overflow (bin边界探测)"
+
+assets_obtained:
+  - "/index.php.bak — PHP源码 (custom_auth_verify → file_get_contents('/flag'))"
+  - "/custom_auth.so — 32KB ELF x86-64, with debug_info, not stripped"
+  - "反汇编确认: 函数恒返回 IS_FALSE (movl $0x2, 0x8(%rbp))"
+  - "字符串泄露: root|super_secure_admin_pwd"
+
+vulnerabilities_found:
+  - vuln: "源码泄露 (.bak)"
+    type: "information_disclosure"
+    severity: "high"
+    detail: "index.php.bak 暴露完整PHP源码和flag路径"
+  - vuln: "Off-by-one heap overflow"
+    type: "memory_corruption"
+    severity: "critical"
+    detail: "_emalloc(strlen(u)+strlen(p)+1) 但 sprintf写 +2 bytes。bin边界触发时响应335 vs 334 bytes"
+    bin_boundaries: [7,15,23,31,39,47,55,63,71,79,95,111,127,159,191,223,255]
+  - vuln: "凭据硬编码"
+    type: "credential_disclosure"
+    severity: "medium"
+    detail: ".so 字符串 'root|super_secure_admin_pwd' 但认证函数未使用"
+
+techniques_tried:
+  - technique: "PHP filter wrapper LFI"
+    result: "failed"
+    detail: "u参数不作为文件路径使用"
+  - technique: "弱口令/凭据复用"
+    result: "failed"
+    detail: "root:super_secure_admin_pwd 无效，函数无比较逻辑"
+  - technique: "Off-by-one 堆破坏 (各bin边界)"
+    result: "partial"
+    detail: "确认335vs334字节差异，但未影响认证返回路径"
+  - technique: "堆喷射 + off-by-one 组合"
+    result: "failed"
+    detail: "20次请求预热heap后off-by-one未改变返回路径"
+
+blocking_reason: |
+  custom_auth_verify 恒返回IS_FALSE(0x2)，无认证比较逻辑。
+  返回值为栈上zval.type_info，off-by-one写入heap无法直接覆盖栈。
+  完整利用需要：控制free list → 使_emalloc返回栈地址 → 覆盖return_value.type_info为IS_TRUE(0x3)。
+  这需要PHP 8.1 zend_mm内部结构的精确知识+本地调试环境。
+
+success_path:
+  - step: 1
+    action: ".bak源码泄露 → 获取完整PHP源码和flag路径"
+    finding: "custom_auth_verify → file_get_contents('/flag')"
+  - step: 2
+    action: "下载并反汇编custom_auth.so → strings + objdump"
+    finding: "函数恒返回IS_FALSE, 字符串泄露root|super_secure_admin_pwd"
+  - step: 3
+    action: "Off-by-one精确检测: bin边界输入 → 335 vs 334字节差异"
+    finding: "确认heap overflow存在"
+  - step: 4
+    action: "堆喷射 + off-by-one组合利用"
+    finding: "利用阻塞: 栈上zval不可从heap覆盖"
+
+techniques_learned:
+  - "PHP扩展.so文件可能包含完整源码逻辑"
+  - "反汇编PHP扩展: zif_函数名 + objdump -d + strings"
+  - "PHP返回IS_FALSE = type_info=0x2, IS_TRUE=0x3"
+  - "zend_mm allocator: small bins 8-2048, slab 256KB"
+  - "off-by-one检测: 精确bin边界输入 → 响应大小差1字节"
+  - ".bak/.swp/.orig 文件是PHP源码泄露的经典入口"
+
+fingerprint_triggers:
+  - "X-PHP-Version header → PHP站, 检查.bak/.swp泄露"
+  - "X-Alloc-Bins header → zend_mm挑战, 准备heap利用工具"
+  - "custom .so文件 → strings + objdump + nm 快速分析"
+  - "strlen(input) debug → 测边界找off-by-one"
+
+tools_used:
+  - "objdump -d (反汇编)"
+  - "nm -D (符号表)"
+  - "strings (字符串提取)"
+  - "file (文件类型)"
+  - "mule-binary (刚创建, 本案例反哺)"

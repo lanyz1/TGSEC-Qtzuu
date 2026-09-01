@@ -1,0 +1,52 @@
+{
+  "skill_id": "cors-misconfiguration",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "cors",
+        "cross-origin",
+        "跨域"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "access-control",
+        "origin",
+        "preflight"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被CSRF召回",
+      "keywords": [
+        "csrf token",
+        "referer"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "cors-misconfiguration-scenario",
+      "scenario": "目标 API 返回 Access-Control-Allow-Origin: * 头。请搜索 CORS 配置错误利用方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "cors|跨域|origin|misconfiguration"
+        },
+        {
+          "tool": "read_skill",
+          "id": "cors-misconfiguration"
+        }
+      ]
+    }
+  ]
+}

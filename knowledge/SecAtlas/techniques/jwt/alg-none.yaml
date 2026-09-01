@@ -1,0 +1,63 @@
+# 技术卡片: JWT - alg:none 攻击
+# 分类: jwt / algorithm-confusion
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-JWT-001 / PortSwigger
+
+id: "jwt-alg-none"
+name: "JWT alg:none 签名绕过"
+category: "jwt"
+subcategory: "algorithm-confusion"
+severity: "critical"
+
+description: |
+  服务端接受 alg:"none" 的 JWT。将算法改为 none 并清空签名部分，
+  服务端跳过签名验证直接信任 payload。
+
+trigger_signals:
+  - "Authorization: Bearer eyJ... 格式 JWT"
+  - "修改 alg 为 none 后仍返回 200"
+  - "无签名验证错误响应"
+  - "JWT 库未强制校验 alg 白名单"
+
+payloads:
+  - step: "解码原始 JWT header"
+    action: "base64url decode → {\"alg\":\"HS256\",\"typ\":\"JWT\"}"
+  - step: "篡改 header"
+    action: "{\"alg\":\"none\",\"typ\":\"JWT\"} → base64url encode"
+  - step: "篡改 payload（提权）"
+    action: "{\"sub\":\"admin\",\"role\":\"admin\"} → base64url encode"
+  - step: "拼接（签名留空）"
+    action: "<header>.<payload>."
+    note: "末尾仅保留点，签名部分为空"
+
+  - variant: "alg: None (大小写)"
+    note: "None/NONE/nOnE 等变体"
+  - variant: "alg: nOne (混合大小写)"
+  - variant: "JWE 嵌套场景"
+    note: "内层 JWT 使用 none"
+
+success_indicators:
+  - "HTTP 200 + 受保护资源内容"
+  - "响应包含 admin 权限数据"
+  - "不再返回 401/403"
+
+prerequisites:
+  - "JWT 库未强制 alg 白名单"
+  - "服务端接受 alg 字段由客户端指定"
+  - "受保护端点可访问"
+
+upgrade_paths:
+  - "RS256→HS256 算法混淆"
+  - "kid 头注入获取自定义密钥"
+  - "jku 头注入指向自建 JWKS"
+
+defense:
+  - "服务端维护算法白名单（如仅允许 RS256）"
+  - "拒绝 alg:none 及不在白名单的值"
+  - "使用 joserfc 等严格校验库"
+
+sources:
+  - kb: "KB-JWT-001"
+  - ref: "PortSwigger: JWT algorithm confusion"
+  - ref: "CWE-347"

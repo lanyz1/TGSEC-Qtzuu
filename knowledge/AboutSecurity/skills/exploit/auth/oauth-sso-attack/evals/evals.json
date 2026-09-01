@@ -1,0 +1,57 @@
+{
+  "skill_name": "oauth-sso-attack",
+  "evals": [
+    {
+      "id": 1,
+      "name": "oauth-redirect-uri-bypass-patterns",
+      "prompt": "目标 OAuth 的 redirect_uri 校验只检查域名是否以 target.com 结尾。你不控制任何 target.com 子域名。请列出至少 3 种具体的绕过 payload。",
+      "expected_output": "利用字符串后缀匹配的缺陷：attackertarget.com、target.com.evil.com、target.com#@evil.com",
+      "expectations": [
+        "attackertarget.com|后缀匹配|注册新域名",
+        "target.com.evil.com|子域名伪造",
+        "#@evil.com|fragment|URL解析差异",
+        "%00|null byte|截断",
+        "open redirect|站内跳转|链式利用"
+      ],
+      "required_terms": [
+        "target.com.evil.com",
+        "#@evil.com",
+        "fragment"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "oauth-state-csrf-account-binding",
+      "prompt": "目标支持 GitHub OAuth 登录，你发现认证请求中没有 state 参数。请描述完整的 CSRF 攻击流程来绑定攻击者的 GitHub 账户到受害者的 target.com 账户。",
+      "expected_output": "攻击者发起 OAuth → 获取 code → 构造 callback URL → 诱导受害者点击 → 受害者账户绑定攻击者 GitHub",
+      "expectations": [
+        "state缺失|无CSRF保护|可伪造请求",
+        "攻击者发起OAuth|获取authorization code",
+        "构造callback|target.com/callback?code=ATTACKER_CODE",
+        "诱导受害者|点击链接|绑定攻击者账户",
+        "账户接管|用攻击者GitHub登录|进入受害者账户"
+      ],
+      "required_terms": [
+        "target.com/callback?code=ATTACKER_CODE",
+        "state缺失",
+        "攻击者发起OAuth"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "oauth-email-matching-takeover",
+      "prompt": "target.com 同时支持邮箱注册和 Google OAuth 登录。当 Google OAuth 返回的邮箱和已注册账户相同时，自动合并账户。请描述攻击方式。",
+      "expected_output": "在第三方平台修改邮箱为受害者邮箱 → OAuth 登录 → 自动合并进受害者账户",
+      "expectations": [
+        "邮箱匹配|email matching|自动合并|账户绑定",
+        "修改邮箱|第三方平台|设置为受害者邮箱",
+        "OAuth登录|自动关联|已有账户",
+        "账户接管|进入受害者账户|无需密码",
+        "邮箱验证|是否验证|绕过验证"
+      ],
+      "required_terms": [
+        "OAuth登录"
+      ]
+    }
+  ]
+}

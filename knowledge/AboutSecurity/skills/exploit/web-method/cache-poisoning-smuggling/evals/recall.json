@@ -1,0 +1,53 @@
+{
+  "skill_id": "cache-poisoning-smuggling",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "cache poisoning",
+        "request smuggling",
+        "缓存投毒"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "请求走私",
+        "desync",
+        "cl-te",
+        "hop-by-hop"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被SSRF召回",
+      "keywords": [
+        "gopher",
+        "internal-network"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "cache-poisoning-smuggling-scenario",
+      "scenario": "目标使用 CDN 缓存，响应中有 X-Cache: HIT 头。请搜索缓存投毒相关方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "cache|poisoning|smuggling|投毒|走私"
+        },
+        {
+          "tool": "read_skill",
+          "id": "cache-poisoning-smuggling"
+        }
+      ]
+    }
+  ]
+}

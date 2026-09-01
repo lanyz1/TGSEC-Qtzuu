@@ -1,0 +1,94 @@
+{
+  "skill_name": "sql-injection-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "sqli-post-param-completeness",
+      "prompt": "你在测试一个 PHP 表单提交页面 /send.php。用 curl 发送 name=test'&email=a@b.com 测试注入，但无论输入什么 payload，响应内容和正常请求完全一样（相同 Content-Length）。请分析可能的原因和排查方法。",
+      "expected_output": "识别出 POST 参数不完整（缺少 submit 按钮参数）导致 PHP 逻辑未执行",
+      "expectations": [
+        "submit|按钮|button|isset|$_POST",
+        "隐藏字段|hidden|CSRF|必需参数|完整参数",
+        "表单分析|HTML|input|所有字段|name属性",
+        "PHP|isset|redirect|逻辑未执行|不处理",
+        "curl|浏览器差异|自动发送|手动添加"
+      ],
+      "required_terms": [
+        "$_POST",
+        "curl",
+        "HTML"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "sqli-orderby-column-count",
+      "prompt": "你在测试 /product?id=1 的 SQL 注入。ORDER BY 5 返回正常页面。你下一步应该怎么做？请详细说明确定精确列数的完整方法。",
+      "expected_output": "ORDER BY 二分法找精确边界，ORDER BY 5 成功只说明列数 ≥ 5",
+      "expectations": [
+        "继续增大|ORDER BY 6|ORDER BY 10|不能停在5|边界",
+        "ORDER BY N+1 失败|精确|确切列数|上界",
+        "二分法|二分查找|逐步缩小范围",
+        "≥ 5|至少5|不等于5|大于等于",
+        "UNION SELECT|确认列数后|NULL|构造"
+      ],
+      "required_terms": [
+        "ORDER BY",
+        "UNION SELECT"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "sqli-extractvalue-truncation",
+      "prompt": "你在 CTF 中通过报错注入 EXTRACTVALUE(1,CONCAT(0x7e,(SELECT flag FROM flag))) 提取 flag，得到结果 '~flag{a1b2c3d4e5f6a1b2c3d4e5f6a1'，但 flag 实际长度是 64 字符。你发现只拿到了 31 个字符。请分析原因并给出完整提取方案。",
+      "expected_output": "识别 EXTRACTVALUE 32 字符截断陷阱，使用 SUBSTRING 分段 + 自动化脚本拼接",
+      "expectations": [
+        "32字符|截断|限制|上限|31字符有效",
+        "SUBSTRING|MID|SUBSTR|分段提取|偏移",
+        "自动化|Python|脚本|循环|不手动拼接",
+        "0x7e|~|占一个字符|有效只有31",
+        "UNION|优先|替代方案|无截断限制"
+      ],
+      "required_terms": [
+        "EXTRACTVALUE",
+        "32",
+        "SUBSTRING"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "sqli-union-vs-error-priority",
+      "prompt": "你确认了一个 SQL 注入点，UNION SELECT 和 EXTRACTVALUE 报错注入都可以使用。目标是提取一个 64 字符的 flag。你应该优先使用哪种方法？请解释理由。",
+      "expected_output": "明确推荐 UNION 优先，因为无截断限制；EXTRACTVALUE 有 32 字符截断陷阱",
+      "expectations": [
+        "UNION|优先|首选|第一选择",
+        "截断|32字符|EXTRACTVALUE限制|丢失数据",
+        "完整|一次查询|无长度限制|全部数据",
+        "分段|拼接|容易出错|手动拼接风险",
+        "仅当UNION不可用|备选|退路|fallback"
+      ],
+      "required_terms": [
+        "UNION",
+        "EXTRACTVALUE",
+        "SUBSTRING"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "sqli-waf-bypass-tamper",
+      "prompt": "你发现一个 SQL 注入点（GET /api/user?id=1），使用 sqlmap 检测但 WAF 拦截了。请给出具体的 sqlmap tamper 脚本组合推荐（区分 MySQL 和 MSSQL）。",
+      "expected_output": "具体的 tamper 组合而非泛泛而谈",
+      "expectations": [
+        "space2comment|空格替换|注释绕过",
+        "between|equaltolike|greatest|MySQL专用",
+        "charencode|MSSQL|区分数据库",
+        "--tamper|具体参数|组合使用",
+        "--random-agent|--level|--risk|辅助参数"
+      ],
+      "required_terms": [
+        "space2comment",
+        "charencode",
+        "sqlmap"
+      ]
+    }
+  ]
+}

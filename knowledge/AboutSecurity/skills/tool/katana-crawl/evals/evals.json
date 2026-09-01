@@ -1,0 +1,19 @@
+{
+  "skill_name": "katana-crawl",
+  "evals": [
+    {
+      "id": 1,
+      "name": "js-endpoint-discovery",
+      "prompt": "目标是一个 React SPA 单页应用，传统爬虫爬不到什么内容，怎么用 katana 发现隐藏的 API 端点？",
+      "expected_output": "katana -u http://target -headless -jc -system-chrome",
+      "expectations": ["katana", "-headless", "-jc|jsluice|js-crawl"]
+    },
+    {
+      "id": 2,
+      "name": "crawl-with-auth",
+      "prompt": "我已经登录了目标网站拿到了 session cookie，怎么用 katana 爬取认证后的页面？",
+      "expected_output": "katana -u http://target -H 'Cookie: session=xxx' -jc -silent",
+      "expectations": ["katana", "-H.*Cookie|Header.*Cookie", "session"]
+    }
+  ]
+}

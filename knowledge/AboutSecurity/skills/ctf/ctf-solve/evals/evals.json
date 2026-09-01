@@ -1,0 +1,76 @@
+{
+  "skill_name": "ctf-solve",
+  "evals": [
+    {
+      "id": 1,
+      "name": "challenge-classification",
+      "prompt": "CTF 比赛中拿到一个文件 challenge.bin。file 命令显示为 ELF 64-bit LSB executable。checksec 显示 NX 开启、PIE 关闭。题目描述提到 nc host 1337 可以连接远程服务。请判断题目类型并给出解题思路。",
+      "expected_output": "分类为 Pwn 题：ELF + 远程服务 → 二进制漏洞利用。逆向分析找漏洞 → 本地开发 exploit → 远程打",
+      "expectations": [
+        "Pwn|二进制|漏洞利用|exploit",
+        "ELF|远程服务|nc|网络服务",
+        "逆向|反编译|checksec|分析保护",
+        "ctf-pwn|调度|对应skill|专项技术",
+        "本地|远程|exploit开发|调试"
+      ],
+      "required_terms": [
+        "ELF",
+        "Pwn",
+        "checksec"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "cross-category-challenge",
+      "prompt": "CTF 题目给了一个 PCAP 文件和一个加密的 ZIP 文件。PCAP 中有 HTTP 流量，传输了一些看似 base64 的数据。请分析这是什么类型的跨分类题目，并给出解题流程。",
+      "expected_output": "跨分类题（取证+密码学）：PCAP 流量分析提取 base64 数据 → 解码得到 ZIP 密码或密钥 → 解密 ZIP 获取 flag",
+      "expectations": [
+        "跨分类|多分类|取证+密码|forensics+crypto",
+        "PCAP|流量分析|tshark|提取数据",
+        "base64|解码|提取|HTTP内容",
+        "ZIP|密码|解密|解压",
+        "分步|先取证后解密|流程|顺序"
+      ],
+      "required_terms": [
+        "PCAP",
+        "forensics+crypto"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "stuck-pivot-strategy",
+      "prompt": "CTF 解题过程中，你已经在一个 Web 题上花了 1 小时但毫无进展。页面只有一个登录表单，SQL 注入和暴力破解都无效。请描述如何调整策略。",
+      "expected_output": "重新侦察：检查源码注释/隐藏路径/robots.txt/响应头/JS文件/备用端口/默认凭据/已知CVE，考虑是否分类错误",
+      "expectations": [
+        "重新分类|换思路|重新侦察|回到起点",
+        "源码|注释|JS|隐藏信息|响应头",
+        "robots.txt|.git|备份文件|目录扫描",
+        "默认凭据|CVE|已知漏洞|简单路径",
+        "备用端口|其他服务|全端口扫描|遗漏"
+      ],
+      "required_terms": [
+        "robots.txt",
+        ".git",
+        "CVE"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "file-type-identification",
+      "prompt": "CTF 题目给了一个无后缀名的文件 mystery。file 命令显示 data（无法识别）。xxd 查看前 16 字节为：53 51 4c 69 74 65 20 66 6f 72 6d 61 74 20 33 00。请识别文件类型并给出分析方法。",
+      "expected_output": "SQLite 数据库文件（magic bytes: 'SQLite format 3'）→ 用 sqlite3 打开查询表和数据",
+      "expectations": [
+        "SQLite|sqlite3|数据库|database",
+        "magic bytes|文件头|53 51 4c 69|签名",
+        "sqlite3 mystery|打开|查询|.tables",
+        "SELECT|表|数据|flag查询",
+        "hex|xxd|文件识别|手动分析"
+      ],
+      "required_terms": [
+        ".tables",
+        "SQLite",
+        "sqlite3"
+      ]
+    }
+  ]
+}

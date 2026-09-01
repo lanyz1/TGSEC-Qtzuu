@@ -1,0 +1,51 @@
+{
+  "skill_id": "graphql-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "graphql",
+        "introspection",
+        "graphql injection"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "场景搜索",
+      "keywords": [
+        "api",
+        "authorization"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被REST API召回",
+      "keywords": [
+        "swagger",
+        "openapi"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "graphql-scenario",
+      "scenario": "目标有 /graphql 端点，schema introspection 已开启。请搜索 GraphQL 攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "graphql|introspection|schema"
+        },
+        {
+          "tool": "read_skill",
+          "id": "graphql-methodology"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+# 行尾规范：sh 脚本强制 LF（Linux/macOS/Kali 可执行）
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.py text eol=lf
+*.js text eol=lf
+*.java text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+
+# 二进制
+*.jar binary
+*.zip binary
+*.png binary
+*.keystore binary

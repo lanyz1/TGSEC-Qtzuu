@@ -1,0 +1,20 @@
+{
+  "skill_name": "ntlm-relay-attack",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "域环境中，netexec 扫描显示多台机器 SMB signing 未强制，我有一个普通域用户凭据，怎么利用 NTLM Relay？",
+      "expected_output": "启动 Responder + ntlmrelayx 到目标列表，或用 PetitPotam 强制认证后中继到 LDAP/SMB"
+    },
+    {
+      "id": 2,
+      "prompt": "发现域内有 ADCS Web Enrollment (certsrv)，怎么通过中继拿下域控？",
+      "expected_output": "ESC8: ntlmrelayx 中继到 ADCS + PetitPotam 触发域控认证 → 获取域控证书 → DCSync"
+    },
+    {
+      "id": 3,
+      "prompt": "用 Responder 抓到了 NetNTLMv2 Hash 但 hashcat 跑不出来，还有什么办法？",
+      "expected_output": "改为中继而非破解，配置 Responder 关闭 SMB/HTTP 配合 ntlmrelayx 转发到其他目标"
+    }
+  ]
+}

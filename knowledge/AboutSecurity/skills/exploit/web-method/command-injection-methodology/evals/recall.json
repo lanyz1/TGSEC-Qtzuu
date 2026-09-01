@@ -1,0 +1,35 @@
+{
+  "skill_id": "command-injection-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "精确关键词搜索",
+      "keywords": ["command injection", "命令注入", "命令执行", "os command"]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "盲注关键词",
+      "keywords": ["blind command", "time-based", "带外"]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被 SQL 注入召回",
+      "keywords": ["sql injection", "union select"]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ping-command-injection-scenario",
+      "scenario": "发现 /api/ping?host=127.0.0.1 返回 ping 结果。怀疑存在命令注入。请搜索相关攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {"tool": "list_skills", "keyword_contains": "command|injection|命令"},
+        {"tool": "read_skill", "id": "command-injection-methodology"}
+      ]
+    }
+  ]
+}

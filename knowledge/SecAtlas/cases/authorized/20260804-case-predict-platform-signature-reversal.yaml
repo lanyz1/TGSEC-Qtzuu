@@ -1,0 +1,107 @@
+# 案例：mirage.example.com — 同族迁移站 API 签名密钥黑盒恢复 + 修复后复测（脱敏）
+
+target:
+  url: "https://mirage.example.com"
+  type: "authorized"
+  name: "预测平台（加拿大28/PC28 预测平台，博彩导流灰产）"
+  tech_stack:
+    - "Node.js (Express) SSR + Vue3 SPA + PWA"
+    - "Cloudflare 全代理（源站对公网不可见）"
+    - "签名防爬：HMAC-SHA256 请求签名 (X-App-Ts / X-App-Nonce / X-App-Sign)"
+    - "javascript-obfuscator 混淆（字符串数组+数组旋转+RC4 解码）"
+    - "SVG 文本验证码（明文可解）"
+  ports: [443]
+  fingerprint:
+    framework: "预测平台系（eclipse.example.com 同代码同标题）"
+    api_prefix: "/api"
+    auth_type: "JWT HS256（注册即发，独立密钥）+ API 请求签名"
+    captcha_type: "SVG <text> 坐标明文"
+
+attack_surface:
+  - "API 请求签名机制（前端硬编码密钥）"
+  - "SVG 验证码自动化注册/登录"
+  - "管理接口 /api/admin/*（角色校验）"
+  - "越权写 /api/auth/settings（user_id 注入）"
+  - "头像上传（扩展名白名单）"
+  - "/db/* 参数注入"
+  - "公开信息泄露（/api/algorithm/hall, /api/ads, /api/site/settings）"
+
+techniques_tried:
+  - technique: "直接复用同族 eclipse 旧签名密钥重算"
+    result: "failed"
+    detail: "迁移后密钥更换，旧密钥（64-hex 已打码）对 预测平台系 样本全部 MISMATCH —— 别复用，重新黑盒找"
+
+  - technique: "管理接口 /api/admin/* 越权"
+    result: "failed"
+    detail: "全端点 403 {'error':'无权限'}，角色校验服务端硬生效，签名破解也绕不过（403 在签名校验之后）"
+
+  - technique: "越权写 PUT /api/auth/settings 注入 user_id=1"
+    result: "failed"
+    detail: "身份取自 token，body 注入 userId 无效"
+
+  - technique: "上传 SVG/恶意文件"
+    result: "failed"
+    detail: "扩展名白名单 jpg/png/gif/webp，文件名服务端生成，SVG 被拒"
+
+  - technique: "SQLi (/db/* 参数注入)"
+    result: "failed"
+    detail: "号码 0-27、日期格式校验严格，无注入迹象"
+
+  - technique: "JWT 弱密钥 / alg=none"
+    result: "failed"
+    detail: "弱密钥候选集 70+ 未命中；alg=none 免疫 —— 无法伪造 admin"
+
+  - technique: "私有算法 IDOR 验证（他人私有算法可读性）"
+    result: "partial"
+    detail: "创建接口当时 503（服务端故障）无法生成私有样本；从公式过滤代码路径推断安全，最坏只泄露表现数据（无公式）"
+
+  - technique: "黑盒 hook TextEncoder.encode 提取签名密钥"
+    result: "success"
+    detail: "playwright hook TextEncoder.prototype.encode，高频 64-hex 串 = 新密钥（encode 27 次），样本 4/4 MATCH"
+
+success_path:
+  - step: 1
+    action: "资产画像：DNS/whois/证书 + FOFA 历史端口核查"
+    finding: "Cloudflare 全代理（203.0.113.16），域名 2026-05-28 新注册——防封迁移特征；2086 历史端口实测不可达；与 eclipse.example.com 同代码同标题，同族确认"
+
+  - step: 2
+    action: "空 UA / 带浏览器 UA 对比探测"
+    finding: "空 UA 直接 403（CF/nginx UA 过滤），带浏览器 UA 才到应用层 —— 无 UA 测出的 403 不能当业务鉴权结论"
+
+  - step: 3
+    action: "黑盒恢复签名密钥：hook TextEncoder.encode 抓高频 64-hex 串"
+    payload: "playwright: TextEncoder.prototype.encode = function(s){ ... 记录每次 encode 的输入输出 ... }"
+    finding: "拿到新密钥（64-hex 已打码）；算法不变：HMAC-SHA256(KEY, 'METHOD\\npathname\\nts\\nnonce\\nbodyhash')，样本 4/4 MATCH —— 可离线构造任意签名请求"
+
+  - step: 4
+    action: "SVG 验证码明文解算 + 注册/登录"
+    payload: "正则提取 <text x=\"22.5\">M</text> 按 x 坐标排序拼接即答案"
+    finding: "验证码答案明文躺在 SVG 里，零成本自动化注册/登录；注册接口直接返回 JWT（无需二次登录）"
+
+  - step: 5
+    action: "匿名信息泄露盘点（/api/algorithm/hall 翻页、/api/ads、/api/site/settings）"
+    finding: "hall 公开泄露作者会员状态 author_expires_at / author_role=admin；ads 泄露博彩导流链（orbit.example.com / t.me/example_channel / pulse.example.com）确认商业模式；user_id 连续可枚举用户量"
+
+  - step: 6
+    action: "修复后复测（对方已加固）：签名门禁/字段剥离/JWT 时效/编辑页越权渲染"
+    finding: "签名变成真门禁（裸请求返回空数据）、author_expires_at 剥离、JWT 10年→7天、编辑页他人算法不再渲染；admin 面依旧 403 —— 站方实质修复到位"
+
+techniques_learned:
+  - "同族站迁移域名后签名密钥会更换但算法不变：旧密钥失效就重跑黑盒流程（hook TextEncoder.encode 找高频 64-hex），不要花时间逆算法"
+  - "新站通常空 UA 直接 403（CF/nginx UA 过滤）：探测一律带浏览器 UA，否则把 WAF 拦截误判成业务鉴权"
+  - "SPA fallback 假 200：未知路径返回 index.html（content-type text/html），必须用 content-type/JSON 解析甄别真实 404"
+  - "管理接口 403 {'error':'无权限'} = 路由存在 + 角色校验有效；'算法不存在'/'无权限' 等业务化 404 说明路由在前端白名单外"
+  - "注册接口直接返回 JWT = 无需二次登录；JWT 密钥与 API 签名密钥相互独立，弱密钥候选集未命中时别在签名密钥上浪费时间"
+  - "SVG 文本验证码 <text> 元素带绝对坐标，按 x 排序即答案——先看 SVG 结构再决定是否上 2captcha"
+  - "复测（red team 收尾）价值：站方修复后重跑攻击面，能产出'修复有效性'结论，比堆新漏洞更有交付价值"
+
+fingerprint_triggers:
+  - "X-App-Ts / X-App-Nonce / X-App-Sign + SHA256 64hex 签名头 → 黑盒 hook TextEncoder.encode / crypto 抓密钥，恢复 HMAC 签名算法"
+  - "javascript-obfuscator（字符串数组+数组旋转+RC4 解码）→ 通用解码器脚本（b64decode+rc4+偏移还原）全量还原字符串"
+  - "SVG 验证码响应含 <text x=\"...\"> 坐标 → 明文解算，无需打码"
+  - "同族站域名迁移（新注册域名+CF 前移）→ 旧密钥失效按同算法重找，攻击面不变"
+  - "SPA 未知路径返回 HTML 200 → 用 content-type 甄别假 200"
+
+sources:
+  - agent: "骡子"
+    date: "2026-08-04"

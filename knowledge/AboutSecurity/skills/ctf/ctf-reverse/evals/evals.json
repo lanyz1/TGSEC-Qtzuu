@@ -1,0 +1,95 @@
+{
+  "skill_name": "ctf-reverse",
+  "evals": [
+    {
+      "id": 1,
+      "name": "elf-static-analysis",
+      "prompt": "CTF 逆向题给了一个 stripped ELF 二进制文件。运行后要求输入密码，输入正确打印 flag。请描述逆向分析步骤。",
+      "expected_output": "Ghidra/IDA 反编译 → 定位 main → 找到字符串比较或校验函数 → 提取或逆向校验逻辑得到正确密码",
+      "expectations": [
+        "Ghidra|IDA|radare2|反编译|反汇编",
+        "main|entry|入口点|定位主函数",
+        "strcmp|memcmp|比较|校验函数",
+        "strings|字符串|交叉引用|xref",
+        "GDB|断点|动态调试|运行时"
+      ],
+      "required_terms": [
+        "IDA",
+        "GDB",
+        "Ghidra"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "anti-debug-bypass",
+      "prompt": "CTF 逆向题的二进制文件在 GDB 下运行时行为异常（直接退出或输出错误结果）。怀疑有反调试保护。请描述如何绕过。",
+      "expected_output": "识别并绕过反调试：ptrace 检测用 LD_PRELOAD hook，时间检测 patch 掉 rdtsc，/proc/self/status 检查修改返回值",
+      "expectations": [
+        "ptrace|PTRACE_TRACEME|反调试|anti-debug",
+        "LD_PRELOAD|hook|劫持|返回0",
+        "patch|NOP|跳过|修改二进制",
+        "/proc/self/status|TracerPid|检测调试器",
+        "时间检测|rdtsc|clock|time check"
+      ],
+      "required_terms": [
+        "PTRACE_TRACEME",
+        "LD_PRELOAD",
+        "/proc/self/status"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "angr-symbolic-execution",
+      "prompt": "CTF 逆向题有一个复杂的校验函数，输入 32 个字符，经过多轮变换后与硬编码值比较。手动逆向太复杂。请描述使用自动化工具求解的方法。",
+      "expected_output": "使用 angr 符号执行：设置入口状态，标记 find 地址（成功路径）和 avoid 地址（失败路径），自动求解输入",
+      "expectations": [
+        "angr|符号执行|symbolic execution|自动化",
+        "find|成功地址|目标地址|correct路径",
+        "avoid|失败地址|wrong路径|排除",
+        "stdin|posix.dumps(0)|提取输入|求解结果",
+        "SimulationManager|simgr|explore|状态管理"
+      ],
+      "required_terms": [
+        "posix.dumps(0)",
+        "SimulationManager",
+        "angr"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "custom-vm-reverse",
+      "prompt": "CTF 逆向题是一个自定义虚拟机（VM）：程序加载一段字节码，有 fetch-decode-execute 循环。请描述如何逆向这个 VM 并提取 flag。",
+      "expected_output": "分析 VM 架构：提取 opcode 映射表（switch-case），编写反汇编器将字节码转为可读指令，分析程序逻辑",
+      "expectations": [
+        "opcode|操作码|指令集|switch-case",
+        "反汇编器|disassembler|字节码|bytecode",
+        "寄存器|register|栈|stack|内存模型",
+        "fetch|decode|execute|执行循环",
+        "逻辑|校验|加密|flag提取|逆运算"
+      ],
+      "required_terms": [
+        "opcode",
+        "switch-case",
+        "disassembler"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "dotnet-apk-reverse",
+      "prompt": "CTF 逆向题给了一个 .NET 可执行文件 challenge.exe。请描述如何反编译和分析它。",
+      "expected_output": "使用 dnSpy/ILSpy 反编译 .NET 程序，得到近乎源码级的 C# 代码，直接分析逻辑",
+      "expectations": [
+        "dnSpy|ILSpy|dotPeek|.NET反编译",
+        "C#|IL|MSIL|中间语言",
+        "反编译|decompile|源码级|可读代码",
+        "混淆|ConfuserEx|de4dot|反混淆",
+        "调试|断点|修改|运行时分析"
+      ],
+      "required_terms": [
+        "dnSpy",
+        "ILSpy",
+        "dotPeek"
+      ]
+    }
+  ]
+}

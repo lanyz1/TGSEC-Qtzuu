@@ -1,0 +1,58 @@
+# Operating systems
+.DS_Store
+Thumbs.db
+
+# Editors and local workspaces
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+*~
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node.js
+node_modules/
+dist/
+build/
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/
+
+# Build
+*.egg-info/
+dist/
+build/

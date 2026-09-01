@@ -1,0 +1,47 @@
+{
+  "skill_name": "local-resources",
+  "evals": [
+    {
+      "id": 1,
+      "name": "dict-resolve-ffuf-workflow",
+      "prompt": "你需要对 http://target/ 进行 PHP 文件目录爆破，使用 ffuf。你该怎么获取字典路径？",
+      "expected_output": "使用 dict_resolve(path=\"Web/Directory/php/Fuzz_php.txt\") 获取绝对路径，然后传给 ffuf -w",
+      "expectations": [
+        "dict_resolve|dict_list|获取路径",
+        "Fuzz_php.txt|php|Web/Directory",
+        "ffuf -w|ffuf|dirsearch",
+        "绝对路径|实际路径|不要猜测",
+        "禁止|不要|/usr/share/wordlists"
+      ],
+      "required_terms": ["dict_resolve", "ffuf", "Fuzz_php.txt"]
+    },
+    {
+      "id": 2,
+      "name": "ctf-dictionary-selection",
+      "prompt": "CTF 靶场目标，需要发现隐藏路径。你有多种字典可用，该选哪个？",
+      "expected_output": "CTF 场景优先用 Web/CTF/Fuzz_uri.txt（小而精），避免大字典浪费时间",
+      "expectations": [
+        "CTF|靶场|小字典|精简",
+        "Fuzz_uri.txt|Web/CTF|CTF字典",
+        "小而精|针对性|避免大字典",
+        "brute_dir|dict_resolve|工具",
+        "时间|效率|浪费"
+      ],
+      "required_terms": ["Fuzz_uri.txt", "brute_dir"]
+    },
+    {
+      "id": 3,
+      "name": "payload-library-usage",
+      "prompt": "你想获取 SQL 注入相关的 payload 文件用于手动测试。该怎么操作？",
+      "expected_output": "使用 payload_list() 查看分类，然后 payload_get(category=\"SQL-Inj\", filename=\"xxx.txt\") 获取内容",
+      "expectations": [
+        "payload_list|payload_get|Payload",
+        "SQL-Inj|SQL|注入|分类",
+        "category|filename|参数",
+        "XSS|LFI|SSRF|其他分类",
+        "内容|获取|手动测试"
+      ],
+      "required_terms": ["payload_list", "payload_get", "SQL-Inj"]
+    }
+  ]
+}

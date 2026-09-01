@@ -1,0 +1,75 @@
+# 技术卡片 - 隐藏 JS 控制器枚举
+id: "recon-hidden-js-controller-enum"
+name: "隐藏 JS 控制器枚举"
+category: "recon"
+subcategory: "api-discovery"
+severity: "medium"
+
+description: |
+  现代 Web 应用常通过动态加载 JS 控制器来按需获取页面逻辑。
+  通过分析页面中的 ready() 调用模式，可推断出隐藏的 JS 控制器路径，
+  进而发现未公开的 API 端点。
+
+  在本案例中，通过枚举 /assets/user/controller/ 路径下的 JS 文件，
+  发现了 /user/security/password/edit、/user/recharge/trade 等
+  多个页面中不可见的 API 端点。
+
+trigger_signals:
+  - "页面中有 ready('/path/to/controller.js') 调用"
+  - "JS 文件名与 URL 路径有映射关系"
+  - "部分 JS 控制器未在页面中直接引用（隐藏功能）"
+  - "应用使用 SPA 或 Pjax 架构"
+
+payloads:
+  - technique: "从页面路径推断控制器"
+    payload: |
+      已知: /user/trade/order → 加载 /assets/user/controller/trade/order.js
+      推断: /user/recharge → 尝试 /assets/user/controller/recharge.js
+            /user/personal → 尝试 /assets/user/controller/personal.js
+            /user/security → 尝试 /assets/user/controller/security.js
+    note: "有些控制器在 /controller/user/ 子目录下"
+
+  - technique: "批量路径枚举"
+    payload: |
+      for path in [personal, recharge, security, transfer, withdraw, bill, inviter]:
+          GET /assets/user/controller/{path}.js?v={version}
+          GET /assets/user/controller/user/{path}.js?v={version}
+    note: "使用已知版本号（从其他JS文件获取）"
+
+  - technique: "从已发现控制器中提取API端点"
+    payload: |
+      grep -oP 'url:\s*["\']([^"\']+)["\']' controller.js
+      grep -oP "submit:\s*['\"]([^'\"]+)['\"]" controller.js
+    note: "提取所有 POST/SUBMIT URL"
+
+success_indicators:
+  - "返回 HTTP 200 + JavaScript 内容（非 404）"
+  - "JS 内容中包含 url: 或 submit: 字段"
+  - "发现页面中未列出的 API 端点"
+
+prerequisites:
+  - "目标使用动态 JS 加载架构（如 require.js / ready() / import()）"
+  - "JS 文件路径可预测（基于页面 URL）"
+  - "JS 文件无访问控制（可直接 GET）"
+
+upgrade_paths:
+  - "对发现的 API 端点进行认证绕过测试"
+  - "分析 API 参数进行 IDOR/注入测试"
+  - "发现隐藏功能（如密码修改、邮箱绑定）"
+
+defense:
+  - "对 JS 控制器也实施访问控制"
+  - "避免在客户端代码中暴露敏感 API 端点"
+  - "使用代码混淆/打包减小信息泄露面"
+
+confidence: "high"
+
+limitations:
+  - "依赖路径可预测性"
+  - "部分框架使用哈希文件名无法枚举"
+  - "发现端点后仍需要认证和授权测试"
+
+sources:
+  - agent: "黑骡 v1.1.0"
+    date: "2026-07-21"
+  - ref: "授权渗透测试案例"

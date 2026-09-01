@@ -1,0 +1,63 @@
+{
+  "skill_id": "lateral-movement",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "lateral movement",
+        "横向移动",
+        "pivot"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "psexec",
+        "wmi",
+        "dcom",
+        "winrm"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_positive",
+      "description": "协议搜索",
+      "keywords": [
+        "ssh",
+        "rdp",
+        "pth"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "keyword_negative",
+      "description": "不应被web漏洞召回",
+      "keywords": [
+        "sql injection",
+        "file upload"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "lateral-movement-scenario",
+      "scenario": "需要从已控主机横向移动到其他内网主机。请搜索横向移动方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "lateral|movement|横向移动|psexec"
+        },
+        {
+          "tool": "read_skill",
+          "id": "lateral-movement"
+        }
+      ]
+    }
+  ]
+}

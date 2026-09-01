@@ -1,0 +1,53 @@
+{
+  "skill_id": "api-fuzz",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "api fuzz",
+        "rest",
+        "swagger",
+        "openapi"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "场景搜索",
+      "keywords": [
+        "endpoint",
+        "认证绕过",
+        "参数注入"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被密码学召回",
+      "keywords": [
+        "rsa",
+        "aes"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "api-fuzz-scenario",
+      "scenario": "目标是一个 REST API，有 Swagger 文档。需要对 API 端点进行安全测试。请搜索 API Fuzz 方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "api|fuzz|rest|接口"
+        },
+        {
+          "tool": "read_skill",
+          "id": "api-fuzz"
+        }
+      ]
+    }
+  ]
+}

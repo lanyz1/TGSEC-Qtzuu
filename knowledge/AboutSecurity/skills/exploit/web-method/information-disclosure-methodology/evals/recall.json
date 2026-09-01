@@ -1,0 +1,54 @@
+{
+  "skill_id": "information-disclosure-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "information disclosure",
+        "信息泄露",
+        "source-code",
+        "backup"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "debug",
+        "credentials",
+        ".git",
+        ".env"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被LFI召回",
+      "keywords": [
+        "file inclusion",
+        "log-poisoning"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "information-disclosure-scenario",
+      "scenario": "目标返回了详细的 500 错误堆栈信息，包含数据库路径。请搜索信息泄露利用方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "information disclosure|信息泄露|敏感信息"
+        },
+        {
+          "tool": "read_skill",
+          "id": "information-disclosure-methodology"
+        }
+      ]
+    }
+  ]
+}

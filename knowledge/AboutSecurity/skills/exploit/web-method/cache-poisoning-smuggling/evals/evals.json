@@ -1,0 +1,58 @@
+{
+  "skill_name": "cache-poisoning-smuggling",
+  "evals": [
+    {
+      "id": 1,
+      "name": "smuggling-cl-te-detection-payload",
+      "prompt": "你怀疑前端代理用 Content-Length 而后端用 Transfer-Encoding (CL.TE 类型)。请写出具体的检测 payload（完整 HTTP 请求），并解释如果存在走私会发生什么。",
+      "expected_output": "发送 CL=指定长度 + chunked body 以 0\\r\\n 结尾 + 'SMUGGLED' 作为走私内容",
+      "expectations": [
+        "Content-Length|Transfer-Encoding: chunked|CL.TE",
+        "0\\r\\n\\r\\n|chunked结束|SMUGGLED|走私内容",
+        "前端|Content-Length|后端|Transfer-Encoding|解析差异",
+        "下一个请求|被拼接|SMUGGLED作为新请求开头",
+        "时间延迟|超时检测|响应差异"
+      ],
+      "required_terms": [
+        "CL.TE",
+        "SMUGGLED",
+        "Content-Length"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "cache-poisoning-unkeyed-header",
+      "prompt": "目标使用 Cloudflare CDN。你发现 X-Forwarded-Host: evil.com 会导致响应中的 <script src='//evil.com/app.js'> 。但 X-Forwarded-Host 不在缓存键中。请描述完整的缓存投毒攻击。",
+      "expected_output": "发送带恶意 X-Forwarded-Host 的请求 → 响应被 CDN 缓存 → 后续所有用户加载攻击者 JS",
+      "expectations": [
+        "X-Forwarded-Host|unkeyed|不在缓存键中",
+        "恶意Header|注入JS|script src",
+        "CDN缓存|响应被缓存|所有用户受影响",
+        "缓存键|cache key|不包含Host头|只看URL",
+        "XSS|加载恶意JS|所有访问者|持久性"
+      ],
+      "required_terms": [
+        "XSS",
+        "X-Forwarded-Host",
+        "unkeyed"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "smuggling-te-te-obfuscation",
+      "prompt": "前后端都支持 Transfer-Encoding，但对变体处理不同。请描述 TE.TE 走私中如何混淆 Transfer-Encoding 头来让前后端解析不一致。",
+      "expected_output": "Transfer-Encoding 变体：大小写、空格、重复、换行等使一端识别一端忽略",
+      "expectations": [
+        "Transfer-Encoding: xchunked|变体|混淆",
+        "Transfer-Encoding : chunked|空格|格式异常",
+        "Transfer-Encoding\\n: chunked|换行|折叠",
+        "前端识别|后端忽略|或反之|处理差异",
+        "多个TE头|重复|第一个vs最后一个"
+      ],
+      "required_terms": [
+        "Transfer-Encoding : chunked",
+        "多个TE头"
+      ]
+    }
+  ]
+}

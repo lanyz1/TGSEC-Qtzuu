@@ -1,0 +1,52 @@
+{
+  "skill_id": "ctf-flag-verification",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "flag验证",
+        "flag verification",
+        "benchmark"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "场景搜索",
+      "keywords": [
+        "靶场",
+        "capture the flag",
+        "提交"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被reverse召回",
+      "keywords": [
+        "ghidra",
+        "ida"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-flag-verification-scenario",
+      "scenario": "从 SQL 注入用 EXTRACTVALUE 提取了部分 flag，但长度只有 31 字符，实际应该是 64 字符。请搜索 flag 验证方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "flag|verification|验证|截断"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-flag-verification"
+        }
+      ]
+    }
+  ]
+}

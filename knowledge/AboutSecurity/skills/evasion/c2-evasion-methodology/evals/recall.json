@@ -1,0 +1,53 @@
+{
+  "skill_id": "c2-evasion-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "c2 evasion",
+        "免杀",
+        "beacon",
+        "implant"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "检测绕过",
+      "keywords": [
+        "yara",
+        "sigma",
+        "detection-bypass"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被Web漏洞召回",
+      "keywords": [
+        "sql injection",
+        "file upload"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "c2-evasion-scenario",
+      "scenario": "红队演练需要建立隐蔽的 C2 通道，目标有 EDR 和网络监控。请搜索 C2 隐蔽通信方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "c2|evasion|隐蔽|command and control"
+        },
+        {
+          "tool": "read_skill",
+          "id": "c2-evasion-methodology"
+        }
+      ]
+    }
+  ]
+}

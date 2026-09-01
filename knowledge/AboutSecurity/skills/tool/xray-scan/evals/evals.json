@@ -1,0 +1,19 @@
+{
+  "skill_name": "xray-scan",
+  "evals": [
+    {
+      "id": 1,
+      "name": "single-url-scan",
+      "prompt": "我发现目标 http://10.0.0.5/login.php 有个登录表单，想用 xray 扫一下有没有 SQL 注入和命令注入漏洞",
+      "expected_output": "xray webscan --url http://10.0.0.5/login.php --plugins sqldet,cmd-injection --html-output result.html",
+      "expectations": ["xray webscan", "--url", "--plugins.*sqldet.*cmd-injection|--plugins.*cmd-injection.*sqldet"]
+    },
+    {
+      "id": 2,
+      "name": "passive-proxy-scan",
+      "prompt": "我想在浏览器里手动测试目标网站，同时让 xray 自动分析我的流量，怎么设置？",
+      "expected_output": "xray webscan --listen 127.0.0.1:7777 启动代理，浏览器设置代理",
+      "expectations": ["--listen", "127.0.0.1:7777|代理", "浏览器|proxy"]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "skill_name": "lateral-movement",
+  "evals": [
+    {
+      "id": 1,
+      "name": "lateral-stealth-ordering-windows",
+      "prompt": "你有目标 Windows 主机的管理员密码，目标开放了 445(SMB)、5985(WinRM)、135(WMI) 端口。按隐蔽性从高到低，你应该优先用哪种方式横向移动？为什么？",
+      "expected_output": "WinRM > WMI > PSExec/SMB。WinRM 是原生管理协议，日志最少。PSExec 会创建服务，在事件日志中留下明显痕迹",
+      "expectations": [
+        "WinRM|5985|最推荐|最隐蔽|首选",
+        "WMI|135|相对隐蔽|第二",
+        "PSExec|SMB|445|创建服务|有日志",
+        "隐蔽性|排序|按隐蔽性选择",
+        "日志|痕迹|事件日志|检测"
+      ],
+      "required_terms": [
+        "WinRM",
+        "WMI",
+        "PSExec"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "lateral-credential-technique-selection",
+      "prompt": "你有以下凭据类型。每种情况下应该用什么横向移动技术？A) 明文密码 B) NTLM哈希 C) Kerberos TGT票据 D) SSH私钥",
+      "expected_output": "A) WinRM/WMI/PSExec B) PTH(Pass-the-Hash) via cme C) PTT(Pass-the-Ticket) via mimikatz D) SSH密钥登录",
+      "expectations": [
+        "明文密码|WinRM|WMI|PSExec|直接登录",
+        "NTLM哈希|PTH|Pass-the-Hash|传递哈希",
+        "Kerberos|PTT|Pass-the-Ticket|票据传递",
+        "SSH密钥|SSH|密钥登录|Linux",
+        "凭据类型|决定|技术选择"
+      ],
+      "required_terms": [
+        "WinRM",
+        "WMI",
+        "PSExec"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "lateral-linux-ssh-key-auth",
+      "prompt": "你在一台 Linux 服务器的 /root/.ssh/ 下发现了 id_rsa 私钥文件。你尝试 ssh -i id_rsa admin@10.0.0.50 但报错 'Permissions 0644 for id_rsa are too open'。问题是什么？怎么修？",
+      "expected_output": "SSH 密钥文件权限太宽松，需要 chmod 600 id_rsa 将权限限制为只有 owner 可读写",
+      "expectations": [
+        "chmod 600|权限|0600|只有owner",
+        "权限太宽松|0644|too open",
+        "SSH密钥|私钥|id_rsa",
+        "安全要求|SSH限制|文件权限",
+        "修复后重试|ssh -i|连接"
+      ],
+      "required_terms": [
+        "id_rsa",
+        "SSH密钥",
+        "chmod 600"
+      ]
+    }
+  ]
+}

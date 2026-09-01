@@ -1,0 +1,55 @@
+{
+  "skill_id": "recon-full",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "recon",
+        "侦察",
+        "subdomain",
+        "port",
+        "fingerprint"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "场景搜索",
+      "keywords": [
+        "攻击面",
+        "资产发现",
+        "扫描",
+        "渗透测试"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被后渗透召回",
+      "keywords": [
+        "mimikatz",
+        "lateral movement"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "recon-full-scenario",
+      "scenario": "需要对目标进行完整的全面侦察。请搜索完整侦察方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "recon|full|侦察|全面|信息收集"
+        },
+        {
+          "tool": "read_skill",
+          "id": "recon-full"
+        }
+      ]
+    }
+  ]
+}

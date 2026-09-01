@@ -1,0 +1,168 @@
+# agent-manifest.yaml — SecAtlas 多 Agent 协作协议
+# 机器可读的 Agent 注册与协作规则
+
+version: "1.0.0"
+repository: "https://github.com/shuaiqideyu/SecAtlas"
+maintainer: "骡子（骡子）"
+last_sync: "2026-07-23"
+skills_count: 47
+skill_categories: 12
+
+# === 已注册 Agent ===
+agents:
+  - id: "mule"
+    name: "骡子"
+    full_name: "骡子 · 武官"
+    platform: "Hermes Agent (Nous Research)"
+    role: "maintainer"
+    since: "2026-07-20"
+    contact:
+      telegram: "@luoziosbot"
+    specialization:
+      - "Web渗透测试"
+      - "LLM破甲攻击"
+      - "红队自动化"
+      - "知识库管理"
+    language: "zh-CN"
+
+  - id: "cursor-sonnet-pentest"
+    name: "Cursor Sonnet 渗透员"
+    full_name: "Cursor Claude Sonnet · 渗透测试 Agent"
+    platform: "Cursor IDE (Claude Sonnet 4.6)"
+    role: "contributor"
+    since: "2026-07-21"
+    specialization:
+      - "Web渗透测试"
+      - "TG生态系统安全"
+      - "API安全与信息泄露"
+      - "认证机制逆向"
+      - "FastAPI/Flask/Go后端渗透"
+    language: "zh-CN"
+
+# === 贡献类型定义 ===
+contribution_types:
+  technique_card:
+    directory: "techniques/{category}/"
+    template: "templates/TECHNIQUE.yaml"
+    required_fields:
+      - id
+      - name
+      - category
+      - severity
+      - trigger_signals
+      - payloads
+      - success_indicators
+      - prerequisites
+      - defense
+      - sources
+    validation: "scripts/validate.sh --type technique"
+
+  case_study:
+    directory: "cases/{type}/"
+    template: "templates/CASE.yaml"
+    required_fields:
+      - target
+      - attack_surface
+      - techniques_tried
+      - success_path
+      - techniques_learned
+      - fingerprint_triggers
+    validation: "scripts/validate.sh --type case"
+
+  knowledge_entry:
+    directory: "knowledge/categories/"
+    template: "templates/KNOWLEDGE_ENTRY.md"
+    required_fields:
+      - category
+      - signal
+      - principle
+      - poc
+      - defense
+      - reference
+    validation: "scripts/validate.sh --type knowledge"
+
+  deep_topic:
+    directory: "通用漏洞技术/ 等顶层目录"
+    pattern: "TECH-{year}-{id}-{title}.md"
+    required_fields:
+      - id
+      - title
+      - kind (technique/source/checklist)
+      - standards
+      - authorization
+
+  tool:
+    directory: "tools/"
+    required_fields:
+      - 可执行脚本
+      - 内嵌使用说明
+
+# === 知识分类体系 ===
+categories:
+  injection:
+    - sqli
+    - xss
+    - command-injection
+    - ssti
+    - xpath-injection
+  protocol:
+    - request-smuggling
+    - websocket
+    - dns
+    - tls
+  auth:
+    - jwt
+    - oauth
+    - passkey
+    - session
+  access_control:
+    - idor
+    - acl
+    - cors
+  server_side:
+    - ssrf
+    - file-inclusion
+    - deserialization
+  cloud:
+    - metadata
+    - workload-identity
+  supply_chain:
+    - sbom
+    - signature
+  binary:
+    - pwn
+    - reverse
+
+# === 校验规则 ===
+validation:
+  technique_card:
+    - "id 字段必须全局唯一"
+    - "category 必须在 categories 中定义"
+    - "severity 必须是 critical/high/medium/low 之一"
+    - "sources 必须非空"
+  knowledge_entry:
+    - "必须包含可观察信号、最小验证、证据判断、修复与复测"
+  case_study:
+    - "target 必须包含 url 或 type 字段"
+    - "techniques_tried 必须包含至少一个条目的 result"
+    - "techniques_learned 和 fingerprint_triggers 为增强字段，缺失时警告"
+  knowledge_entry:
+    - "必须包含 KB-{CAT}-{NUM} 格式的编号"
+    - "必须包含 CWE 编号引用"
+
+# === 冲突解决 ===
+conflict_resolution:
+  strategy: "last-write-wins + maintainer-review"
+  auto_merge: true
+  maintainer_override: true
+  rules:
+    - "同一 id 的技术卡：保留两者，在 sources 中标注 agent 来源"
+    - "同一案例的不同版本：合并 techniques_tried，去重后保留"
+    - "知识条目冲突：优先保留证据等级更高的版本"
+    - "元数据（README/MASTER_INDEX）：由 maintainer 统一维护"
+
+# === 通知与同步 ===
+sync:
+  on_commit: "maintainer 审查变更"
+  on_pr: "自动运行 validate.sh"
+  index_update: "每次合并后更新 MASTER_INDEX.md"

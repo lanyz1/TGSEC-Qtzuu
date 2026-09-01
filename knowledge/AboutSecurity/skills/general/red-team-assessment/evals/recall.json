@@ -1,0 +1,53 @@
+{
+  "skill_id": "red-team-assessment",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "red team",
+        "渗透测试",
+        "安全评估"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "场景搜索",
+      "keywords": [
+        "全流程",
+        "外网打点",
+        "automation",
+        "pentest"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被CTF召回",
+      "keywords": [
+        "ctf crypto",
+        "ctf pwn"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "red-team-assessment-scenario",
+      "scenario": "需要规划一次完整的红队评估行动。请搜索红队评估方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "red team|红队|assessment|评估"
+        },
+        {
+          "tool": "read_skill",
+          "id": "red-team-assessment"
+        }
+      ]
+    }
+  ]
+}

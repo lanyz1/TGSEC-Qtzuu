@@ -1,4 +1,0 @@
-admin
-druid
-ruoyi
-ry

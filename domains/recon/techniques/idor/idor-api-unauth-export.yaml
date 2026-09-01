@@ -1,0 +1,83 @@
+id: "idor-api-unauth-export"
+name: "FastAPI 无认证数据导出端点"
+category: "idor"
+subcategory: "unauth-data-access"
+severity: "critical"
+
+description: |
+  FastAPI 应用将数据导出端点（/export/*, /queue/export/*）暴露在无认证状态下。
+  结合 /openapi.json 公开暴露的完整 API 文档，攻击者可系统性枚举所有导出端点
+  并在无任何凭据的情况下批量下载后台数据。
+
+  实战案例：某 TG 群发监控系统的 /dm/queue/export/sent 端点无需认证，
+  直接返回 39,718 条 Telegram DM 发送记录（关键词+用户名+时间戳），
+  数据量 1.35MB，跨越约 10 个月。
+
+trigger_signals:
+  - "目标使用 FastAPI（响应头含 fastapi 或 /docs 可访问）"
+  - "/openapi.json 或 /docs 公开暴露，列出大量端点"
+  - "URL 路径中含有 /export/, /download/, /queue/"
+  - "端点在 openapi.json 中标注 security: [] 或无 security 字段"
+  - "CSV/Excel Content-Type 响应不需要 Cookie 或 Authorization 头"
+
+payloads:
+  - technique: "枚举 openapi.json 找无认证导出端点"
+    payload: |
+      import requests, json
+      spec = requests.get("https://target/openapi.json").json()
+      for path, methods in spec["paths"].items():
+          for method, meta in methods.items():
+              if "export" in path or "download" in path:
+                  r = requests.request(method.upper(), f"https://target{path}", timeout=5)
+                  if r.status_code == 200 and "text/csv" in r.headers.get("content-type",""):
+                      print(f"[UNAUTH DATA] {method.upper()} {path} -> {len(r.content)} bytes")
+    note: "遍历所有 export/download 路径，检查无认证 CSV 响应"
+
+  - technique: "直接访问已知导出端点"
+    payload: |
+      GET /dm/queue/export/sent    # 已发送 DM 记录
+      GET /dm/queue/export/queued  # 待发送队列
+      GET /dm/queue/export/failed  # 失败记录
+      GET /groups/export           # 群组列表
+      GET /blacklist/export        # 黑名单
+      GET /keywords/export         # 关键词列表
+    note: "对所有 export 变体依次发 GET 请求，不带任何认证头"
+
+success_indicators:
+  - "HTTP 200 响应，Content-Type: text/csv 或 application/vnd.ms-excel"
+  - "响应体第一行为 CSV 表头（如 代理,@用户名,时间戳）"
+  - "响应体大小明显大于普通 JSON 错误（>1KB）"
+  - "不需要 Cookie 或 Authorization 即可获取数据"
+
+prerequisites:
+  - "目标使用 FastAPI 框架"
+  - "/openapi.json 可访问（用于发现端点，非必要条件）"
+  - "开发者错误地将导出路由注册在认证中间件之外"
+
+upgrade_paths:
+  - "分析导出数据中的用户名/手机号，用于社工或后续钓鱼"
+  - "导出的 Telegram 用户名可直接用于定向骚扰或情报收集"
+  - "若同时泄露管理员账号，尝试凭据复用登录后台"
+  - "结合 openapi.json 找更多无认证写操作端点（SSRF/RCE 风险）"
+
+defense:
+  - "所有导出端点加 OAuth2/Session 认证依赖注入（FastAPI Depends）"
+  - "定期审计 openapi.json，确保 security 字段非空"
+  - "将导出功能限制在内网或 VPN 内访问"
+  - "添加访问日志和异常流量告警（单 IP 大量下载）"
+
+sources:
+  - agent: "cursor-sonnet-pentest"
+    date: "2026-07-21"
+    note: "实战获取自某 TG 群发监控后台，39718 条 DM 记录无认证泄露"
+  - ref: "CWE-284: Improper Access Control"
+  - ref: "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+  - ref: "OWASP API Security Top 10 - API1:2023 Broken Object Level Authorization"
+
+tools:
+  - "requests (Python)"
+  - "curl"
+confidence: "high"
+limitations:
+  - "部分应用在 Nginx 层做了认证（即使 FastAPI 内部无认证也被拦截）"
+  - "响应可能分页，需要循环获取完整数据集"

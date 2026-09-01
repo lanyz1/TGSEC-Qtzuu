@@ -1,0 +1,114 @@
+# 技术卡: Use-After-Free 与悬挂指针检测
+id: "pwn-uaf-detection"
+name: "UAF / Double-Free / 悬挂指针 ASan 检测"
+category: "pwn"
+subcategory: "heap"
+severity: "high"
+
+description: |
+  use-after-free、double-free 和 realloc 悬挂指针是堆漏洞的三大生命周期错误。
+  ASan 提供完整的 alloc/free/use 三栈追溯，每种错误的 shadow memory 标记不同。
+  本卡来自 PX06 本地实验证据。
+
+trigger_signals:
+  - "目标使用手动内存管理语言（C/C++），存在 free/delete 后继续使用的路径"
+  - "存在 realloc 后保留旧指针的代码模式"
+  - "对象生命周期管理复杂（缓存/池化/延迟释放）"
+  - "崩溃报告含 heap-use-after-free 或 double-free"
+
+payloads:
+  - name: "UAF 触发链"
+    value: "free(A) → 分配同大小对象 B（malloc 复用 A 地址）→ 通过悬挂指针写 B"
+    note: "若 B 含函数指针/vtable 可实现控制流劫持"
+  - name: "double-free 触发"
+    value: "对同一指针连续调用两次 free()"
+    note: "glibc 2.26+ tcache 会检测并报告 attempting double-free"
+
+success_indicators:
+  - "ASan 报告 heap-use-after-free（READ/WRITE of size N, fd region）"
+  - "ASan 报告 attempting double-free"
+  - "崩溃发生在 free/alloc 调用栈附近（无 ASan 时）"
+
+prerequisites:
+  - "能够控制对象的分配/释放时序（影响 heap 布局）"
+  - "存在可被悬挂指针写入的敏感对象（函数指针/长度字段）"
+  - "目标可运行 ASan 构建（白盒）或存在可观测崩溃（黑盒）"
+
+defense:
+  - "释放后立即置 NULL（单指针场景）"
+  - "使用智能指针（C++ unique_ptr/shared_ptr）"
+  - "realloc 结果直接赋值原变量，不保留旧值"
+  - "SANITIZE 构建作为 CI 流水线的一部分"
+  - "生产构建启用 FORTIFY_SOURCE 和 stack-protector-strong"
+
+sources:
+  - reference: "PX06 本地实验 (2026-07-21)"
+  - reference: "ASan 文档 - heap-use-after-free / double-free 报告格式"
+
+# ---- ASan 检测特征 ----
+asan_signatures:
+  uaf_read:
+    report: "heap-use-after-free"
+    operation: "READ of size N"
+    shadow: "fd (Freed heap region)"
+    trace: "alloc 栈 + free 栈 + use 栈（三栈完整）"
+
+  uaf_write:
+    report: "heap-use-after-free"
+    operation: "WRITE of size N"
+    shadow: "fd (Freed heap region)"
+
+  double_free:
+    report: "attempting double-free"
+    shadow: "fd → 第二次 free 时检测"
+    trace: "第一次 free 栈 + 第二次 free 栈 + alloc 栈"
+
+  realloc_dangling:
+    pattern: "realloc 返回新地址时，旧指针 p 指向已释放内存"
+    detection: "访问 p → heap-use-after-free (READ/WRITE on fd region)"
+    note: "若 realloc 原地扩展则不触发（p==q），但不可依赖此行为"
+
+# ---- glibc 内部机制 ----
+glibc_mechanisms:
+  tcache: "glibc 2.26+ 默认启用，每个线程有 64 个 bin（size 16-1040），LIFO 结构"
+  fastbin: "size 16-80 的 chunk free 后进入 fastbin，仍然标记 PREV_INUSE"
+  consolidation: "非 fastbin chunk free 时可能触发前向/后向合并（需 PREV_INUSE 未设置）"
+
+  uaf_exploit_chain: |
+    经典路径：free(A) → dangling pointer 仍指向 A → 分配同大小对象 B（malloc 返回 A 的地址）
+    → 通过 dangling pointer 写入 B 的数据 → 若 B 中有函数指针/vtable → 控制流劫持
+
+# ---- 检测方法论 ----
+detection_methodology:
+  - name: "ASan 编译期检测"
+    build: "gcc -fsanitize=address -g"
+    scope: "READ/WRITE after free, double-free"
+    limitation: "不检测逻辑 UAF（如 application-level object reuse after 'logical' deletion）"
+
+  - name: "Valgrind 补充检测"
+    tool: "valgrind --tool=memcheck"
+    scope: "检测未初始化值使用（ASan 不作）、内存泄漏"
+    limitation: "运行速度慢 10-30x"
+
+  - name: "GDB + 断点追踪"
+    steps:
+      - "在 free() 设断点记录释放地址"
+      - "在 malloc() 设断点观察复用"
+      - "watch 悬挂指针地址检测访问"
+
+# ---- 常见误判 ----
+false_positives:
+  - "free(NULL) 合法，不是 double-free"
+  - "内存池/自定义分配器中的 '逻辑 free' 可能不被 ASan 检测"
+  - "realloc(ptr, 0) 在旧 POSIX 中等价于 free(ptr)，新标准为 implementation-defined"
+
+# ---- 加固建议 ----
+mitigations:
+  - "释放后立即置 NULL（单指针场景）"
+  - "使用智能指针（C++ unique_ptr/shared_ptr）"
+  - "realloc 结果直接赋值原变量，不保留旧值"
+  - "SANITIZE 构建作为 CI 流水线的一部分"
+  - "生产构建启用 FORTIFY_SOURCE 和 stack-protector-strong"
+
+source_experiments:
+  - "PX06 本地实验 (2026-07-21)"

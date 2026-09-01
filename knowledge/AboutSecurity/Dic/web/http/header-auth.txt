@@ -1,8 +1,0 @@
-X-Access-Token: 
-Token: 
-token: 
-authorization: Bearer 
-Authorization: Bearer 
-authorization: 
-Authorization: 
-accessToken: 

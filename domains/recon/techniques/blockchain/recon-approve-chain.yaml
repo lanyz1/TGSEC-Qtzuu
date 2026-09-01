@@ -1,0 +1,77 @@
+id: "blockchain-recon-approve-chain"
+name: "链上测绘：从 USDT Approval 事件流反查 approve 伪装充值目标平台"
+category: "blockchain"
+subcategory: "recon-chain-intel"
+severity: "high"
+
+description: |
+  利用区块链公开数据的永久性，从 USDT 合约的 Approval 事件流反查"被 approve 伪装充值
+  攻击者批量测试过的平台充值地址"。原理：approve 伪装充值的攻击者会对平台充值地址
+  (spender) 发起 approve 交易，且攻击行为特征与正常 DeFi 授权显著不同——同一 owner
+  对同一 spender 多次 approve、只 approve 从不转账、金额为整数充值档位。这些痕迹
+  永久留在链上，无需接触目标平台即可测绘出候选地址清单。
+
+trigger_signals:
+  - "目标方向：寻找支持 USDT 充值上分的灰产平台（博彩/预测/承兑/发卡）"
+  - "已有 TronGrid API 访问能力（公开接口即可）"
+  - "web 侧 FOFA 搜索命中率低时（大量导流页/注册关闭/反爬）"
+
+payloads:
+  - technique: "拉取 USDT Approval 事件流"
+    payload: |
+      GET https://api.trongrid.io/v1/contracts/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t/events
+          ?event_name=Approval&limit=200&order_by=block_timestamp,desc
+      # result 字段: "0"=owner(授权者), "1"=spender(被授权者, hex 41 前缀)
+      # meta.links.next 游标翻页；无 key 限流需 sleep 0.3-0.5s/页
+  - technique: "攻击指纹统计 (owner,spender) 组合频次"
+    payload: |
+      pairs[(owner, spender)] += 1
+      multi = {pair: c for pair, c in pairs.items() if c >= 2}
+      # 正常 DeFi 用户对同一地址只授权一次；同 owner 多次 approve 同 spender = 攻击/测试
+      # 按 spender 聚合，输出被多组 owner 重复测试的地址
+  - technique: "判别：只 approve 不转账 + 充值档位金额"
+    payload: |
+      对候选 spender:
+        1) getcontract 确认非合约（排除 DeFi 合约/桥）
+        2) transactions/trc20?only_to=true 统计 Transfer vs Approval
+        3) 攻击者 owner = 有 Approval 且其 Transfer 数≈0（攻击者不真转钱）
+        4) approve 金额档位 = 整数充值档位(10/50/100/500/1000/5000/15000)
+        5) 活跃窗口 = 近期集中 approve（攻击测试批次）
+      # 反例排除: 交易所/桥(海量 owner 各1次+大额流水)、OTC 钱包(approve 伴随大量转账)
+  - technique: "交叉扩散：同一批 owner 的完整 approve 集合"
+    payload: |
+      对已确认攻击者 owner:
+        GET /v1/accounts/{owner}/transactions/trc20?only_from=true&limit=200
+        收集其 approve 过的全部 spender = 同一批平台站群的充值地址
+      # 一批测试者共享的目标清单 = 平台站群清单
+  - technique: "地址→平台域名反查"
+    payload: |
+      # 1) FOFA: body="<TRON地址>" （充值页若静态渲染可命中，JS 动态加载则无）
+      # 2) Google: "<地址>" （部分平台被搜索引擎收录）
+      # 3) Tronscan accountv2 标签: /api/accountv2?address=xxx
+      # 4) 链上溯源: approve 交易的 owner 其他行为 / 地址关联交易对手方
+    note: "反查常失败（充值页需登录/动态渲染）；地址清单本身已是高价值测绘产出"
+
+success_indicators:
+  - "候选地址被同一 owner 多次 approve（≥2 次，多组 owner 命中）"
+  - "候选地址 Approve 事件多而 Transfer≈0"
+  - "approve 金额为整数充值档位而非任意/无限额度"
+  - "多个候选地址共享同一批攻击者 owner（站群确认）"
+
+prerequisites:
+  - "TronGrid 公开 API 可达（限流下加 sleep）"
+  - "理解 ERC20/TRC20 approve 语义与事件结构"
+
+upgrade_paths:
+  - "对确认的平台地址发起 approve 伪装充值验证（需授权与自有钱包）"
+  - "从攻击者 owner 集合构建平台站群完整清单"
+  - "结合 web 侧 FOFA（平台域名→页面提取地址）双向验证"
+
+defense:
+  - "（本技术针对攻击者视角测绘；平台侧防御见 KB-BLK-01：对账过滤事件类型）"
+  - "研究用途注意：只做被动链上数据读取，不触达目标系统"
+
+sources:
+  - ref: "实战测绘 2026-08-06：3 个高置信地址（TPuaJ6gnY…/TXznJsRd…/TGhrUThzM…）"
+  - ref: "知识条目 KB-BLK-01/KB-BLK-02"
+  - ref: "TronGrid API docs（events / transactions trc20）"

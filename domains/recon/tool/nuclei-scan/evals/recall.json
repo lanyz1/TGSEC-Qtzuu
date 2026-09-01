@@ -1,0 +1,29 @@
+{
+  "skill_id": "nuclei-scan",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "nuclei 直接关键词",
+      "keywords": ["nuclei", "nuclei扫描", "nuclei scan"]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "CVE 批量扫描场景",
+      "keywords": ["CVE扫描", "漏洞扫描", "POC扫描", "批量CVE"]
+    },
+    {
+      "id": 3,
+      "type": "keyword_positive",
+      "description": "模板相关搜索",
+      "keywords": ["nuclei模板", "nuclei template", "漏洞模板"]
+    },
+    {
+      "id": 4,
+      "type": "keyword_negative",
+      "description": "不应触发的场景",
+      "keywords": ["nmap扫描", "端口扫描", "子域名枚举", "目录爆破"]
+    }
+  ]
+}

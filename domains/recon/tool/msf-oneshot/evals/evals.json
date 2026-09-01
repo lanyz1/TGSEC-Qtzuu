@@ -1,0 +1,45 @@
+{
+  "skill_name": "msf-oneshot",
+  "evals": [
+    {
+      "id": 1,
+      "name": "eternalblue-exploit",
+      "prompt": "内网扫描发现 10.0.0.5 开放了 445 端口，nmap 显示是 Windows Server 2008 R2。我想尝试 EternalBlue 攻击，但我不想进入 msfconsole 交互模式。怎么一行命令搞定？",
+      "expected_output": "使用 msfconsole -q -x 一行式调用 ms17_010_eternalblue，设置 RHOSTS/LHOST/PAYLOAD",
+      "expectations": [
+        "msfconsole -q -x",
+        "ms17_010_eternalblue",
+        "RHOSTS.*10.0.0.5|set RHOSTS",
+        "LHOST|LPORT",
+        "run|exploit",
+        "exit"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "payload-generation",
+      "prompt": "我已经通过文件上传漏洞可以往目标 Windows 服务器上传 EXE 文件。我需要生成一个反弹 shell 的 EXE，我的攻击机 IP 是 10.0.0.2。",
+      "expected_output": "使用 msfvenom 生成 windows reverse_tcp payload，同时启动 handler 接收",
+      "expectations": [
+        "msfvenom",
+        "windows.*reverse_tcp|windows.*meterpreter",
+        "LHOST.*10.0.0.2|LHOST=10.0.0.2",
+        "-f exe|-o.*\\.exe",
+        "handler|multi/handler"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "database-rce-with-creds",
+      "prompt": "发现目标 PostgreSQL 5432 端口开放，用 postgres/postgres 弱口令可以登录。怎么用 MSF 获取操作系统 shell？",
+      "expected_output": "使用 postgres_copy_from_program_cmd_exec 模块，设置数据库凭据和攻击者 IP",
+      "expectations": [
+        "postgres_copy_from_program|postgres.*cmd_exec",
+        "msfconsole -q -x",
+        "USERNAME.*postgres|set USERNAME",
+        "PASSWORD.*postgres|set PASSWORD",
+        "LHOST"
+      ]
+    }
+  ]
+}

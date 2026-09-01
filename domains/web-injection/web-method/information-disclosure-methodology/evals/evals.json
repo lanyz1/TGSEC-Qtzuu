@@ -1,0 +1,59 @@
+{
+  "skill_name": "information-disclosure-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "info-git-manual-recovery",
+      "prompt": "你发现 /.git/HEAD 返回 200，但 git-dumper 工具不可用。请描述如何手动从 .git 目录恢复源码和提交历史。",
+      "expected_output": "手动下载 .git 对象恢复源码",
+      "expectations": [
+        ".git/logs/HEAD|提交历史|所有commit hash",
+        ".git/refs/heads|分支引用|main|master",
+        ".git/objects|手动下载|commit对象|tree对象",
+        "删除的信息|历史提交|密码|被删文件",
+        ".git/config|远程仓库|用户信息"
+      ],
+      "required_terms": [
+        ".git/logs/HEAD",
+        ".git/refs/heads",
+        ".git/objects"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "info-ds-store-parsing",
+      "prompt": "你发现 http://target/.DS_Store 返回了二进制内容。请描述这个文件是什么，以及如何从中提取有价值的信息。",
+      "expected_output": ".DS_Store 文件解析获取目录文件列表",
+      "expectations": [
+        "macOS|Finder|目录文件列表|文件名",
+        "strings|简单提取|文本字符串",
+        "ds_store|Python库|解析工具|专用解析",
+        "隐藏文件|目录结构|发现敏感文件名",
+        "backup|admin|config|flag|发现关键路径"
+      ],
+      "required_terms": [
+        "ds_store",
+        "macOS",
+        "strings"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "info-swagger-hidden-endpoints",
+      "prompt": "你发现 /swagger.json 泄露了完整的 API 文档。其中包含一个未在前端使用的端点 GET /api/admin/users。请描述你如何利用 API 文档进行深入渗透。",
+      "expected_output": "利用 Swagger 文档发现隐藏 API 并测试",
+      "expectations": [
+        "隐藏端点|未暴露|前端没调用|后端存在",
+        "参数定义|精确参数名|类型|构造请求",
+        "认证方式|Bearer|API Key|认证绕过",
+        "/api/admin|管理接口|越权访问|无认证",
+        "所有端点|遍历|批量测试|完整API列表"
+      ],
+      "required_terms": [
+        "/api/admin",
+        "API Key",
+        "Bearer"
+      ]
+    }
+  ]
+}

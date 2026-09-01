@@ -1,0 +1,54 @@
+{
+  "skill_id": "ctf-pwn",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "pwn",
+        "binary",
+        "overflow",
+        "rop"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "heap",
+        "kernel",
+        "格式化字符串",
+        "shellcode"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被web漏洞召回",
+      "keywords": [
+        "sql injection",
+        "xss"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-pwn-scenario",
+      "scenario": "CTF PWN 题给了一个有 gets() 栈溢出的 64 位 ELF 程序和 libc。请搜索 PWN 方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "pwn|溢出|exploit|rop"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-pwn"
+        }
+      ]
+    }
+  ]
+}

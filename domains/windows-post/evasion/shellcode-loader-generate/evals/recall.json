@@ -1,0 +1,52 @@
+{
+  "skill_id": "shellcode-loader-generate",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "shellcode loader",
+        "loader generate",
+        "VirtualAlloc"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "语言搜索",
+      "keywords": [
+        "rust",
+        "cpp",
+        "CreateThread"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被CTF pwn召回",
+      "keywords": [
+        "ctf pwn",
+        "rop"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "shellcode-loader-generate-scenario",
+      "scenario": "需要生成一个能绕过 Windows Defender 的 shellcode 加载器。请搜索 shellcode 加载器生成方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "shellcode|loader|加载器|免杀"
+        },
+        {
+          "tool": "read_skill",
+          "id": "shellcode-loader-generate"
+        }
+      ]
+    }
+  ]
+}

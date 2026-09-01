@@ -1,0 +1,126 @@
+# 技术卡片 - 净值资金平台发现方法论（时间筛选与关联发散）
+id: "recon-platform-discovery"
+name: "净值资金平台发现方法论"
+category: "recon"
+subcategory: "platform-discovery"
+severity: "info"
+
+description: |
+  净值资金平台（交易所/钱包/资金盘类）刻意规避扫描：域名不带业务关键词、
+  证书用 DV 无组织信息、生命周期短（数月即换域名）、推广走 TG/网赚渠道。
+  关键词式搜索（FOFA title/body、crt.sh 域名通配）对这类目标天然无效。
+
+  2026-08 实测证据：
+  - FOFA title="USDT"||"交易所" 268 万资产，抽样全为 2023 年批量注册的
+    下载站矩阵（随机子域轮换，域名老≠平台新）。
+  - crt.sh 12 个金融关键词近 60 天新证书：29 个去重域名全部是 CI/CD
+    预览域与公司名误匹配，零真实金融平台。
+  - FOFA 免费账号时间字段不可用：lastupdatetime 无权限(820001)、
+    cert.valid_start 语法错(820000)、after= 静默失效。
+
+  有效路径按 ROI 排序：
+  ① 运营者关联发散（老平台→whois邮箱/证书/IP→同运营者新盘域名）
+  ② 资金链/链上反查（老平台 TRON 收款地址→链上资金流→新充值地址→新平台）
+  ③ 诈骗黑名单情报流（PhishStats/URLhaus/ScamSniffer，新盘上线即被上报）
+  ④ FOFA 业务指纹 + 新鲜技术栈代理时间维度（body 关键词 + Vue3/vite/若依新版）
+  ⑤ 净度验证（存活/业务确认/技术栈时间线/低危探测/公开记录/加固痕迹）
+
+trigger_signals:
+  - "已知目标被反复打烂或全是老下载站矩阵"
+  - "需要发现近 1-2 个月新上线的资金平台"
+  - "关键词搜索返回大量托管垃圾域或开发预览域"
+
+payloads:
+  - technique: "运营者关联发散"
+    payload: |
+      # 老平台域名 → whois 注册人信息
+      whois 40he.com | grep -iE "registrant|creation"
+      # 同注册邮箱/姓名/电话 → 其他域名（python-whois 批量）
+      # 同证书指纹
+      FOFA: cert="<sha256指纹>" | domain="<已知老域名>"
+      # 同 IP 反查
+      FOFA: ip="x.x.x.x" && domain!="<老域名>"
+    note: "同运营者通常同时开多个盘，新盘域名可由此发现"
+
+  - technique: "资金链/链上反查"
+    payload: |
+      老平台 TRON 收款地址 → tronscan API 查近期转账
+      → 追踪资金流向的新地址 → 搜该地址关联的充值页面/域名
+    note: "资金盘复用收款钱包体系，链上是实时信号"
+
+  - technique: "诈骗黑名单情报流"
+    payload: |
+      PhishStats:  https://phishstats.info  (免费 API，按时间/关键词)
+      URLhaus:     POST /api/v1/ {"query":"get_urls","limit":N}
+      ScamSniffer / ChainAegis / OpenPhish / PhishTank
+      # 特征: host 含 usdt/coin 或仿知名交易所名, date_added≈上线时间
+    note: "URLhaus API 端点 2026-08 有变更(404)，需查最新文档"
+
+  - technique: "FOFA 业务指纹代理时间维度"
+    payload: |
+      body="邀请码" && body="提币"
+      body="TRC20" || body="USDT" && -title="下载"
+      body="商户" || body="结算"
+      app="若依" && body="vue"
+      header="vite" || body="_nuxt"
+      country="HK"||"SG"||"US" && -domain=".com.cn"
+      # 拿到候选后 whois 交叉验证注册时间（近 60 天）
+    note: "免费账号时间字段不可用时的替代信号"
+
+  - technique: "博彩平台发现（FOFA 拦截边界绕过）"
+    payload: |
+      # FOFA 拦截直接博彩游戏名（820011 内容限制）：
+      #   百家乐/时时彩/炸金花 等 → 不可搜
+      # 但运营词可用（博彩独家特征，比游戏名更精准）：
+      body="洗码" && body="充值"        # 洗码=代理佣金体系 → 8.9K 条
+      body="反水" && body="代理"        # 反水=返水，博彩独家 → 79K 条
+      body="棋牌" || body="捕鱼"         # 棋牌类平台 → 351 万条
+      body="优惠活动" && body="注册即送"  # 拉新话术
+      # 新平台特征（候选交叉验证）：
+      #   随机串域名 .vip/.cc（防关联站群）
+      #   同批注册双域名（sportlive + casio 模式，体育+视讯双入口）
+      #   USDT/USDC/VND 多币种 + 充值加赠 + 注册送金 + KYC 72h 要求
+      #   CDN 分散（不同高防 CDN 防关联）
+    note: "2026-08 实测：洗码+充值 8,924 条、反水+代理 79,445 条；whois 新注册筛选命中近 60 天新平台"
+
+  - technique: "净度验证"
+    payload: |
+      1. 存活 + 首页业务确认（充值/提现入口、TRON 地址、KYC、公告）
+      2. 技术栈时间线: Vue3/RuoYi 版本/前端构建 → 开发时间
+      3. 常见洞低危探测: 未授权 API、备份文件、默认口令（探测不利用）
+      4. 公开记录: 搜索引擎/漏洞库/github 搜域名
+      5. 换 IP/CDN 痕迹: 被打过的站通常已加固
+    note: "确认'没被打'的关键步骤"
+
+success_indicators:
+  - "候选域名注册时间/证书时间在近 60 天内"
+  - "站点有真实资金业务入口（充值/提现/TRON 地址）"
+  - "无公开漏洞记录与加固痕迹"
+  - "技术栈版本新（近 1-2 年开发）"
+
+prerequisites:
+  - "已有一个或多个已知老平台域名/收款地址作为关联起点"
+  - "FOFA API key（免费账号可用，注意字段权限）"
+  - "whois CLI 或 python-whois"
+
+upgrade_paths:
+  - "对净度验证通过的候选进行授权范围内的漏洞评估"
+  - "从新平台的 TRON 地址继续链上追踪扩张资产面"
+  - "沉淀新平台运营者画像（whois/证书/IP/支付回调关联）"
+
+defense:
+  - "蓝队视角: 新平台监控 = 新证书 + 新注册域名 + 金融关键词组合告警"
+  - "对净值平台应关注链上资金流而不是网站指纹"
+
+confidence: "medium"
+
+limitations:
+  - "FOFA 免费账号无时间维度字段（lastupdatetime 需 VIP）"
+  - "crt.sh 查询慢且不稳定（5-90 秒/查询）"
+  - "whoisds 免费 NRD 样本滞后约 6 个月，实时源需付费"
+  - "真实平台域名刻意规避业务关键词，关键词搜索只能作为辅助"
+
+sources:
+  - agent: "骡子"
+    date: "2026-08-08"
+  - ref: "FOFA API / crt.sh / whois 实测交叉验证（2026-08）"

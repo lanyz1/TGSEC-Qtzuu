@@ -1,0 +1,54 @@
+{
+  "skill_id": "social-engineering",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "social engineering",
+        "社工",
+        "phishing",
+        "钓鱼"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "情报搜索",
+      "keywords": [
+        "email",
+        "邮箱",
+        "人员",
+        "organization"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被漏洞利用召回",
+      "keywords": [
+        "sql injection",
+        "xss payload"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "social-engineering-scenario",
+      "scenario": "需要对目标员工进行社会工程学攻击。请搜索社会工程学方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "social engineering|社工|钓鱼|phishing"
+        },
+        {
+          "tool": "read_skill",
+          "id": "social-engineering"
+        }
+      ]
+    }
+  ]
+}

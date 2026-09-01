@@ -1,0 +1,53 @@
+{
+  "skill_id": "ctf-crypto",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "ctf crypto",
+        "密码学",
+        "rsa",
+        "aes"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "算法搜索",
+      "keywords": [
+        "ecc",
+        "lattice",
+        "prng"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被Web密码学召回",
+      "keywords": [
+        "sql injection",
+        "file upload"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-crypto-scenario",
+      "scenario": "CTF 密码学题目给出了 RSA 公钥 (n, e=3) 和密文 c，明文较短。请搜索相关解题方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "crypto|rsa|密码|ctf"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-crypto"
+        }
+      ]
+    }
+  ]
+}

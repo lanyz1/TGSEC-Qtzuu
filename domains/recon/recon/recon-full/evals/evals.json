@@ -1,0 +1,59 @@
+{
+  "skill_name": "recon-full",
+  "evals": [
+    {
+      "id": 1,
+      "name": "recon-techstack-to-attack-mapping",
+      "prompt": "指纹识别发现目标运行 Python/Flask 框架，Nginx 反向代理，Redis 6379 对外开放。根据这个技术栈，你应该优先检查哪些漏洞类型？",
+      "expected_output": "Flask→SSTI/Pickle反序列化, Nginx→解析漏洞/配置错误, Redis→未授权访问/主从复制RCE",
+      "expectations": [
+        "SSTI|模板注入|Jinja2|Flask模板",
+        "Pickle|反序列化|Python反序列化",
+        "Redis|未授权|无密码|AUTH",
+        "Nginx|解析漏洞|配置错误|alias遍历",
+        "LFI|SSRF|Flask调试模式|Werkzeug"
+      ],
+      "required_terms": [
+        "SSTI",
+        "LFI",
+        "SSRF"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "recon-nonstandard-port-significance",
+      "prompt": "端口扫描发现目标 IP 开放了以下端口：80, 443, 8009, 9200, 33060。请分析每个端口对应的服务和攻击价值。",
+      "expected_output": "8009=AJP/Tomcat(GhostCat), 9200=Elasticsearch(未授权), 33060=MySQL X Protocol, 80/443=Web",
+      "expectations": [
+        "8009|AJP|Tomcat|GhostCat|CVE-2020-1938",
+        "9200|Elasticsearch|未授权|无认证",
+        "33060|MySQL|X Protocol|MySQL X",
+        "非标准端口|30000+|隐藏服务|管理端口",
+        "高价值|优先攻击|数据库|中间件"
+      ],
+      "required_terms": [
+        "AJP",
+        "MySQL",
+        "Tomcat"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "recon-five-phase-pipeline-order",
+      "prompt": "你拿到目标域名 target.com，但还没做任何侦察。请按正确顺序列出完整的侦察管线步骤，并说明每一步依赖前一步什么数据。",
+      "expected_output": "子域名枚举→端口扫描→存活检测→指纹识别→POC扫描，每步输出作为下一步输入",
+      "expectations": [
+        "子域名|DNS枚举|第一步|scan_dns",
+        "端口扫描|IP/域名列表|第二步|scan_port",
+        "存活检测|HTTP|第三步|scan_urlive|httpx",
+        "指纹识别|技术栈|第四步|scan_finger",
+        "POC扫描|漏洞验证|第五步|poc_web|最后"
+      ],
+      "required_terms": [
+        "scan_dns",
+        "scan_port",
+        "scan_urlive"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "skill_name": "evasion-technique-integrate",
+  "evals": [
+    {
+      "id": 1,
+      "name": "integrate-rwx-flip",
+      "prompt": "给定一个使用 PAGE_EXECUTE_READWRITE 分配内存的 C Loader 源码，需要修改为 RW→RX 两步权限翻转以规避检测。请描述修改方案。",
+      "expected_output": "VirtualAlloc 用 PAGE_READWRITE → memcpy 写入 shellcode → VirtualProtect 改为 PAGE_EXECUTE_READ → 执行",
+      "expectations": [
+        "PAGE_READWRITE|RW|先分配可写不可执行",
+        "VirtualProtect|权限翻转|PAGE_EXECUTE_READ",
+        "两步|先写后执行|分离读写和执行",
+        "编译通过|功能正常|验证执行",
+        "变更报告|diff|修改说明"
+      ],
+      "required_terms": [
+        "PAGE_READWRITE",
+        "PAGE_EXECUTE_READ",
+        "VirtualProtect"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "integrate-api-hashing",
+      "prompt": "Loader 源码中直接调用 VirtualAlloc、CreateThread 等 API（明文导入）。请描述将其替换为 API hashing 的方法。",
+      "expected_output": "实现 hash 函数（如 djb2/ror13），遍历 PEB→LDR 获取 DLL 导出表，按 hash 值查找函数地址",
+      "expectations": [
+        "hash函数|djb2|ror13|CRC32|计算函数名hash",
+        "PEB|LDR|导出表|运行时解析",
+        "替换调用|函数指针|typedef|间接调用",
+        "编译通过|功能正常|验证",
+        "IAT|导入表|不出现明文API名"
+      ],
+      "required_terms": [
+        "CRC32",
+        "PEB",
+        "LDR"
+      ]
+    }
+  ]
+}

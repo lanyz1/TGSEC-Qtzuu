@@ -1,0 +1,53 @@
+{
+  "skill_id": "evasion-technique-integrate",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "evasion technique",
+        "api-hashing",
+        "syscall"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "anti-debug",
+        "amsi",
+        "unhooking",
+        "bypass"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被cloud召回",
+      "keywords": [
+        "cloud iam",
+        "metadata"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "evasion-technique-integrate-scenario",
+      "scenario": "需要将多种规避技术集成到一个攻击载荷中。请搜索规避技术整合方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "evasion|integrate|整合|技术"
+        },
+        {
+          "tool": "read_skill",
+          "id": "evasion-technique-integrate"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "skill_id": "ctf-solve",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "ctf solve",
+        "解题",
+        "orchestrator"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "场景搜索",
+      "keywords": [
+        "challenge",
+        "编排"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被report召回",
+      "keywords": [
+        "报告",
+        "修复建议"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-solve-scenario",
+      "scenario": "CTF 比赛中遇到一道综合题，已收集信息但不确定下一步该怎么利用。请搜索 CTF 通用解题方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "ctf|solve|解题"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-solve"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "skill_id": "websocket-attack",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "websocket",
+        "ws",
+        "wss",
+        "cswsh"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "hijack",
+        "upgrade",
+        "socket"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被GraphQL召回",
+      "keywords": [
+        "graphql",
+        "introspection"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "websocket-attack-scenario",
+      "scenario": "目标使用 WebSocket 连接 ws://target/chat 进行实时通信。请搜索 WebSocket 攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "websocket|ws://|实时通信"
+        },
+        {
+          "tool": "read_skill",
+          "id": "websocket-attack"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+---
+name: portainer-tactics
+description: |
+  Portainer 后渗透方法论：默认凭据认证突破、用户枚举时间差攻击、Docker API特权容器逃逸RCE、宿主机文件系统挂载。
+  当用户提到Portainer漏洞、Portainer RCE、Portainer Docker逃逸、Portainer认证绕过、Portainer利用、Portainer检测时，必须使用此技能。
+  也适用于用户提到Docker管理面板漏洞、容器管理平台利用、Portainer CE/BE渗透等场景。
+metadata:
+  tags: "Portainer,Docker,容器管理,默认凭据,用户枚举,SSRF,特权容器逃逸,RCE,Kubernetes"
+  category: "postexploit"
+  mitre_attack: "T1190,T1059,T1078"
+---
+
+# Portainer 漏洞利用技能
+
+- **产品**: Portainer (Docker/Kubernetes容器管理平台)
+- **默认端口**: 9000 (HTTP), 9443 (HTTPS) | **识别**: `/api/status` 返回JSON | **FOFA**: `app="Portainer"`
+
+## 漏洞总览
+
+| 漏洞编号 | 影响版本 | 漏洞类型 | 利用条件 | 危害 |
+|---------|---------|---------|---------|------|
+| 默认/弱口令 | 全版本 | 认证突破 | 弱口令 | Critical |
+| CVE-2024-29296 | CE 2.19.4 | 用户枚举(时间差) | 无需认证 | Medium |
+| CVE-2018-12678 | <=1.17 | Request Splitting SSRF→RCE | 无需认证 | Critical |
+| Docker API滥用 | 全版本 | 特权容器逃逸RCE | 需认证 | Critical |
+
+## 利用决策树
+
+```
+1. 识别: GET /api/status → 确认Portainer
+2. 认证突破:
+   ├── 尝试默认凭据 admin/已知密码
+   ├── CVE-2024-29296: 用户枚举确定有效用户名
+   └── 暴力破解密码
+3. 认证后: JWT Token → 枚举端点 → 特权容器 → 挂载宿主机 → RCE
+4. 未认证(老版本): CVE-2018-12678 → Request Splitting → Docker API → RCE
+```
+
+## 利用链优先级
+
+```
+1. 默认/弱口令 → JWT Token → Docker API → 特权容器 → RCE
+2. CVE-2024-29296 用户枚举 → 定向暴力破解 → 同上
+3. CVE-2018-12678 (仅<=1.17) → SSRF → Docker API → RCE
+```
+
+## 常用API端点
+
+| 端点 | 用途 |
+|------|------|
+| `GET /api/status` | 系统状态/版本 |
+| `POST /api/auth` | 登录认证 |
+| `GET /api/endpoints` | Docker端点列表 |
+| `POST /api/endpoints/{id}/docker/containers/create` | 创建容器 |
+| `POST /api/endpoints/{id}/docker/containers/{cid}/start` | 启动容器 |
+| `POST /api/endpoints/{id}/docker/containers/{cid}/wait` | 等待容器 |
+
+## 特权容器逃逸方法论
+
+**技术**: 通过Portainer Docker API创建特权容器，挂载宿主机文件系统，实现容器逃逸RCE。
+
+- 利用 Docker API `/containers/create` 端点，创建特权模式容器
+- 将宿主机根目录 `/` 以读写方式挂载到容器内
+- 通过 `chroot` 切换到宿主机文件系统，命令直接作用于宿主机
+- 需要已认证的JWT Token和可用的Docker端点
+
+## 详细参考
+
+- [认证后RCE API速查](references/post-auth-rce.md)

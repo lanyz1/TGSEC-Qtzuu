@@ -1,0 +1,50 @@
+# 案例: Acunetix ASP 测试站点
+# 日期: 2026-07-21
+# 目标: http://testasp.vulnweb.com
+# 类型: 公开靶场 / ASP.NET Web应用
+
+target:
+  url: "http://testasp.vulnweb.com"
+  type: lab
+  name: "Acunetix ASP Test Site"
+  tech_stack:
+    - "ASP.NET (aspx)"
+    - "IIS Web Server"
+    - "表单登录"
+  ports: [80]
+  fingerprint:
+    platform: "ASP.NET / IIS"
+    login_present: true
+    page_size: "3538 bytes (home)"
+    admin_paths: "/admin/"
+
+attack_surface:
+  - "登录表单 (SQLi)"
+  - "/admin/ (管理面板)"
+  - "/App_Data/ (ASP.NET 数据目录)"
+  - "web.config (ASP.NET 配置文件)"
+
+techniques_tried:
+  - technique: "SQLi 万能密码登录"
+    result: "partial"
+    detail: "登录端点返回 404, 可能需要修正路径"
+  - technique: "路径发现"
+    result: "partial"
+    detail: "/admin/ 可探测, ASP.NET 典型路径存在"
+
+success_path:
+  - step: 1
+    action: "攻击面测绘: 识别ASP.NET/IIS技术栈"
+    finding: "登录表单、管理路径、ASP.NET特征"
+  - step: 2
+    action: "SQLi尝试被404阻止 → 推断路径映射不同"
+    finding: "需要进一步枚举ASP.NET端点"
+
+techniques_learned:
+  - "ASP.NET 应用: 检查 web.config 泄露, /App_Data/ 目录, elmah.axd"
+  - "IIS: 常见管理路径 /admin/ /Admin/"
+  - "Acunetix 测试站: 故意存在漏洞供安全测试"
+
+fingerprint_triggers:
+  - ".aspx 扩展名 → ASP.NET 应用"
+  - "IIS 服务器 → web.config 检查"

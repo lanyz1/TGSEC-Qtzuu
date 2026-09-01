@@ -1,0 +1,77 @@
+{
+  "skill_name": "ctf-osint",
+  "evals": [
+    {
+      "id": 1,
+      "name": "username-enumeration",
+      "prompt": "CTF OSINT 题给了一个用户名 'h4ck3r_j0hn'，要求找到该用户在哪些平台注册过账号，并从其社交媒体中找到 flag。请描述调查步骤。",
+      "expected_output": "使用用户名枚举工具跨平台搜索，逐一检查找到的账号页面内容、个人简介、帖子、元数据",
+      "expectations": [
+        "whatsmyname|namechk|sherlock|用户名枚举",
+        "社交媒体|Twitter|GitHub|平台搜索",
+        "个人简介|bio|帖子|post|内容检查",
+        "元数据|图片|EXIF|隐藏信息",
+        "历史|Wayback|缓存|已删除内容"
+      ],
+      "required_terms": [
+        "GitHub",
+        "EXIF",
+        "whatsmyname"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "geolocation-image",
+      "prompt": "CTF OSINT 题给了一张街景照片，要求确定拍摄地点的精确坐标。照片中可见一个外文路标、一栋独特建筑和远处的山脉。请描述定位方法。",
+      "expected_output": "多线索交叉定位：反向图搜识别地标，语言分析确定国家/地区，街景匹配验证精确位置",
+      "expectations": [
+        "Google Lens|Yandex|TinEye|反向图搜",
+        "路标|语言|文字|国家识别",
+        "Google Maps|街景|Street View|验证",
+        "建筑|地标|landmark|特征建筑",
+        "坐标|经纬度|GPS|精确位置"
+      ],
+      "required_terms": [
+        "TinEye",
+        "GPS",
+        "Google Lens"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "dns-recon-challenge",
+      "prompt": "CTF OSINT 题给了一个域名 challenge.ctf.example.com，提示 flag 隐藏在 DNS 记录中。请描述如何获取 flag。",
+      "expected_output": "查询所有 DNS 记录类型：TXT/CNAME/MX/NS/SOA，尝试 zone transfer，检查子域名",
+      "expectations": [
+        "dig|nslookup|host|DNS查询",
+        "TXT|CNAME|MX|NS|多种记录类型",
+        "zone transfer|axfr|区域传输",
+        "子域名|subdomain|枚举|爆破",
+        "WHOIS|注册信息|历史记录|反向查询"
+      ],
+      "required_terms": [
+        "TXT",
+        "CNAME",
+        "WHOIS"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "google-dorking",
+      "prompt": "CTF OSINT 题要求找到某公司网站 example.com 上意外暴露的包含敏感信息的文件。请描述使用搜索引擎的高级技巧。",
+      "expected_output": "Google Dorking：使用 site:/filetype:/intitle:/inurl: 等高级搜索算子查找暴露的文件和目录",
+      "expectations": [
+        "site:|filetype:|intitle:|Google Dorking",
+        "pdf|txt|xlsx|csv|敏感文件类型",
+        "index of|目录列表|directory listing",
+        "inurl:|password|config|敏感关键词",
+        "robots.txt|sitemap|.git|信息泄露"
+      ],
+      "required_terms": [
+        "robots.txt",
+        ".git",
+        "site:"
+      ]
+    }
+  ]
+}

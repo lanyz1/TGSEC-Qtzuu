@@ -1,0 +1,53 @@
+{
+  "skill_id": "idor-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "精确关键词搜索",
+      "keywords": [
+        "idor",
+        "IDOR",
+        "越权",
+        "insecure direct object"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "水平/垂直越权搜索",
+      "keywords": [
+        "水平越权",
+        "垂直越权",
+        "权限绕过"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被提权召回",
+      "keywords": [
+        "privilege escalation linux",
+        "SUID"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "idor-scenario",
+      "scenario": "目标 API GET /api/user/123 返回用户信息，修改 ID 为 124 返回了其他用户数据。请搜索 IDOR 方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "idor|insecure direct|越权|access control"
+        },
+        {
+          "tool": "read_skill",
+          "id": "idor-methodology"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "skill_name": "nuclei-scan",
+  "evals": [
+    {
+      "id": 1,
+      "name": "cve-targeted-scan",
+      "prompt": "指纹识别发现目标是 Apache/2.4.49，我想验证是否存在 CVE-2021-41773 路径遍历漏洞。应该怎么用 nuclei 扫？",
+      "expected_output": "使用 nuclei -u http://target -t cves/ -tags CVE-2021-41773 精确扫描",
+      "expectations": [
+        "nuclei -u",
+        "-t cves/|-tags CVE-2021-41773|CVE-2021-42013",
+        "精确扫描|指定模板|缩小范围"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "extract-payload-from-template",
+      "prompt": "nuclei 扫描报告 CVE-2022-26134 存在但我需要手动利用来获取 RCE。怎么从 nuclei 模板里提取可用的 payload？",
+      "expected_output": "find 搜索模板文件 → cat 读取模板 → 从 raw 字段提取 HTTP 请求 → 转换为 curl 命令",
+      "expectations": [
+        "find.*nuclei-templates|grep.*nuclei-templates",
+        "cat.*yaml|读取模板",
+        "raw|请求|payload|提取",
+        "curl|http_request|手动"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "bulk-scan-time-constrained",
+      "prompt": "比赛中我有 5 个目标 URL，时间紧迫只有 3 分钟，怎么用 nuclei 最高效地发现高危漏洞？",
+      "expected_output": "批量目标写入文件 + 只扫 critical/high + 限制模板范围",
+      "expectations": [
+        "-l targets|-l .*txt|批量|文件",
+        "-severity critical,high|高危",
+        "-t cves/|缩小范围|不要全量"
+      ]
+    }
+  ]
+}

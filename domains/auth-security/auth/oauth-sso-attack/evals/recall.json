@@ -1,0 +1,54 @@
+{
+  "skill_id": "oauth-sso-attack",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "oauth",
+        "sso",
+        "openid",
+        "oidc"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "redirect_uri",
+        "第三方登录",
+        "cas",
+        "saml"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被JWT召回",
+      "keywords": [
+        "jwt",
+        "none-algorithm"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "oauth-sso-attack-scenario",
+      "scenario": "目标使用 OAuth 2.0 登录，redirect_uri 参数可以修改。请搜索 OAuth/SSO 攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "oauth|sso|redirect_uri|授权"
+        },
+        {
+          "tool": "read_skill",
+          "id": "oauth-sso-attack"
+        }
+      ]
+    }
+  ]
+}

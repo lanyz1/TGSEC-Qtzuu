@@ -1,0 +1,53 @@
+{
+  "skill_name": "websocket-attack",
+  "evals": [
+    {
+      "id": 1,
+      "name": "websocket-socketio-protocol",
+      "prompt": "你发现目标使用 Socket.IO 进行实时通信。在浏览器开发工具中看到消息格式为 42[\"chat\",{\"msg\":\"hello\"}]。请解释这个消息格式并描述如何利用 Socket.IO 进行攻击。",
+      "expected_output": "Socket.IO 协议格式解析（4=message, 2=event）和攻击方法",
+      "expectations": [
+        "42|4=message|2=event|Socket.IO协议格式",
+        "命名空间|/admin|连接管理命名空间|权限测试",
+        "事件名|枚举事件|隐藏事件|JS源码查找",
+        "HTTP轮询|EIO=4|transport=polling|先轮询后升级",
+        "注入|事件数据|JSON参数|消息注入"
+      ],
+      "required_terms": [
+        "EIO=4",
+        "4=message",
+        "2=event"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "websocket-handshake-auth-gap",
+      "prompt": "WebSocket 应用在握手（HTTP Upgrade 请求）时验证了 Cookie/Token，连接建立后所有消息传输不再检查权限。你已有低权限用户连接。请描述你如何利用这个认证缺口。",
+      "expected_output": "利用握手与消息级别认证不一致的安全缺口",
+      "expectations": [
+        "握手认证|消息不检查|权限缺口|认证不一致",
+        "管理员操作|发送admin消息|权限提升",
+        "修改user_id|role字段|消息级别越权",
+        "隐藏action|JS源码|未公开的消息类型",
+        "CSWSH|Origin不检查|跨站劫持|如果Origin未验证"
+      ],
+      "required_terms": [
+        "CSWSH",
+        "role字段"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "websocket-passive-monitoring",
+      "prompt": "你连接到了目标的 WebSocket 端点。与 HTTP 不同，WebSocket 是长连接。在急于发送测试消息之前，你应该先做什么？",
+      "expected_output": "被动监听：WebSocket 可能广播敏感数据给所有连接",
+      "expectations": [
+        "被动监听|先不发送|观察接收消息",
+        "广播|其他用户消息|系统通知|敏感数据",
+        "实时日志|调试信息|泄露|不急于发送",
+        "长连接|持续接收|积累数据|时间窗口",
+        "聊天|通知|内部信息|监听价值"
+      ]
+    }
+  ]
+}

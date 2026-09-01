@@ -1,0 +1,19 @@
+{
+  "skill_name": "httpx-probe",
+  "evals": [
+    {
+      "id": 1,
+      "name": "tech-fingerprint",
+      "prompt": "我有一批 URL 列表，想快速识别每个站点用了什么技术栈（CMS、框架、语言），用什么工具？",
+      "expected_output": "httpx -l urls.txt -tech-detect -sc -title",
+      "expectations": ["httpx", "-tech-detect", "-sc|-title"]
+    },
+    {
+      "id": 2,
+      "name": "pipeline-hub",
+      "prompt": "subfinder 发现了很多子域名但不知道哪些有 Web 服务，怎么快速筛选出活着的 HTTP 站点？",
+      "expected_output": "subfinder -d target.com -silent | httpx -silent",
+      "expectations": ["httpx", "-silent", "subfinder|管道|stdin"]
+    }
+  ]
+}

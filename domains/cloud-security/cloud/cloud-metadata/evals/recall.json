@@ -1,0 +1,53 @@
+{
+  "skill_id": "cloud-metadata",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "cloud metadata",
+        "元数据",
+        "imds",
+        "metadata"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "场景搜索",
+      "keywords": [
+        "ssrf",
+        "aliyun",
+        "云安全"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被CTF召回",
+      "keywords": [
+        "ctf flag",
+        "capture the flag"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "cloud-metadata-scenario",
+      "scenario": "目标运行在 AWS EC2 上，存在 SSRF 漏洞，可以访问内网。请搜索云元数据服务利用方法。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "metadata|cloud|169.254|imds"
+        },
+        {
+          "tool": "read_skill",
+          "id": "cloud-metadata"
+        }
+      ]
+    }
+  ]
+}

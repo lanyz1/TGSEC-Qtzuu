@@ -1,0 +1,52 @@
+{
+  "skill_id": "ctf-web-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "ctf web",
+        "web methodology",
+        "靶场"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "场景搜索",
+      "keywords": [
+        "比赛",
+        "策略",
+        "capture the flag"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被pwn召回",
+      "keywords": [
+        "binary",
+        "rop"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-web-scenario",
+      "scenario": "CTF Web 题目，初始只有一个 URL，不知道从哪里入手。请搜索 CTF Web 攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "ctf|web|methodology|方法论"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-web-methodology"
+        }
+      ]
+    }
+  ]
+}

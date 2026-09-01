@@ -1,0 +1,76 @@
+{
+  "skill_name": "ctf-web-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ctf-3-round-rule",
+      "prompt": "你在 CTF 中对一个搜索框尝试了 SQL 注入：' OR 1=1--、' UNION SELECT 1,2,3--、' AND SLEEP(5)--，全部没有异常反应（3 轮尝试）。你应该怎么做？",
+      "expected_output": "根据 3 轮法则切换方向，可能不是 SQL 注入，转向其他漏洞类型",
+      "expectations": [
+        "切换方向|换方法|不是SQL注入|放弃SQLi",
+        "3轮|三轮|多次尝试|排除法",
+        "SSTI|{{7*7}}|模板注入|其他漏洞类型",
+        "XSS|文件包含|命令注入|其他攻击面",
+        "重新审视|回到侦察|观察其他功能"
+      ],
+      "required_terms": [
+        "SSTI",
+        "{{7*7}}",
+        "XSS"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ctf-observation-to-vuln-mapping",
+      "prompt": "CTF 侦察中你发现：页面底部有 'Powered by Flask'，URL 中有 ?name=guest，输入 guest 后页面显示 'Welcome, guest'。请根据这些线索判断最可能的漏洞类型和你的下一步。",
+      "expected_output": "Flask + 用户输入回显 → SSTI 优先，测试 {{7*7}}",
+      "expectations": [
+        "SSTI|模板注入|Jinja2|Flask模板",
+        "{{7*7}}|${7*7}|模板语法测试",
+        "回显|用户输入|反射|输入显示在页面",
+        "Flask|Python|Jinja2引擎",
+        "不是SQL注入|功能是显示不是查询"
+      ],
+      "required_terms": [
+        "SSTI",
+        "{{7*7}}",
+        "${7*7}"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "ctf-breadth-first-recon",
+      "prompt": "CTF 题目给了一个 URL，你发现首页是登录页面。大多数人直接开始 SQL 注入。你认为先广后深的正确做法是什么？",
+      "expected_output": "先快速侦察全貌（2-3 轮），不要急于深入单一攻击",
+      "expectations": [
+        "先广后深|快速侦察|不急于深入",
+        "robots.txt|.git|备份文件|敏感路径",
+        "HTML源码|注释|隐藏字段|JS文件",
+        "注册|其他页面|其他功能|不只看登录",
+        "指纹|技术栈|框架识别|然后选择攻击"
+      ],
+      "required_terms": [
+        "robots.txt",
+        ".git",
+        "HTML源码"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "ctf-efficiency-trap",
+      "prompt": "CTF 中你确认了 SQL 注入且 UNION SELECT 和 EXTRACTVALUE 报错注入都可用。flag 在数据库中，长度 64 字符。你应该优先用哪种方法？为什么？",
+      "expected_output": "UNION SELECT 优先，无截断限制，一次拿完整 flag",
+      "expectations": [
+        "UNION|优先|首选|一次获取",
+        "EXTRACTVALUE|32字符|截断|限制",
+        "完整数据|无长度限制|不需分段",
+        "效率|CTF时间有限|最短路径",
+        "分段拼接|容易出错|手动拼接风险"
+      ],
+      "required_terms": [
+        "UNION",
+        "EXTRACTVALUE"
+      ]
+    }
+  ]
+}

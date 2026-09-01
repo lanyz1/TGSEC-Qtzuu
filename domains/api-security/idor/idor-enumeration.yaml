@@ -1,0 +1,8 @@
+category: idor
+date: '2026-07-20'
+detail: /api/user/1-6 全部可访问，无需权限校验
+id: idor-枚举
+name: IDOR 枚举
+result: success
+source_case: 20260720-digital-wallet-sqli-idor
+tool: ''

@@ -1,0 +1,20 @@
+{
+  "skill_name": "adcs-certipy-attack",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "certipy find 输出显示有一个模板标记了 ESC1 (ENROLLEE_SUPPLIES_SUBJECT)，我是普通域用户，怎么利用？",
+      "expected_output": "certipy req 指定 -upn administrator@DOMAIN 申请域管证书，然后 certipy auth 获取 NTLM Hash，DCSync"
+    },
+    {
+      "id": 2,
+      "prompt": "域内有 CA 服务器但没有发现 ESC1 漏洞模板，还有什么 ADCS 攻击路径？",
+      "expected_output": "检查 ESC4(模板写权限)、ESC6(全局 SAN)、ESC7(CA 管理员)、ESC8(中继到 Web Enrollment)"
+    },
+    {
+      "id": 3,
+      "prompt": "用 certipy auth 认证证书时报 KDC_ERR_PADATA_TYPE_NOSUPP，怎么办？",
+      "expected_output": "DC 不支持 PKINIT，改用 Schannel: certipy auth -pfx x.pfx -ldap-shell，或用 PassTheCert"
+    }
+  ]
+}

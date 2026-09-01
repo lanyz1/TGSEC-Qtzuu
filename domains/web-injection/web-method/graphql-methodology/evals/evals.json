@@ -1,0 +1,59 @@
+{
+  "skill_name": "graphql-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "graphql-introspection-disabled-field-suggestion",
+      "prompt": "目标 /graphql 端点禁用了 introspection（__schema 查询返回错误）。你发送 {user} 得到错误 'Cannot query field user on type Query. Did you mean users?'。请描述如何利用这个特性枚举完整 schema。",
+      "expected_output": "利用 GraphQL 引擎的 Field Suggestion 功能逐步枚举字段名",
+      "expectations": [
+        "Did you mean|field suggestion|字段建议|错误提示",
+        "拼写错误|枚举|逐个猜测字段名",
+        "__typename|基本类型探测|类型名称",
+        "Clairvoyance|graphql-cop|自动化工具",
+        "GET请求|绕过WAF|/graphql?query="
+      ],
+      "required_terms": [
+        "__typename",
+        "/graphql?query=",
+        "GET请求"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "graphql-alias-batch-enumeration",
+      "prompt": "目标 GraphQL 有 user(id: Int) 查询。你想遍历所有用户ID但不想发送100个请求。请用一个 GraphQL 查询获取 ID 1-5 的所有用户数据。",
+      "expected_output": "使用 GraphQL alias 在单个查询中批量请求多个 ID",
+      "expectations": [
+        "alias|别名|a:user(id:1)|b:user(id:2)",
+        "单个查询|一次请求|批量",
+        "{a:user(id:1){name} b:user(id:2){name}}|具体语法",
+        "枚举|遍历|所有用户",
+        "绕过|限速|rate limit|单请求多结果"
+      ],
+      "required_terms": [
+        "a:user(id:1)",
+        "b:user(id:2)",
+        "{a:user(id:1){name} b:user(id:2){name}}"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "graphql-get-request-waf-bypass",
+      "prompt": "POST /graphql 发送 introspection 查询被 WAF 拦截。WAF 只检查 POST 请求体中的 __schema 关键词。请描述绕过方法。",
+      "expected_output": "使用 GET 请求 + query parameter 绕过只检查 POST body 的 WAF",
+      "expectations": [
+        "GET请求|GET /graphql?query=|query参数",
+        "WAF只拦POST|方法切换|绕过",
+        "Fragment|alias|变形查询|混淆",
+        "换行|空白字符|\\n|大小写|__SCHEMA",
+        "URL编码|%7B|编码绕过"
+      ],
+      "required_terms": [
+        "GET /graphql?query=",
+        "__SCHEMA",
+        "GET请求"
+      ]
+    }
+  ]
+}

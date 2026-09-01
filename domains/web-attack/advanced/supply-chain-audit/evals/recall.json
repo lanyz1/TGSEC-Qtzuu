@@ -1,0 +1,53 @@
+{
+  "skill_id": "supply-chain-audit",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "supply chain",
+        "供应链",
+        "component"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "cdn",
+        "npm",
+        "subdomain-takeover",
+        "组件安全"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被race condition召回",
+      "keywords": [
+        "race condition",
+        "并发"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "supply-chain-audit-scenario",
+      "scenario": "需要审计目标应用的第三方依赖安全性。请搜索供应链审计方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "supply chain|供应链|dependency|依赖"
+        },
+        {
+          "tool": "read_skill",
+          "id": "supply-chain-audit"
+        }
+      ]
+    }
+  ]
+}

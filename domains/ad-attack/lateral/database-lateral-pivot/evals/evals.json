@@ -1,0 +1,23 @@
+{
+  "skill_name": "database-lateral-pivot",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "已经拿到了 10.0.0.5 上的 PostgreSQL superuser 权限，内网还有一台 10.0.0.10 也开了 5432，用 dblink 过去看看有什么数据",
+      "expected_output": "使用 dblink 创建连接到 10.0.0.10 的 PostgreSQL，列出数据库和表，搜索敏感数据",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "控制了一台 MSSQL 服务器，发现有 Linked Server 配置指向另外两台数据库，需要横向移动获取更多数据",
+      "expected_output": "枚举 Linked Server，通过 OPENQUERY 和 RPC 在远程执行查询和命令",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "拿到 PostgreSQL 权限但网络隔离，无法直接访问 10.0.0.0/24 内网段，试试通过数据库探测内网",
+      "expected_output": "利用 dblink 的连接超时特性进行内网端口扫描，探测存活主机和服务",
+      "files": []
+    }
+  ]
+}

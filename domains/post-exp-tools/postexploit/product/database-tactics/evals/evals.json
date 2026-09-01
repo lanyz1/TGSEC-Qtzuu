@@ -1,0 +1,20 @@
+{
+  "skill_name": "database-exploit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "扫描发现目标 10.0.0.100 开放了 6379 端口，redis-cli ping 返回 PONG，怎么拿 shell？",
+      "expected_output": "Redis 未授权访问，尝试写 webshell/SSH 公钥/crontab，或主从复制 RCE"
+    },
+    {
+      "id": 2,
+      "prompt": "拿到了 MSSQL 的 sa 密码，连接后 xp_cmdshell 被禁用了，怎么执行系统命令？",
+      "expected_output": "sp_configure 开启 xp_cmdshell，如果不行尝试 OLE Automation 或 SQL Agent Job"
+    },
+    {
+      "id": 3,
+      "prompt": "PostgreSQL 5432 端口开放，连接后发现是 superuser 权限，怎么拿到操作系统 shell？",
+      "expected_output": "COPY FROM PROGRAM 执行命令，或尝试 PL/Python/PL/Perl 扩展"
+    }
+  ]
+}

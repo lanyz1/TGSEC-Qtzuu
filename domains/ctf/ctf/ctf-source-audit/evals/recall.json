@@ -1,0 +1,54 @@
+{
+  "skill_id": "ctf-source-audit",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "source audit",
+        "源码审计",
+        "code review",
+        "代码审计"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "语言搜索",
+      "keywords": [
+        "php",
+        "python",
+        "node",
+        "java"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被malware召回",
+      "keywords": [
+        "c2",
+        "yara"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-source-audit-scenario",
+      "scenario": "获取到目标 PHP 源码文件，需要审计找出安全漏洞。请搜索源码审计方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "source|audit|源码|审计|代码"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-source-audit"
+        }
+      ]
+    }
+  ]
+}

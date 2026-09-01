@@ -1,0 +1,53 @@
+{
+  "skill_id": "target-profiling",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "profiling",
+        "画像",
+        "fingerprint",
+        "target"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "资产分析",
+      "keywords": [
+        "攻击面评估",
+        "资产分析",
+        "port"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被提权召回",
+      "keywords": [
+        "privilege escalation",
+        "suid"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "target-profiling-scenario",
+      "scenario": "需要对目标组织进行全面画像分析。请搜索目标画像方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "target|profiling|画像|profile|分析"
+        },
+        {
+          "tool": "read_skill",
+          "id": "target-profiling"
+        }
+      ]
+    }
+  ]
+}

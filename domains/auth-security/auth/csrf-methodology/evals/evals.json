@@ -1,0 +1,59 @@
+{
+  "skill_name": "csrf-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "csrf-token-cross-user-reuse",
+      "prompt": "POST /api/change-email 有 CSRF Token 保护。你发现：用你自己账号获取的 token，放到另一个浏览器（未登录状态）也能通过验证。这说明什么？如何利用？",
+      "expected_output": "Token 只验证有效性不绑定用户/session → 攻击者可用自己的 token 替受害者发请求",
+      "expectations": [
+        "不绑定用户|不绑定session|跨用户复用",
+        "攻击者token|替受害者使用|PoC中硬编码",
+        "只检查有效性|不检查归属|验证缺陷",
+        "表单中|hidden input|写入攻击者token",
+        "自动提交|csrf poc|修改受害者邮箱"
+      ],
+      "required_terms": [
+        "PoC中硬编码",
+        "攻击者token",
+        "csrf poc"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "csrf-json-body-via-form",
+      "prompt": "目标 API POST /api/change-password 要求 Content-Type: application/json，请求体 {\"new_password\":\"xxx\"}。没有 CSRF Token。如何构造跨站 CSRF 攻击？",
+      "expected_output": "用 form enctype=text/plain 发送类 JSON 数据，或检查是否接受 x-www-form-urlencoded",
+      "expectations": [
+        "enctype=text/plain|表单发送|类JSON格式",
+        "Content-Type|application/json|限制",
+        "form|自动提交|跨站请求",
+        "x-www-form-urlencoded|是否接受|降级测试",
+        "{\"new_password\":\"hacked\"|=|尾部等号技巧"
+      ],
+      "required_terms": [
+        "enctype=text/plain",
+        "application/json",
+        "Content-Type"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "csrf-samesite-lax-get-bypass",
+      "prompt": "目标 Cookie 设置了 SameSite=Lax。修改密码功能是 POST /change-password。但你发现用 GET /change-password?new=hacked 也能成功修改（开发者没限制方法）。这如何绕过 SameSite=Lax？",
+      "expected_output": "SameSite=Lax 允许 GET 顶级导航携带 Cookie → GET 方法可绕过",
+      "expectations": [
+        "SameSite=Lax|GET请求|允许|顶级导航",
+        "GET方法|修改也接受GET|开发者错误",
+        "<a href>|顶级导航|自动携带Cookie",
+        "window.location|跳转|触发GET",
+        "POST被拦|GET绕过|方法不受限"
+      ],
+      "required_terms": [
+        "SameSite=Lax",
+        "window.location",
+        "GET请求"
+      ]
+    }
+  ]
+}

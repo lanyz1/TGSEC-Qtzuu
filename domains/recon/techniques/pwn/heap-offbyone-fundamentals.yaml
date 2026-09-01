@@ -1,0 +1,122 @@
+# 技术卡: 堆边界与 off-by-one 检测方法论
+id: "pwn-heap-offbyone-fundamentals"
+name: "堆 off-by-one 检测与 ASan 盲区"
+category: "pwn"
+subcategory: "heap"
+severity: "medium"
+
+description: |
+  堆上 off-by-one 是常见的内存破坏漏洞——分配 N 字节但写入 N+1 字节。
+  检测方法取决于溢出目标：跨 chunk 边界（ASan 可检测）vs 对象内字段间（ASan 盲区）。
+  本卡来自 PX04-PX06 本地实验证据，不保存任何 CTF flag 或 payload。
+
+# ---- ASan 粒度模型 ----
+asan_granularity:
+  object_level: "redzone 在对象整体边界（整个 struct 或 malloc 返回值周围）"
+  field_level: "字段间无边界的 redzone——struct 内字段间越界 ASan 不报告"
+  heap_chunk_level: "每个 malloc 有独立 redzone，跨 chunk 越界会被捕获"
+
+  evidence:
+    px04_struct: "结构体 {char buf[8]; u8 sentinel;} len=9 时 sentinel 0xBB→0x49 但 ASan 沉默"
+    px04_standalone: "独立 char buf[8] len=9 时 ASan stack-buffer-overflow WRITE of size 9"
+    px05_heap: "malloc(8) buf[8]='X' → ASan heap-buffer-overflow 0 bytes after 8-byte region"
+
+trigger_signals:
+  - "目标使用 C/C++/PHP 等内存不安全语言处理边界输入"
+  - "存在长度可控的缓冲区写入（sprintf/strcpy/memcpy 等）"
+  - "调试输出泄露 input_len 或分配大小信息"
+  - "边界输入（capacity-1/capacity/capacity+1）导致行为差异"
+
+payloads:
+  - name: "边界溢出触发"
+    value: "向容量 N 的缓冲区发送 N+1 字节输入"
+    note: "跨 chunk 溢出 ASan 可捕获；对象内字段间溢出需哨兵字段法"
+  - name: "响应差异探测"
+    value: "对 allocator bin 边界发送 capacity 和 capacity+1"
+    note: "1 字节响应大小差异可能指示 off-by-one（如 334 vs 335）"
+
+success_indicators:
+  - "ASan 报告 heap-buffer-overflow 或 stack-buffer-overflow"
+  - "哨兵字段值被修改（0xBB → 其他值）"
+  - "黑盒场景下 capacity+1 输入产生可观测差异"
+
+prerequisites:
+  - "能够向目标发送精确长度的输入"
+  - "理解目标分配器的 chunk 结构与元数据布局"
+  - "存在可观测的输出通道（回显/调试信息/ASan）"
+
+defense:
+  - "边界检查：写入前校验 len < capacity"
+  - "使用安全函数（snprintf/strlcpy）或 std::string/vector 等安全容器"
+  - "ASan/UBSan 纳入 CI 流水线"
+  - "FORTIFY_SOURCE 与 stack-protector-strong"
+
+sources:
+  - reference: "案例 20260720-echoes-of-heap (PHP zend_mm off-by-one)"
+  - reference: "PX04-PX06 本地实验 (2026-07-21)"
+  - reference: "glibc malloc 文档 - chunk 结构与 consolidation"
+
+# ---- 检测策略 ----
+detection_strategies:
+  - name: "哨兵字段法"
+    applies: "结构体内字段间越界（ASan 盲区）"
+    steps:
+      - "在可疑缓冲区前后放置已知值的哨兵字段"
+      - "发送边界长度输入（capacity-1, capacity, capacity+1）"
+      - "检查哨兵是否被修改"
+    limitation: "需要能够读取哨兵值（或触发基于哨兵的逻辑变化）"
+
+  - name: "ASan 直接检测"
+    applies: "独立堆分配、独立栈数组的跨边界溢出"
+    steps:
+      - "使用 -fsanitize=address 编译"
+      - "发送 capacity+1 的输入"
+      - "观察是否产生 heap-buffer-overflow 或 stack-buffer-overflow"
+    asan_report_fields:
+      - "WRITE of size N at address"
+      - "located X bytes after Y-byte region [start, end)"
+      - "allocated by thread T0 here: (分配栈)"
+      - "Shadow bytes: fa=heap left redzone, fd=freed, f3=stack right redzone"
+
+  - name: "响应差异法"
+    applies: "黑盒场景，无法运行 ASan"
+    steps:
+      - "对每个 allocator bin 边界发送 capacity 和 capacity+1"
+      - "比较响应大小、响应时间、错误消息"
+      - "1 字节差异可能指示 off-by-one（如 Echoes of Heap: 334 vs 335）"
+    limitation: "需要目标回显输入长度或有关键行为差异"
+
+# ---- glibc malloc chunk 模型 ----
+glibc_chunk_model:
+  structure: |
+    [prev_size (8B)] [size|flags (8B)] [user data ...]
+    最低3 bits of size: PREV_INUSE(0x1), IS_MMAPPED(0x2), NON_MAIN_ARENA(0x4)
+
+  offbyone_effect: |
+    从 chunk A 的 user data 末尾溢出 1 字节 → 覆盖 chunk B 的 size 字段最低字节
+    效果：可能清除 PREV_INUSE flag → free(A) 时认为 B 已 free → 触发 backward consolidation
+
+  asan_vs_real: |
+    ASan: 每个 chunk 间有 fa (heap left redzone) → off-by-one 立即触发
+    真实 glibc: chunk 间只有 metadata → off-by-one 静默破坏 size/flags → 稍后在 free/malloc 时触发崩溃或利用
+
+# ---- 利用前置条件（不提供 payload） ----
+exploit_prerequisites:
+  - "理解目标分配器的 chunk 结构和元数据布局（glibc/jemalloc/zend_mm/tcmalloc）"
+  - "能够控制溢出字节的值和时机"
+  - "能够影响 heap 布局（分配/释放顺序）使目标 chunk 位于溢出 chunk 之后"
+  - "理解 free list / bin 管理机制"
+  - "本地同版本调试环境（用于验证堆布局假设）"
+
+# ---- 失败改判 ----
+failure_reevaluation:
+  - signal: "ASan 无报告但程序行为异常"
+    action: "检查是否结构体内字段间越界——补哨兵检测"
+  - signal: "ASan 无报告且程序表面正常"
+    action: "可能溢出字节恰好落在 padding 中（对齐填充）——调整输入长度或结构体布局再测"
+  - signal: "off-by-one 确认但无法利用"
+    action: "检查溢出字节的值是否可控、相邻 chunk 的状态（allocated/freed/top）是否符合利用模型"
+
+source_cases:
+  - "20260720-echoes-of-heap (PHP zend_mm off-by-one)"
+  - "PX04-PX06 本地实验 (2026-07-21)"

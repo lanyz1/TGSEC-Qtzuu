@@ -1,0 +1,89 @@
+# 案例: Juice Shop 综合渗透 (OWASP Juice Shop)
+# 日期: 2026-07-21
+# 目标: http://203.0.113.13:3000
+# 类型: 公开靶场 / 综合Web应用
+
+target:
+  url: "http://203.0.113.13:3000"
+  type: lab
+  name: "OWASP Juice Shop"
+  tech_stack:
+    - "Angular SPA"
+    - "Node.js Express 后端"
+    - "SQLite 数据库"
+    - "JWT (RS256) 认证"
+  ports: [3000]
+  fingerprint:
+    framework: "Angular (app-root)"
+    api_pattern: "/rest/ /api/"
+    auth_type: "JWT (RS256)"
+    default_creds: "admin@juice-sh.op / admin123"
+
+attack_surface:
+  - "/rest/user/login (POST) - 登录端点"
+  - "/rest/products/search?q= - 产品搜索 (SQLi)"
+  - "/api/Users/:id - 用户信息 (IDOR)"
+  - "/api/Users (GET) - 全部用户列表 (权限绕过)"
+  - "/api/Users/ (POST) - 注册"
+  - "/profile/image/url (PUT) - SSRF"
+  - "/file-upload (POST) - 文件上传"
+  - "/api/BasketItems/ (POST) - 购物车"
+
+techniques_tried:
+  - technique: "SQLi product search"
+    result: "success"
+    detail: "UNION SELECT 提取数据, sqlite_master 枚举, OR bypass 返回全部产品"
+  - technique: "IDOR 枚举"
+    result: "success"
+    detail: "/api/Users/1-36 全部可访问, 无权限校验"
+  - technique: "JWT alg:none"
+    result: "success"
+    detail: "RS256→none, 完全绕过签名验证"
+  - technique: "SSRF via profile image"
+    result: "success"
+    detail: "可向内网地址发起请求, HTTP 200"
+  - technique: "空密码注册"
+    result: "success"
+    detail: "HTTP 201, 可创建无密码账户"
+  - technique: "文件上传 SVG"
+    result: "success"
+    detail: "HTTP 204, SVG 文件接受"
+  - technique: "负数量购物车"
+    result: "success"
+    detail: "quantity=-1 被接受, 业务逻辑缺陷"
+
+success_path:
+  - step: 1
+    action: "默认凭据登录 admin@juice-sh.op/admin123"
+    finding: "管理员 JWT token"
+  - step: 2
+    action: "SQLi: ')) OR 1=1-- → 返回全部44个产品"
+    payload: "GET /rest/products/search?q=')) OR 1=1--"
+  - step: 3
+    action: "SQLi UNION: 提取 sqlite_master → 发现 Addresses/BasketItems/Baskets 等20个表"
+    payload: "?q=')) UNION SELECT 1,tbl_name,3,4,5,6,7,8,9 FROM sqlite_master WHERE type='table'--"
+  - step: 4
+    action: "IDOR: GET /api/Users/2 → 获取 jim@juice-sh.op 信息"
+  - step: 5
+    action: "管理接口: GET /api/Users → 36个用户完整列表"
+  - step: 6
+    action: "JWT攻击: alg:RS256→none → 完全绕过认证"
+  - step: 7
+    action: "SSRF: PUT /profile/image/url → 内网探测"
+
+techniques_learned:
+  - "Juice Shop SQLi: 需要 ')) 闭合嵌套括号 + -- 注释"
+  - "sqlite_master UNION: SELECT 1,tbl_name,3,4,5,6,7,8,9 FROM sqlite_master WHERE type='table'--"
+  - "JWT RS256→none: Juice Shop 默认接受 none 算法"
+  - "IDOR: /api/Users 返回全部用户, 无需管理员权限(仅需登录)"
+  - "注册绕过: 空密码可通过验证, HTTP 201"
+  - "SSRF: /profile/image/url 可向内网发请求"
+  - "文件上传: SVG 类型被接受, 可能存在 Stored XSS"
+  - "业务逻辑: 负数量可加入购物车"
+
+fingerprint_triggers:
+  - "Angular SPA + REST API → 检查 /api/ 和 /rest/ 端点"
+  - "JWT RS256 → 测试 alg:none 绕过"
+  - "产品搜索功能 → SQLi UNION + sqlite_master"
+  - "/api/Users/:id 自增ID → IDOR 枚举"
+  - "默认凭据 admin@juice-sh.op/admin123 → Juice Shop 即用"

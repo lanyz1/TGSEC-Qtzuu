@@ -1,0 +1,59 @@
+{
+  "skill_name": "web-vuln-scan",
+  "evals": [
+    {
+      "id": 1,
+      "name": "scan-tech-stack-driven-strategy",
+      "prompt": "scan_finger 识别目标为 Python Flask 应用（Werkzeug 调试模式开启）。请根据这个技术栈确定你的扫描和手动测试优先级。",
+      "expected_output": "Flask → 优先测试 SSTI、Debug 模式 RCE（Werkzeug debugger PIN）、Pickle 反序列化、Secret Key 泄露",
+      "expectations": [
+        "SSTI|模板注入|Jinja2|Flask特有",
+        "Werkzeug|Debug|PIN码|console|RCE",
+        "Pickle|反序列化|session|Secret Key",
+        "Flask|Python|框架特定漏洞",
+        "config泄露|SECRET_KEY|环境变量"
+      ],
+      "required_terms": [
+        "SECRET_KEY",
+        "SSTI",
+        "RCE"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "scan-test-priority-rce-first",
+      "prompt": "初步扫描发现了以下漏洞线索：A) 搜索框可能有反射型XSS  B) 文件上传接受 .php 文件  C) /admin 页面有默认凭据  D) 评论功能可能有存储型XSS。在 CTF 场景下你应该按什么顺序测试？为什么？",
+      "expected_output": "优先级：B(文件上传→RCE) > C(默认凭据→后台) > D(存储型XSS) > A(反射型XSS)。RCE 优先。",
+      "expectations": [
+        "文件上传|优先|RCE|直接执行代码",
+        "默认凭据|第二|后台权限|快速获取",
+        "RCE优先|命令执行|直接拿flag",
+        "XSS低优先|CTF通常不考|需要用户交互",
+        "优先级排序|按危害|按效率"
+      ],
+      "required_terms": [
+        "RCE",
+        "RCE优先",
+        "直接拿flag"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "scan-input-point-to-vuln-mapping",
+      "prompt": "目标 Web 应用有以下功能点：搜索框、文件上传、用户头像URL输入、评论功能、JWT Token 登录。请将每个功能点映射到应该优先测试的漏洞类型。",
+      "expected_output": "搜索→SQLi/XSS，上传→文件上传绕过，URL输入→SSRF，评论→存储XSS，JWT→算法绕过",
+      "expectations": [
+        "搜索|SQL注入|SQLi|反射XSS",
+        "文件上传|类型绕过|webshell|路径穿越",
+        "URL输入|SSRF|服务端请求伪造",
+        "评论|存储型XSS|持久XSS",
+        "JWT|算法绕过|密钥爆破|none"
+      ],
+      "required_terms": [
+        "SQL注入",
+        "SQLi",
+        "SSRF"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "skill_name": "cloud-iam-audit",
+  "evals": [
+    {
+      "id": 1,
+      "name": "iam-passrole-lambda-privesc",
+      "prompt": "AWS IAM 用户有以下权限：iam:PassRole + lambda:CreateFunction + lambda:InvokeFunction。请描述具体的提权步骤（包含 AWS CLI 命令）。",
+      "expected_output": "创建 Lambda 附加高权限 Role → Lambda 代码调用 iam:AttachUserPolicy → 执行获取 AdministratorAccess",
+      "expectations": [
+        "lambda create-function|创建Lambda函数|附加角色",
+        "iam:PassRole|传递高权限角色|AdministratorAccess角色",
+        "lambda invoke|执行函数|提权代码",
+        "创建策略版本|AttachPolicy|给自己提权",
+        "Lambda代码|boto3|iam.attach_user_policy"
+      ],
+      "required_terms": [
+        "iam:PassRole",
+        "AttachPolicy",
+        "lambda create-function"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "iam-credential-type-identification",
+      "prompt": "你在配置文件中发现一个 AWS 凭据，AccessKeyId 以 'ASIA' 开头。这和以 'AKIA' 开头的有什么区别？对你的利用有什么影响？",
+      "expected_output": "AKIA=长期凭据（IAM User），ASIA=临时凭据（STS），需要额外的 SessionToken 才能使用",
+      "expectations": [
+        "AKIA|长期凭据|IAM User|永久密钥",
+        "ASIA|临时凭据|STS|AssumeRole",
+        "SessionToken|AWS_SESSION_TOKEN|必须同时使用",
+        "有过期时间|Expiration|临时有效",
+        "sts get-caller-identity|验证|确认身份"
+      ],
+      "required_terms": [
+        "AKIA",
+        "ASIA",
+        "STS"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "iam-bruteforce-permission-enum",
+      "prompt": "你有 AWS 凭据但 iam:ListPolicies 被拒绝，无法直接查看自己的权限。请描述如何通过暴力枚举确定你有哪些权限。",
+      "expected_output": "逐个尝试 API 调用，根据 AccessDenied vs 正常响应判断。s3 ls、ec2 describe-instances、iam list-users 等逐一尝试",
+      "expectations": [
+        "暴力枚举|逐个尝试|API调用|权限探测",
+        "AccessDenied|拒绝|正常响应|判断有无权限",
+        "s3 ls|ec2 describe|iam list-users|常见API",
+        "enumerate-iam|Pacu|自动化工具",
+        "不同服务|S3|EC2|Lambda|IAM|逐服务测试"
+      ],
+      "required_terms": [
+        "API调用",
+        "IAM",
+        "ec2 describe"
+      ]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ version: 1.0.0
 
 # Stopen (local) — /root/Stopen
 
-Automated Penetration Testing Agent (swfk2154/Stopen). OODA loop + Blackboard architecture, FastAPI + Web UI.
+Automated Penetration Testing Agent . OODA loop + Blackboard architecture, FastAPI + Web UI.
 
 ## Content
 

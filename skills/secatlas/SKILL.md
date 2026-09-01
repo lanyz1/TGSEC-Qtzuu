@@ -6,7 +6,7 @@ version: 1.0.0
 
 # SecAtlas 渗透知识库 (local mirror)
 
-Local clone: `/root/SecAtlas` (shuaiqideyu/SecAtlas, depth-1).
+
 Structured Chinese pentest knowledge base maintained by multiple AI agents.
 
 ## Content inventory

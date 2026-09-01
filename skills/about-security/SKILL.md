@@ -6,7 +6,7 @@ version: 1.0.0
 
 # AboutSecurity (local) — /root/AboutSecurity
 
-Largest structured pentest knowledge base (wgpsec/AboutSecurity). 68MB, 1884 files.
+Largest structured pentest knowledge base . 68MB, 1884 files.
 
 ## Content
 

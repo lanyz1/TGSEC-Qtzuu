@@ -1,5 +1,5 @@
 #!/bin/bash
-# mule-auto-learn — 黑骡自动学习器
+# tgsec-auto-learn — 黑骡自动学习器
 # 从SecAtlas仓库提取新知，更新本地知识库
 
 set -e

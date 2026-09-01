@@ -15,12 +15,12 @@
 
 | 脚本 | 用途 |
 |------|------|
-| `mule-auto-learn.sh` | 自动学习新知识 |
-| `mule-auto-maintain.sh` | 仓库自动维护 |
-| `mule-review-prs.sh` | PR 自动审查 |
-| `mule-merge-pr.sh` | PR 自动合并 |
-| `mule-comment-pr.sh` | PR 评论 |
-| `mule-tempmail.sh` | 临时邮箱工具 |
+| `tgsec-auto-learn.sh` | 自动学习新知识 |
+| `tgsec-auto-maintain.sh` | 仓库自动维护 |
+| `tgsec-review-prs.sh` | PR 自动审查 |
+| `tgsec-merge-pr.sh` | PR 自动合并 |
+| `tgsec-comment-pr.sh` | PR 评论 |
+| `tgsec-tempmail.sh` | 临时邮箱工具 |
 
 ## 贡献工具
 

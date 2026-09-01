@@ -1,11 +1,11 @@
 #!/bin/bash
-# mule-merge-pr — 黑骡合并指定PR
-# 用法: source /root/.hermes/secrets/github.env && mule-merge-pr <PR_NUMBER> [reason]
+# tgsec-merge-pr — 黑骡合并指定PR
+# 用法: source /root/.hermes/secrets/github.env && tgsec-merge-pr <PR_NUMBER> [reason]
 
 PR_NUM="$1"
 REASON="${2:-BlackMule auto-merge}"
 
-[ -z "$PR_NUM" ] && { echo "用法: mule-merge-pr <PR_NUMBER> [reason]"; exit 1; }
+[ -z "$PR_NUM" ] && { echo "用法: tgsec-merge-pr <PR_NUMBER> [reason]"; exit 1; }
 [ -z "$GH_TOKEN" ] && { echo "需要 source secrets/github.env"; exit 1; }
 
 API="https://api.github.com/repos/shuaiqideyu/SecAtlas/pulls/${PR_NUM}"

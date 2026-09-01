@@ -1,5 +1,5 @@
 #!/bin/bash
-# mule-tempmail - 黑骡临时邮箱模块
+# tgsec-tempmail - 黑骡临时邮箱模块
 # 基于 GuerrillaMail API，自动获取/检查/等待邮件
 # 用途: 注册验证、密码重置等需要邮箱确认的场景
 
@@ -53,7 +53,7 @@ case "$cmd" in
         [ -f "$GM_STATE" ] && cat "$GM_STATE" | python3 -m json.tool 2>/dev/null || echo "No active temp email"
         ;;
     *)
-        echo "Usage: mule-tempmail {create|check|wait [timeout]|state}"
+        echo "Usage: tgsec-tempmail {create|check|wait [timeout]|state}"
         exit 1
         ;;
 esac

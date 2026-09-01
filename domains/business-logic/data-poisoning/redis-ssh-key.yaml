@@ -99,7 +99,7 @@ limitations:
   - "验证后必须清理写入的文件"
 
 sources:
-  - agent: "blackmule"
+  - agent: "blacktgsec"
     date: "2026-07-23"
   - ref: "HackTricks: Redis"
   - ref: "CWE-306: Missing Authentication for Critical Function"

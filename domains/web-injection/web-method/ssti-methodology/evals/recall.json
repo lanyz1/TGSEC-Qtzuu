@@ -1,0 +1,41 @@
+{
+  "skill_id": "ssti-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "精确关键词搜索",
+      "keywords": ["ssti", "template injection", "模板注入", "jinja2", "server-side template"]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "引擎名搜索",
+      "keywords": ["twig", "mako", "freemarker", "django template"]
+    },
+    {
+      "id": 3,
+      "type": "keyword_positive",
+      "description": "沙箱逃逸搜索",
+      "keywords": ["sandbox-escape", "sandbox escape"]
+    },
+    {
+      "id": 4,
+      "type": "keyword_negative",
+      "description": "不应被 SQL 注入召回",
+      "keywords": ["sql injection", "union select"]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "flask-ssti-scenario",
+      "scenario": "目标是 Python/Flask 应用（Werkzeug/2.0），/render?template=test 参数会回显用户输入。{{7*7}} 返回 49。请搜索相关攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {"tool": "list_skills", "keyword_contains": "ssti|template"},
+        {"tool": "read_skill", "id": "ssti-methodology"}
+      ]
+    }
+  ]
+}

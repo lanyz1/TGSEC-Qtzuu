@@ -1,0 +1,64 @@
+{
+  "skill_id": "multi-layer-network",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "pivot",
+        "隧道",
+        "proxy",
+        "tunnel"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "工具搜索",
+      "keywords": [
+        "frp",
+        "chisel",
+        "socks",
+        "内网穿透"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "端口转发",
+        "跳板",
+        "multi-layer"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "keyword_negative",
+      "description": "不应被web漏洞召回",
+      "keywords": [
+        "sql injection",
+        "xss"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "multi-layer-network-scenario",
+      "scenario": "目标在多层网络中，需要从 DMZ 穿透到内网。请搜索多层网络渗透方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "multi-layer|多层|network|proxy|隧道"
+        },
+        {
+          "tool": "read_skill",
+          "id": "multi-layer-network"
+        }
+      ]
+    }
+  ]
+}

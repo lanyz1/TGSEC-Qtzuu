@@ -1,0 +1,58 @@
+{
+  "skill_name": "evasion-research",
+  "evals": [
+    {
+      "id": 1,
+      "name": "research-loader-technique",
+      "prompt": "需要搜索 GitHub 上新的 shellcode loader 技术并入库。请描述搜索、分析、去重和入库的完整流程。",
+      "expected_output": "gh search 找仓库 → 分析代码模式 → 去重检查 → 入库新技术",
+      "expectations": [
+        "gh search|GitHub搜索|shellcode loader",
+        "分析代码|模式识别|API调用|技术分类",
+        "去重|已有技术|避免重复入库",
+        "入库|记录|技术名称|分类标签"
+      ],
+      "required_terms": [
+        "GitHub搜索",
+        "gh search",
+        "shellcode loader"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "research-github-code-search",
+      "prompt": "你发现现有知识库缺少 direct syscall 的 C 语言实现。你想通过 GitHub code search 找到相关代码。请写出搜索命令，并说明你会如何从搜索结果中筛选出高质量的候选仓库。",
+      "expected_output": "gh search code \"NtCreateThreadEx\" --language c --limit 20，筛选标准：星数>100、近期更新、无恶意特征、代码可复现",
+      "expectations": [
+        "gh search code|GitHub代码搜索|code search",
+        "NtCreateThreadEx|direct syscall|搜索关键词",
+        "stars|星数|质量筛选|活跃度",
+        "--language c|--limit|搜索参数",
+        "恶意检测|可疑仓库|排除|筛选标准"
+      ],
+      "required_terms": [
+        "gh search code",
+        "NtCreateThreadEx",
+        "--language c"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "research-deduplication-decision",
+      "prompt": "你通过 GitHub 研究发现了两项 AMSI 绕过技术：A) AmsiScanBuffer 内存字节 patch（已有类似技术入库），B) 使用 AES 加密绕过 AMSI 特征检测（新目标新实现）。请判断哪些应该入库，哪些应该跳过，理由是什么？",
+      "expected_output": "A 跳过（已有同类技术入库），B 入库（新目标不同实现有价值）。入库判断：同名技术跳过，同技术不同名跳过，同目标不同实现或不同目标类似 API 都应入库",
+      "expectations": [
+        "同名技术|跳过|重复|不入库",
+        "同技术不同名|跳过|重复",
+        "同目标不同实现|入库|有价值|补充",
+        "不同目标类似API|入库|不同用途",
+        "判断标准|入库规则|决策"
+      ],
+      "required_terms": [
+        "AmsiScanBuffer",
+        "跳过",
+        "入库"
+      ]
+    }
+  ]
+}

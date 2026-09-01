@@ -1,0 +1,53 @@
+{
+  "skill_id": "subdomain-deep",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "subdomain",
+        "子域名",
+        "dns",
+        "枚举"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "爆破",
+        "crawl",
+        "资产发现"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被Web漏洞召回",
+      "keywords": [
+        "file upload",
+        "deserialization"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "subdomain-deep-scenario",
+      "scenario": "需要深度发现目标的子域名资产。请搜索子域名发现方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "subdomain|子域名|dns|asset"
+        },
+        {
+          "tool": "read_skill",
+          "id": "subdomain-deep"
+        }
+      ]
+    }
+  ]
+}

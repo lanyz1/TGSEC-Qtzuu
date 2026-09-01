@@ -1,0 +1,29 @@
+{
+  "skill_id": "msf-oneshot",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "MSF 直接关键词",
+      "keywords": ["metasploit", "msf", "msfconsole", "meterpreter", "msfvenom"]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "OS 级漏洞利用场景",
+      "keywords": ["EternalBlue", "MS17-010", "BlueKeep", "PrintNightmare", "系统漏洞利用"]
+    },
+    {
+      "id": 3,
+      "type": "keyword_positive",
+      "description": "payload 生成场景",
+      "keywords": ["生成payload", "反弹shell", "reverse shell EXE", "生成木马"]
+    },
+    {
+      "id": 4,
+      "type": "keyword_negative",
+      "description": "不应触发的 Web 漏洞场景",
+      "keywords": ["SQL注入", "XSS", "CSRF", "文件上传绕过", "SSRF"]
+    }
+  ]
+}

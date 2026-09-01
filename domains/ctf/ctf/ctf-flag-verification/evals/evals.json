@@ -1,0 +1,59 @@
+{
+  "skill_name": "ctf-flag-verification",
+  "evals": [
+    {
+      "id": 1,
+      "name": "flag-extractvalue-truncation-trap",
+      "prompt": "你用 EXTRACTVALUE 报错注入提取 flag，LENGTH() 显示 flag 总长 64 字符。你 SUBSTRING(1,32) 得到 'flag{0aa3ada534b6aa7033dddbf624' (28字符含flag{})，SUBSTRING(33,32) 得到 '076c48afd97407bcab9b1d6acb6bc50f'。手动拼接后长度只有 60。问题在哪？如何正确做？",
+      "expected_output": "EXTRACTVALUE 每段限32字符，中间有4字符丢失（位置29-32）。应该用 Python 自动化分段提取，不要手动拼接。",
+      "expectations": [
+        "32字符截断|EXTRACTVALUE限制|报错函数长度限制",
+        "中间丢失|遗漏字符|位置29-32|偏移错误",
+        "Python脚本|自动提取|不要手动拼接|程序化",
+        "UNION SELECT|替代方案|无截断|一次拿完整",
+        "LLM不可靠|数hex字符|自动化验证"
+      ],
+      "required_terms": [
+        "UNION SELECT",
+        "Python脚本",
+        "数hex字符"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "flag-html-entity-decode",
+      "prompt": "命令执行返回的结果在网页中显示为：flag{a3b&lt;c5d&amp;e7f}。你直接提交了 flag{a3b&lt;c5d&amp;e7f} 但被判定为错误。问题在哪？",
+      "expected_output": "HTML 实体编码未解码：&lt; → <，&amp; → &。应该用 Python html.unescape() 解码后再提交。",
+      "expectations": [
+        "HTML实体|&lt;|&amp;|编码未解码",
+        "html.unescape|Python解码|实体转换",
+        "&lt;变成<|&amp;变成&|解码还原",
+        "网页显示|渲染后不同|源码vs显示",
+        "flag{a3b<c5d&e7f}|解码后正确flag"
+      ],
+      "required_terms": [
+        "flag{a3b<c5d&e7f}",
+        "html.unescape",
+        "HTML实体"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "flag-base64-lfi-scenario",
+      "prompt": "通过 LFI 漏洞你用 php://filter/convert.base64-encode/resource=/flag.txt 读取到一串 base64 内容 'RkxBR3thYmMxMjN9Cg=='。请描述完整的提取和验证流程。",
+      "expected_output": "base64 解码 → strip() 去除换行 → 正则验证格式 → 检查长度",
+      "expectations": [
+        "base64解码|decode|base64 -d|Python",
+        "strip()|去除换行|trailing newline|\\n",
+        "php://filter|base64-encode|LFI编码读取",
+        "正则验证|flag{|格式检查|完整性",
+        "Python|程序化|不要手动解码|自动化"
+      ],
+      "required_terms": [
+        "flag{",
+        "strip()",
+        "php://filter"
+      ]
+    }
+  ]
+}

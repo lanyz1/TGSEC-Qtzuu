@@ -1,0 +1,102 @@
+---
+name: middleware-tactics
+description: "中间件漏洞利用方法论。当发现 Tomcat/WebLogic/JBoss/WildFly/IIS/Nginx/Apache 等 Web 中间件时使用。覆盖管理后台弱口令、部署 WAR/JSP webshell、解析漏洞、配置错误利用、AJP 协议利用。任何涉及中间件、应用服务器、解析漏洞的场景都应使用此技能"
+metadata:
+  tags: "middleware,tomcat,weblogic,jboss,wildfly,iis,nginx,apache,中间件,解析漏洞,war,部署,管理后台,ajp"
+  category: "postexploit"
+  mitre_attack: "T1190,T1210"
+---
+
+# 中间件漏洞利用方法论
+
+中间件是 Web 应用的运行环境——拿下中间件等于直接在服务器上执行代码。
+
+## ⛔ 深入参考（必读）
+
+各中间件详细利用命令和 payload 按中间件类型组织，涵盖 Tomcat、WebLogic、JBoss、IIS、Nginx、Apache HTTPD。
+
+---
+
+## Phase 1: 中间件识别
+
+```bash
+# 自动指纹
+whatweb http://TARGET
+curl -sI http://TARGET | grep -i "Server\|X-Powered-By"
+nmap -sV -p 80,443,8080,8009,8443,9090,7001,4848,9200 TARGET
+
+# 常见端口指纹
+```
+
+| 端口 | 中间件 | 管理后台路径 |
+|------|--------|-------------|
+| 8080 | Tomcat | /manager/html |
+| 7001 | WebLogic | /console |
+| 8080/9990 | JBoss/WildFly | /admin-console, /management |
+| 4848 | GlassFish | /common/index.jsf |
+| 80/443 | IIS | — |
+| 80/443 | Nginx | — |
+| 80/443 | Apache | /server-status |
+
+## Phase 2: 攻击决策树
+
+```
+识别到什么中间件？
+├─ Tomcat
+│   ├─ /manager 可访问 → 弱口令 → 部署 WAR
+│   ├─ 8009 AJP 开放 → Ghostcat 文件读取/RCE
+│   └─ PUT 方法开启 → 直接写 JSP
+│
+├─ WebLogic
+│   ├─ /console 可访问 → 弱口令 → 部署 WAR
+│   └─ T3/IIOP 协议 → 反序列化 RCE（CVE 众多）
+│
+├─ JBoss/WildFly
+│   ├─ JMX Console 未授权 → 部署 WAR
+│   └─ 反序列化（JMXInvokerServlet）
+│
+├─ IIS
+│   ├─ PUT 方法 → WebDAV 上传
+│   ├─ 短文件名 → 信息泄露
+│   └─ 解析漏洞（6.0/7.5）
+│
+├─ Nginx
+│   ├─ 目录穿越（alias 错配）
+│   ├─ 解析漏洞（cgi.fix_pathinfo）
+│   └─ CRLF 注入
+│
+└─ Apache
+    ├─ 路径穿越 (CVE-2021-41773)
+    └─ mod_cgi/mod_cgid → RCE
+```
+
+## Phase 3: 通用攻击 — 管理后台弱口令
+
+**方法论**：针对已识别的中间件管理接口，测试默认凭据组合。
+
+1. 确认管理接口可达（Phase 1 端口/路径表）
+2. 使用默认凭据字典尝试登录（每种中间件有特定的默认用户名/密码组合）
+3. 注意锁定策略——部分中间件会在多次失败后锁定账户
+4. 成功登录后进入 Phase 4
+
+## Phase 4: WAR 部署 Getshell
+
+**方法论**：获取管理后台权限后，利用部署功能上传 webshell。
+
+1. **Tomcat Manager** — 通过 manager 文本接口或 HTML 界面部署 WAR 包
+2. **WebLogic Console** — 通过 Console 界面或 REST API 部署应用
+3. **JBoss/WildFly** — 通过 JMX Console 或管理接口部署
+
+通用流程：
+- 生成 WAR 格式的 webshell（msfvenom 或手工打包 JSP）
+- 通过管理接口部署到目标
+- 访问部署路径触发 webshell
+
+## Phase 5: 解析漏洞利用
+
+**方法论**：利用中间件对文件扩展名的解析差异绕过上传限制。
+
+核心思路：
+1. **后缀欺骗** — 利用中间件对多后缀、截断符、目录的解析逻辑，使上传的图片/文本文件被作为脚本执行
+2. **FastCGI/CGI 路径解析** — 利用 `cgi.fix_pathinfo` 等配置使非脚本路径被传递给解释器
+3. **PUT 方法** — 直接写入可执行文件到 Web 目录

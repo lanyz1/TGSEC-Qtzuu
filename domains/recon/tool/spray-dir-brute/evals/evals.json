@@ -1,0 +1,26 @@
+{
+  "skill_name": "spray-dir-brute",
+  "evals": [
+    {
+      "id": 1,
+      "name": "basic-dir-brute",
+      "prompt": "httpx 探活发现 http://10.0.0.5:8080 是 Tomcat 8.5，我想用 spray 对它做 PHP/JSP 后缀的目录爆破，字典用 /pentest/AboutSecurity/Dic/Web/Directory/Fuzz_common.txt，并发 50 线程",
+      "expected_output": "spray -u http://10.0.0.5:8080 -d /pentest/AboutSecurity/Dic/Web/Directory/Fuzz_common.txt --suffix .jsp,.php -t 50",
+      "expectations": ["spray -u", "-d.*/pentest/", "--suffix.*\\.jsp"]
+    },
+    {
+      "id": 2,
+      "name": "backup-file-scan",
+      "prompt": "渗透目标 http://oa.corp.local:9090，这是用友 NC 的 OA 系统。我想扫一下有没有遗留的备份文件（.bak/.zip/.sql 这些），同时也看看有没有常见的敏感路径比如 .git、.env 之类的",
+      "expected_output": "spray -u http://oa.corp.local:9090 --bak --common",
+      "expectations": ["spray", "--bak", "--common"]
+    },
+    {
+      "id": 3,
+      "name": "fingerprint-mode",
+      "prompt": "naabu 扫完内网 10.0.0.0/24 后 httpx 输出了 80 多个存活 URL 到 alive.txt。我想快速看一下每个站点是什么系统（CMS/框架/中间件），不需要做目录爆破，spray 能做指纹识别吗？",
+      "expected_output": "spray -l alive.txt --check-only --finger",
+      "expectations": ["spray", "-l", "--check-only|--finger"]
+    }
+  ]
+}

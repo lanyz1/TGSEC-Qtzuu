@@ -1,0 +1,113 @@
+# 案例: XXE 自主学习训练 (Flask/lxml 本地靶场)
+# 日期: 2026-07-23
+# 目标: 本地 Flask/lxml XXE 训练靶场 (自建)
+# 类型: 公开靶场 / 自主学习
+
+target:
+  url: "http://127.0.0.1:8880"
+  type: lab
+  name: "XXE Training Lab (Flask/lxml 6.1.1)"
+  tech_stack:
+    - "Python 3.11"
+    - "Flask 3.1.2"
+    - "lxml 6.1.1 (libxml2 2.14.6)"
+    - "XML 解析器: load_dtd=True, resolve_entities=True"
+  ports: [8880]
+  fingerprint:
+    engine: "lxml 6.1.1"
+    parser_config: "load_dtd=True, no_network=False, resolve_entities=True"
+    file_protocol: "✅ 可用"
+    http_protocol: "❌ lxml 6.x 默认禁止网络"
+
+attack_surface:
+  - "/lab1 (POST) - 基础 XXE（有回显）"
+  - "/lab2 (POST) - SSRF via XXE（有回显）"
+  - "/lab3 (POST) - 盲 XXE（无回显）"
+  - "/lab4 (POST) - 数据渗透场景"
+  - "/callback (GET/POST) - 攻击者回调接收器"
+  - "/dtd (GET) - 恶意 DTD 托管"
+
+techniques_tried:
+  - technique: "XXE 文件读取 (file:// 协议)"
+    result: "success"
+    detail: "读取 /tmp/xxe_lab/flag.txt → FLAG{xxe_xml_external_entity_2026}；读取 /etc/passwd → 完整用户列表"
+
+  - technique: "XXE SSRF (HTTP 出站)"
+    result: "blocked"
+    detail: "lxml 6.1.1 no_network=False 不发起 HTTP 请求——现代解析器安全限制"
+
+  - technique: "XXE SSRF (file:// 协议)"
+    result: "success"
+    detail: "file:// 协议不受网络限制，可访问本地文件系统（SSRF 变体）"
+
+  - technique: "盲 XXE 检测 (OOB HTTP 回调)"
+    result: "blocked"
+    detail: "受 lxml 6.x 网络限制，HTTP OOB 不可行"
+
+  - technique: "盲 XXE 检测 (错误消息差异)"
+    result: "partial"
+    detail: "靶场统一返回 OK 不暴露错误，但原理已验证——有回显端点可区分存在/不存在文件"
+
+  - technique: "内联实体检测"
+    result: "success"
+    detail: "<!ENTITY test 'hello'> → &test; 成功替换——确认解析器处理实体"
+
+  - technique: "lxml 6.x 安全行为研究"
+    result: "success"
+    detail: "发现 lxml 6.1.1 的 no_network=False 实际不生效——关键安全情报"
+
+success_path:
+  - step: 1
+    action: "基线探测: POST 正常 XML → 确认 XML 解析器接受输入"
+    technique: "recon"
+  - step: 2
+    action: "内联实体测试: <!ENTITY test 'hello'> → 确认实体解析"
+    technique: "detection"
+  - step: 3
+    action: "XXE 文件读取: <!ENTITY xxe SYSTEM 'file:///tmp/xxe_lab/flag.txt'> → FLAG{...}"
+    technique: "xxe-file-read"
+  - step: 4
+    action: "扩大读取: file:///etc/passwd → 完整用户列表（root/服务账户/用户）"
+    technique: "xxe-file-read"
+  - step: 5
+    action: "HTTP 实体测试: 向独立回调服务器发请求 → 未收到回调"
+    finding: "lxml 6.x 禁止网络出站——即使 no_network=False"
+  - step: 6
+    action: "确认 file:// 不受网络限制 → 本地文件读取仍然可行"
+    technique: "parser-research"
+
+techniques_learned:
+  - "XXE 核心: DOCTYPE + ELEMENT + ENTITY → file:// 读取本地文件"
+  - "现代 XML 解析器安全趋势: lxml 6.x no_network=False 不真正允许网络——file:// 仍可用"
+  - "XXE 检测三步: ①正常XML基线 ②内联实体确认解析 ③外部实体读取文件"
+  - "盲 XXE 三种方法: OOB 回调（最可靠）、错误差异、时间延迟"
+  - "OOB 数据渗透链: 恶意 DTD → 参数实体 → 文件内容 → URL参数 → 攻击者服务器"
+  - "本地 DTD 技术: 重新定义系统已有 DTD 中的实体，无需外部网络"
+  - "DNS OOB 比 HTTP OOB 更可靠（DNS 通常不被防火墙拦截）"
+  - "lxml 6.1.1 的 file:// 可读取 /etc/passwd 等敏感文件——即使无网络"
+  - "XML 实体分两种: 通用实体（&xxe; 用于内容）+ 参数实体（%xxe; 用于 DTD 内部）"
+
+fingerprint_triggers:
+  - "Content-Type: application/xml 或 text/xml → XXE 测试"
+  - "XML 解析成功 + 内容回显 → file:// 文件读取"
+  - "XML 解析成功 + 无回显 → 盲 XXE（OOB/错误差异）"
+  - "POST 返回统一 OK → 尝试错误消息差异或 DNS OOB"
+  - "lxml/Python 特征 → 注意 lxml 6.x 网络限制"
+  - "SOAP/WSDL/DOCX/SVG → XML 解析入口"
+
+parser_intel:
+  lxml_6_1_1:
+    version: "6.1.1"
+    libxml2: "2.14.6"
+    file_protocol: "✅ (可读取本地文件)"
+    http_protocol: "❌ (no_network=False 不生效)"
+    dtd_validation: "✅ load_dtd=True 可用"
+    entity_resolution: "✅ resolve_entities=True 可用"
+    network_access: "❌ 默认禁止（安全增强）"
+    impact: "仍可读取本地文件——file:// 协议不受网络限制影响"
+
+tools_used:
+  - "Flask 3.1.2 (靶场搭建)"
+  - "lxml 6.1.1 (XML 解析器)"
+  - "curl (HTTP 请求)"
+  - "Python http.server (OOB 回调接收器)"

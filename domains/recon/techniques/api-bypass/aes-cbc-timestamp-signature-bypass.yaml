@@ -1,0 +1,84 @@
+# 技术卡片 - AES-CBC 时间戳签名绕过
+id: "api-bypass-aes-cbc-timestamp-signature"
+name: "AES-CBC 时间戳签名绕过"
+category: "api-bypass"
+subcategory: "encryption-bypass"
+severity: "critical"
+
+description: |
+  针对使用客户端时间戳生成加密密钥的 API 签名机制进行完全绕过。
+  
+  目标系统使用 CryptoJS.AES.encrypt(data, key, {iv: key, mode: CBC}) 对 API 请求体加密，
+  key = MD5(timestamp_ms)[:16]，且通过 HTTP 头 Secret 明文传输完整 MD5 值。
+  服务器容忍 ±5 秒以上的时间漂移，攻击者可枚举时间窗口伪造任意 API 请求。
+
+trigger_signals:
+  - "API 请求体是 base64 编码的密文"
+  - "请求头包含 Secret 和 Signature 头"
+  - "Secret 值为 32 位 hex 字符串（MD5格式）"
+  - "Content-Type: text/plain（而非 application/json）"
+  - "同一请求重放失败（时间戳过期）但±5s内成功"
+
+payloads:
+  - technique: "时间窗口枚举"
+    payload: |
+      for offset in range(-5, 6):
+          ts = now_ms + offset * 1000
+          secret = MD5(str(ts)).hexdigest()
+          key = secret[:16]
+          encrypted = AES_CBC_encrypt(json_data, key, iv=key)
+          signature = MD5(sorted_params + "&key=" + secret)
+          send(encrypted, headers={"Secret": secret, "Signature": signature})
+    note: "每次尝试独立发送，服务器接受±5s窗口内的请求"
+  
+  - technique: "注册/登录任意账号"
+    payload: |
+      POST /register
+      Body: AES_CBC({"username":"attacker","password":"Pass1!","password_re":"Pass1!"}, MD5(ts)[:16])
+      Headers: Secret=MD5(ts), Signature=MD5(params&key=MD5(ts))
+    note: "绕过所有客户端签名校验，直接注册/登录"
+  
+  - technique: "调用认证后API"
+    payload: |
+      获取JWT → 后续请求携带Cookie → 调用任意/user/* /shop/* /pay/*端点
+    note: "JWT由服务器签发，后续请求只需Cookie，无需继续签名"
+
+success_indicators:
+  - "服务器返回 HTTP 200 + 正常JSON响应（而非 signature failure）"
+  - "注册成功返回 token"
+  - "登录成功返回 JWT"
+
+prerequisites:
+  - "目标使用客户端生成的时间戳作为加密密钥"
+  - "时间戳明文或可推导（如通过Date头）"
+  - "服务器有足够的时间漂移容忍度"
+  - "加密算法和IV方案已知（通过JS逆向获取）"
+
+upgrade_paths:
+  - "获取JWT后访问所有认证API"
+  - "通过文件上传端点尝试RCE"
+  - "通过支付/充值API进行业务逻辑攻击"
+  - "枚举隐藏API端点（利用认证后的JS控制器）"
+
+defense:
+  - "使用服务端存储的固定密钥，不依赖客户端时间戳"
+  - "禁止HTTP头明文传输密钥"
+  - "IV使用随机值，不与密钥相同"
+  - "添加nonce/request_id防重放攻击"
+  - "服务端签名包含请求体哈希，防止篡改"
+
+tools:
+  - "Python Crypto.Cipher.AES"
+  - "curl / requests"
+
+confidence: "high"
+
+limitations:
+  - "需要逆向JS获取完整加密逻辑（算法、IV、签名生成规则）"
+  - "时间窗口需实际测试确认（不同服务器容忍度不同）"
+  - "若服务器使用固定密钥则此技术不适用"
+
+sources:
+  - agent: "黑骡 v1.1.0"
+    date: "2026-07-21"
+  - ref: "授权渗透测试案例"

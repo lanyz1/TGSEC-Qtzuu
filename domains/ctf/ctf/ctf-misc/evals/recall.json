@@ -1,0 +1,53 @@
+{
+  "skill_id": "ctf-misc",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "ctf misc",
+        "杂项",
+        "pyjail",
+        "bashjail"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "encoding",
+        "z3",
+        "sdr"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被crypto召回",
+      "keywords": [
+        "rsa",
+        "aes"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-misc-scenario",
+      "scenario": "CTF 杂项题，题目给了一个奇怪格式的文件，文件名是 challenge.dat，不知道是什么类型。请搜索 CTF Misc 解题方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "misc|杂项|ctf misc|ctf"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-misc"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+id: "blockchain-usdt-approve-fake-deposit"
+name: "USDT(TRC20/ERC20) approve 伪装充值上分"
+category: "blockchain"
+subcategory: "deposit-reconciliation"
+severity: "critical"
+
+description: |
+  链上充值平台的对账兜底若未区分事件类型，攻击者可对平台充值地址发起
+  USDT 合约 approve（授权）交易而非 transfer（转账）。approve 的 spender
+  会被部分接口（如 TronGrid trc20 only_to=true）放入 to 字段，授权额度被
+  误识别为到账金额并上分。充值地址链上从未收到 USDT，平台余额却增加，
+  攻击者随即提现造成资损。该方法对 TRC20 / ERC20 通用。
+
+trigger_signals:
+  - "平台提供 TRC20/ERC20 地址充值并自动上分，用户有独立充值地址"
+  - "对账/兜底逻辑调用 TronGrid /v1/accounts/{addr}/transactions/trc20 类接口"
+  - "充值确认只校验 solidity 回执 SUCCESS，无事件类型/金额校验"
+  - "平台支持 USDT 充值和法币/代付提现（攻击变现路径）"
+
+payloads:
+  - technique: "构造 approve 交易伪装充值"
+    payload: |
+      # 链上构造：owner 对平台充值地址 approve
+      # 方法选择器: 095ea7b3 = approve(address spender, uint256 amount)
+      # 非 a9059cbb = transfer(address,uint256)
+      # 事件: Approval (topic 8c5be1e5…) 而非 Transfer (topic ddf252ad…)
+      approve(spender=平台充值地址, amount=N USDT)  # 0 < N ≤ 账户余额
+    note: "approve 不转移资金；余额仍在 owner 地址。观察平台是否因此上分"
+  - technique: "批量小额度多次 approve 探测确认逻辑"
+    payload: "同一 owner 对充值地址多次 approve（如 1000/5000/10000），观察对账是否逐笔上分"
+    note: "确认非一次性偶发，且可量化误上分金额"
+
+success_indicators:
+  - "平台账户余额增加，但充值地址链上 USDT 余额为 0 / 无 Transfer 事件"
+  - "对账记录中事件类型为 Approval 却被写入充值金额"
+  - "误上分后提现流程可用（代付渠道正常出款）"
+
+prerequisites:
+  - "目标平台使用链上地址充值 + 自动对账上分"
+  - "对账接口返回含 Approval 事件且未按事件类型过滤"
+  - "上分确认缺少'等额真实 Transfer 事件'校验"
+
+upgrade_paths:
+  - "多次 approve 放大误上分金额后批量提现"
+  - "结合其他业务缺陷（如提现审核绕过）加速变现"
+  - "对同一充值地址发起伪造的 Transfer 事件污染对账（需事件伪造能力）"
+
+defense:
+  - "对账落库只认 type=Transfer（TRC20）/ 标准 Transfer 事件（ERC20），拒绝 Approval 等其余类型"
+  - "上分前校验：solidity SUCCESS + 本地址等额 USDT Transfer 事件（tx 内事件逐条核验）"
+  - "事件类型按 topic0 白名单校验：Transfer=ddf252ad…，Approval=8c5be1e5…"
+  - "不匹配记录标记 invalid 不再重试；异常单告警并人工复核"
+  - "提现侧增加'链上真实入账校验'交叉验证，避免与充值上分解耦"
+  - "监控链上异常模式：对充值地址的高频 approve、无 transfer 的余额变动"
+
+sources:
+  - ref: "事故复盘：20260730 USDT Approval 伪装充值上分（脱敏）"
+  - ref: "TRC20 标准 / TronGrid API 文档"

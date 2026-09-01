@@ -1,0 +1,63 @@
+# 案例: 否极科技 (ZWC 隐写 CTF)
+# 日期: 2026-07-20
+# 目标: http://203.0.113.10:30073
+
+target:
+  url: "http://203.0.113.10:30073"
+  type: ctf
+  name: "否极科技 (Fouji Tech)"
+  tech_stack:
+    - Apache/2.4.65 (Debian)
+    - 纯静态 HTML/CSS
+    - 无 JS 框架
+  ports: [30073, 8443]
+  fingerprint:
+    server_header: "Apache/2.4.65 (Debian)"
+    content_type: "text/html"
+    has_forms: false
+    has_api: false
+    is_spa: false
+
+attack_surface:
+  - "多页面静态站 (about, contact, cloud, ai, security, data, careers, news, privacy, terms, compliance)"
+  - "images/banner.png (伪装 JPEG → 1×1 像素)"
+  - "images/ 目录 403"
+  - "/.htaccess 403"
+
+techniques_tried:
+  - technique: "目录爆破"
+    result: "found_nothing"
+    tool: "mule-dirb-fast"
+  - technique: "路径遍历"
+    result: "blocked_404"
+  - technique: "页面源码搜索"
+    result: "found_clue"
+    detail: "images/banner.png 629B 1×1 JPEG → binwalk 检测内嵌 ZIP"
+
+success_path:
+  - step: 1
+    action: "下载 images/banner.png"
+    finding: "629B JPEG 伪装成 PNG，1×1 像素"
+  - step: 2
+    action: "binwalk 分析"
+    finding: "偏移 0x150 处内嵌 ZIP 压缩包"
+  - step: 3
+    action: "提取 ZIP → hidden_message.txt"
+    finding: "文本提示 'check the invisible characters' + 188 个 Zero-Width 字符"
+  - step: 4
+    action: "ZWC 隐写解码 (U+200B=0, U+200C=1, U+200D=分隔符)"
+    finding: "每组 8 位 → ASCII 解码"
+  - step: 5
+    action: "拼接 21 个字符"
+    flag: "flag{TimeTr@vel_2026}"
+
+techniques_learned:
+  - "文件扩展名不可信 (PNG 实为 JPEG)"
+  - "1×1 像素图片高度可疑 → 使用 binwalk 检测"
+  - "Zero-Width 字符隐写：U+200B/U+200C/U+200D 编码二进制"
+  - "binwalk 可以检测内嵌文件 (ZIP/ELF/等)"
+
+fingerprint_triggers:
+  - "极小图片 (<1KB) + 异常尺寸 → binwalk"
+  - "静态站无 API/表单 → 检查图片/文件/隐藏路径"
+  - "403 on images/ → 逐个文件探测"

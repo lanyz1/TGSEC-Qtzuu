@@ -1,0 +1,67 @@
+# 技术卡片 - 内联注释绕过会话安全检测
+id: "waf-bypass-inline-comment-session"
+name: "/**/ 内联注释绕过会话安全检测"
+category: "waf-bypass"
+subcategory: "filter-evasion"
+severity: "medium"
+
+description: |
+  某些 Web 应用在检测到 URL 中包含 SQL 关键字（AND/OR/UNION/SLEEP等）时，
+  会返回会话安全错误并拒绝请求。使用 MySQL 内联注释 /**/ 替换空格，
+  可绕过该检测机制。
+
+  注意：此技术仅绕过请求层面的模式匹配过滤，实际 SQL 注入是否生效
+  仍需单独验证。在本案例中，搜索参数为客户端渲染，绕过过滤后也未形成 SQLi。
+
+trigger_signals:
+  - "URL中包含 SQL 关键字时返回 'session not secure' 类错误"
+  - "关键字出现在正常文本中不触发（仅关键字+引号/等号组合触发）"
+  - "应用使用自定义请求过滤器（非标准 WAF）"
+
+payloads:
+  - technique: "基本内联注释绕过"
+    payload: "test'/**/OR/**/'1'='1"
+    note: "在关键字两侧插入/**/，替代空格"
+  
+  - technique: "AND 条件绕过"
+    payload: "test'/**/AND/**/'1'='1"
+    note: "用于布尔盲注"
+  
+  - technique: "UNION 绕过"
+    payload: "test'/**/UNION/**/SELECT/**/1,2,3--"
+    note: "用于联合查询注入"
+  
+  - technique: "注释符闭合"
+    payload: "test'/**/OR/**/1=1--"
+    note: "末尾注释可正常使用"
+
+success_indicators:
+  - "请求返回正常 HTML 响应（而非 JSON 会话错误）"
+  - "响应大小与正常请求相似"
+  - "不出现 'The current session is not secure' 类消息"
+
+prerequisites:
+  - "目标使用模式匹配检测 SQL 关键字"
+  - "检测在空格分隔处触发（/**/ 可替代空格）"
+  - "实际SQL注入点存在（此技术仅绕过过滤器）"
+
+upgrade_paths:
+  - "绕过过滤器后进行完整 SQLi 利用（UNION/布尔/时间盲注）"
+  - "结合其他 WAF 绕过技术（双编码、大小写变体）"
+
+defense:
+  - "使用参数化查询从根本上防止 SQL 注入"
+  - "WAF 规则覆盖内联注释变体：'/**/'、'/!50000/'等"
+  - "对请求参数做规范化处理后再检测"
+
+confidence: "medium"
+
+limitations:
+  - "仅绕过简单的模式匹配过滤器"
+  - "对使用 SQL 解析器的 WAF 无效"
+  - "实际 SQL 注入可能仍然被其他防护拦截（参数化查询等）"
+
+sources:
+  - agent: "黑骡 v1.1.0"
+    date: "2026-07-21"
+  - ref: "授权渗透测试案例"

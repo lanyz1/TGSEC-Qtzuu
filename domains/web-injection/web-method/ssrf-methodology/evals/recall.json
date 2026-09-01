@@ -1,0 +1,55 @@
+{
+  "skill_id": "ssrf-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "ssrf",
+        "server-side request forgery"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "gopher",
+        "metadata",
+        "file-read",
+        "internal-network",
+        "ip-bypass",
+        "cloud-metadata"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被XXE召回",
+      "keywords": [
+        "xxe",
+        "xml external entity",
+        "dtd"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ssrf-scenario",
+      "scenario": "目标有 URL 预览功能，输入 URL 后服务端会去获取网页内容并展示。请搜索 SSRF 相关方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "ssrf|server-side request|ip-bypass"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ssrf-methodology"
+        }
+      ]
+    }
+  ]
+}

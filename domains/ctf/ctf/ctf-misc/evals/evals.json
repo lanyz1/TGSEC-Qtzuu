@@ -1,0 +1,95 @@
+{
+  "skill_name": "ctf-misc",
+  "evals": [
+    {
+      "id": 1,
+      "name": "python-jail-escape",
+      "prompt": "CTF 题目是一个 Python jail：可以执行 Python 代码，但 import、exec、eval、os、system 等关键词被禁止。请描述逃逸方法。",
+      "expected_output": "通过 __builtins__ 或 MRO 链访问被禁函数：().__class__.__bases__[0].__subclasses__() 遍历子类找到 os._wrap_close 等可执行命令的类",
+      "expectations": [
+        "__class__|__bases__|__subclasses__|MRO链",
+        "__builtins__|__import__|内置函数|绕过import",
+        "子类|subclasses|os._wrap_close|Popen",
+        "chr()|字符构造|拼接|绕过关键词过滤",
+        "breakpoint()|pdb|交互调试|Python3.7"
+      ],
+      "required_terms": [
+        "__class__",
+        "__bases__",
+        "__subclasses__"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "multi-layer-encoding",
+      "prompt": "CTF misc 题给了一个文件，内容是一长串字符。用 file 命令显示为 ASCII text。观察发现是 base64 编码。解码后又是 base64。请描述解题策略。",
+      "expected_output": "多层嵌套编码：循环解码（base64/base32/hex/rot13），每层识别编码类型并解码，直到出现明文或 flag",
+      "expectations": [
+        "多层|嵌套|循环解码|递归",
+        "base64|base32|hex|rot13|多种编码",
+        "CyberChef|自动检测|Magic|自动解码",
+        "脚本|while循环|自动化|批量解码",
+        "明文|flag|停止条件|可读文本"
+      ],
+      "required_terms": [
+        "CyberChef",
+        "base64",
+        "base32"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "bash-jail-escape",
+      "prompt": "CTF 题目是受限的 bash shell，大部分命令被禁止（cat/ls/echo 等），只允许使用 bash 内建命令。PATH 为空。请描述逃逸方法。",
+      "expected_output": "利用 bash 内建功能：read 读文件、printf 输出、通配符展开列目录、$(<file) 读文件内容",
+      "expectations": [
+        "内建命令|builtin|bash内置|不依赖PATH",
+        "read|mapfile|读文件|$(<file)",
+        "printf|echo替代|输出|打印",
+        "通配符|glob|*|?|列目录",
+        "/bin/cat|绝对路径|/usr/bin|直接指定路径"
+      ],
+      "required_terms": [
+        "/usr/bin",
+        "builtin",
+        "read"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "qr-code-reconstruction",
+      "prompt": "CTF misc 题给了多张碎片图片，看起来是一个 QR 码被切成了若干块并打乱了顺序。请描述如何重组并解码。",
+      "expected_output": "重组 QR 码：根据定位标记（三个角的方块）确定方向和位置，拼接碎片后用 zbarimg 解码",
+      "expectations": [
+        "定位标记|finder pattern|三个角|方块|定位图案",
+        "拼接|重组|imagemagick|PIL|拼图",
+        "zbarimg|zxing|QR解码|扫描",
+        "方向|旋转|翻转|对齐|校正",
+        "纠错|容错|部分损坏|也能解码"
+      ],
+      "required_terms": [
+        "PIL",
+        "finder pattern",
+        "zbarimg"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "z3-constraint-solving",
+      "prompt": "CTF misc 题给了一组数学方程组，有 10 个未知数和 10 个方程，每个变量是一个可打印 ASCII 字符。请描述如何求解。",
+      "expected_output": "使用 Z3 SMT 求解器：定义 BitVec/Int 变量，添加方程约束和 ASCII 范围约束（32-126），求解得到 flag",
+      "expectations": [
+        "Z3|z3-solver|SMT|约束求解",
+        "BitVec|Int|变量定义|声明变量",
+        "约束|constraint|add|方程",
+        "ASCII|可打印|32-126|范围限制",
+        "s.check()|model()|求解|结果"
+      ],
+      "required_terms": [
+        "s.check()",
+        "model()",
+        "SMT"
+      ]
+    }
+  ]
+}

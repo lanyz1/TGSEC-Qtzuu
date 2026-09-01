@@ -1,0 +1,95 @@
+{
+  "skill_name": "privilege-escalation-web",
+  "evals": [
+    {
+      "id": 1,
+      "name": "privesc-mass-assignment-field-discovery",
+      "prompt": "POST /api/register 发送 {\"username\":\"test\",\"password\":\"pass\"} 后，响应中返回了 {\"id\":5,\"username\":\"test\",\"role\":\"user\",\"is_admin\":false,\"group_id\":1}。你想提权。请描述你发现可注入字段的具体方法。",
+      "expected_output": "从响应中发现隐藏字段（role, is_admin, group_id）并逐个注入测试",
+      "expectations": [
+        "响应字段|role|is_admin|group_id|响应泄露可注入字段",
+        "逐个测试|每次加一个|单独测试每个字段",
+        "role=admin|is_admin=true|group_id=0|具体payload",
+        "注册|更新|PUT /api/users/me|不同端点",
+        "验证|GET /api/users/me|确认是否生效"
+      ],
+      "required_terms": [
+        "GET /api/users/me",
+        "is_admin",
+        "role=admin"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "privesc-403-bypass-headers",
+      "prompt": "GET /admin 返回 403 Forbidden。目标使用 Nginx 反向代理 + Flask 后端。请列出至少 5 种具体的绕过方法。",
+      "expected_output": "Header 注入 + 路径变体 + 方法切换的组合绕过",
+      "expectations": [
+        "X-Original-URL|X-Rewrite-URL|特殊Header覆盖路径",
+        "/admin/.|/admin..;/|/Admin|路径变体",
+        "X-Forwarded-For: 127.0.0.1|IP伪造|本地访问",
+        "POST|PATCH|OPTIONS|HTTP方法切换",
+        "Nginx|代理|前后端解析差异|路径规范化"
+      ],
+      "required_terms": [
+        "/Admin",
+        "X-Forwarded-For: 127.0.0.1",
+        "POST"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "privesc-base64-cookie-tampering",
+      "prompt": "Cookie: session=eyJ1c2VyIjoiZ3Vlc3QiLCJyb2xlIjoidXNlciJ9。这是 Base64 编码。请描述完整的篡改流程。",
+      "expected_output": "Base64 解码 → JSON {user:guest,role:user} → 修改 role:admin → 重新编码 → 替换 Cookie",
+      "expectations": [
+        "Base64解码|{\"user\":\"guest\",\"role\":\"user\"}|JSON内容",
+        "role|admin|修改角色|篡改字段",
+        "重新Base64编码|替换Cookie|发送请求",
+        "无签名|没有HMAC|明文Cookie|可直接修改",
+        "验证|检查响应|是否获取管理员权限"
+      ],
+      "required_terms": [
+        "{\"user\":\"guest\",\"role\":\"user\"}",
+        "role",
+        "admin"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "privesc-flask-session-forgery",
+      "prompt": "目标是 Flask 应用，Cookie 名为 session，值以 eyJ 开头（Flask itsdangerous 签名）。你通过 LFI 读到了 app.py 中的 SECRET_KEY='supersecret'。请描述提权步骤。",
+      "expected_output": "flask-unsign 解码 → 修改 role → 用 SECRET_KEY 重新签名",
+      "expectations": [
+        "flask-unsign|flask session|itsdangerous",
+        "SECRET_KEY|supersecret|已知密钥",
+        "解码|查看session内容|当前字段",
+        "重新签名|--sign|用密钥签名|伪造session",
+        "role|admin|is_admin|修改权限字段"
+      ],
+      "required_terms": [
+        "SECRET_KEY",
+        "is_admin",
+        "flask session"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "privesc-http-method-tampering",
+      "prompt": "GET /admin/users 返回用户列表（只读），POST /admin/users/{id}/promote 返回 403。你以普通用户身份操作。请描述你尝试通过 HTTP 方法篡改绕过权限控制的完整策略。",
+      "expected_output": "尝试 PUT/PATCH/DELETE 替代 POST，X-HTTP-Method-Override header，参数 _method=POST，不同 Content-Type",
+      "expectations": [
+        "PUT|PATCH|DELETE|其他HTTP方法替代POST",
+        "X-HTTP-Method-Override|X-Method-Override|方法覆盖Header",
+        "_method=POST|method=POST|参数级方法覆盖",
+        "Content-Type|application/json|不同格式",
+        "逐一测试|每种方法单独试|排除法"
+      ],
+      "required_terms": [
+        "_method=POST",
+        "method=POST",
+        "application/json"
+      ]
+    }
+  ]
+}

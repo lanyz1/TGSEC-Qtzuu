@@ -1,0 +1,55 @@
+{
+  "skill_id": "privilege-escalation-web",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "精确关键词搜索",
+      "keywords": [
+        "privilege escalation",
+        "提权",
+        "权限提升",
+        "privesc"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "Web 提权特定搜索",
+      "keywords": [
+        "HTTP method",
+        "RBAC",
+        "admin bypass",
+        "角色"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被 Linux 提权召回",
+      "keywords": [
+        "SUID",
+        "sudo",
+        "kernel exploit"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "privilege-escalation-web-scenario",
+      "scenario": "已获取普通用户权限，需要提升到 admin。请搜索 Web 应用权限提升方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "privilege escalation|提权|权限提升|admin"
+        },
+        {
+          "tool": "read_skill",
+          "id": "privilege-escalation-web"
+        }
+      ]
+    }
+  ]
+}

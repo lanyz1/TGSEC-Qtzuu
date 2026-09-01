@@ -1,0 +1,19 @@
+{
+  "skill_name": "naabu-portscan",
+  "evals": [
+    {
+      "id": 1,
+      "name": "network-segment-scan",
+      "prompt": "我拿到了内网立足点，需要快速扫描 10.0.0.0/24 网段的常见高价值端口（SSH/SMB/RDP/数据库等），用什么工具最快？",
+      "expected_output": "naabu -host 10.0.0.0/24 -p 22,80,135,445,3389,1433,3306,5432,6379 -silent",
+      "expectations": ["naabu", "10.0.0.0/24", "-p.*22.*445|高价值端口"]
+    },
+    {
+      "id": 2,
+      "name": "pipeline-integration",
+      "prompt": "我有一批子域名列表，想先扫端口再检测 HTTP 存活最后跑漏洞扫描，怎么用管道串起来？",
+      "expected_output": "cat subs.txt | naabu -silent | httpx -silent | nuclei",
+      "expectations": ["naabu.*httpx.*nuclei|管道", "-silent", "httpx"]
+    }
+  ]
+}

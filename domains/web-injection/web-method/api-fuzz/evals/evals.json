@@ -1,0 +1,77 @@
+{
+  "skill_name": "api-fuzz",
+  "evals": [
+    {
+      "id": 1,
+      "name": "api-framework-fingerprint-to-attack",
+      "prompt": "API 返回 X-Powered-By: Express，错误响应包含 'SyntaxError: Unexpected token' 堆栈。请根据这个框架指纹确定优先测试的漏洞类型和具体 payload。",
+      "expected_output": "Express/Node.js → 优先测试原型链污染（__proto__）和 NoSQL 注入（$ne/$gt）",
+      "expectations": [
+        "Express|Node.js|原型链污染|prototype pollution",
+        "__proto__|constructor.prototype|污染payload",
+        "NoSQL|$ne|$gt|$regex|MongoDB操作符",
+        "SyntaxError|JSON解析|参数类型混淆",
+        "eval|模板注入|SSTI|服务端JS执行"
+      ],
+      "required_terms": [
+        "__proto__",
+        "Node.js",
+        "constructor.prototype"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "api-path-bypass-semicolon",
+      "prompt": "GET /api/admin 返回 403。目标架构是 Nginx 反代到 Tomcat 后端。请描述利用前后端路径解析差异的绕过 payload。",
+      "expected_output": "Nginx 和 Tomcat 对分号(;)的解析不同：/api/admin;.js Nginx 当作静态文件放行，Tomcat 忽略分号",
+      "expectations": [
+        "/api/admin;.js|分号|Nginx放行|Tomcat忽略",
+        "路径解析差异|前后端不一致|代理",
+        "/api/admin%20|/api//admin|双斜杠|URL编码",
+        "/api/admin/.|trailing dot|路径变体",
+        "Nginx|Tomcat|解析差异|绕过403"
+      ],
+      "required_terms": [
+        "/api/admin;.js",
+        "/api/admin%20",
+        "/api//admin"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "api-swagger-hidden-endpoints",
+      "prompt": "GET /docs 发现 Swagger UI 显示了 10 个公开 API 端点。但 GET /openapi.json 的完整 JSON 中包含 15 个端点，其中 5 个标记为 deprecated 且未在 UI 中显示。请描述你的测试策略。",
+      "expected_output": "deprecated 端点可能缺少安全加固，优先测试；对比文档与实际端点差异",
+      "expectations": [
+        "deprecated|废弃端点|未维护|缺少安全加固",
+        "openapi.json|完整schema|比UI多",
+        "优先测试|隐藏端点|deprecated端点",
+        "旧版本|/api/v1/|版本降级|旧接口",
+        "认证|deprecated可能无认证|安全策略缺失"
+      ],
+      "required_terms": [
+        "openapi.json",
+        "/api/v1/",
+        "deprecated"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "api-js-hardcoded-paths",
+      "prompt": "目标是 SPA 前端 + REST API 后端。GET /api/docs 返回 404（无文档）。请描述如何从前端 JS 文件中发现隐藏的 API 端点。",
+      "expected_output": "分析 app.js 中的 fetch/axios 调用、baseURL、路由定义来发现未公开 API",
+      "expectations": [
+        "JS文件|app.js|bundle.js|前端代码",
+        "fetch|axios|baseURL|API路径硬编码",
+        "/api/|端点路径|正则搜索",
+        "内部API|admin|hidden|未公开端点",
+        "sourcemap|.map文件|源码映射|更多信息"
+      ],
+      "required_terms": [
+        "app.js",
+        "bundle.js",
+        "/api/"
+      ]
+    }
+  ]
+}

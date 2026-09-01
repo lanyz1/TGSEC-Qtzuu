@@ -1,0 +1,86 @@
+# 案例：某TG号铺 全面渗透测试（脱敏）
+
+target:
+  url: "TARGET_HOST"
+  type: "authorized"
+  name: "某 Telegram 账号交易平台"
+  tech_stack:
+    - "nginx"
+    - "PHP (自研框架 HimenoSena v5.0.34)"
+    - "MySQL 5.7.44-log"
+    - "Ubuntu Linux"
+    - "jQuery 3.6.0 + Bootstrap 5 + Layui"
+    - "Cloudflare DNS"
+  ports: [22, 80, 443, 3306, 8912]
+  fingerprint:
+    server_header: "nginx"
+    auth_type: "JWT HS256"
+    has_api: true
+    session_cookie: "acg_session + client_id + user_token"
+    plugin: "M_1001/HimenoSena"
+    payment_gateway: "第三方支付网关"
+    internal_callback_port: 8912
+
+attack_surface:
+  - "HTTPS Web 应用（商品浏览/购物车/订单/支付）"
+  - "加密 API（AES-CBC + MD5 时间戳签名）"
+  - "MySQL 5.7.44-log 公网暴露（3306/tcp）"
+  - "内部支付回调服务（8912/tcp）"
+  - "文件上传（图片，强制 .png 扩展名）"
+  - "JWT HS256 身份认证"
+  - "SSH（22/tcp）"
+
+techniques_tried:
+  - technique: "SQLi via item?id="
+    result: "failed"
+    detail: "PHP 严格类型校验，非数字全部返回错误页。非 SQL 注入。"
+
+  - technique: "SQLi via keywords (WAF Bypass)"
+    result: "partial"
+    detail: "/**/ 绕过会话安全检测，但搜索为客户端渲染，无实际 SQLi。"
+
+  - technique: "SQLi via login username"
+    result: "failed"
+    detail: "用户名参数化查询，所有 SQLi payload 返回'用户不存在'，无延时差异。"
+
+  - technique: "API 签名绕过（AES-CBC 时间戳）"
+    result: "success"
+    detail: "完全绕过。注册测试账号、登录获取 JWT、下单/支付/充值/售后全部成功。"
+
+  - technique: "WAF 绕过（/**/ 内联注释）"
+    result: "success"
+    detail: "keywords 参数的会话安全检测被绕过，但后续无实际漏洞利用。"
+
+  - technique: "用户枚举"
+    result: "success"
+    detail: "登录错误消息区分'密码错误'和'用户不存在'，确认 admin/root/user 存在。"
+
+  - technique: "文件上传 PHP Webshell"
+    result: "partial"
+    detail: "PHP 代码成功上传，但服务器强制 .png 扩展名，nginx 不解析。"
+
+success_path:
+  - step: 1
+    action: "JS bundle分析→提取API端点结构"
+    finding: "发现 HMAC API 端点，加密参数模式：AES-CBC + MD5时间戳签名"
+
+  - step: 2
+    action: "逆向 JS 加密逻辑→构造签名绕过"
+    finding: "提取 AES 密钥和 IV 硬编码在前端 JS 中，伪造签名成功"
+
+  - step: 3
+    action: "注册测试账号→全功能越权测试"
+    finding: "下单/支付/充值/售后接口全部通过签名绕过访问"
+
+  - step: 4
+    action: "MySQL公网暴露探测"
+    finding: "3306端口公网可访问，但需密码；未进一步爆破"
+
+lessons:
+  - "前端 JS 中的 AES 密钥+IV 硬编码是致命缺陷——无需后渗透即可伪造任意请求"
+  - "/**/ 空格替代可绕过 PHP 会话安全检测（WAF未处理注释语法）"
+  - "登录错误信息差异化是用户枚举的经典入口"
+  - "HimenoSena 框架的 M_1001 插件模式暴露了内部架构信息"
+
+tags: [api-bypass, aes-cbc, waf-bypass, mysql-exposure, user-enum, jwt]
+date: "2026-07-21"

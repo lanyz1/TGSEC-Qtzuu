@@ -1,0 +1,59 @@
+{
+  "skill_name": "supply-chain-audit",
+  "evals": [
+    {
+      "id": 1,
+      "name": "supply-chain-version-cve-mapping",
+      "prompt": "你在目标网站源码中发现引用了 jQuery 3.4.1 和 Log4j 2.14.1。这两个版本有什么已知安全问题？",
+      "expected_output": "jQuery <3.5.0 受 CVE-2020-11022/11023 影响(XSS via htmlPrefilter)。Log4j 2.14.1 受 CVE-2021-44228(Log4Shell) 影响，CVSS 10.0，可远程代码执行",
+      "expectations": [
+        "jQuery|CVE-2020-11022|CVE-2020-11023|XSS",
+        "Log4j|CVE-2021-44228|Log4Shell|RCE",
+        "3.5.0|版本号|升级|修复版本",
+        "CVSS|严重|10.0|Critical",
+        "版本→CVE|已知漏洞|版本对应"
+      ],
+      "required_terms": [
+        "jQuery",
+        "XSS",
+        "RCE"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "supply-chain-sri-check",
+      "prompt": "目标网页引用了外部 CDN 的 JS 文件：<script src=\"https://cdn.example.com/lib.js\"></script>。有什么安全风险？如何验证完整性？",
+      "expected_output": "风险：CDN 被劫持或供应链攻击时可注入恶意代码。应使用 SRI (Subresource Integrity)：<script src=... integrity=\"sha384-xxxxx\" crossorigin=\"anonymous\">，浏览器会校验文件哈希",
+      "expectations": [
+        "SRI|Subresource Integrity|完整性校验",
+        "integrity|sha384|sha256|哈希|校验",
+        "CDN劫持|供应链攻击|恶意代码注入",
+        "crossorigin|anonymous|跨域",
+        "浏览器校验|不匹配拒绝|安全机制"
+      ],
+      "required_terms": [
+        "SRI",
+        "integrity",
+        "sha384"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "supply-chain-subdomain-takeover",
+      "prompt": "DNS 记录显示 app.target.com CNAME → target-app.herokuapp.com，但访问 app.target.com 返回 Heroku 'No such app' 页面。这意味着什么？如何利用？",
+      "expected_output": "这是子域名接管(Subdomain Takeover)——Heroku 应用已删除但 CNAME 记录未清理。攻击者可在 Heroku 注册同名应用接管 app.target.com，托管钓鱼页面或窃取 cookie",
+      "expectations": [
+        "子域名接管|Subdomain Takeover|接管",
+        "CNAME|未清理|孤儿记录|dangling",
+        "Heroku|No such app|已删除|未使用",
+        "注册同名|接管域名|托管内容",
+        "钓鱼|cookie|利用|风险"
+      ],
+      "required_terms": [
+        "CNAME",
+        "Subdomain Takeover",
+        "Heroku"
+      ]
+    }
+  ]
+}

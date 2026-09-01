@@ -1,0 +1,54 @@
+{
+  "skill_id": "ctf-reverse",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "reverse",
+        "逆向",
+        "ghidra",
+        "gdb"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "工具搜索",
+      "keywords": [
+        "ida",
+        "frida",
+        "angr",
+        "反调试"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被取证召回",
+      "keywords": [
+        "volatility",
+        "pcap"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-reverse-scenario",
+      "scenario": "CTF 逆向题给了一个 stripped 的 ELF 二进制文件，需要找到正确的序列号。请搜索逆向分析方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "reverse|逆向|binary|ida"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-reverse"
+        }
+      ]
+    }
+  ]
+}

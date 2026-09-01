@@ -1,0 +1,23 @@
+{
+ "recon": 391,
+ "web-attack": 74,
+ "ad-attack": 86,
+ "llm-ai-security": 26,
+ "mobile-security": 47,
+ "reverse-engineering": 36,
+ "api-security": 40,
+ "file-vulns": 125,
+ "auth-security": 76,
+ "binary-pwn": 30,
+ "business-logic": 14,
+ "crypto-attacks": 16,
+ "web-injection": 949,
+ "cloud-security": 97,
+ "linux-post": 12,
+ "windows-post": 52,
+ "malware-dfir": 28,
+ "post-exp-tools": 140,
+ "ctf": 213,
+ "social-eng": 6,
+ "other": 6
+}

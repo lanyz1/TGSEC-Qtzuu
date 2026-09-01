@@ -1,0 +1,53 @@
+{
+  "skill_id": "ctf-flag-hunting",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "flag hunting",
+        "flag",
+        "getflag",
+        "ctf flag"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "搜索场景",
+      "keywords": [
+        "文件系统",
+        "数据库",
+        "环境变量"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被forensics召回",
+      "keywords": [
+        "volatility",
+        "pcap"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-flag-hunting-scenario",
+      "scenario": "已获得命令执行权限，但不知道 flag 在容器的哪个位置。请搜索 flag 查找方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "flag|hunting|查找|搜索flag"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-flag-hunting"
+        }
+      ]
+    }
+  ]
+}

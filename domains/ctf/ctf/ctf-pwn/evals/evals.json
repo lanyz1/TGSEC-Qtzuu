@@ -1,0 +1,95 @@
+{
+  "skill_name": "ctf-pwn",
+  "evals": [
+    {
+      "id": 1,
+      "name": "stack-buffer-overflow",
+      "prompt": "CTF Pwn 题给了一个 ELF 二进制文件，checksec 显示 NX 开启、PIE 关闭、Partial RELRO、无 Canary。反编译发现 main 函数中有 gets(buf)，buf 大小 64 字节。有一个 win() 函数会打印 flag。请描述利用方法。",
+      "expected_output": "经典栈溢出 ret2win：用 64 字节填充 buf + 8 字节覆盖 saved rbp + win() 地址覆盖返回地址",
+      "expectations": [
+        "栈溢出|buffer overflow|gets|溢出",
+        "ret2win|覆盖返回地址|return address|跳转win",
+        "64字节|padding|填充|偏移量|offset",
+        "rbp|saved rbp|8字节|栈帧",
+        "pwntools|p64|flat|payload构造"
+      ],
+      "required_terms": [
+        "buffer overflow",
+        "gets",
+        "ret2win"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "format-string-leak",
+      "prompt": "CTF Pwn 题中程序有 printf(user_input) 漏洞。开启了 Full RELRO 和 PIE。你需要先泄漏 libc 地址再 getshell。请描述利用格式化字符串泄漏信息的方法。",
+      "expected_output": "格式化字符串泄漏：用 %p 或 %lx 泄漏栈上的 libc 地址和 PIE 基址，计算偏移后构造 ROP 链",
+      "expectations": [
+        "格式化字符串|format string|printf|%p|%lx",
+        "泄漏|leak|栈上地址|libc地址",
+        "PIE基址|偏移|计算基址|减去偏移",
+        "libc|__libc_start_main|libc基址",
+        "%n|写入|GOT覆写|任意写|后续利用"
+      ],
+      "required_terms": [
+        "__libc_start_main",
+        "GOT覆写",
+        "format string"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "ret2libc-rop",
+      "prompt": "CTF Pwn 题有栈溢出漏洞。NX 开启无法执行 shellcode。已泄漏 libc 基址和 libc 版本。请描述如何通过 ROP 获取 shell。",
+      "expected_output": "ret2libc：在 libc 中找 pop rdi; ret gadget，构造 ROP 链调用 system('/bin/sh')",
+      "expectations": [
+        "ret2libc|ROP|ROP链|返回导向编程",
+        "system|/bin/sh|execve|获取shell",
+        "pop rdi|gadget|ROPgadget|ropper",
+        "one_gadget|magic gadget|一键getshell",
+        "ret对齐|movaps|栈对齐|16字节对齐"
+      ],
+      "required_terms": [
+        "/bin/sh",
+        "one_gadget",
+        "ROP"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "heap-tcache-poisoning",
+      "prompt": "CTF Pwn 题是一个菜单式堆管理程序（glibc 2.31），有 UAF（Use After Free）漏洞。可以 alloc/free/edit/show chunk。请描述如何利用 tcache poisoning 获取 shell。",
+      "expected_output": "tcache poisoning：UAF 修改 freed chunk 的 fd 指针指向 __free_hook，分配到 __free_hook 写入 system 地址，free 一个内容为 /bin/sh 的 chunk",
+      "expectations": [
+        "tcache|poisoning|tcache投毒|fd指针",
+        "UAF|Use After Free|释放后使用",
+        "__free_hook|__malloc_hook|hook覆写",
+        "system|/bin/sh|one_gadget|getshell",
+        "泄漏libc|unsorted bin|main_arena|libc基址"
+      ],
+      "required_terms": [
+        "__free_hook",
+        "__malloc_hook",
+        "/bin/sh"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "kernel-exploit-basics",
+      "prompt": "CTF Pwn 题提供了一个 QEMU 虚拟机和一个有漏洞的内核模块 .ko 文件。内核模块有一个栈溢出漏洞。开启了 KASLR 和 SMEP。请描述利用思路。",
+      "expected_output": "内核利用：泄漏内核基址绕过 KASLR → 构造 ROP 链（commit_creds(prepare_kernel_cred(0))）→ 返回用户态获取 root shell",
+      "expectations": [
+        "内核|kernel|.ko|内核模块",
+        "KASLR|泄漏基址|/proc/kallsyms|内核地址",
+        "commit_creds|prepare_kernel_cred|提权|root",
+        "SMEP|ROP|内核ROP|绕过SMEP",
+        "iretq|swapgs|返回用户态|用户空间"
+      ],
+      "required_terms": [
+        "/proc/kallsyms",
+        "commit_creds",
+        "prepare_kernel_cred"
+      ]
+    }
+  ]
+}

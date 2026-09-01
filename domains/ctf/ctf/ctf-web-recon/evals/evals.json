@@ -1,0 +1,59 @@
+{
+  "skill_name": "ctf-web-recon",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ctf-recon-tech-fingerprint-table",
+      "prompt": "CTF 目标响应头有 Set-Cookie: connect.sid=xxx。请根据这个 Cookie 名判断技术栈，并列出该技术栈最可能的 3 种 CTF 漏洞。",
+      "expected_output": "connect.sid → Node.js Express → 原型链污染、EJS SSTI、NoSQL 注入",
+      "expectations": [
+        "connect.sid|Express|Node.js",
+        "原型链污染|Prototype Pollution|__proto__",
+        "SSTI|EJS|模板注入|服务端模板",
+        "NoSQL|MongoDB|注入|$gt|$ne",
+        "技术栈|Cookie指纹|框架识别"
+      ],
+      "required_terms": [
+        "Node.js",
+        "connect.sid",
+        "SSTI"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ctf-recon-editor-backup-files",
+      "prompt": "你怀疑目标 /index.php 有源码泄露。robots.txt 和 .git 都 404 了。请列出你应该尝试的编辑器备份文件路径（至少 5 个）。",
+      "expected_output": "Vim swap (.swp)、编辑器备份 (~, .bak)、源码控制等",
+      "expectations": [
+        ".index.php.swp|.swp|Vim swap文件",
+        "index.php~|波浪号|编辑器备份",
+        "index.php.bak|.bak|备份后缀",
+        "www.zip|www.tar.gz|整站打包备份",
+        ".DS_Store|目录文件泄露|macOS"
+      ],
+      "required_terms": [
+        ".index.php.swp",
+        ".swp",
+        "index.php~"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "ctf-recon-round-limit-efficiency",
+      "prompt": "CTF 侦察第 1 轮你应该做哪些检查？为什么 CTF 侦察不应该超过 3 轮？",
+      "expected_output": "第1轮：GET首页(检查注释/header/cookie) + robots.txt + .git/HEAD。不超过3轮因为线索在功能点里不在侦察里",
+      "expectations": [
+        "首页|GET /|HTML注释|响应头|第一步",
+        "robots.txt|.git/HEAD|.env|关键路径检查",
+        "2-3轮|不超过3轮|快速完成侦察",
+        "线索在功能点|不在侦察里|过度侦察浪费",
+        "不做子域名|不做大规模端口|CTF单应用"
+      ],
+      "required_terms": [
+        "robots.txt",
+        ".git/HEAD",
+        ".env"
+      ]
+    }
+  ]
+}

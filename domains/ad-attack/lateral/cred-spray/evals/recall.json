@@ -1,0 +1,53 @@
+{
+  "skill_id": "cred-spray",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "credential spray",
+        "凭据喷洒",
+        "password spray"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "密码复用",
+        "pth",
+        "pass the hash",
+        "ntlm"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被brute force召回",
+      "keywords": [
+        "默认密码",
+        "弱口令"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "cred-spray-scenario",
+      "scenario": "获取了一批用户密码 hash，需要进行密码喷射攻击。请搜索凭据喷射方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "cred|spray|密码喷射|credential"
+        },
+        {
+          "tool": "read_skill",
+          "id": "cred-spray"
+        }
+      ]
+    }
+  ]
+}

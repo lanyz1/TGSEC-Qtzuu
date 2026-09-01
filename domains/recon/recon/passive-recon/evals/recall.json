@@ -1,0 +1,55 @@
+{
+  "skill_id": "passive-recon",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "passive recon",
+        "osint",
+        "被动侦察",
+        "fofa",
+        "情报收集"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "工具搜索",
+      "keywords": [
+        "quake",
+        "hunter",
+        "搜索引擎",
+        "资产发现"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被主动扫描召回",
+      "keywords": [
+        "nmap scan",
+        "port brute"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "passive-recon-scenario",
+      "scenario": "需要对目标域名进行被动信息收集，不触发任何主动请求。请搜索被动侦察方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "passive|recon|被动|信息收集"
+        },
+        {
+          "tool": "read_skill",
+          "id": "passive-recon"
+        }
+      ]
+    }
+  ]
+}

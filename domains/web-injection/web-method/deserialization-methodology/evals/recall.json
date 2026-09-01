@@ -1,0 +1,35 @@
+{
+  "skill_id": "deserialization-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "精确关键词搜索",
+      "keywords": ["deserialization", "反序列化", "pickle", "unserialize"]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "语言特定搜索",
+      "keywords": ["pickle payload", "__reduce__", "POP chain", "序列化"]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被 ysoserial 专用工具召回",
+      "keywords": ["ysoserial", "CommonsCollections"]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "pickle-deserialization-scenario",
+      "scenario": "Python Flask 应用 POST /api/load 接受 Base64 编码的数据。源码显示使用了 pickle.loads() 处理用户输入。请搜索相关攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {"tool": "list_skills", "keyword_contains": "deserialization|pickle|反序列化|序列化"},
+        {"tool": "read_skill", "id": "deserialization-methodology"}
+      ]
+    }
+  ]
+}

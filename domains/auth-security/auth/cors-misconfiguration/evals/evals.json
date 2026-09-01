@@ -1,0 +1,59 @@
+{
+  "skill_name": "cors-misconfiguration",
+  "evals": [
+    {
+      "id": 1,
+      "name": "cors-null-origin-iframe-sandbox",
+      "prompt": "目标 API /api/userinfo 对 Origin: evil.com 返回 403，但对 Origin: null 返回 Access-Control-Allow-Origin: null 和 Access-Control-Allow-Credentials: true。请描述如何利用这个配置窃取数据。",
+      "expected_output": "使用 iframe sandbox='allow-scripts' srcdoc 触发 null Origin 的跨域请求",
+      "expectations": [
+        "null origin|Origin: null|允许null",
+        "iframe sandbox|allow-scripts|srcdoc",
+        "sandbox|触发null origin|浏览器特性",
+        "fetch|XMLHttpRequest|credentials: include",
+        "窃取数据|跨域读取|发送到攻击者"
+      ],
+      "required_terms": [
+        "null origin",
+        "Origin: null",
+        "iframe sandbox"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "cors-origin-validation-bypass",
+      "prompt": "目标对 Origin 头做了校验：evil.com 被拒绝，target.com 正常。请描述至少 4 种绕过 Origin 校验的方式。",
+      "expected_output": "前缀/后缀/子域名/HTTP 协议等多种绕过",
+      "expectations": [
+        "evil.target.com|子域名|子域控制",
+        "target.com.evil.com|后缀匹配绕过",
+        "attackertarget.com|前缀匹配绕过",
+        "http://target.com|HTTPS接受HTTP|协议降级",
+        "null|iframe sandbox|特殊Origin值"
+      ],
+      "required_terms": [
+        "evil.target.com",
+        "target.com.evil.com",
+        "attackertarget.com"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "cors-danger-combination-assessment",
+      "prompt": "以下三种 CORS 配置分别是什么风险等级？A) ACAO: * + 无 ACAC  B) ACAO: 反射Origin + ACAC: true  C) ACAO: null + ACAC: true",
+      "expected_output": "A=低(不能带Cookie)，B=严重(可跨域窃取认证用户数据)，C=高(iframe sandbox可利用)",
+      "expectations": [
+        "通配符|*|不能带Cookie|低风险",
+        "反射Origin|Credentials:true|严重|可窃取",
+        "null|Credentials:true|高风险|iframe可利用",
+        "Allow-Credentials|Cookie|认证|关键因素",
+        "组合判断|两个头|同时满足"
+      ],
+      "required_terms": [
+        "反射Origin",
+        "Credentials:true",
+        "null"
+      ]
+    }
+  ]
+}

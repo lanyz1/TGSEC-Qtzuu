@@ -1,0 +1,95 @@
+{
+  "skill_name": "ctf-forensics",
+  "evals": [
+    {
+      "id": 1,
+      "name": "volatility-memory-dump",
+      "prompt": "CTF 取证题给了一个 Windows 内存转储文件 memory.dmp（2GB）。题目提示 flag 在某个记事本进程打开的文件中。请描述分析步骤。",
+      "expected_output": "使用 Volatility3 分析内存转储：pslist 找 notepad 进程 → filescan 扫描文件 → dumpfiles 提取文件内容",
+      "expectations": [
+        "Volatility|vol3|volatility3|内存取证",
+        "pslist|pstree|进程列表|notepad",
+        "filescan|文件扫描|搜索文件对象",
+        "dumpfiles|提取文件|导出|physaddr",
+        "cmdline|memdump|strings|辅助分析"
+      ],
+      "required_terms": [
+        "Volatility",
+        "vol3",
+        "volatility3"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "pcap-http-extract",
+      "prompt": "CTF 取证题给了一个 capture.pcap 文件。题目提示有人通过 HTTP 上传了一个包含 flag 的文件。请描述如何提取该文件。",
+      "expected_output": "使用 tshark/Wireshark 提取 HTTP 对象：过滤 HTTP POST 请求，导出传输的文件",
+      "expectations": [
+        "tshark|Wireshark|tcpdump|流量分析",
+        "export-objects|导出对象|http,/tmp|提取文件",
+        "POST|multipart|上传|http.request.method",
+        "tcp.stream|Follow TCP Stream|跟踪流",
+        "strings|grep flag|binwalk|后续分析"
+      ],
+      "required_terms": [
+        "http,/tmp",
+        "http.request.method",
+        "tcp.stream"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "png-steganography",
+      "prompt": "CTF 取证题给了一张看起来正常的 PNG 图片，但文件大小异常地大（原图应该只有几十 KB 但实际有 2MB）。请描述分析隐写的方法。",
+      "expected_output": "多角度分析：binwalk 检查嵌入文件、zsteg 检查 LSB 隐写、stegsolve 逐位平面分析、检查 PNG 结构异常",
+      "expectations": [
+        "binwalk|嵌入文件|附加数据|文件叠加",
+        "zsteg|LSB|最低有效位|位平面",
+        "stegsolve|位平面|逐通道|RGB分析",
+        "exiftool|元数据|metadata|PNG结构",
+        "strings|EOF后数据|IEND之后|额外数据"
+      ],
+      "required_terms": [
+        "LSB",
+        "EOF后数据",
+        "binwalk"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "disk-image-recovery",
+      "prompt": "CTF 取证题给了一个 disk.dd 磁盘镜像，题目说某个用户删除了一个重要的 flag.txt 文件。请描述如何恢复已删除的文件。",
+      "expected_output": "挂载镜像后使用文件恢复工具：fls/icat 查看已删除文件条目，photorec/scalpel 恢复删除文件",
+      "expectations": [
+        "mount|loop|挂载|只读挂载|ro",
+        "fls|icat|Sleuth Kit|TSK|文件系统分析",
+        "photorec|scalpel|文件恢复|数据雕刻",
+        "已删除|deleted|inode|恢复",
+        "strings|grep|直接搜索|flag关键词"
+      ],
+      "required_terms": [
+        "mount",
+        "loop",
+        "fls"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "windows-evtx-analysis",
+      "prompt": "CTF 取证题给了 Windows 安全事件日志 Security.evtx。题目提示攻击者创建了一个后门账户并清除了日志。请找出攻击者创建的用户名和清除日志的时间。",
+      "expected_output": "分析 Windows 事件 ID：4720（用户创建）找到后门账户，1102（审计日志清除）找到清除时间",
+      "expectations": [
+        "4720|用户创建|账户创建|new user",
+        "1102|日志清除|审计日志清除|clear log",
+        "evtx|evtx_dump|python-evtx|解析工具",
+        "事件ID|Event ID|安全日志|Security",
+        "时间戳|TimeCreated|时间|SystemTime"
+      ],
+      "required_terms": [
+        "TimeCreated",
+        "SystemTime",
+        "evtx"
+      ]
+    }
+  ]
+}

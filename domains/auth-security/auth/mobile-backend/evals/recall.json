@@ -1,0 +1,53 @@
+{
+  "skill_id": "mobile-backend",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "mobile",
+        "移动安全",
+        "app"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "场景搜索",
+      "keywords": [
+        "ios",
+        "android",
+        "业务逻辑",
+        "支付"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被cloud召回",
+      "keywords": [
+        "cloud iam",
+        "metadata"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "mobile-backend-scenario",
+      "scenario": "目标是一个移动 App 的后端 API，需要分析其安全性。请搜索移动后端测试方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "mobile|移动|app|backend"
+        },
+        {
+          "tool": "read_skill",
+          "id": "mobile-backend"
+        }
+      ]
+    }
+  ]
+}

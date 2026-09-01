@@ -1,0 +1,54 @@
+{
+  "skill_id": "crypto-web-attack",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "精确关键词搜索",
+      "keywords": [
+        "crypto",
+        "密码学",
+        "加密攻击",
+        "hash"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "具体攻击技术搜索",
+      "keywords": [
+        "padding oracle",
+        "magic hash",
+        "type juggling",
+        "弱类型"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被密码爆破召回",
+      "keywords": [
+        "hydra",
+        "brute force password"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "crypto-web-attack-scenario",
+      "scenario": "目标使用 AES-CBC 加密 Cookie，发现 Padding Oracle 错误信息。请搜索 Web 密码学攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "crypto|padding|oracle|加密|cbc"
+        },
+        {
+          "tool": "read_skill",
+          "id": "crypto-web-attack"
+        }
+      ]
+    }
+  ]
+}

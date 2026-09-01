@@ -1,0 +1,68 @@
+# 技术卡片: JWT - kid 头注入
+# 分类: jwt / header-injection
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-JWT-004 / PortSwigger
+
+id: "jwt-kid-injection"
+name: "JWT kid 头注入（路径遍历/SQLi）"
+category: "jwt"
+subcategory: "header-injection"
+severity: "critical"
+
+description: |
+  JWT header 的 kid 参数被服务端直接用于文件路径构造或 SQL 查询。
+  通过路径遍历使服务端读取 /dev/null 作为空密钥，
+  或通过 SQL 注入控制返回的密钥值，实现任意 JWT 伪造。
+
+trigger_signals:
+  - "JWT header 含 kid 参数"
+  - "kid 值直接拼接到文件路径或 SQL"
+  - "修改 kid 为不存在路径时报错泄露路径"
+  - "kid: ../../ 返回不同错误（路径相关）"
+
+payloads:
+  - technique: "路径遍历 → 空密钥"
+    payload: "kid: ../../../../dev/null"
+    note: "服务端读取空文件作为 HMAC secret → 用空字符串签名"
+  - technique: "路径遍历 → 已知文件"
+    payload: "kid: ../../../etc/passwd"
+    note: "若响应差异可探测，用于验证文件存在"
+  - technique: "SQL 注入控制密钥"
+    payload: "kid: x' UNION SELECT 'attacker_secret'--"
+    note: "若 kid 查数据库，注入控制返回的密钥值"
+  - technique: "/proc 读取"
+    payload: "kid: /proc/self/fd/0"
+    note: "读取进程文件描述符"
+
+  - variant: "URL 编码绕过过滤: %2e%2e%2f"
+  - variant: "Windows 绝对路径: C:\\windows\\win.ini"
+  - variant: "盲注 + 时间延迟确认 SQLi"
+
+success_indicators:
+  - "/dev/null 路径 → 用空密钥签名通过验证"
+  - "SQLi 控制密钥 → 自定义密钥签名通过"
+  - "错误消息泄露完整路径"
+  - "响应差异确认文件存在"
+
+prerequisites:
+  - "JWT header 含 kid 参数"
+  - "kid 直接用于文件路径或 SQL 查询"
+  - "服务端未做输入白名单校验"
+  - "文件系统可读（非 chroot/容器隔离）"
+
+upgrade_paths:
+  - "kid SQLi → 提取数据库密钥 → 伪造任意用户"
+  - "kid 路径遍历 + jku 组合 → 指向自建 JWKS"
+  - "命令注入（罕见）: kid: key1|id"
+
+defense:
+  - "不信任用户可控的 kid 值"
+  - "使用映射表（kid → 密钥索引）而非直接拼接"
+  - "输入白名单验证（仅允许 [a-zA-Z0-9_-]+）"
+  - "文件路径使用 realpath() + 前缀校验"
+
+sources:
+  - kb: "KB-JWT-004"
+  - ref: "PortSwigger: JWT kid header"
+  - ref: "CWE-22 / CWE-89"

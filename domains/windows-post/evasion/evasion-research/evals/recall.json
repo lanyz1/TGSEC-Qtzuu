@@ -1,0 +1,52 @@
+{
+  "skill_id": "evasion-research",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "evasion research",
+        "loader",
+        "technique"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "知识库搜索",
+      "keywords": [
+        "github",
+        "knowledge-base",
+        "shellcode"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被recon召回",
+      "keywords": [
+        "subdomain",
+        "port scan"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "evasion-research-scenario",
+      "scenario": "需要研究目标 EDR 的检测机制以制定绕过策略。请搜索规避检测研究方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "evasion|research|绕过|检测"
+        },
+        {
+          "tool": "read_skill",
+          "id": "evasion-research"
+        }
+      ]
+    }
+  ]
+}

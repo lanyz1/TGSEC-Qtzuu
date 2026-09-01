@@ -1,0 +1,52 @@
+{
+  "skill_id": "csrf-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "csrf",
+        "cross-site request forgery",
+        "跨站请求伪造"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "防御绕过搜索",
+      "keywords": [
+        "token",
+        "referer",
+        "samesite"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被CORS召回",
+      "keywords": [
+        "subdomain enumeration",
+        "port scan"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "csrf-scenario",
+      "scenario": "目标修改密码功能没有 CSRF token 保护。请搜索 CSRF 攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "csrf|跨站请求伪造|cross-site"
+        },
+        {
+          "tool": "read_skill",
+          "id": "csrf-methodology"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "skill_id": "ctf-forensics",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "forensics",
+        "取证",
+        "volatility",
+        "pcap"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "steganography",
+        "隐写",
+        "磁盘",
+        "内存"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被pwn召回",
+      "keywords": [
+        "rop",
+        "heap exploit"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ctf-forensics-scenario",
+      "scenario": "CTF 取证题给了一个 pcap 文件和一个磁盘镜像。请搜索取证分析方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "forensic|取证|pcap|磁盘"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ctf-forensics"
+        }
+      ]
+    }
+  ]
+}

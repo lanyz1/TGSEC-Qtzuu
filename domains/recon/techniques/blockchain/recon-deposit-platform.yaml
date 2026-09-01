@@ -1,0 +1,78 @@
+id: "blockchain-recon-deposit-platform"
+name: "区块链充值上分平台测绘与对账逻辑判定（FOFA + 链上验证）"
+category: "blockchain"
+subcategory: "recon-deposit-logic"
+severity: "high"
+
+description: |
+  寻找支持 USDT(TRC20) 充值自动上分的平台（博彩/预测/灰产），并判定其对账系统
+  是否可被 approve 伪装充值绕过。核心思路：FOFA 资产测绘定位候选 → 前端 JS 静态
+  分析对账口径 → 用自有钱包对平台充值地址发起小额 approve，提交 txid 到平台充值
+  接口做黑白盒对照验证。approve 无需 USDT 余额（仅需 TRX/能量），验证成本接近零，
+  且不产生真实资金流动。
+
+trigger_signals:
+  - "目标为博彩/预测/游戏盘等充值上分平台，支持 USDT 入金"
+  - "前端 JS 引用 TronWeb/tronweb.js（页面直接做链上交互）"
+  - "页面内嵌 TRON 地址（T 开头 34 字符）或提供 TRC20 专属充值地址"
+  - "平台充值接口接受用户提交 txid / 显示链上确认状态"
+
+payloads:
+  - technique: "FOFA 定位充值上分平台"
+    payload: |
+      # 业务语义：博彩/预测玩法 + USDT
+      (title="加拿大28" || title="PC28" || title="六合彩" || title="时时彩" || title="棋牌") && body="USDT"
+      # 链上交互指纹：前端引 TronWeb
+      body="tronweb" && body="usdt" && body="充值"
+      # TRON 地址正则（页面/JS 内嵌收款地址）
+      body="T[A-Za-z0-9]{33}" && body="usdt"
+      # 同族扩散：已知框架 + 业务词，或 cert= / 同 title / 同 IP 反查站群
+      app="RuoYi-若依" && (body="prod-api" || title="博彩")
+    note: "同族源码站群充值逻辑大概率相同，打透一个即可套用全家"
+  - technique: "前端 JS 对账口径静态分析"
+    payload: |
+      # 充值页 JS 中搜索对账相关调用
+      grep -E "tronweb|transactions/trc20|only_to|block_scanner|deposit|confirm|getaccount|getnowblock" 充值页*.js
+      # 关注: 查链端点、是否带事件类型过滤、轮询哪个接口、金额校验逻辑
+    note: "前端直连 TronGrid 的平台，其查询端点直接暴露对账口径"
+  - technique: "approve txid 黑白盒对照验证（核心）"
+    payload: |
+      1) 注册账号，获取平台充值地址 R
+      2) 自有钱包对 R 发起 approve(R, 1 USDT)  → 拿到 txid_A（方法选择器 095ea7b3）
+      3) 自有钱包向 R 真实转账 1 USDT           → 拿到 txid_T（a9059cbb，可选对照）
+      4) 将 txid_A 提交平台充值/查询接口
+      # 上分 → 对账不过滤事件类型（可打）; "未检测到转账" → 过滤了 Transfer（安全）
+      # 补充: 提交金额不符的 transfer txid → 判断是否校验金额
+    note: "approve 不转移资金，成本仅 TRX/能量；平台侧会留下探测记录"
+  - technique: "链上被动审计平台充值地址"
+    payload: |
+      GET https://api.trongrid.io/v1/accounts/{R}/transactions/trc20?only_to=true
+      # 观察返回中是否存在 type=Approval 且 to=R 的历史记录
+      # 存在 → 已有人对该平台批量测试过 + 平台在用此接口（风险信号）
+    note: "不接触目标即可收集风险信号"
+
+success_indicators:
+  - "approve txid 提交后平台余额增加（误上分）"
+  - "平台对账记录中事件类型为 Approval 却被确认"
+  - "充值接口对不存在 txid 与 approve txid 的响应无差异且均确认"
+
+prerequisites:
+  - "目标为授权范围内的充值上分平台"
+  - "自有 TRON 钱包（有能量/TRX 可广播 approve）"
+  - "能注册目标账号获取充值地址"
+
+upgrade_paths:
+  - "确认可打后量化：多次 approve 放大误上分金额（1000/5000/10000 分级）"
+  - "结合提现流程评估实际资损路径（代付渠道可用性）"
+  - "同族站群批量验证同一对账缺陷"
+
+defense:
+  - "对账落库只认 type=Transfer，拒绝 Approval/其余事件类型"
+  - "上分前校验 solidity SUCCESS + 本地址等额 USDT Transfer 事件"
+  - "充值接口对 txid 做事件类型白名单校验（topic0: ddf252ad…）"
+  - "监控充值地址收到的异常 approve 交易并告警"
+
+sources:
+  - ref: "事故复盘：20260730 USDT Approval 伪装充值上分（脱敏）"
+  - ref: "技术卡: blockchain-usdt-approve-fake-deposit"
+  - ref: "知识条目: KB-BLK-01 / KB-BLK-02"

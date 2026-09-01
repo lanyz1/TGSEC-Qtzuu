@@ -1,0 +1,57 @@
+{
+  "skill_name": "mobile-backend",
+  "evals": [
+    {
+      "id": 1,
+      "name": "mobile-payment-tampering",
+      "prompt": "你在测试电商 App 的支付功能。抓包发现购买请求：POST /api/order {\"product_id\":1, \"quantity\":1, \"price\":99.99}。你会尝试哪些篡改测试？",
+      "expected_output": "1. price=0.01(价格篡改) 2. quantity=-1(负数量退款) 3. quantity=0(零数量) 4. 添加 discount:100(折扣注入) 5. 修改 product_id 为高价商品但保留低价 price",
+      "expectations": [
+        "price=0.01|价格篡改|修改价格|金额修改",
+        "负数|quantity=-1|负数量|退款",
+        "discount|折扣|优惠券|注入",
+        "product_id|商品ID|不匹配|偷换商品",
+        "服务端校验|前端|后端|价格验证"
+      ],
+      "required_terms": [
+        "price=0.01",
+        "product_id"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "mobile-api-version-downgrade",
+      "prompt": "你发现目标 App API 使用 /api/v3/user/profile。v3 有完善的鉴权。你会尝试什么？",
+      "expected_output": "API 版本降级攻击：尝试 /api/v2/user/profile 和 /api/v1/user/profile，旧版本可能缺少鉴权检查。很多项目升级 API 时保留了旧版本但没有同步安全加固",
+      "expectations": [
+        "/api/v2|/api/v1|版本降级|旧版本",
+        "鉴权缺失|缺少验证|绕过|安全检查",
+        "旧版本保留|未同步|安全加固",
+        "降级攻击|version downgrade|回退",
+        "API|端点|接口|版本管理"
+      ],
+      "required_terms": [
+        "/api/v2",
+        "/api/v1",
+        "API"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "mobile-verification-code-bypass",
+      "prompt": "目标 App 登录需要短信验证码。你抓到发送验证码请求后返回 {\"code\":200,\"msg\":\"sent\"}。你有什么方法绕过验证码验证？",
+      "expected_output": "1. 响应篡改：将验证失败响应改为成功 2. 暴力破解：4位/6位验证码穷举 3. 万能验证码：测试 000000/123456 4. 并发重放 5. 返回包中可能泄露验证码",
+      "expectations": [
+        "响应篡改|修改响应|改为成功",
+        "暴力破解|穷举|4位|6位|爆破",
+        "万能验证码|000000|123456|默认值",
+        "响应泄露|返回包|包含验证码",
+        "并发|重放|绕过频率限制"
+      ],
+      "required_terms": [
+        "000000",
+        "123456"
+      ]
+    }
+  ]
+}

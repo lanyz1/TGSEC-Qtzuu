@@ -1,0 +1,95 @@
+{
+  "skill_name": "ctf-crypto",
+  "evals": [
+    {
+      "id": 1,
+      "name": "rsa-small-exponent",
+      "prompt": "CTF 密码学题给出 RSA 参数：e=3, n=很大的模数, c=密文。明文 m 很小，m^3 < n。请描述攻击方法。",
+      "expected_output": "小指数攻击：e=3 且 m^e < n 时，密文 c = m^3，直接对 c 开三次方根即可恢复明文",
+      "expectations": [
+        "小指数|small exponent|e=3|低加密指数",
+        "开根号|cube root|三次方根|iroot|gmpy2.iroot",
+        "m^3 < n|不取模|没有模运算|直接开方",
+        "long_to_bytes|bytes|转字符串|明文恢复",
+        "RsaCtfTool|gmpy2|SageMath|工具"
+      ],
+      "required_terms": [
+        "gmpy2.iroot",
+        "long_to_bytes",
+        "e=3"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "aes-cbc-bitflip",
+      "prompt": "CTF 题目使用 AES-CBC 加密用户 cookie，格式为 role=user。你可以提交任意密文，服务器解密后检查 role=admin 才给 flag。你知道 IV 和密文。请描述攻击方法。",
+      "expected_output": "CBC 比特翻转攻击：修改 IV 或前一个密文块的对应字节，使解密后的明文从 user 变为 admin",
+      "expectations": [
+        "比特翻转|bit flip|CBC|字节修改",
+        "IV|前一个块|前一密文块|XOR",
+        "user|admin|修改明文|目标字节",
+        "XOR|异或|计算差值|逐字节",
+        "Padding Oracle|填充|可能结合"
+      ],
+      "required_terms": [
+        "CBC",
+        "XOR",
+        "bit flip"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "rsa-common-modulus",
+      "prompt": "CTF 题目给了两组 RSA 公钥 (n, e1) 和 (n, e2)，使用相同的 n 和相同的明文 m，但不同的 e。两组密文分别为 c1 和 c2，且 gcd(e1, e2)=1。请描述如何恢复明文。",
+      "expected_output": "公共模数攻击：用扩展欧几里得算法求 a*e1 + b*e2 = 1，然后 m = c1^a * c2^b mod n",
+      "expectations": [
+        "公共模数|common modulus|共模攻击",
+        "扩展欧几里得|ExtGCD|extended gcd|exgcd",
+        "a*e1 + b*e2 = 1|贝祖等式|Bezout",
+        "c1^a * c2^b mod n|组合密文|幂运算",
+        "gcd(e1,e2)=1|互素|互质"
+      ],
+      "required_terms": [
+        "gcd(e1,e2)=1",
+        "ExtGCD",
+        "a*e1 + b*e2 = 1"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "mt19937-predict",
+      "prompt": "CTF 题目用 Python random 模块生成了一个 token 用于认证。服务器会返回 624 个连续的 random.getrandbits(32) 输出。请描述如何预测下一个随机数。",
+      "expected_output": "MT19937 状态恢复：收集 624 个 32-bit 输出，逆向 temper 操作恢复内部状态，然后预测后续输出",
+      "expectations": [
+        "MT19937|梅森旋转|Mersenne Twister|PRNG",
+        "624|内部状态|state|状态数组",
+        "untemper|逆向temper|反混淆|恢复状态",
+        "randcrack|not_random|python-random-cracker|工具",
+        "预测|predict|下一个输出|后续随机数"
+      ],
+      "required_terms": [
+        "not_random",
+        "PRNG",
+        "Mersenne Twister"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "padding-oracle-attack",
+      "prompt": "CTF 题目提供了一个解密接口，输入密文后返回「padding 正确」或「padding 错误」。使用 AES-CBC 和 PKCS7 填充。请描述如何利用这个 oracle 解密任意密文。",
+      "expected_output": "Padding Oracle 攻击：逐字节修改前一块密文，通过 oracle 响应判断中间值，恢复明文",
+      "expectations": [
+        "Padding Oracle|填充oracle|PKCS7|填充攻击",
+        "逐字节|byte by byte|从最后一字节开始",
+        "中间值|intermediate|解密后XOR前|D(C_i)",
+        "PadBuster|padding-oracle|自动化工具",
+        "256次|最多256次尝试|每字节|暴力尝试"
+      ],
+      "required_terms": [
+        "D(C_i)",
+        "PadBuster",
+        "Padding Oracle"
+      ]
+    }
+  ]
+}

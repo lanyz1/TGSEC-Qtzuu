@@ -1,0 +1,53 @@
+{
+  "skill_id": "local-resources",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "dictionary",
+        "wordlist",
+        "payload"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "工具搜索",
+      "keywords": [
+        "ffuf",
+        "dirsearch",
+        "hydra",
+        "resource"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被report召回",
+      "keywords": [
+        "报告",
+        "修复建议"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "local-resources-scenario",
+      "scenario": "需要用 ffuf 进行目录爆破，但不知道字典文件在哪。请搜索本地资源库使用方法。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "resource|字典|dictionary|local|wordlist|ffuf|payload"
+        },
+        {
+          "tool": "read_skill",
+          "id": "local-resources"
+        }
+      ]
+    }
+  ]
+}

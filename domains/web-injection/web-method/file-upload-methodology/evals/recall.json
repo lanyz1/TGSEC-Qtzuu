@@ -1,0 +1,54 @@
+{
+  "skill_id": "file-upload-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "精确关键词搜索",
+      "keywords": [
+        "file upload",
+        "文件上传",
+        "upload",
+        "上传漏洞"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "绕过技术搜索",
+      "keywords": [
+        "webshell",
+        "Content-Type绕过",
+        "双扩展名",
+        "MIME"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被 LFI 召回",
+      "keywords": [
+        "local file inclusion",
+        "php://filter base64"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "file-upload-scenario",
+      "scenario": "目标有文件上传功能，支持头像上传。请搜索文件上传漏洞利用方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "upload|file upload|文件上传"
+        },
+        {
+          "tool": "read_skill",
+          "id": "file-upload-methodology"
+        }
+      ]
+    }
+  ]
+}

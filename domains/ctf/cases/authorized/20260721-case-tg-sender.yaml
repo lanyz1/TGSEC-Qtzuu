@@ -1,0 +1,64 @@
+# 案例：某TG群发管理系统 全面攻破（脱敏）
+
+target:
+  url: "TARGET_HOST"
+  type: "authorized"
+  name: "某 Telegram 账号群发管理系统"
+  tech_stack:
+    - "FastAPI (Python)"
+    - "Vue.js SPA"
+    - "JWT (HS256)"
+    - "uvicorn"
+  ports: [80]
+  fingerprint:
+    server_header: "uvicorn"
+    auth_type: "JWT Bearer"
+    has_api: true
+    framework_hint: "FastAPI /docs /openapi.json"
+
+attack_surface:
+  - "POST /api/auth/login — JSON 登录端点，无验证码，无速率限制"
+  - "GET /api/accounts — 500+ TG 账号（手机号+TG ID+session状态）"
+  - "GET /api/groups — 120K+ Telegram 群组"
+  - "GET /api/tasks — 定时群发任务"
+  - "GET /api/users — 管理员账号列表"
+  - "GET /api/templates — 消息模板"
+
+techniques_tried:
+  - technique: "JS bundle 分析"
+    result: "partial"
+    detail: "从 SPA bundle 提取到 /api/auth/login 端点，JSON 格式 {username, password}"
+
+  - technique: "默认凭据爆破（无速率限制）"
+    result: "success"
+    detail: "admin / admin@2024 成功登录，返回 JWT {is_superadmin:true, user_id:1}"
+
+  - technique: "JWT 数据访问"
+    result: "success"
+    detail: "用 JWT 分页获取全部账号、群组、任务、模板数据"
+
+  - technique: "Session 文件下载"
+    result: "failed"
+    detail: "/api/accounts/{id}/session_file 端点返回 404，文件存储在服务端"
+
+success_path:
+  - step: 1
+    action: "获取前端 JS bundle → 提取 API 端点"
+    finding: "Vue SPA 主 bundle 包含 /api/auth/login 及请求格式"
+
+  - step: 2
+    action: "无速率限制爆破默认凭据"
+    finding: "admin/admin@2024 — 超管权限 JWT"
+
+  - step: 3
+    action: "遍历所有 GET API 端点获取数据"
+    finding: "500+ 账号、120K+ 群组、88条任务、消息模板全部可读"
+
+lessons:
+  - "无速率限制 + 弱默认密码 = 致命组合"
+  - "Vue SPA 的 JS bundle 是 API 端点枚举的免费地图"
+  - "is_superadmin:true 暗示存在普通管理员角色，可做垂直越权测试"
+  - "session 文件存储在服务端是正确的安全实践（虽然这里没帮上忙）"
+
+tags: [default-credentials, jwt, js-bundle-analysis, api-enum, sensitive-data-exposure]
+date: "2026-07-21"

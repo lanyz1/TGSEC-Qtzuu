@@ -1,0 +1,95 @@
+{
+  "skill_name": "crypto-web-attack",
+  "evals": [
+    {
+      "id": 1,
+      "name": "crypto-cbc-bitflip",
+      "prompt": "你发现目标使用 AES-CBC 加密的 Cookie，明文包含 role=user。你需要将 role 改为 admin 但不知道密钥。请描述 CBC bit-flip 攻击的原理和具体操作。",
+      "expected_output": "修改前一个 block 的对应字节，XOR 计算翻转值",
+      "expectations": [
+        "前一个block|N-1|修改密文|影响N+1明文",
+        "XOR|异或|计算差值|'u'^'a'",
+        "user→admin|逐字节翻转|对应位置",
+        "破坏|前一block变垃圾|N block损坏",
+        "base64|解码密文|修改字节|重新编码"
+      ],
+      "required_terms": [
+        "XOR",
+        "user→admin",
+        "base64"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "crypto-hash-length-extension",
+      "prompt": "目标使用 sign=md5(secret+data) 验证请求。你知道 data='amount=100' 和对应的 sign 值，但不知道 secret。你想在不改变签名有效性的情况下追加 '&admin=true'。请描述攻击方法。",
+      "expected_output": "哈希长度扩展攻击：不知密钥也能计算 md5(secret+data+padding+extension)",
+      "expectations": [
+        "哈希长度扩展|Hash Length Extension|追加数据",
+        "HashPump|hashpump|工具|自动计算",
+        "不需要密钥|不知道secret|无需破解",
+        "secret长度|枚举|8-32|暴力尝试",
+        "HMAC|不受此攻击|HMAC安全|对比"
+      ],
+      "required_terms": [
+        "HashPump",
+        "HMAC",
+        "不知道secret"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "crypto-ctf-pattern-matching",
+      "prompt": "CTF 中你看到一个加密的 Cookie（Base64 编码），修改任何一位后服务端返回两种不同的错误：一种是 'Decryption failed'，另一种是 'Invalid user data'。请判断这是什么类型的攻击并描述利用方法。",
+      "expected_output": "识别为 Padding Oracle（两种不同错误 = 侧信道），可用 PadBuster",
+      "expectations": [
+        "Padding Oracle|填充预言|不同错误信息",
+        "侧信道|区分padding错误和数据错误",
+        "PadBuster|padbuster|工具利用",
+        "解密|不需要密钥|逐字节恢复明文",
+        "伪造|构造任意明文|admin|提权"
+      ],
+      "required_terms": [
+        "PadBuster",
+        "Padding Oracle",
+        "区分padding错误和数据错误"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "crypto-ctf-decision-table",
+      "prompt": "CTF 中你发现 session=base64data 的 Cookie，目标是 Flask 应用。这不是 JWT（不是 eyJ 开头）。请分析可能的攻击方向。",
+      "expected_output": "Flask session 伪造：找到 SECRET_KEY 后可以伪造 session",
+      "expectations": [
+        "Flask session|itsdangerous|签名|不是加密",
+        "SECRET_KEY|密钥|源码中找|配置文件",
+        "flask-unsign|解码|查看session内容",
+        "伪造|修改role|admin|重新签名",
+        "不是JWT|不是Padding Oracle|Flask特有"
+      ],
+      "required_terms": [
+        "SECRET_KEY",
+        "Flask session",
+        "flask-unsign"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "crypto-php-magic-hash-bypass",
+      "prompt": "PHP 登录验证使用 if(md5($input) == $stored_hash)（松散比较 ==）。$stored_hash 是 '0e462097431906509019562988736854'（以 0e 开头）。你需要找到一个输入使其 md5 也以 0e 开头（全数字）。请描述攻击原理和具体的 magic hash 值。",
+      "expected_output": "PHP 松散比较将 0e... 当作科学计数法（0 的 N 次方 = 0），md5('240610708') = 0e462...，两边都等于 0 所以相等",
+      "expectations": [
+        "松散比较|==|类型转换|科学计数法",
+        "0e|零的N次方|等于0|PHP类型juggling",
+        "240610708|QNKCDZO|已知magic hash值",
+        "md5|sha1|都有magic hash|不限md5",
+        "===|严格比较|无法利用|修复方案"
+      ],
+      "required_terms": [
+        "QNKCDZO",
+        "===",
+        "已知magic hash值"
+      ]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ version: 1.0.0
 
 # HACK.SKILLS Arsenal (local mirror)
 
-Local clone: `/root/hack-skills` (yaklang/hack-skills, depth-1).
+
 101 deep-topic skills + 6 category entries + 1 master entry across 14 domains.
 
 ## Loading order (per upstream design)

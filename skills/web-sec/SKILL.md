@@ -6,7 +6,7 @@ version: 1.0.0
 
 # WEB安全手册 (local) — /root/web-sec
 
-WEB安全手册 (ReAbout/web-sec). 2.9MB, 81 files. Three-layer structure: exp(vuln exploitation) + vul(principles) + penetration(流程).
+WEB安全手册 . 2.9MB, 81 files. Three-layer structure: exp(vuln exploitation) + vul(principles) + penetration(流程).
 
 ## Content
 

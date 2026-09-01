@@ -6,7 +6,7 @@ version: 1.0.0
 
 # Claude-BugHunter (local) — /root/Claude-BugHunter
 
-Claude skill bundle for bug hunting & red-team (elementalsouls/Claude-BugHunter). 83 skills, 15 slash commands, 681 disclosed-report patterns.
+赏金猎人技能包 . 83 skills, 15 slash commands, 681 disclosed-report patterns.
 
 ## Content
 

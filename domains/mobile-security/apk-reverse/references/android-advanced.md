@@ -319,7 +319,7 @@ Java.perform(function() {
 ```text
 1. 解压 APK → assets/index.android.bundle（JS 代码）
 2. 格式化 JS → 搜索 API 地址、密钥、签名逻辑
-3. 如果有 Hermes 字节码（.hbc 文件）→ 用 hermes-dec 反编译
+3. 如果有 agent 字节码（.hbc 文件）→ 用 hermes-dec 反编译
 4. Hook: 用 Frida hook Java 层的 ReactBridge
 ```
 
@@ -348,7 +348,7 @@ Java.perform(function() {
 | MobSF | 自动化移动安全分析 | Docker 部署 |
 | BlackDex | 免 root 脱壳 | APK 安装 |
 | FART | ART 脱壳 | 刷入 ROM 或 Frida 版 |
-| hermes-dec | Hermes 字节码反编译 | npm 安装 |
+| hermes-dec | agent 字节码反编译 | npm 安装 |
 | reFlutter | Flutter 逆向辅助 | pip 安装 |
 | Magisk + Shamiko | Root 隐藏 | 刷入 |
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# mule-auto-maintain — 黑骡全自动仓库维护器
+# tgsec-auto-maintain — 黑骡全自动仓库维护器
 # 审 + 判 + 合 + 学 四步闭环
 
 set -e

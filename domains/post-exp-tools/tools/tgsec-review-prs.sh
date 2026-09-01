@@ -1,6 +1,6 @@
 #!/bin/bash
-# mule-review-prs — 黑骡自动 PR 审查器
-# 用法: mule-review-prs [--auto-merge] [--dry-run]
+# tgsec-review-prs — 黑骡自动 PR 审查器
+# 用法: tgsec-review-prs [--auto-merge] [--dry-run]
 
 set -e
 

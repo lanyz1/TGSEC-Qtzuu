@@ -102,4 +102,4 @@ tools_used:
   - "nm -D (符号表)"
   - "strings (字符串提取)"
   - "file (文件类型)"
-  - "mule-binary (刚创建, 本案例反哺)"
+  - "tgsec-binary (刚创建, 本案例反哺)"

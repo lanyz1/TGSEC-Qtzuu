@@ -27,7 +27,7 @@ attack_surface:
 techniques_tried:
   - technique: "目录爆破"
     result: "found_nothing"
-    tool: "mule-dirb-fast"
+    tool: "tgsec-dirb-fast"
   - technique: "路径遍历"
     result: "blocked_404"
   - technique: "页面源码搜索"

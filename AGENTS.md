@@ -54,7 +54,7 @@ domains/         # 21 个主题域知识库
   <主题>/
     README.md    # 主题索引
     ...          # 技能/文档
-skills/          # Hermes 技能入口
+skills/          # 技能入口
 ```
 
 ## 行为准则

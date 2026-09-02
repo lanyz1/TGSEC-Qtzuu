@@ -1,0 +1,14 @@
+[project]
+name = "fofa"
+version = "0.1.0"
+description = "FOFA asset search MCP server"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.24.0",
+    "python-dotenv>=0.19.0",
+    "mcp>=1.9.0,<2",
+]
+
+[project.scripts]
+fofa-mcp = "fofa:main"

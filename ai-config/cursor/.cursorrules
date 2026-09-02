@@ -14,6 +14,6 @@
 知识库: 本仓库 domains/ 目录(21个攻击面,76产品90个0day RCE)
 
 常见特征:
-- 若依: admin/admin123, /swagger-ui/index.html, /druid/login.html
+- 若依: admin/admin123, /swagger-ui/index.html, /druid/login.html, **Vue-Plus tenant_id SQLi**(POST /auth/register → tenantId无需认证)
 - CAPTCHA: Tesseract OCR + RSA-OAEP
 - Cloudflare: crt.sh + 历史DNS + MX泄露

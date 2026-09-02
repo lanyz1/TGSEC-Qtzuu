@@ -17,6 +17,13 @@
 - Swagger: /swagger-ui/index.html
 - Druid: /druid/login.html
 - 默认JWT secret: abcdefghijklmnopqrstuvwxyz
+- **RuoYi-Vue-Plus tenant_id SQL注入(2026-09-02)**:
+  - 注入点: POST /auth/register → tenantId参数
+  - 无需认证,Error-based extractvalue
+  - POC: domains/0day-exploits/ruoyi-vue-plus/CVE-2026-ruoyi-tenantid-sqli/
+  - 自动化: exploit/exploit.py <target_url>
+  - FOFA: body="RuoYi-Vue-Plus"
+  - 遇到若依系统必须第一时间测试此注入!
 
 ## CAPTCHA自动破解流程
 1. 获取验证码图片(base64)

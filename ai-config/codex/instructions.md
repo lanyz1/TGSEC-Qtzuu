@@ -31,6 +31,6 @@ Repository `domains/` directory contains 21 attack surface topics:
 - Read files from `domains/` as needed
 
 ## Common System Patterns
-- RuoYi: admin/admin123, /swagger-ui/index.html, /druid/login.html, JWT secret: abcdefghijklmnopqrstuvwxyz
+- RuoYi: admin/admin123, /swagger-ui/index.html, /druid/login.html, JWT secret: abcdefghijklmnopqrstuvwxyz, **Vue-Plus tenant_id SQLi** (POST /auth/register → tenantId, no auth needed, exploit: domains/0day-exploits/ruoyi-vue-plus/)
 - CAPTCHA: Tesseract OCR (psm7) + RSA-OAEP (password|timestamp)
 - Cloudflare bypass: crt.sh + historical DNS + MX/SPF leak + Shodan cert search

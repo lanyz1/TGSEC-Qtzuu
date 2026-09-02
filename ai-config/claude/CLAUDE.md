@@ -31,6 +31,6 @@
 - 需要时直接读取 `domains/` 下对应文件
 
 ## 常见系统特征
-- 若依(RuoYi): admin/admin123, /swagger-ui/index.html, /druid/login.html
+- 若依(RuoYi): admin/admin123, /swagger-ui/index.html, /druid/login.html, **Vue-Plus tenant_id SQLi**(POST /auth/register → tenantId, exploit: domains/0day-exploits/ruoyi-vue-plus/)
 - CAPTCHA破解: Tesseract OCR(psm7) + RSA-OAEP(password|timestamp)
 - Cloudflare绕过: crt.sh + 历史DNS + MX/SPF泄露 + Shodan证书搜索

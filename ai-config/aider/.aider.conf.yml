@@ -1,0 +1,4 @@
+read: ai-config/universal/PERSONA.md
+lint-cmd: "echo pentest-mode"
+auto-commits: false
+map-tokens: 2048

@@ -91,7 +91,7 @@ limitations:
   - "scope 包需要付费 npm 账号"
 
 sources:
-  - agent: "blackmule"
+  - agent: "TGSEC"
     date: "2026-07-23"
   - ref: "Alex Birsan: Dependency Confusion (2021)"
   - ref: "CWE-427: Uncontrolled Search Path Element"

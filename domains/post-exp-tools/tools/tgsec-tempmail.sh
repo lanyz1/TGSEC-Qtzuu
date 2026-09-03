@@ -11,7 +11,7 @@ shift 2>/dev/null
 
 case "$cmd" in
     create)
-        resp=$(curl -sk -m 10 "${GM_BASE}?f=get_email_address&ip=127.0.0.1&agent=BlackMule" 2>/dev/null)
+        resp=$(curl -sk -m 10 "${GM_BASE}?f=get_email_address&ip=127.0.0.1&agent=TGSEC" 2>/dev/null)
         email=$(echo "$resp" | python3 -c "import sys,json;d=json.load(sys.stdin);print(d['email_addr'])" 2>/dev/null)
         token=$(echo "$resp" | python3 -c "import sys,json;d=json.load(sys.stdin);print(d['sid_token'])" 2>/dev/null)
         echo "{\"email\":\"$email\",\"sid_token\":\"$token\",\"seq\":0}" > "$GM_STATE"

@@ -14,7 +14,7 @@ field-journal
 
 ## 融合亮点
 
-- `case-reports-6000/` — 实战报告样例（参考结构）
+- `case-reports-6000/` — 实战报告样例
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理

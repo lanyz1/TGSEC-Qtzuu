@@ -105,7 +105,7 @@ limitations:
   - "测试后必须恢复 ARP 表"
 
 sources:
-  - agent: "blackmule"
+  - agent: "TGSEC"
     date: "2026-07-23"
   - ref: "bettercap: https://www.bettercap.org/"
   - ref: "dsniff: https://www.monkey.org/~dugsong/dsniff/"

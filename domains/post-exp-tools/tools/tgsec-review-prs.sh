@@ -9,7 +9,7 @@ if [ -z "$GITHUB_TOKEN" ]; then
     echo "❌ 需要设置 GH_TOKEN 环境变量（GitHub Personal Access Token）"
     exit 1
 fi
-REPO="shuaiqideyu/SecAtlas"
+REPO="TGSEC/SecAtlas"
 API="https://api.github.com/repos/${REPO}"
 HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
 AUTO_MERGE=false

@@ -3,12 +3,12 @@
 # 用法: source /root/.hermes/secrets/github.env && tgsec-merge-pr <PR_NUMBER> [reason]
 
 PR_NUM="$1"
-REASON="${2:-BlackMule auto-merge}"
+REASON="${2:-TGSEC auto-merge}"
 
 [ -z "$PR_NUM" ] && { echo "用法: tgsec-merge-pr <PR_NUMBER> [reason]"; exit 1; }
 [ -z "$GH_TOKEN" ] && { echo "需要 source secrets/github.env"; exit 1; }
 
-API="https://api.github.com/repos/shuaiqideyu/SecAtlas/pulls/${PR_NUM}"
+API="https://api.github.com/repos/TGSEC/SecAtlas/pulls/${PR_NUM}"
 
 # 获取PR信息
 pr_info=$(curl -sk -H "Authorization: Bearer $GH_TOKEN" "$API" 2>/dev/null)
@@ -29,7 +29,7 @@ resp=$(curl -sk -X PUT "${API}/merge" \
     -H "Authorization: Bearer $GH_TOKEN" \
     -H "Accept: application/vnd.github+json" \
     -H "Content-Type: application/json" \
-    -d "{\"commit_title\":\"${title} (via BlackMule)\",\"merge_method\":\"squash\"}" 2>/dev/null)
+    -d "{\"commit_title\":\"${title} (via TGSEC)\",\"merge_method\":\"squash\"}" 2>/dev/null)
 
 merged=$(echo "$resp" | python3 -c "import sys,json;print(json.load(sys.stdin).get('merged',False))" 2>/dev/null)
 message=$(echo "$resp" | python3 -c "import sys,json;print(json.load(sys.stdin).get('message',''))" 2>/dev/null)

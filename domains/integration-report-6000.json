@@ -1,0 +1,12 @@
+{
+  "copied": 4,
+  "skipped": 120,
+  "errors": [],
+  "copied_sample": [
+    "/root/security-suite/domains/auth-security/session-crypto-identity-layer.md",
+    "/root/security-suite/domains/redteam-framework/anti-logic-layout.md",
+    "/root/security-suite/domains/business-logic/payment-config-crown-surface.md",
+    "/root/security-suite/hermes-skills/pentest-execution/references/anti-logic-and-identity-layer.md"
+  ],
+  "by_tag": {}
+}

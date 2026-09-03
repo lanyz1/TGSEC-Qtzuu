@@ -22,6 +22,8 @@ src-methods
 
 ## 融合亮点
 
+- `case-lessons/ruoyi-datascope-list-bola.md` — RuoYi 列表缺 DataScope
+
 - `session-crypto-identity-layer.md` — 身份层 vs CMS 注入 ROI
 
 - `playbook-6000/` — 测试方法论 playbook

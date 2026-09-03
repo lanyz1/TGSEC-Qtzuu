@@ -25,3 +25,9 @@
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+## 报告提炼 case-lessons（2026-09-03）
+
+- api-security/business-logic/auth-security/web-attack/recon 下 `case-lessons/`
+- 来源：6000 zip 内多份授权渗透报告，**仅模式与检查清单**
+

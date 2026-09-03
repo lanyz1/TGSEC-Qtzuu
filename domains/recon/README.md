@@ -34,6 +34,8 @@ tools
 
 ## 融合亮点
 
+- `case-lessons/` — 实战报告脱敏课（报告结构/settings 泄露等）
+
 - `playbook-6000/` — 测试方法论 playbook
 - `hunter-6000/` — offensive skills
 - `src-methods/` — SRC 漏洞测试方法

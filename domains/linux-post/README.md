@@ -1,23 +1,18 @@
 # linux-post
 
-Linux后渗透 — 提权/SUID/sudo/内核/横向/隧道/反弹shell
-
-**7 个顶层文件 / 3 个子目录**
+攻击面知识域 — **19 个文件** / 4 个子目录
 
 ## 子目录
 ```
 linux-lateral-movement
 linux-privilege-escalation
 linux-security-bypass
+playbook-6000
 ```
 
-## 顶层文件
-```
-PEN-GetHash-Linux.md
-PEN-Linux-LPE.md
-PEN-LinuxClear.md
-PEN-Openwrt.md
-PEN-ReShell.md
-PEN-Setuid-Linux.md
-PEN-ssh.md
-```
+## 融合亮点
+
+- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

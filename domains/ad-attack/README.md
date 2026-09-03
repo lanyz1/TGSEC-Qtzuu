@@ -1,8 +1,6 @@
 # ad-attack
 
-AD域攻击 — Kerberos/ACL滥用/ADCS/NTLM中继/票据/域渗透/BloodHound
-
-**2 个顶层文件 / 6 个子目录**
+攻击面知识域 — **87 个文件** / 6 个子目录
 
 ## 子目录
 ```
@@ -14,8 +12,5 @@ lateral
 ntlm-relay-coercion
 ```
 
-## 顶层文件
-```
-PEN-BloodHound.md
-PEN-Kerberos.md
-```
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

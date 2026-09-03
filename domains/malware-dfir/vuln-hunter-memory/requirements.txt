@@ -1,0 +1,13 @@
+# 核心依赖：零。文件级后端开箱即用（哈希向量化、networkx 可选、纯 JSON）。
+# 可选增强（非必须）：
+#   sentence-transformers  —— 真语义向量（自动检测，装了就用，不装回退哈希）
+#   networkx               —— 图谱查询增强（不装也能跑，内置 JSON 图谱）
+# numpy 在哈希向量化下非必须；若安装可加速但本实现用纯 list。
+
+# 如需切换到真实中间件（忠于原方案）再按需安装：
+#   redis          # 瞬时/工作记忆
+#   faiss-cpu      # 短时向量
+#   py2neo         # 长时 Neo4j
+#   langchain langchain-openai sentence-transformers
+
+# 默认无需安装任何包即可运行：

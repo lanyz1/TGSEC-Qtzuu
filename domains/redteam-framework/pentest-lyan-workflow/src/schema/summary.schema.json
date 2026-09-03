@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pentest-skill-v2/summary.schema.json",
+  "title": "summary.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "scan_start", "scan_end", "test_accounts", "role_pair_matrix", "confirmed_vulns"],
+  "properties": {
+    "target": { "type": "string" },
+    "scan_start": { "type": "string" },
+    "scan_end": { "type": "string" },
+    "test_accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "username", "user_id", "purpose"],
+        "properties": {
+          "role": { "type": "string" },
+          "username": { "type": "string" },
+          "user_id": { "type": "integer" },
+          "purpose": { "type": "string" }
+        }
+      }
+    },
+    "role_pair_matrix": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["attacker", "victim", "tested"],
+        "properties": {
+          "attacker": { "type": "string" },
+          "victim": { "type": "string" },
+          "tested": { "type": "boolean" },
+          "use_case": { "type": "string" }
+        }
+      }
+    },
+    "session_pool_limitation": {
+      "type": ["string", "null"],
+      "enum": [null, "single_account", "no_account"]
+    },
+    "confirmed_vulns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "feature_id", "feature_name", "module", "vuln_type", "risk_level", "access_path"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^VULN-[0-9]{3}$" },
+          "feature_id": { "type": "string" },
+          "feature_name": { "type": "string" },
+          "module": { "type": "string" },
+          "vuln_type": { "type": "string" },
+          "risk_level": { "type": "string", "enum": ["critical", "high", "medium", "low", "info"] },
+          "access_path": { "type": "array" },
+          "cvss": { "type": "string", "description": "可选。严重度量化，如 '8.1 High (AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N)'，模型写报告时填，非校验字段" },
+          "fix_advice": { "type": ["string", "object"], "description": "可选。修复建议，模型写报告时填；对象形式可分 short_term / long_term，非校验字段" }
+        }
+      }
+    }
+  }
+}

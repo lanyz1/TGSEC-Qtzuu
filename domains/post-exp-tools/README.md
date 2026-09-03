@@ -1,13 +1,12 @@
 # post-exp-tools
 
-后渗透工具 — C2/隧道/代理/MSF/Webshell/凭据提取/数据渗出
-
-**8 个顶层文件 / 9 个子目录**
+攻击面知识域 — **142 个文件** / 10 个子目录
 
 ## 子目录
 ```
 database-security
 general
+hunter-6000
 network-protocol-attacks
 network-service
 postexploit
@@ -17,14 +16,9 @@ tools
 tunneling-and-pivoting
 ```
 
-## 顶层文件
-```
-EXP-DB-MSSQL.md
-EXP-DB-Redis.md
-PEN-MSF.md
-PEN-Tun2socks.md
-Webshell-Bypass.md
-exploitation.md
-post_exploit.md
-report.md
-```
+## 融合亮点
+
+- `hunter-6000/` — hunter offensive skills 按面融合
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

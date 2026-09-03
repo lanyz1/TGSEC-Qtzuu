@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pentest-skill-v2/index.schema.json",
+  "title": "index.json",
+  "description": "项目清单(多项目管理入口)。Discovery 建项目时初始化,Audit 更新状态。位置:pentest-data/index.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["projects"],
+  "properties": {
+    "_note": { "type": "string" },
+    "projects": {
+      "type": "array",
+      "description": "所有项目,每个对应 pentest-data/{project_id}/ 一个子目录",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["project_id", "target", "dir", "created", "phase", "status"],
+        "properties": {
+          "project_id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "项目唯一标识,小写字母数字连字符。默认从 target hostname 第一段提取,可 --project 覆盖" },
+          "target": { "type": "string", "description": "目标 base_url" },
+          "system_name": { "type": "string", "description": "系统名(报告标题用)。Discovery/Attack 中提取,Audit 回填" },
+          "dir": { "type": "string", "description": "项目数据子目录名,= project_id" },
+          "created": { "type": "string", "description": "ISO8601 创建时间,date -Iseconds" },
+          "last_active": { "type": "string", "description": "ISO8601 最后活跃时间,每次进入项目更新" },
+          "phase": { "type": "integer", "enum": [1, 2, 3], "description": "当前阶段(断点恢复用)" },
+          "status": { "type": "string", "enum": ["in_progress", "completed", "abandoned"] },
+          "vulns_confirmed": { "type": "integer", "description": "确认漏洞数,Audit 阶段从 summary.json 回填" }
+        }
+      }
+    }
+  }
+}

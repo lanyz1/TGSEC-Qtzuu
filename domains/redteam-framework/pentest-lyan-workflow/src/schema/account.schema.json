@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pentest-skill-v2/account.schema.json",
+  "title": "sessions/account_{role}.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["role", "username", "role_level", "login_time", "last_used", "auth", "identity", "status"],
+  "properties": {
+    "role": { "type": "string" },
+    "username": { "type": "string" },
+    "role_level": { "type": "string", "enum": ["high_privilege", "standard", "low"] },
+    "login_time": { "type": "string" },
+    "last_used": { "type": "string" },
+    "auth": {
+      "type": "object",
+      "required": ["token", "token_type"],
+      "properties": {
+        "token": { "type": "string" },
+        "token_type": { "type": "string" },
+        "cookie_string": { "type": "string" },
+        "cookies": { "type": "array" }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "required": ["user_id", "display_name", "roles"],
+      "properties": {
+        "user_id": { "type": "integer" },
+        "display_name": { "type": "string" },
+        "roles": { "type": "array", "items": { "type": "string" } },
+        "owned_resource_ids": { "type": "array", "items": { "type": "integer" } }
+      }
+    },
+    "status": { "type": "string", "enum": ["active", "expired", "error"] }
+  }
+}

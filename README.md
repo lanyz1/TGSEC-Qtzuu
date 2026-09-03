@@ -6,6 +6,16 @@
 
 ---
 
+## 30 秒开始
+
+```bash
+git clone https://github.com/lanyz1/TGSEC-Qtzuu.git security-suite
+cd security-suite
+bash scripts/bootstrap.sh
+```
+
+用 **Claude / Hermes / Cursor / Codex / Aider / Grok** 直接打开本目录即可；AI 应先读 `AGENTS.md` 并执行 bootstrap。
+
 ## 这是什么
 
 一套**面向 AI Agent 的渗透测试知识套件**。它把渗透测试、逆向工程、漏洞利用、红队攻击链的全链路知识,按**攻击面**组织成 24 个主题域、2880 个文件,并配备:

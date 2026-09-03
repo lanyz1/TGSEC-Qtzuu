@@ -5,7 +5,10 @@ description: "Use for attack-surface domain knowledge matrix."
 
 # 安全知识库 · TGSEC 一体化导航
 
-按攻击面组织的安全知识矩阵 — **24 个主题域、2880 个文件**，一个目录直达。
+> **任意 AI 打开本仓：先 `bash scripts/bootstrap.sh`，再读 AGENTS.md。**
+
+
+按攻击面组织的安全知识矩阵 — **24 个主题域、2866 个文件**，一个目录直达。
 
 本地路径: `/root/security-suite`  
 融合索引: `domains/FUSION-6000.md`
@@ -87,16 +90,13 @@ description: "Use for attack-surface domain knowledge matrix."
 | 产品 0day RCE | `0day-exploit-library` |
 | iOS26.6/65343/KASLR 研判 | `mobile-security/ios-kernel-cve/ANALYSIS.md` |
 
-## 旧机器覆盖更新
+## 打开即配置 / 旧机器覆盖
 
 ```bash
-cd ~/security-suite && git pull
-bash scripts/sync-hermes-skills.sh   # 覆盖 Hermes 技能
-bash ai-config/hermes/setup.sh       # 可选: 人格 memories
-# 一条龙: bash scripts/reinstall-tgsec.sh
+bash scripts/bootstrap.sh            # 任意 AI/人类：配齐 Claude/Cursor/Codex/Aider/Grok/Hermes
+bash scripts/bootstrap.sh --force --pull
+bash scripts/reinstall-tgsec.sh      # clone/pull + bootstrap 一条龙
 ```
-
-`git pull` 只更新 `domains/` 知识库；**技能必须跑 sync 脚本**（或 `reinstall-tgsec.sh`）。
 
 ## AI 工具配置
 

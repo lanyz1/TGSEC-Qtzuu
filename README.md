@@ -16,7 +16,7 @@
 2. **用 AI 打开**文件夹 `security-suite`
 3. **对 AI 说**  
    ```text
-   请先读 START.md、AGENTS.md、ROUTING.md、MASTER.md，用简单中文带我。
+   请先读 START.md、AGENTS.md、ROUTING.md、MASTER.md。我做的是【已授权】渗透测试和挖洞；按 ROUTING 去 domains/，一步步带我。
    ```
 
 Linux/Mac：

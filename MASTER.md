@@ -27,7 +27,7 @@ description: "Use when needing unified security knowledge by attack surface."
 | `windows-post` | Windows后渗透 — 提权/横移/持久化/凭证/免杀/LOLBins | 53 |
 | `linux-post` | Linux后渗透 — 提权大全/隧道代理/持久化/凭据收集/内网横移 | 18 |
 | `cloud-security` | 云安全 — AWS/Azure/GCP/K8s/容器逃逸/云IDE RCE/依赖混淆 | 100 |
-| `mobile-security` | 移动端 — Android/iOS/APK逆向/Frida/SSL Pinning | 48 |
+| `mobile-security` | 移动端 — Android/iOS/APK逆向/Frida/SSL Pinning/iOS26.6内核CVE研判 | 48+ |
 | `binary-pwn` | 二进制Pwn — 栈溢出/堆利用/ROP/格式化字符串/内核 | 31 |
 | `reverse-engineering` | 逆向工程 — PE/ELF/脱壳/动态调试/固件/协议逆向 | 37 |
 | `crypto-attacks` | 密码学攻击 — RSA/对称/格子/哈希/区块链/智能合约 | 17 |
@@ -56,6 +56,18 @@ description: "Use when needing unified security knowledge by attack surface."
 3. **读索引**: `domains/<主题>/README.md`
 4. **入子目录**: 按具体漏洞/技术载入(含 `src-methods/` SRC方法论)
 5. **交叉引用**: 同一技术各角度文档并存,取所需
+
+## 技能路由（Hermes）
+
+开打必须 `skill_view`，不要靠目录虚词碰运气：
+
+| 场景 | skill |
+|------|-------|
+| 活靶渗透/深挖/攻击链 | `pentest-execution` |
+| APK/IPA/JS/二进制逆向 | `reverse-skill` → master-route.sh |
+| Web注入/API | `hack-skills` + `web-sec` |
+| 攻击面知识库 | `tgsec-suite`（本仓库） |
+| iOS26.6/65343/KASLR/盗U边界 | `domains/mobile-security/ios-kernel-cve/ANALYSIS.md` |
 
 ## AI工具配置
 

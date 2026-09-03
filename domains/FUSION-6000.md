@@ -18,7 +18,6 @@
 - **post-exp-tools** (142 files): hunter-6000
 - **malware-dfir** (47 files): playbook-6000, vuln-hunter-memory
 - **social-eng** (11 files): playbook-6000
-- **ctf** (219 files): case-reports-6000
 - **redteam-framework** (42 files): hunter-6000, pentest-lyan-workflow
 - **other** (18 files): playbook-6000
 

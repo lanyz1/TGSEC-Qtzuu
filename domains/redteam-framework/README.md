@@ -11,6 +11,8 @@ pentest-lyan-workflow
 
 ## 融合亮点
 
+- `anti-logic-layout.md` — 反逻辑 A1–A6
+
 - `hunter-6000/` — offensive skills
 - `pentest-lyan-workflow/` — 授权 Web 三阶段+威胁建模
 

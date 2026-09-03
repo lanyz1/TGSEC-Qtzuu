@@ -19,6 +19,8 @@ type-juggling
 
 ## 融合亮点
 
+- `payment-config-crown-surface.md` — 支付 Crown 面
+
 - `playbook-6000/` — 测试方法论 playbook
 - `src-methods/` — SRC 漏洞测试方法
 

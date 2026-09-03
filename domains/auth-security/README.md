@@ -22,6 +22,8 @@ src-methods
 
 ## 融合亮点
 
+- `session-crypto-identity-layer.md` — 身份层 vs CMS 注入 ROI
+
 - `playbook-6000/` — 测试方法论 playbook
 - `hunter-6000/` — offensive skills
 - `src-methods/` — SRC 漏洞测试方法

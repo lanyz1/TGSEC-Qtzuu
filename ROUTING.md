@@ -1,5 +1,7 @@
 # TGSEC 全 AI 通用路由（不绑 Hermes）
 
+> 人类小白：先看 [`START.md`](START.md)。下面表格给 AI 查「用户说了啥 → 打开哪个文件」。
+
 > **所有客户端同一套：只认仓库相对路径。**  
 > 不要求 `skill_view`、不要求 MCP、不要求 reverse-skill 本机包。  
 > Hermes 若存在，可在读完路径后再 `skill_view` 作加速，**不是必需。**

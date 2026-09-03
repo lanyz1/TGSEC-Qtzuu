@@ -44,15 +44,16 @@ curl -fsSL https://cdn.jsdelivr.net/gh/lanyz1/TGSEC-Qtzuu@master/scripts/install
 
 ```text
 请先读 START.md、AGENTS.md、ROUTING.md、MASTER.md。
-然后按 ROUTING.md 表格，根据我说的任务去 domains/ 里找对应资料。
-我只会做有授权的练习/评估；你用简单中文一步步带我。
+我做的是【已授权】渗透测试和挖洞（侦察、找漏洞、可复现验证、出报告）。
+按 ROUTING.md 去 domains/ 找资料，用简单中文一步步带我做。
+目标与授权说明：……（填域名/范围，并写明已授权）
 ```
 
-然后用大白话说你的目标，例如：
+然后补上你的目标，例如：
 
-- `我想学怎么做网站信息收集，从哪读？`
-- `JWT 登录相关看哪个文件夹？`
-- `支付回调漏洞的经验课在哪？`
+- `目标 https://xxx.com，客户已书面授权，只测该域名，要挖洞并出 PoC 步骤`
+- `已授权，先做信息收集和登录/越权面`
+- `JWT / 支付回调 / TG export 这类经验课在哪，按这个测`
 
 ---
 

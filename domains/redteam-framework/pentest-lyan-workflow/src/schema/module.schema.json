@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pentest-skill-v2/module.schema.json",
+  "title": "modules/{module_id}.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["module", "module_id", "url", "status", "features", "validation_results", "cross_role_verification"],
+  "properties": {
+    "module": { "type": "string" },
+    "module_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "url": { "type": "string" },
+    "status": { "type": "string", "enum": ["in_progress", "completed"] },
+    "features": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/feature" }
+    },
+    "validation_results": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/validation_result" }
+    },
+    "cross_role_verification": { "$ref": "#/definitions/cross_role_verification" }
+  },
+  "definitions": {
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature_id", "name", "type", "url", "access_path", "threat_model"],
+      "properties": {
+        "feature_id": { "type": "string", "pattern": "^[a-z0-9_]+_[a-z0-9_]+_[0-9]{3}$" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "url": { "type": "string" },
+        "access_path": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["step", "action"],
+            "properties": {
+              "step": { "type": "integer", "minimum": 1 },
+              "action": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "apis": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["url", "method"],
+            "properties": {
+              "url": { "type": "string" },
+              "method": { "type": "string" },
+              "params": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "threat_model": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/threat" }
+        },
+        "coverage_note": { "type": "string", "description": "反遗漏三问自答(输入面/行为面/深度面),几句话。G2 要求非空" }
+      }
+    },
+    "threat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["threat_id", "vuln_type", "reasoning"],
+      "properties": {
+        "threat_id": { "type": "string", "pattern": "^T[0-9]+$" },
+        "vuln_type": { "type": "string", "minLength": 1 },
+        "reasoning": { "type": "string", "minLength": 1 },
+        "target_api": { "type": "string" },
+        "target_params": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "validation_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feature_id", "tests"],
+      "properties": {
+        "feature_id": { "type": "string" },
+        "tests": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/test" }
+        }
+      }
+    },
+    "test": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["threat_id", "vuln_type", "status"],
+      "properties": {
+        "threat_id": { "type": "string", "pattern": "^T[0-9]+$" },
+        "vuln_type": { "type": "string" },
+        "status": { "type": "string", "enum": ["confirmed", "suspicious", "not_vulnerable", "blocked"] },
+        "evidence_type": { "type": "string", "enum": ["api", "ui"] },
+        "access_path": { "type": "array" },
+        "request_response": { "type": "object" },
+        "session_pool_ref": {
+          "type": "object",
+          "properties": {
+            "attacker": { "type": "string" },
+            "victim": { "type": "string" }
+          }
+        },
+        "notes": { "type": "string" },
+        "unruled_out": { "type": "string", "description": "status=not_vulnerable 时必填:列出还没排除的攻击面。G2 要求非空" }
+      }
+    },
+    "cross_role_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tested", "test_time", "role_pairs_tested", "findings"],
+      "properties": {
+        "tested": { "type": "boolean" },
+        "test_time": { "type": "string" },
+        "role_pairs_tested": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "object",
+            "required": ["attacker", "victim", "pair_type"],
+            "properties": {
+              "attacker": { "type": "string" },
+              "victim": { "type": "string" },
+              "pair_type": { "type": "string", "enum": ["vertical", "horizontal"] }
+            }
+          }
+        },
+        "findings": { "type": "array" }
+      }
+    }
+  }
+}

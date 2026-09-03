@@ -137,3 +137,11 @@ cat MASTER.md                      # 导航入口
 ---
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+## 知识融合
+
+- 域索引: `MASTER.md`
+- 6000RMB skills 融合: `domains/FUSION-6000.md`
+- iOS 内核 CVE 研判: `domains/mobile-security/ios-kernel-cve/`
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理

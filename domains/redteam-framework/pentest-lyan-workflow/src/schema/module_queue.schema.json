@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pentest-skill-v2/module_queue.schema.json",
+  "title": "module_queue.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["base_url", "module_queue", "tested_modules", "discovered_module_ids"],
+  "properties": {
+    "base_url": { "type": "string" },
+    "module_queue": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "id", "url", "priority", "source"],
+        "properties": {
+          "name": { "type": "string" },
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "url": { "type": "string" },
+          "priority": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+          "source": { "type": "string", "pattern": "^(initial|discovered_in_[a-z0-9_]+)$" }
+        }
+      }
+    },
+    "tested_modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "id", "status", "vulns_found"],
+        "properties": {
+          "name": { "type": "string" },
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "status": { "type": "string", "enum": ["completed"] },
+          "vulns_found": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "discovered_module_ids": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+      "uniqueItems": true
+    }
+  }
+}

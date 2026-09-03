@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pentest-skill-v2/pages.schema.json",
+  "title": "pages.json",
+  "description": "页面与功能覆盖清单。活文件:阶段 1 用一级模块页面 seed,阶段 2 边测边发现追加。G6 报告前校验已发现条目全部 visited + triggered 或记 BLOCKED。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pages"],
+  "properties": {
+    "_note": { "type": "string" },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["page_id", "url", "name", "visited", "functions"],
+        "properties": {
+          "page_id": { "type": "string", "pattern": "^p_[a-z0-9_]+$", "description": "页面唯一标识,前缀 p_" },
+          "url": { "type": "string", "description": "页面路径,相对或绝对" },
+          "name": { "type": "string", "description": "页面名称" },
+          "source": { "type": "string", "description": "来源:nav_menu / link / js_route / discovered_in_{module_id}" },
+          "visited": { "type": "boolean", "description": "是否已访问该页面" },
+          "visit_status": { "type": "string", "enum": ["BLOCKED"], "description": "visited=false 时必填,说明无法访问原因" },
+          "functions": {
+            "type": "array",
+            "description": "该页面上的功能点",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["func_id", "name", "triggered"],
+              "properties": {
+                "func_id": { "type": "string", "pattern": "^f_[a-z0-9_]+$", "description": "功能点唯一标识,前缀 f_" },
+                "name": { "type": "string", "description": "功能名称,如 编辑用户" },
+                "trigger": { "type": "string", "description": "触发方式:button / form / action / link" },
+                "apis": { "type": "array", "items": { "type": "string" }, "description": "该功能触发的接口" },
+                "triggered": { "type": "boolean", "description": "是否已触发该功能" },
+                "trigger_status": { "type": "string", "enum": ["BLOCKED"], "description": "triggered=false 时必填,说明无法触发原因" },
+                "module_id": { "type": "string", "description": "关联模块 id" },
+                "feature_id": { "type": "string", "description": "关联 feature id,便于和 modules/{x}.json 的 threat_model 对齐" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

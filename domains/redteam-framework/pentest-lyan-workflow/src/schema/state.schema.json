@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pentest-skill-v2/state.schema.json",
+  "title": "state.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["base_url", "current_phase", "session_pool_ready", "active_sessions", "tested_module_ids", "scan_start_time"],
+  "properties": {
+    "base_url": { "type": "string" },
+    "current_phase": { "type": "integer", "enum": [1, 2, 3] },
+    "current_module": { "type": ["string", "null"] },
+    "session_pool_ready": { "type": "boolean" },
+    "active_sessions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "session_pool_limitation": {
+      "type": ["string", "null"],
+      "enum": [null, "single_account", "no_account"]
+    },
+    "tested_module_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "scan_start_time": { "type": "string" },
+    "registration_page": { "type": ["string", "null"], "description": "Discovery 探测到的注册页 URL,无则 null;账号不足时供阶段 3 提示用户注册补全" },
+    "project_id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "本项目 project_id,对应 pentest-data/{project_id}/ 目录" }
+  }
+}

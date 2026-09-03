@@ -97,6 +97,7 @@ Prompt 注入、Agent 安全、MCP、LLM 红队
 | Session/JWT 身份层 vs CMS 注入 ROI | `domains/auth-security/session-crypto-identity-layer.md` |
 | Anti-Logic 反逻辑 A1–A6 | `domains/redteam-framework/anti-logic-layout.md` |
 | 支付/收款 Crown 面 | `domains/business-logic/payment-config-crown-surface.md` |
+| 实战报告提炼 | `domains/*/case-lessons/`（见 recon/case-lessons/README） |
 
 未命中具体域 → 读 `MASTER.md` 主题表，**不要硬塞**；可提议补文档到对应 `domains/<面>/`。
 

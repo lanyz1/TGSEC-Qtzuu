@@ -87,6 +87,17 @@ description: "Use for attack-surface domain knowledge matrix."
 | 产品 0day RCE | `0day-exploit-library` |
 | iOS26.6/65343/KASLR 研判 | `mobile-security/ios-kernel-cve/ANALYSIS.md` |
 
+## 旧机器覆盖更新
+
+```bash
+cd ~/security-suite && git pull
+bash scripts/sync-hermes-skills.sh   # 覆盖 Hermes 技能
+bash ai-config/hermes/setup.sh       # 可选: 人格 memories
+# 一条龙: bash scripts/reinstall-tgsec.sh
+```
+
+`git pull` 只更新 `domains/` 知识库；**技能必须跑 sync 脚本**（或 `reinstall-tgsec.sh`）。
+
 ## AI 工具配置
 
 ```

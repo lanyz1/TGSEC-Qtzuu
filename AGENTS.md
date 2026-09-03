@@ -89,20 +89,29 @@ bash scripts/install-tools.sh  # 自动安装缺失工具
 
 工具清单在 `scripts/tools-manifest.json`(80+ 工具)
 
-### 第 4 步: 注册技能/知识库(可选)
+### 第 4 步: 同步 Hermes 技能（覆盖安装）
 
-如果你的AI工具支持技能/插件系统:
+**知识库 git pull ≠ 技能更新。** Hermes 技能在 `~/.hermes/skills/security/`，由本仓 `hermes-skills/` 覆盖同步:
 
-**Hermes** — 用 skill_manage 注册:
-- `0day-exploit-library` — domains/0day-exploits/
-- `black-cat-redteam` — domains/redteam-framework/
-- `pentest-execution` — 渗透执行攻击链
-- `gambling-platform-pentest` — 赌博平台渗透
+```bash
+cd ~/security-suite
+git pull
+bash scripts/sync-hermes-skills.sh          # 覆盖 ~/.hermes/skills/security（自动 backup）
+# 旧机器一条龙（clone/pull + 人格 + 技能）:
+bash scripts/reinstall-tgsec.sh
+# 或指定路径:
+bash scripts/reinstall-tgsec.sh /root/security-suite
+```
 
-**其他AI工具** — 直接告诉用户:
+装完后**开新会话**。验证: 让 agent `skill_view(tgsec-suite)` / `reverse-skill` / `pentest-execution`。
+
+伞形技能会路由到 `domains/` 正文（playbook-6000 / hunter-6000 / src-methods 等）。
+
+**其他AI工具** — 无 Hermes skills 时:
 ```
 知识库位置: ~/security-suite/domains/
 使用时直接 read_file 或 search_files 调用
+总入口: MASTER.md
 ```
 
 ### 第 5 步: 验证安装

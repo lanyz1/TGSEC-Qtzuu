@@ -45,6 +45,8 @@ websocket-security
 
 ## 融合亮点
 
+- `case-lessons/edgeone-waf-open-register-upload.md` — EdgeOne+开放注册+上传
+
 - `playbook-6000/` — 测试方法论 playbook
 - `hunter-6000/` — offensive skills
 - `src-methods/` — SRC 漏洞测试方法

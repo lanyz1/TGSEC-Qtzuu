@@ -33,6 +33,8 @@ unauthorized-access-common-services
 
 ## 融合亮点
 
+- `case-lessons/tg-cloud-export-bola.md` — TG/库存 export BOLA
+
 - `playbook-6000/` — 测试方法论 playbook
 - `hunter-6000/` — offensive skills
 - `src-methods/` — SRC 漏洞测试方法

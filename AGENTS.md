@@ -1,5 +1,7 @@
 # TGSEC 安全任务自动路由规则（AGENTS.md）
 
+> **人类小白请先看 [`START.md`](START.md)**（只有 3 步）。本文件给 AI 用，偏完整。
+
 > 任意 AI（Hermes / Grok Build / Claude CLI / Cursor / Codex / Aider / OpenCode…）打开本仓库的**第一指令**。  
 > 包根目录 = **本文件所在目录**（不要写死盘符；Windows 常见 `C:\Users\<你>\security-suite`）。  
 > 知识正文在 `domains/`；总导航 `MASTER.md`；**全 AI 路径表 `ROUTING.md`（不依赖 Hermes）**；`hermes-skills/` 仅 Hermes 可选加速。

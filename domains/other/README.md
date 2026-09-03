@@ -16,7 +16,7 @@ src-methods
 
 ## 融合亮点
 
-- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
+- `playbook-6000/` — 测试方法论 playbook
 - `src-methods/` — SRC 漏洞测试方法
 
 ---

@@ -19,7 +19,7 @@ symbolic-execution-tools
 
 ## 融合亮点
 
-- `hunter-6000/` — hunter offensive skills 按面融合
+- `hunter-6000/` — offensive skills
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理

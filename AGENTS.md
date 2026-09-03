@@ -19,7 +19,7 @@ cd ~/security-suite
 
 根据你所在的AI系统选择对应配置方式:
 
-#### Hermes Agent
+#### TGSEC Agent
 
 ```bash
 cd ~/security-suite/ai-config/hermes && bash setup.sh
@@ -133,7 +133,7 @@ README.md              # 项目简介
 AGENTS.md              # AI自动安装指南(你正在读)
 ai-config/             # ★ 多AI工具配置
   universal/           # 通用配置(PERSONA+MEMORY+RULES)
-  hermes/              # Hermes Agent配置
+  hermes/              # TGSEC Agent配置
   claude/              # Claude Code配置
   codex/               # OpenAI Codex配置
   grok/                # Grok配置
@@ -144,7 +144,7 @@ scripts/               # 工具链脚本
   check-tools.sh       
   install-tools.sh     
   tools-manifest.json  # 80+ 工具清单
-domains/               # 21个主题域知识库
+domains/               # 24个主题域知识库
   0day-exploits/       # 76产品90个RCE漏洞
   redteam-framework/   # Black Cat红队框架
   gambling-pentest/    # 赌博平台渗透

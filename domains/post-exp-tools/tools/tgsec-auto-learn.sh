@@ -13,7 +13,7 @@ echo "🧠 黑骡自动学习器"
 
 # === 同步技术卡到本地 ===
 new_tech=0
-for cat_dir in blackmule/techniques/*/; do
+for cat_dir in TGSEC/techniques/*/; do
     cat_name=$(basename "$cat_dir")
     mkdir -p "$HERMES_ROOT/techniques/$cat_name"
     for f in "$cat_dir"*.yaml; do
@@ -28,7 +28,7 @@ done
 
 # === 同步案例到本地 ===
 new_cases=0
-for case_dir in blackmule/cases/*/; do
+for case_dir in TGSEC/cases/*/; do
     type_name=$(basename "$case_dir")
     mkdir -p "$HERMES_ROOT/cases/$type_name"
     for f in "$case_dir"*.yaml; do
@@ -48,7 +48,7 @@ python3 -c "
 import yaml, os, glob
 
 triggers = []
-for f in glob.glob('$LOCAL_REPO/blackmule/cases/**/*.yaml', recursive=True):
+for f in glob.glob('$LOCAL_REPO/TGSEC/cases/**/*.yaml', recursive=True):
     try:
         with open(f) as fh:
             data = yaml.safe_load(fh)

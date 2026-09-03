@@ -8,7 +8,7 @@
 
 ## 这是什么
 
-一套**面向 AI Agent 的渗透测试知识套件**。它把渗透测试、逆向工程、漏洞利用、红队攻击链的全链路知识,按**攻击面**组织成 24 个主题域、2700+ 个文件,并配备:
+一套**面向 AI Agent 的渗透测试知识套件**。它把渗透测试、逆向工程、漏洞利用、红队攻击链的全链路知识,按**攻击面**组织成 24 个主题域、2880 个文件,并配备:
 
 - **主入口 `MASTER.md`** — 24 主题导航矩阵 + 5 步路由
 - **主题索引** — 每个 `domains/<主题>/` 下有 README 索引 + 技能文件
@@ -60,7 +60,7 @@
 → 数据提取 → 持久化(persistence) → 报告输出
 ```
 
-全链路 2700+ 文件,零薄弱环节。
+全链路 2880 文件,零薄弱环节。
 
 ---
 
@@ -70,7 +70,7 @@
 
 | AI工具 | 配置命令 |
 |--------|---------|
-| **Hermes Agent** | `cd ai-config/hermes && bash setup.sh` |
+| **TGSEC Agent** | `cd ai-config/hermes && bash setup.sh` |
 | **Claude Code** | `cp ai-config/claude/CLAUDE.md ./CLAUDE.md` |
 | **OpenAI Codex** | `cp ai-config/codex/instructions.md .github/copilot/` |
 | **Grok CLI** | `cp ai-config/grok/system.txt ~/.grok/` |

@@ -2,7 +2,7 @@
 
 > 任意 AI（Hermes / Grok Build / Claude CLI / Cursor / Codex / Aider / OpenCode…）打开本仓库的**第一指令**。  
 > 包根目录 = **本文件所在目录**（不要写死盘符；Windows 常见 `C:\Users\<你>\security-suite`）。  
-> 知识正文在 `domains/`；总导航 `MASTER.md`；Hermes 伞形技能源在 `hermes-skills/`。
+> 知识正文在 `domains/`；总导航 `MASTER.md`；**全 AI 路径表 `ROUTING.md`（不依赖 Hermes）**；`hermes-skills/` 仅 Hermes 可选加速。
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
 
@@ -27,9 +27,10 @@ bash scripts/bootstrap.sh --force
 
 然后：
 
-1. 读 **本文件** + **`MASTER.md`**
-2. 按下方关键词路由到 `domains/<面>/` 或 Hermes `skill_view(...)`
-3. 同主题优先：`playbook-6000/` → `hunter-6000/` → `src-methods/` → 其它子目录
+1. 读 **本文件** + **`ROUTING.md`** + **`MASTER.md`**
+2. 按 `ROUTING.md` 关键词表打开 `domains/` 路径（**所有 AI 通用，不需要 skill_view**）
+3. 同主题优先：`playbook-6000/` → `hunter-6000/` → `src-methods/` → `case-lessons/` → 其它
+4. Hermes 可选再 `skill_view` 加速，非必需
 
 ---
 
@@ -109,14 +110,12 @@ Prompt 注入、Agent 安全、MCP、LLM 红队
 
 ```text
 1. 本 AGENTS.md（触发与原则）
-2. MASTER.md                    — 24 域导航 + 5 步路由
-3. domains/<面>/README.md       — 域索引
-4. playbook-6000 → hunter-6000 → src-methods → 专项 md
-5. Hermes（若可用）:
-     skill_view(tgsec-suite | pentest-execution | reverse-skill | …)
-6. 可选本机 reverse-skill 包（若存在）:
-     skills/scripts/master-route.sh|.ps1
-     skills/routing.md / tool-index.md
+2. ROUTING.md                   — 全 AI 关键词→路径（不绑 Hermes）
+3. MASTER.md                    — 24 域导航 + 5 步路由
+4. domains/<面>/README.md       — 域索引
+5. playbook-6000 → hunter-6000 → src-methods → case-lessons → 专项
+6. Hermes 可选: skill_view(...)
+7. 可选本机 reverse-skill master-route（有则用，无则只用 domains）
 ```
 
 **检测包根：** 含 `MASTER.md` + `domains/` + `scripts/bootstrap.sh` 的目录 = TGSEC 根。  
@@ -206,7 +205,7 @@ Prompt 注入、Agent 安全、MCP、LLM 红队
 
 ---
 
-## 7. Hermes 伞形技能速查
+## 7. Hermes 伞形技能速查（可选加速，非全 AI 必需）
 
 | skill_view | 何时 |
 |------------|------|
@@ -301,10 +300,10 @@ Windows：见仓库 `INSTALL.md` / `scripts/install-windows.ps1`（以当前仓�
 ## 12. 发给已打开 AI 的最短口令
 
 ```text
-包根是本仓库。先 bash scripts/bootstrap.sh（若未做）。
-读 AGENTS.md 和 MASTER.md；按关键词进 domains/；
-Hermes 再 skill_view(pentest-execution)+tgsec-suite。
-授权范围内执行；同主题 playbook-6000→hunter-6000→src-methods。
+工作区是 TGSEC 包根。读 AGENTS.md、ROUTING.md、MASTER.md。
+按 ROUTING 表打开 domains/ 对应文件（不依赖 Hermes skill_view）。
+顺序 README→playbook-6000→hunter-6000→src-methods→case-lessons。
+授权范围内执行；业务系统走真假分离+身份层+反逻辑。
 ```
 
 ---

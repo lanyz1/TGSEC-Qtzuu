@@ -1,7 +1,7 @@
-# TGSEC aider
-# @TGSEC社区 · @TGSEC-Qtzuu 整理
+# TGSEC aider — universal file routing
 read:
   - AGENTS.md
+  - ROUTING.md
   - MASTER.md
   - CLAUDE.md
   - RULES.md

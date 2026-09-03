@@ -16,6 +16,11 @@ bash scripts/bootstrap.sh
 
 用 **Claude / Hermes / Cursor / Codex / Aider / Grok** 直接打开本目录即可；AI 应先读 `AGENTS.md` 并执行 bootstrap。
 
+## 全 AI 路由（不绑 Hermes）
+
+任何 AI 打开包根后读：**`AGENTS.md` → `ROUTING.md` → `MASTER.md` → `domains/`**。  
+Hermes 的 `skill_view` 只是可选加速，不是门槛。
+
 ## 这是什么
 
 一套**面向 AI Agent 的渗透测试知识套件**。它把渗透测试、逆向工程、漏洞利用、红队攻击链的全链路知识,按**攻击面**组织成 24 个主题域、2880 个文件,并配备:

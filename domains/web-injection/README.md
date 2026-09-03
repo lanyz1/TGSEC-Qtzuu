@@ -39,8 +39,8 @@ xxe-xml-external-entity
 
 ## 融合亮点
 
-- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
-- `hunter-6000/` — hunter offensive skills 按面融合
+- `playbook-6000/` — 测试方法论 playbook
+- `hunter-6000/` — offensive skills
 - `src-methods/` — SRC 漏洞测试方法
 
 ---

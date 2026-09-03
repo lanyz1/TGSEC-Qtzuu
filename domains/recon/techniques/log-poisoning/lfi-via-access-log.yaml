@@ -87,7 +87,7 @@ limitations:
   - "磁盘安全: 单次注入不超过10KB"
 
 sources:
-  - agent: "blackmule"
+  - agent: "TGSEC"
     date: "2026-07-23"
   - ref: "OWASP: Local File Inclusion"
   - ref: "HackTricks: File Inclusion"

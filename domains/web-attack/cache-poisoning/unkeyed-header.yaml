@@ -87,7 +87,7 @@ limitations:
   - "短 TTL 需要精确计时"
 
 sources:
-  - agent: "blackmule"
+  - agent: "TGSEC"
     date: "2026-07-23"
   - ref: "PortSwigger: Practical Web Cache Poisoning"
   - ref: "CWE-444"

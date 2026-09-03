@@ -7,7 +7,7 @@ set -e
 GH_TOKEN="${GH_TOKEN:-}"
 [ -z "$GH_TOKEN" ] && { echo "需要 GH_TOKEN"; exit 1; }
 
-REPO="shuaiqideyu/SecAtlas"
+REPO="TGSEC/SecAtlas"
 API="https://api.github.com/repos/${REPO}"
 HEADER="Authorization: Bearer ${GH_TOKEN}"
 LOCAL_REPO="/tmp/SecAtlas"
@@ -35,7 +35,7 @@ import sys, json, subprocess, re, os
 
 prs = json.load(sys.stdin)
 token = os.environ.get('GH_TOKEN','')
-repo = os.environ.get('REPO','shuaiqideyu/SecAtlas')
+repo = os.environ.get('REPO','TGSEC/SecAtlas')
 api = f'https://api.github.com/repos/{repo}'
 header = f'Authorization: Bearer {token}'
 
@@ -84,7 +84,7 @@ for pr in prs:
     
     # 4. 文件类型检查
     new_files = re.findall(r'^\+\+\+ b/(.+)$', diff, re.M)
-    valid_paths = [f for f in new_files if f.startswith(('blackmule/','通用漏洞技术/','Web与API安全/','网络与协议安全/','云与云原生安全/','源码审计_','scripts/','templates/','AGENTS.md','CONTRIBUTING.md','agent-manifest.yaml'))]
+    valid_paths = [f for f in new_files if f.startswith(('TGSEC/','通用漏洞技术/','Web与API安全/','网络与协议安全/','云与云原生安全/','源码审计_','scripts/','templates/','AGENTS.md','CONTRIBUTING.md','agent-manifest.yaml'))]
     if valid_paths:
         reasons.append(f'✅ 路径有效: {len(valid_paths)}个文件')
     else:
@@ -112,7 +112,7 @@ for pr in prs:
         # 尝试合并
         merge_url = f'{api}/pulls/{num}/merge'
         merge_data = json.dumps({
-            'commit_title': f'{title} (via BlackMule auto-merge)',
+            'commit_title': f'{title} (via TGSEC auto-merge)',
             'merge_method': 'squash'
         }).encode()
         try:

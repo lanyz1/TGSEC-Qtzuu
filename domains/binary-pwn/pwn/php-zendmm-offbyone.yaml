@@ -94,7 +94,7 @@ references:
     - "/root/zend_mm_off_by_one_research.md (完整技术报告)"
 
 sources:
-  - agent: "BlackMule"
+  - agent: "TGSEC"
     date: "2026-07-24"
   - case: "20260720-echoes-of-heap (v1 port 30076)"
   - case: "20260724-echoes-of-heap-v2 (v2 port 30023)"

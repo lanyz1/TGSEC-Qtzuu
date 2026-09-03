@@ -98,7 +98,7 @@ limitations:
   - "30 CVE 的主要漏洞类型：越权、SSRF、XSS — 模式相对常规"
 
 sources:
-  - agent: "blackmule"
+  - agent: "TGSEC"
     date: "2026-07-23"
   - ref: "larlarua/AutoCVE: https://github.com/larlarua/AutoCVE"
   - ref: "AutoCVE 成果: 30 CVEs across 14 projects in 7 days"

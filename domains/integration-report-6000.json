@@ -79,12 +79,12 @@
     "/tmp/skills6000/skill1/schema/state.schema.json",
     "/tmp/skills6000/skill1/schema/sessions_pool.schema.json",
     "/tmp/skills6000/skill1/scripts/render_docx.py",
-    "/tmp/skills6000/clown-src-6k-skill/skills/skill/知识库/crlf-injection-test.md",
-    "/tmp/skills6000/clown-src-6k-skill/skills/skill/知识库/csrf-test.md",
-    "/tmp/skills6000/clown-src-6k-skill/skills/skill/知识库/xss-test.md",
-    "/tmp/skills6000/clown-src-6k-skill/skills/skill/知识库/cors-test.md",
-    "/tmp/skills6000/clown-src-6k-skill/skills/skill/知识库/insecure-scm-test.md",
-    "/tmp/skills6000/clown-src-6k-skill/skills/skill/知识库/path-traversal-lfi-test.md",
-    "/tmp/skills6000/clown-src-6k-skill/skills/skill/知识库/el-injection-test.md"
+    "/tmp/skills6000/src-methods/skills/skill/知识库/crlf-injection-test.md",
+    "/tmp/skills6000/src-methods/skills/skill/知识库/csrf-test.md",
+    "/tmp/skills6000/src-methods/skills/skill/知识库/xss-test.md",
+    "/tmp/skills6000/src-methods/skills/skill/知识库/cors-test.md",
+    "/tmp/skills6000/src-methods/skills/skill/知识库/insecure-scm-test.md",
+    "/tmp/skills6000/src-methods/skills/skill/知识库/path-traversal-lfi-test.md",
+    "/tmp/skills6000/src-methods/skills/skill/知识库/el-injection-test.md"
   ]
 }

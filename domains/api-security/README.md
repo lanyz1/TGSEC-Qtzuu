@@ -1,8 +1,6 @@
 # api-security
 
-API安全 — GraphQL/JWT/OAuth/IDOR·BOLA/反序列化/未授权访问/参数注入
-
-**7 个顶层文件 / 22 个子目录**
+攻击面知识域 — **44 个文件** / 25 个子目录
 
 ## 子目录
 ```
@@ -22,21 +20,22 @@ hunt-grpc
 hunt-idor
 hunt-jwt-crypto
 hunt-nosqli
+hunter-6000
 idor
 idor-broken-object-authorization
 jndi-injection
 jwt
 jwt-oauth-token-attacks
+playbook-6000
+src-methods
 unauthorized-access-common-services
 ```
 
-## 顶层文件
-```
-EXP-IDOR.md
-EXP-JWT.md
-EXP-Java-Unserialize-Bypass-Jdk.md
-EXP-Java-Unserialize.md
-EXP-PHP-Unserialize.md
-EXP-Python-Unserialize.md
-EXP-nodejs-proto.md
-```
+## 融合亮点
+
+- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
+- `hunter-6000/` — hunter offensive skills 按面融合
+- `src-methods/` — SRC 漏洞测试方法
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

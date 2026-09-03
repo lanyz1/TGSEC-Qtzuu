@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pentest-skill-v2/coverage.schema.json",
+  "title": "coverage.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["modules", "features_summary", "system_audits", "blindspots"],
+  "properties": {
+    "modules": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9_]+$" }
+    },
+    "features_summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["module_id", "module_name", "feature_id", "feature_name", "threats_total", "threats_tested", "results"],
+        "properties": {
+          "module_id": { "type": "string" },
+          "module_name": { "type": "string" },
+          "feature_id": { "type": "string" },
+          "feature_name": { "type": "string" },
+          "threats_total": { "type": "integer", "minimum": 0 },
+          "threats_tested": { "type": "integer", "minimum": 0 },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["threat_id", "vuln_type", "status"],
+              "properties": {
+                "threat_id": { "type": "string" },
+                "vuln_type": { "type": "string" },
+                "status": { "type": "string", "enum": ["confirmed", "suspicious", "not_vulnerable", "blocked"] },
+                "vuln_id": { "type": "string" }
+              }
+            }
+          },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "system_audits": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "enum": ["audited", "blocked", "not_applicable"] },
+          "result": { "type": "string" }
+        }
+      }
+    },
+    "blindspots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["feature_id", "vuln_type", "status", "reason"],
+        "properties": {
+          "feature_id": { "type": "string" },
+          "vuln_type": { "type": "string" },
+          "status": { "type": "string", "enum": ["BLOCKED", "NEEDS", "N/A"] },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "page_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pages_total", "pages_visited", "functions_total", "functions_triggered"],
+      "properties": {
+        "pages_total": { "type": "integer", "minimum": 0 },
+        "pages_visited": { "type": "integer", "minimum": 0 },
+        "functions_total": { "type": "integer", "minimum": 0 },
+        "functions_triggered": { "type": "integer", "minimum": 0 },
+        "untriggered": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["page_id", "name", "status", "reason"],
+            "properties": {
+              "page_id": { "type": "string" },
+              "func_id": { "type": "string" },
+              "name": { "type": "string" },
+              "status": { "type": "string", "enum": ["BLOCKED"] },
+              "reason": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

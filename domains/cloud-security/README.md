@@ -1,8 +1,6 @@
 # cloud-security
 
-云安全 — AWS/Azure/GCP/IAM/K8s/容器逃逸/私服/Serverless/CICD投毒
-
-**1 个顶层文件 / 12 个子目录**
+攻击面知识域 — **103 个文件** / 14 个子目录
 
 ## 子目录
 ```
@@ -17,10 +15,15 @@ hunt-cloud-misconfig
 hunt-k8s
 kubernetes-pentesting
 ot-ics
+playbook-6000
 sandbox-escape-techniques
+src-methods
 ```
 
-## 顶层文件
-```
-PEN-Cloud.md
-```
+## 融合亮点
+
+- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
+- `src-methods/` — SRC 漏洞测试方法
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

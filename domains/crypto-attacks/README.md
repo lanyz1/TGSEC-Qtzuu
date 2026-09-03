@@ -1,8 +1,6 @@
 # crypto-attacks
 
-密码学攻击 — RSA/对称/格子/哈希/区块链/智能合约/USDT
-
-**1 个顶层文件 / 9 个子目录**
+攻击面知识域 — **17 个文件** / 9 个子目录
 
 ## 子目录
 ```
@@ -17,7 +15,5 @@ smart-contract-vulnerabilities
 symmetric-cipher-attacks
 ```
 
-## 顶层文件
-```
-VUL-Crypto.md
-```
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

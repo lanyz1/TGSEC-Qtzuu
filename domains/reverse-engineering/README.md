@@ -1,8 +1,6 @@
 # reverse-engineering
 
-逆向工程 — PE/ELF/脱壳/动态调试/固件/混淆还原/协议逆向
-
-**0 个顶层文件 / 12 个子目录**
+攻击面知识域 — **37 个文件** / 12 个子目录
 
 ## 子目录
 ```
@@ -20,3 +18,5 @@ protocol-reverse
 vm-and-bytecode-reverse
 ```
 
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

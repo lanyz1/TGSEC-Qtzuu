@@ -1,8 +1,6 @@
 # business-logic
 
-业务逻辑 — 支付绕过/越权/竞态/类型混淆/奖励逻辑缺陷
-
-**2 个顶层文件 / 9 个子目录**
+攻击面知识域 — **17 个文件** / 11 个子目录
 
 ## 子目录
 ```
@@ -13,12 +11,16 @@ hunt-business-logic
 hunt-exceptional-conditions
 hunt-race-condition
 payment-bypass
+playbook-6000
 race-condition
+src-methods
 type-juggling
 ```
 
-## 顶层文件
-```
-EXP-Logic.md
-VUL-Logic.md
-```
+## 融合亮点
+
+- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
+- `src-methods/` — SRC 漏洞测试方法
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

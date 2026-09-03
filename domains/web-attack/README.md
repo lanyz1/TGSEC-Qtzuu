@@ -1,8 +1,6 @@
 # web-attack
 
-Web攻击 — CSRF/CORS/CRLF/请求走私/缓存投毒/WAF绕过/域名接管/WebSocket
-
-**9 个顶层文件 / 34 个子目录**
+攻击面知识域 — **97 个文件** / 37 个子目录
 
 ## 子目录
 ```
@@ -31,10 +29,13 @@ hunt-host-header
 hunt-html-injection
 hunt-http-smuggling
 hunt-xss
+hunter-6000
 log-poisoning
 network-poisoning
 open-redirect
+playbook-6000
 request-smuggling
+src-methods
 subdomain-takeover
 waf-bypass
 waf-bypass-techniques
@@ -42,15 +43,11 @@ web-cache-deception
 websocket-security
 ```
 
-## 顶层文件
-```
-EXP-CORS.md
-EXP-CRLF.md
-EXP-CSRF.md
-EXP-DNS-Rebinding.md
-EXP-FCK.md
-EXP-Request-Smuggling.md
-PEN-WiFi-Tool.md
-VUL-Backend.md
-VUL-CrossDomain.md
-```
+## 融合亮点
+
+- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
+- `hunter-6000/` — hunter offensive skills 按面融合
+- `src-methods/` — SRC 漏洞测试方法
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

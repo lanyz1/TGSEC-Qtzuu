@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pentest-skill-v2/sessions_pool.schema.json",
+  "title": "sessions/pool.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "init_time", "last_refresh", "accounts"],
+  "properties": {
+    "target": { "type": "string" },
+    "init_time": { "type": "string" },
+    "last_refresh": { "type": "string" },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "username", "role_level", "session_file", "cookie_value", "status"],
+        "properties": {
+          "role": { "type": "string" },
+          "username": { "type": "string" },
+          "role_level": { "type": "string", "enum": ["high_privilege", "standard", "low"] },
+          "session_file": { "type": "string" },
+          "cookie_value": { "type": "string", "minLength": 1, "description": "原始 Cookie 串(如 'sessionid=abc; token=xyz;'),供跨角色 fetch/curl 直接注入。G1 就绪判定依赖此字段非空" },
+          "status": { "type": "string", "enum": ["active", "expired", "error"] },
+          "capabilities": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

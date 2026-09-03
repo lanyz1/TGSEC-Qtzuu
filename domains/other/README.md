@@ -1,8 +1,6 @@
 # other
 
-其他 — 特定框架/服务专项(ASP.NET/Laravel/Node.js/Next.js/验证码)
-
-**0 个顶层文件 / 6 个子目录**
+攻击面知识域 — **18 个文件** / 8 个子目录
 
 ## 子目录
 ```
@@ -12,5 +10,14 @@ hunt-laravel
 hunt-misc
 hunt-nextjs
 hunt-nodejs
+playbook-6000
+src-methods
 ```
 
+## 融合亮点
+
+- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
+- `src-methods/` — SRC 漏洞测试方法
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

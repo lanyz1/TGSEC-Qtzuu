@@ -1,8 +1,6 @@
 # web-injection
 
-Web注入 — SQLi/XSS/SSRF/SSTI/XXE/CMDi/NoSQL/表达式注入/原型链污染
-
-**17 个顶层文件 / 28 个子目录**
+攻击面知识域 — **983 个文件** / 31 个子目录
 
 ## 子目录
 ```
@@ -18,12 +16,15 @@ hunt-sqli
 hunt-ssrf
 hunt-ssti
 hunt-xss
+hunter-6000
 injection-checking
 nosql-injection
+playbook-6000
 prototype-pollution
 prototype-pollution-advanced
 sqli
 sqli-sql-injection
+src-methods
 ssrf
 ssrf-server-side-request-forgery
 ssti
@@ -36,23 +37,11 @@ xxe
 xxe-xml-external-entity
 ```
 
-## 顶层文件
-```
-EXP-CI-Java.md
-EXP-CI-PHP.md
-EXP-Expression-Injection.md
-EXP-NoSQL.md
-EXP-OGNL-Injection.md
-EXP-SPEL-Injection.md
-EXP-SQLi-MySQL.md
-EXP-SQLi-OOB.md
-EXP-SQLi-Oracle.md
-EXP-SSRF.md
-EXP-SSTI-ALL.md
-EXP-SSTI-PHP.md
-EXP-SSTI-Python.md
-EXP-XPath.md
-EXP-XSS.md
-EXP-XXE.md
-vuln_discovery.md
-```
+## 融合亮点
+
+- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
+- `hunter-6000/` — hunter offensive skills 按面融合
+- `src-methods/` — SRC 漏洞测试方法
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

@@ -1,0 +1,7 @@
+# 拷贝到测试工作目录根,排除凭据 / 报告产物。
+# 用法:cp pentest-skill-v2/templates/.gitignore /path/to/workdir/.gitignore
+
+pentest-data/
+pentest-report/
+*.token
+*.cookies

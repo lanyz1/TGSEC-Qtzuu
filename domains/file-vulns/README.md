@@ -1,8 +1,6 @@
 # file-vulns
 
-文件漏洞 — 上传/包含LFI-RFI/任意文件读写/路径穿越/代码审计
-
-**4 个顶层文件 / 7 个子目录**
+攻击面知识域 — **55 个文件** / 10 个子目录
 
 ## 子目录
 ```
@@ -11,14 +9,18 @@ code-audit
 file-access-vuln
 hunt-file-upload
 hunt-lfi
+hunter-6000
 path-traversal-lfi
+playbook-6000
+src-methods
 upload-insecure-files
 ```
 
-## 顶层文件
-```
-EXP-FileRead.md
-EXP-Include-PHP.md
-EXP-Upload-JSP.md
-EXP-Upload.md
-```
+## 融合亮点
+
+- `playbook-6000/` — 6000RMB 方法论 playbook（Skills20260809 按面融合）
+- `hunter-6000/` — hunter offensive skills 按面融合
+- `src-methods/` — SRC 漏洞测试方法
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

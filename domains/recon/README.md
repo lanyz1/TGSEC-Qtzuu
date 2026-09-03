@@ -34,6 +34,8 @@ tools
 
 ## 融合亮点
 
+- `true-false-separation-recon.md` — 真假分离+矛盾点侦察
+
 - `case-lessons/` — 实战报告脱敏课（报告结构/settings 泄露等）
 
 - `playbook-6000/` — 测试方法论 playbook

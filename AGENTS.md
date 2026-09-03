@@ -94,8 +94,10 @@ Prompt 注入、Agent 安全、MCP、LLM 红队
 
 | 主题 | 路径 |
 |------|------|
+| 真假分离侦察 | `domains/recon/true-false-separation-recon.md` |
 | Session/JWT 身份层 vs CMS 注入 ROI | `domains/auth-security/session-crypto-identity-layer.md` |
-| Anti-Logic 反逻辑 A1–A6 | `domains/redteam-framework/anti-logic-layout.md` |
+| Anti-Logic 反逻辑 A1–A6 全文 | `domains/redteam-framework/anti-logic-layout.md` |
+| 身份层+反逻辑统一手册 | `domains/redteam-framework/identity-antilogic-playbook.md` |
 | 支付/收款 Crown 面 | `domains/business-logic/payment-config-crown-surface.md` |
 | 实战报告提炼 | `domains/*/case-lessons/`（见 recon/case-lessons/README） |
 

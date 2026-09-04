@@ -57,6 +57,27 @@ curl -fsSL https://cdn.jsdelivr.net/gh/lanyz1/TGSEC-Qtzuu@master/scripts/install
 
 ---
 
+## （推荐）把技能装进 Claude / Cursor 等
+
+在 `security-suite` 文件夹里执行：
+
+**Windows：**
+```powershell
+cd $HOME\security-suite
+powershell -ExecutionPolicy Bypass -File .\scripts\sync-agent-skills.ps1
+```
+
+**Linux / Mac：**
+```bash
+cd ~/security-suite && bash scripts/sync-agent-skills.sh
+```
+
+会装到例如：
+- 项目内 `.claude/skills/`（Claude Code 在本文件夹启动即加载）
+- 用户级 `~/.claude/skills/`、`~/.cursor/skills/` 等
+
+然后**新开** Claude/Cursor 会话。装完仍要先读 `START.md` / `ROUTING.md`，skills 是加速器。
+
 ## 以后更新仓库
 
 ```powershell

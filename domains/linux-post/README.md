@@ -14,5 +14,8 @@ playbook-6000
 
 - `playbook-6000/` — 测试方法论 playbook
 
+
+- `lpe-toolkit/` — 多架构内核 LPE 编排（exploit 二进制按 INDEX 构建，未全量入库）
+
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理

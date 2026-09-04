@@ -1,0 +1,8 @@
+# Pentest-web-assess-pipeline Python 依赖（记录型代理 + 报告渲染）
+# 安装：python -m pip install -r .agents\skills\pentest-web-assess-pipeline\scripts\proxy\requirements.txt
+
+# 记录型 HTTP/HTTPS 代理（准备~全程；Python 3.11+）
+mitmproxy==12.2.3
+
+# 报告阶段渲染 DOCX 交付版（build_report.py / render_report.py）
+python-docx==1.1.2

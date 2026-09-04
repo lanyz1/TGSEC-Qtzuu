@@ -187,7 +187,7 @@ test: /graphql /gql /v1/graphql /api/graphql
 ### GitHub / GitLab Exposure
 ```bash
 # trufflehog (secret scanner in git history):
-trufflehog git https://github.com/target-org/target-repo
+trufflehog git [upstream-repo]
 
 # gitleaks:
 gitleaks detect --source /path/to/cloned/repo

@@ -454,7 +454,7 @@ roca-detect rsa_key.pub
 git clone https://gitlab.com/jix/neca.git
 cd neca && cargo build --release
 ./target/release/neca <N_decimal>
-# Or use: https://github.com/crocs-muni/roca (original research tool)
+# Or use: [upstream-repo] (original research tool)
 ```
 
 **Key insight:** CVE-2017-15361 affects Infineon TPMs, smart cards, and YubiKey 4. Primes have the form `p = k * M + (65537^a mod M)` where M is the product of first n primes. Detection is instant (check `65537^x mod M` divides `n mod M`). Factoring uses Coppersmith's method on the known structure. Keys up to 2048 bits are practically attackable. For CTF use: if `roca-detect` reports vulnerable, use `neca` for 512-bit keys or the `crocs-muni/roca` tool for larger keys.

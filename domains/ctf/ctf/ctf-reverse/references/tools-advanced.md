@@ -509,8 +509,8 @@ rr replay
 
 ```bash
 # pwndbg (most popular for CTF)
-# https://github.com/pwndbg/pwndbg
-git clone https://github.com/pwndbg/pwndbg && cd pwndbg && ./setup.sh
+# [upstream-repo]
+git clone [upstream-repo] && cd pwndbg && ./setup.sh
 
 # Key pwndbg commands:
 pwndbg> context           # Show registers, stack, code, backtrace
@@ -523,7 +523,7 @@ pwndbg> got               # Show GOT entries
 pwndbg> plt               # Show PLT entries
 
 # GEF (alternative)
-# https://github.com/hugsy/gef
+# [upstream-repo]
 bash -c "$(curl -fsSL https://gef.blah.cat/sh)"
 
 # Key GEF commands:

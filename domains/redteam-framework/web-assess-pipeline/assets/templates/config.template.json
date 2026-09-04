@@ -1,0 +1,18 @@
+{
+  "project_id": "",
+  "target": "",
+  "scope": [],
+  "exclude": [],
+  "scope_regex": false,
+  "exclude_regex": false,
+  "test_accounts": [
+    {"role": "", "username": "", "password": "", "login_url": ""}
+  ],
+  "goals": "",
+  "constraints": "",
+  "work_guidelines": "",
+  "security_level": "high",
+  "proxy_port": 24304,
+  "created": "",
+  "notes": "无"
+}

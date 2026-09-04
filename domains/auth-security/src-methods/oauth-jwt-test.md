@@ -318,7 +318,7 @@ git log -p | grep -i "client_secret"
 
 ```bash
 # 安装
-git clone https://github.com/ticarpi/jwt_tool
+git clone [upstream-repo]
 cd jwt_tool
 python3 jwt_tool.py -h
 

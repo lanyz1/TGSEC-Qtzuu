@@ -1,0 +1,56 @@
+{
+  "skills": [
+    {
+      "id": "audit_chat:code-security",
+      "skill_id": "code-security",
+      "slug": "code-security",
+      "agent_type": "audit_chat",
+      "enabled": true,
+      "always_include": false,
+      "sort_order": 10,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/audit_chat/bindings.json",
+      "skill_file": "/app/skill_library/code-security/SKILL.md",
+      "workspace_relative_path": "skill_library/code-security",
+      "skill_root": "/app/skill_library/code-security"
+    },
+    {
+      "id": "finding:code-security",
+      "skill_id": "code-security",
+      "slug": "code-security",
+      "agent_type": "finding",
+      "enabled": false,
+      "always_include": true,
+      "sort_order": 1,
+      "match_keywords": [
+        "security",
+        "injection",
+        "auth",
+        "idor",
+        "ssrf",
+        "deserialization"
+      ],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/finding/bindings.json",
+      "skill_file": "/app/skill_library/code-security/SKILL.md",
+      "workspace_relative_path": "skill_library/code-security",
+      "skill_root": "/app/skill_library/code-security"
+    },
+    {
+      "id": "scan:code-security",
+      "skill_id": "code-security",
+      "slug": "code-security",
+      "agent_type": "scan",
+      "enabled": true,
+      "always_include": false,
+      "sort_order": 0,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/scan/bindings.json",
+      "skill_file": "/app/skill_library/code-security/SKILL.md",
+      "workspace_relative_path": "skill_library/code-security",
+      "skill_root": "/app/skill_library/code-security"
+    }
+  ]
+}

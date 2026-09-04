@@ -495,7 +495,7 @@ equivalent = hashlib.sha1(original_password.encode()).digest()
 ```
 
 ```bash
-# Install: git clone https://github.com/cr-marcstevens/hashclash
+# Install: git clone [upstream-repo]
 # Generate one collision pair (~minutes on modern CPU):
 ./fastcol -o suffix1A.bin suffix1B.bin < prefix.bin
 # Chain: append suffix1A to prefix, run fastcol again for suffix2A/2B, etc.

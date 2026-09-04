@@ -255,7 +255,7 @@ for ins in dis.get_instructions(code):
 
 ### Pyarmor Static Unpack (1shot)
 
-Repository: `https://github.com/Lil-House/Pyarmor-Static-Unpack-1shot`
+Repository: `[upstream-repo]`
 
 ```bash
 # Basic usage (recursive processing)
@@ -321,7 +321,7 @@ python3 blutter.py path/to/app/lib/arm64-v8a out_dir
 
 ### HarmonyOS HAP/ABC (abc-decompiler)
 
-Repository: `https://github.com/ohos-decompiler/abc-decompiler`
+Repository: `[upstream-repo]`
 
 ```bash
 # Extract .hap first to obtain .abc files

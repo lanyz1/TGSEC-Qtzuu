@@ -19,5 +19,8 @@ windows-privilege-escalation
 
 - `hunter-6000/` — offensive skills
 
+
+- `windump-cred-collection/` — Windows 客户端凭证/主机信息采集面 playbook
+
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理

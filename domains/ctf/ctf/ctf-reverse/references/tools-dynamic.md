@@ -499,7 +499,7 @@ Qiling emulates binaries with OS-level support (syscalls, filesystem, registry).
 ```bash
 pip install qiling
 # Download rootfs for target OS:
-git clone https://github.com/qilingframework/rootfs
+git clone [upstream-repo]
 ```
 
 ### Basic Usage

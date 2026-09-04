@@ -22,5 +22,8 @@ upload-insecure-files
 - `hunter-6000/` — offensive skills
 - `src-methods/` — SRC 漏洞测试方法
 
+
+- `code-audit/` — PHP 细粒度审计 + Java audit-skills + methodology + autocve skill_library
+
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理

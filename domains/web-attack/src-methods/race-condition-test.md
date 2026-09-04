@@ -695,7 +695,7 @@ Client N: [headers + body - 1 byte] ----hold----+
 
 ## 5. TURBO INTRUDER TEMPLATES
 
-Repository: [PortSwigger/turbo-intruder](https://github.com/PortSwigger/turbo-intruder) (Burp Suite extension).
+Repository: [PortSwigger/turbo-intruder]([upstream-repo]) (Burp Suite extension).
 
 ### 5.1 Template 1 — Same endpoint, gate release
 
@@ -778,9 +778,9 @@ Adjust hosts/paths by duplicating `RequestEngine` instances if endpoints differ 
 
 | Tool | Role |
 |------|------|
-| [PortSwigger/turbo-intruder](https://github.com/PortSwigger/turbo-intruder) | High-concurrency replay, **gates**, scripting in Burp. |
-| [JavanXD/Raceocat](https://github.com/JavanXD/Raceocat) | Race-focused HTTP client patterns (verify compatibility with your stack). |
-| [nxenon/h2spacex](https://github.com/nxenon/h2spacex) | HTTP/2 low-level / single-packet style experimentation (use responsibly, authorized targets only). |
+| [PortSwigger/turbo-intruder]([upstream-repo]) | High-concurrency replay, **gates**, scripting in Burp. |
+| [JavanXD/Raceocat]([upstream-repo]) | Race-focused HTTP client patterns (verify compatibility with your stack). |
+| [nxenon/h2spacex]([upstream-repo]) | HTTP/2 low-level / single-packet style experimentation (use responsibly, authorized targets only). |
 | **Burp Suite — Repeater** | **Send group (parallel)** / **single-packet attack** for multi-request synchronization. |
 
 ---

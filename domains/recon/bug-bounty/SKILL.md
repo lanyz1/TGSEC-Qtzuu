@@ -1113,7 +1113,7 @@ sisakulint findings are **potentially exploitable** — not confirmed bugs. Ever
 - `GITHUB_TOKEN` with `contents: write` → CVE-2022-46258 pattern: use Contents API to create new workflow file → new workflow accesses ALL repo/org secrets (the original workflow never referenced them)
 
 **Key references:**
-- [sisaku-security/agent-idea/bugbountyreport](https://github.com/sisaku-security/agent-idea/tree/main/bugbountyreport) — 36 real-world reports with full attack chains
+- [sisaku-security/agent-idea/bugbountyreport]([upstream-repo]/tree/main/bugbountyreport) — 36 real-world reports with full attack chains
 - [sisakulint docs/advisory](https://sisaku-security.github.io/lint/docs/advisory/) — 38 GHSAs with detection mapping
 - [DEF CON 32: Grand Theft Actions](https://media.defcon.org/DEF%20CON%2032/) — Khan & Stawinski, $250K+ in self-hosted runner bugs
 - [Synacktiv: GitHub Actions Exploitation (5 parts)](https://www.synacktiv.com/en/publications/github-actions-exploitation-introduction)
@@ -1515,14 +1515,14 @@ When payout is being downgraded, use these counters:
 ## Learning
 - [PortSwigger Web Academy](https://portswigger.net/web-security) -- Free vuln labs (best)
 - [HackTricks](https://book.hacktricks.xyz) -- Attack technique reference
-- [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings) -- Payload reference
+- [PayloadsAllTheThings]([upstream-repo]) -- Payload reference
 - [Solodit](https://solodit.cyfrin.io) -- 50K+ searchable audit findings (Web3)
 - [ProjectDiscovery Chaos](https://chaos.projectdiscovery.io) -- Free subdomain datasets
 
 ## Wordlists
-- [SecLists](https://github.com/danielmiessler/SecLists) -- Comprehensive wordlists
-- [HowToHunt](https://github.com/KathanP19/HowToHunt) -- Step-by-step vuln hunting
-- [DefaultCreds](https://github.com/ihebski/DefaultCreds-cheat-sheet) -- Default credentials
+- [SecLists]([upstream-repo]) -- Comprehensive wordlists
+- [HowToHunt]([upstream-repo]) -- Step-by-step vuln hunting
+- [DefaultCreds]([upstream-repo]) -- Default credentials
 
 ## Payload Databases
 - [XSSHunter](https://xsshunter.trufflesecurity.com/) -- Blind XSS detection
@@ -1536,12 +1536,12 @@ To use this as a Claude Code skill, copy this file to your skills directory:
 
 ```bash
 # Option A: Clone the repo and link the skill
-git clone https://github.com/shuvonsec/claude-bug-bounty.git ~/.claude/skills/bug-bounty
+git clone [upstream-repo] ~/.claude/skills/bug-bounty
 ln -s ~/.claude/skills/bug-bounty/SKILL.md ~/.claude/skills/bug-bounty/SKILL.md
 
 # Option B: Direct copy
 mkdir -p ~/.claude/skills/bug-bounty
-curl -s https://raw.githubusercontent.com/shuvonsec/claude-bug-bounty/main/SKILL.md \
+curl -s https://[upstream-raw] \
   -o ~/.claude/skills/bug-bounty/SKILL.md
 ```
 

@@ -22,5 +22,8 @@ playbook-6000
 - `playbook-6000/` — 测试方法论 playbook
 - `ios-kernel-cve/` — iOS 26.6 内核 CVE 研判
 
+
+- `android-adb-assess/` — 真机/ADB 评估模块清单
+
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理

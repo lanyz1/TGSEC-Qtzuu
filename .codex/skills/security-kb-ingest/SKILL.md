@@ -4,9 +4,6 @@ description: "Use when absorbing security repos into skills."
 version: 1.0.0
 ---
 
-> **路径说明（全 AI）：** 知识正文在包根 `domains/`；配合 `ROUTING.md` / `MASTER.md` / `START.md`。Windows 请优先用 `domains/`，勿依赖 Linux 专用绝对路径。
-
-
 # Security Knowledge-Base Ingestion & Archiving
 
 How to absorb external security/red-team repos (GitHub or local dirs) into the Hermes skill
@@ -61,7 +58,7 @@ the router entry; 8 known cross-repo duplicate names exist among the absorbed re
 | hack-skills (yaklang) | /root/hack-skills | 102 SKILL.md, router: `hack-skills` |
 | SecAtlas (shuaiqideyu) | /root/SecAtlas | YAML technique cards, router: `secatlas` |
 | reverse-skill (local) | /root/reverse-skill | routing engine; Hermes router: `reverse-skill` |
-| CVE-2026-65343 iOS kernel batch | domains/mobile-security/ios-kernel-cve | ANALYSIS only; fused into mobile-security |
+| CVE-2026-65343 iOS kernel batch | /root/security-suite/domains/mobile-security/ios-kernel-cve | ANALYSIS only; fused into mobile-security |
 | 6000RMB skills.zip (2026-09-03) | fused into domains/*/playbook-6000+hunter-6000 | 145 new/83 dedup; FUSION-6000.md |
 | AboutSecurity (wgpsec) | /root/AboutSecurity | 68MB, 1884 files, router: `about-security` |
 | Claude-BugHunter | /root/Claude-BugHunter | 83 hunt skills, router: `claude-bughunter` |
@@ -69,10 +66,25 @@ the router entry; 8 known cross-repo duplicate names exist among the absorbed re
 | web-sec (ReAbout) | /root/web-sec | EXP/VUL/PEN 3-layer, router: `web-sec` |
 | skill dir (local) | /www/wwwroot/skill | content churn expected; router: `skill-arsenal` |
 | Black-cat (0rangec3t) | /root/Black-cat | Hypothesis-driven state-machine pentest framework; 7 technique dirs (web/recon/cloud/db/reversing/ad/evasion); router: `black-cat-redteam` |
-| 0day-Rubbish (Exploit-Garbage) | domains/0day-exploits | 76 products, 90 RCE vulns, each with exploit/*.py + analysis.md + summary.md; router: `0day-exploit-library` |
-| Redis CVE-2026-81934 PoC (berabuddies) | domains/0day-exploits/redis/CVE-2026-81934 | Redis TLS UAF→RCE, CVSS 9.8, exploits for 6.2/7.4/8.6/8.8; merged into 0day-exploit-library |
-| RuoYi-Vue-Plus tenant_id SQLi (2026-09-02) | domains/0day-exploits/ruoyi-vue-plus/ | Pre-auth SQLi via POST /auth/register tenantId; Error-based extractvalue; merged into 0day-exploit-library |
+| 0day-Rubbish (Exploit-Garbage) | /root/security-suite/domains/0day-exploits | 76 products, 90 RCE vulns, each with exploit/*.py + analysis.md + summary.md; router: `0day-exploit-library` |
+| Redis CVE-2026-81934 PoC (berabuddies) | /root/security-suite/domains/0day-exploits/redis/CVE-2026-81934 | Redis TLS UAF→RCE, CVSS 9.8, exploits for 6.2/7.4/8.6/8.8; merged into 0day-exploit-library |
+| RuoYi-Vue-Plus tenant_id SQLi (2026-09-02) | /root/security-suite/domains/0day-exploits/ruoyi-vue-plus/ | Pre-auth SQLi via POST /auth/register tenantId; Error-based extractvalue; merged into 0day-exploit-library |
 | clown-src-6k-skill (SRC methods) | merged into 9 domains | 49 vuln test methods + 11 rules + FOFA MCP; fused into web-injection/web-attack/auth-security/file-vulns/recon/etc. src-methods/ subdirs |
+| PHP-Code-Audit-Skill | domains/file-vulns/code-audit/php/ | Fine-grained PHP route-mapper/tracer + class audits; kept aggregated php-*-audit |
+| java-audit-skills | domains/file-vulns/code-audit/java/audit-skills/ | Workspace convention + component YAML + evidence gate |
+| code-audit (methodology) | domains/file-vulns/code-audit/methodology/ | 55+ types, dual-track, anti-hallucination |
+| WinDump | domains/windows-post/windump-cred-collection/ | Client cred/host collection playbook (source+docs) |
+| lpe-toolkit | domains/linux-post/lpe-toolkit/ | Multi-arch LPE orchestration; exploit binaries NOT vendored (INDEX only) |
+| Payloader content | domains/recon/.../payloader/ | UI skipped; content-review-upstream + existing by-category |
+| Pentest-WindFtsy | domains/redteam-framework/web-assess-pipeline/ | mitm URL dump + auth matrix + gate truth |
+| recon-skills | domains/*/src-methods/ | Incremental hunt/recon skills; richer overlaps → references/upstream-* |
+| BB Methodology 2026 | recon/src-methods + cdn-origin-tracing refs | Origin-IP/CDN excerpts only + full README ref |
+| DroidHunter | domains/mobile-security/android-adb-assess/ | ADB/modules playbook; product shell not routed |
+| ctf-skills | domains/ctf/ctf/ | Gaps + richer upstream refs for overlaps |
+| claude-bug-bounty | selective src-methods | Diff vs Claude-BugHunter; only incremental skills |
+| AutoCVE skill_library | domains/file-vulns/code-audit/autocve-skill-library/ | skill_library only; AGPL platform skipped |
+| Anthropic-Cybersecurity-Skills | OT/ICS, phishing-IR, compliance, IAM, SIEM thin domains | Curated ≤60 skills; not full 800+ dump |
+| cdn-origin-tracing handbook | hermes-skills/cdn-origin-tracing | CDN/WAF origin tracing skill + scripts |
 
 ## Integration vs stacking (critical user correction)
 

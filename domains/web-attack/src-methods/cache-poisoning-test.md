@@ -443,7 +443,7 @@ https://portswigger.net/research/practical-web-cache-poisoning
 https://omergil.blogspot.com/2017/02/web-cache-deception-attack.html
 
 # Burp Param Miner
-https://github.com/PortSwigger/param-miner
+[upstream-repo]
 ```
 
 ---

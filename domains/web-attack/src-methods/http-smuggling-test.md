@@ -198,7 +198,7 @@ X
 
 ```bash
 # 安装
-git clone https://github.com/defparam/smuggler.git
+git clone [upstream-repo]
 cd smuggler
 python3 smuggler.py -h
 

@@ -1,0 +1,80 @@
+{
+  "agent_type": "finding",
+  "skills": [
+    {
+      "id": "finding:code-audit-finding",
+      "skill_id": "code-audit-finding",
+      "slug": "code-audit-finding",
+      "agent_type": "finding",
+      "enabled": true,
+      "always_include": true,
+      "sort_order": 0,
+      "match_keywords": [
+        "auth",
+        "authorization",
+        "business-logic",
+        "code-audit",
+        "idor",
+        "security",
+        "source-review"
+      ],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/finding/bindings.json",
+      "skill_file": "/app/skill_library/code-audit-finding/SKILL.md",
+      "workspace_relative_path": "skill_library/code-audit-finding",
+      "skill_root": "/app/skill_library/code-audit-finding"
+    },
+    {
+      "id": "finding:cve-report-writer",
+      "skill_id": "cve-report-writer",
+      "slug": "cve-report-writer",
+      "agent_type": "finding",
+      "enabled": true,
+      "always_include": true,
+      "sort_order": 0,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/finding/bindings.json",
+      "skill_file": "/app/skill_library/cve-report-writer/SKILL.md",
+      "workspace_relative_path": "skill_library/cve-report-writer",
+      "skill_root": "/app/skill_library/cve-report-writer"
+    },
+    {
+      "id": "finding:secknowledge-skill",
+      "skill_id": "secknowledge-skill",
+      "slug": "secknowledge-skill",
+      "agent_type": "finding",
+      "enabled": true,
+      "always_include": true,
+      "sort_order": 0,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/finding/bindings.json",
+      "skill_file": "/app/skill_library/secknowledge-skill/SKILL.md",
+      "workspace_relative_path": "skill_library/secknowledge-skill",
+      "skill_root": "/app/skill_library/secknowledge-skill"
+    },
+    {
+      "id": "finding:code-security",
+      "skill_id": "code-security",
+      "slug": "code-security",
+      "agent_type": "finding",
+      "enabled": false,
+      "always_include": true,
+      "sort_order": 1,
+      "match_keywords": [
+        "security",
+        "injection",
+        "auth",
+        "idor",
+        "ssrf",
+        "deserialization"
+      ],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/finding/bindings.json",
+      "skill_file": "/app/skill_library/code-security/SKILL.md",
+      "workspace_relative_path": "skill_library/code-security",
+      "skill_root": "/app/skill_library/code-security"
+    }
+  ]
+}

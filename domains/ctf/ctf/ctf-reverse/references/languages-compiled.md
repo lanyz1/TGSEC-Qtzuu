@@ -54,7 +54,7 @@ Go embeds rich type and function information even in stripped binaries:
 
 ```bash
 # GoReSym - recovers function names, types, interfaces from Go binaries
-# https://github.com/mandiant/GoReSym
+# [upstream-repo]
 ./GoReSym -d binary > symbols.json
 
 # Parse output
@@ -70,13 +70,13 @@ for fn in data.get('UserFunctions', []):
 **Ghidra with golang-loader:**
 ```bash
 # Install: Ghidra → Window → Script Manager → search "golang"
-# Or use: https://github.com/getCUJO/ThreatFox/tree/main/ghidra-golang
+# Or use: [upstream-repo]/tree/main/ghidra-golang
 # Recovers function names, string references, interface tables
 ```
 
 **redress (Go binary analysis):**
 ```bash
-# https://github.com/goretk/redress
+# [upstream-repo]
 redress -src binary         # Reconstruct source tree
 redress -pkg binary         # List packages
 redress -type binary        # List types and methods
@@ -317,7 +317,7 @@ cargo install cargo-bloat
 cargo bloat --release -n 50
 
 # Ghidra Rust helper scripts
-# https://github.com/AmateursCTF/ghidra-rust (community scripts for Rust RE)
+# [upstream-repo] (community scripts for Rust RE)
 ```
 
 **Key insight:** Rust panic messages are goldmines — they contain source file paths, line numbers, and descriptive error strings even in release builds. Always `strings binary | grep "panicked"` first. Rust's monomorphization means generic functions get duplicated per type — expect many similar-looking functions.

@@ -126,7 +126,7 @@ Please note most of that the executable file for the PC platform is GameAssembly
 ## HarmonyOS HAP/ABC Reverse (abc-decompiler)
 
 - Target files: `.hap` package and embedded `.abc` bytecode
-- Tool: `https://github.com/ohos-decompiler/abc-decompiler`
+- Tool: `[upstream-repo]`
 - Download `jadx-dev-all.jar` from releases
 
 Critical startup note:

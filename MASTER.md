@@ -89,9 +89,11 @@ Clone 后目录一般为 `~/security-suite`（Windows: `%USERPROFILE%\security-s
 |------|-------|
 | 活靶渗透/深挖/攻击链 | `pentest-execution` |
 | 攻击面知识库 | `tgsec-suite`（本仓库） |
+| CDN/WAF 源站溯源 | `cdn-origin-tracing` |
 | APK/IPA/JS/二进制逆向 | `reverse-skill` |
 | Web 注入/API playbook | `hack-skills` + `web-sec` |
 | 产品 0day RCE | `0day-exploit-library` |
+| PHP/Java 白盒审计 | `domains/file-vulns/code-audit/` |
 | iOS26.6/65343/KASLR 研判 | `mobile-security/ios-kernel-cve/ANALYSIS.md` |
 
 ## 打开即配置 / 旧机器覆盖
@@ -116,6 +118,7 @@ ai-config/universal/ — 通用 PERSONA/MEMORY/RULES
 
 ## 更新日志
 
+- 2026-09-04: P0+P1 外部仓按攻击面融合（PHP/Java 白盒细粒度、WinDump 采集面、LPE 编排、Web 评估门禁流水线、recon-skills 增量、Android ADB、CTF 补强、OT/合规薄域抽样）；CDN 溯源技能已挂路由
 - 2026-09-03: iOS 26.6 内核 CVE 研判卡融入 mobile-security
 - 2026-09-03: 6000RMB skills 按攻击面融合；MASTER/README 校准；空目录清理；lyan 双结构压平
 

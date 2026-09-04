@@ -1,0 +1,564 @@
+{
+  "metadata": {
+    "storage_path": "/app/skill_library/code-audit-finding",
+    "workspace_relative_path": "skill_library/code-audit-finding",
+    "workspace_file_path": "skill_library/code-audit-finding/SKILL.md",
+    "host_storage_path": "",
+    "host_file_path": "",
+    "workspace_skill_file": "skill_library/code-audit-finding/SKILL.md",
+    "folder_path": "/app/skill_library/code-audit-finding",
+    "bindings_file": "/app/skill_library/code-audit-finding/bindings.json"
+  },
+  "extension_manifest": [
+    {
+      "name": "references/adapters/go.yaml",
+      "description": "Local skill resource go.yaml",
+      "type": "file"
+    },
+    {
+      "name": "references/adapters/java.yaml",
+      "description": "Local skill resource java.yaml",
+      "type": "file"
+    },
+    {
+      "name": "references/adapters/javascript.yaml",
+      "description": "Local skill resource javascript.yaml",
+      "type": "file"
+    },
+    {
+      "name": "references/adapters/php.yaml",
+      "description": "Local skill resource php.yaml",
+      "type": "file"
+    },
+    {
+      "name": "references/adapters/python.yaml",
+      "description": "Local skill resource python.yaml",
+      "type": "file"
+    },
+    {
+      "name": "references/cases/real_world_vulns.md",
+      "description": "Local skill resource real_world_vulns.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/c_cpp.md",
+      "description": "Local skill resource c_cpp.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/coverage_matrix.md",
+      "description": "Local skill resource coverage_matrix.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/dotnet.md",
+      "description": "Local skill resource dotnet.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/go.md",
+      "description": "Local skill resource go.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/java.md",
+      "description": "Local skill resource java.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/javascript.md",
+      "description": "Local skill resource javascript.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/php.md",
+      "description": "Local skill resource php.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/python.md",
+      "description": "Local skill resource python.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/ruby.md",
+      "description": "Local skill resource ruby.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/rust.md",
+      "description": "Local skill resource rust.md",
+      "type": "file"
+    },
+    {
+      "name": "references/checklists/universal.md",
+      "description": "Local skill resource universal.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/anti_hallucination.md",
+      "description": "Local skill resource anti_hallucination.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/attack_path_priority.md",
+      "description": "Local skill resource attack_path_priority.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/audit.sh",
+      "description": "Local skill resource audit.sh",
+      "type": "file"
+    },
+    {
+      "name": "references/core/benchmark_methodology.md",
+      "description": "Local skill resource benchmark_methodology.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/bypass_strategies.md",
+      "description": "Local skill resource bypass_strategies.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/capability_baseline.md",
+      "description": "Local skill resource capability_baseline.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/comprehensive_audit_methodology.md",
+      "description": "Local skill resource comprehensive_audit_methodology.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/data_flow_methodology.md",
+      "description": "Local skill resource data_flow_methodology.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/docker_verification.md",
+      "description": "Local skill resource docker_verification.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/dynamic_code_audit.md",
+      "description": "Local skill resource dynamic_code_audit.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/external_tools_guide.md",
+      "description": "Local skill resource external_tools_guide.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/false_positive_filter.md",
+      "description": "Local skill resource false_positive_filter.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/original_skill_reference.md",
+      "description": "Local skill resource original_skill_reference.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/phase2_deep_methodology.md",
+      "description": "Local skill resource phase2_deep_methodology.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/poc_generation.md",
+      "description": "Local skill resource poc_generation.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/security_controls_engine.py",
+      "description": "Local skill resource security_controls_engine.py",
+      "type": "file"
+    },
+    {
+      "name": "references/core/security_controls_matrix.yaml",
+      "description": "Local skill resource security_controls_matrix.yaml",
+      "type": "file"
+    },
+    {
+      "name": "references/core/security_controls_methodology.md",
+      "description": "Local skill resource security_controls_methodology.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/security_indicators.md",
+      "description": "Local skill resource security_indicators.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/semantic_search_guide.md",
+      "description": "Local skill resource semantic_search_guide.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/sensitive_operations_matrix.md",
+      "description": "Local skill resource sensitive_operations_matrix.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/sinks_sources.md",
+      "description": "Local skill resource sinks_sources.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/systematic_reflection.md",
+      "description": "Local skill resource systematic_reflection.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/taint_analysis.md",
+      "description": "Local skill resource taint_analysis.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/verification_methodology.md",
+      "description": "Local skill resource verification_methodology.md",
+      "type": "file"
+    },
+    {
+      "name": "references/core/version_boundaries.md",
+      "description": "Local skill resource version_boundaries.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/django.md",
+      "description": "Local skill resource django.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/dotnet.md",
+      "description": "Local skill resource dotnet.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/express.md",
+      "description": "Local skill resource express.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/fastapi.md",
+      "description": "Local skill resource fastapi.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/flask.md",
+      "description": "Local skill resource flask.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/gin.md",
+      "description": "Local skill resource gin.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/java_web_framework.md",
+      "description": "Local skill resource java_web_framework.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/koa.md",
+      "description": "Local skill resource koa.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/laravel.md",
+      "description": "Local skill resource laravel.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/mybatis_security.md",
+      "description": "Local skill resource mybatis_security.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/nest_fastify.md",
+      "description": "Local skill resource nest_fastify.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/rails.md",
+      "description": "Local skill resource rails.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/rust_web.md",
+      "description": "Local skill resource rust_web.md",
+      "type": "file"
+    },
+    {
+      "name": "references/frameworks/spring.md",
+      "description": "Local skill resource spring.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/c_cpp.md",
+      "description": "Local skill resource c_cpp.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/dotnet.md",
+      "description": "Local skill resource dotnet.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/go.md",
+      "description": "Local skill resource go.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/go_security.md",
+      "description": "Local skill resource go_security.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/java.md",
+      "description": "Local skill resource java.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/java_deserialization.md",
+      "description": "Local skill resource java_deserialization.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/java_fastjson.md",
+      "description": "Local skill resource java_fastjson.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/java_gadget_chains.md",
+      "description": "Local skill resource java_gadget_chains.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/java_jndi_injection.md",
+      "description": "Local skill resource java_jndi_injection.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/java_practical.md",
+      "description": "Local skill resource java_practical.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/java_script_engines.md",
+      "description": "Local skill resource java_script_engines.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/java_xxe.md",
+      "description": "Local skill resource java_xxe.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/javascript.md",
+      "description": "Local skill resource javascript.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/php.md",
+      "description": "Local skill resource php.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/php_deserialization.md",
+      "description": "Local skill resource php_deserialization.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/python.md",
+      "description": "Local skill resource python.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/python_deserialization.md",
+      "description": "Local skill resource python_deserialization.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/ruby.md",
+      "description": "Local skill resource ruby.md",
+      "type": "file"
+    },
+    {
+      "name": "references/languages/rust.md",
+      "description": "Local skill resource rust.md",
+      "type": "file"
+    },
+    {
+      "name": "references/reporting/attacker_perspective.md",
+      "description": "Local skill resource attacker_perspective.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/api_gateway_proxy.md",
+      "description": "Local skill resource api_gateway_proxy.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/api_security.md",
+      "description": "Local skill resource api_security.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/authentication_authorization.md",
+      "description": "Local skill resource authentication_authorization.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/business_logic.md",
+      "description": "Local skill resource business_logic.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/cache_host_header.md",
+      "description": "Local skill resource cache_host_header.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/cross_service_trust.md",
+      "description": "Local skill resource cross_service_trust.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/cryptography.md",
+      "description": "Local skill resource cryptography.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/dependencies.md",
+      "description": "Local skill resource dependencies.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/file_operations.md",
+      "description": "Local skill resource file_operations.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/frontend_frameworks.md",
+      "description": "Local skill resource frontend_frameworks.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/graphql.md",
+      "description": "Local skill resource graphql.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/http_smuggling.md",
+      "description": "Local skill resource http_smuggling.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/infra_supply_chain.md",
+      "description": "Local skill resource infra_supply_chain.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/input_validation.md",
+      "description": "Local skill resource input_validation.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/llm_security.md",
+      "description": "Local skill resource llm_security.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/logging_security.md",
+      "description": "Local skill resource logging_security.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/memory_native.md",
+      "description": "Local skill resource memory_native.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/message_queue_async.md",
+      "description": "Local skill resource message_queue_async.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/mobile_security.md",
+      "description": "Local skill resource mobile_security.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/oauth_oidc_saml.md",
+      "description": "Local skill resource oauth_oidc_saml.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/race_conditions.md",
+      "description": "Local skill resource race_conditions.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/realtime_protocols.md",
+      "description": "Local skill resource realtime_protocols.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/scheduled_tasks.md",
+      "description": "Local skill resource scheduled_tasks.md",
+      "type": "file"
+    },
+    {
+      "name": "references/security/serverless.md",
+      "description": "Local skill resource serverless.md",
+      "type": "file"
+    },
+    {
+      "name": "references/wooyun/INDEX.md",
+      "description": "Local skill resource INDEX.md",
+      "type": "file"
+    },
+    {
+      "name": "references/wooyun/command-execution.md",
+      "description": "Local skill resource command-execution.md",
+      "type": "file"
+    },
+    {
+      "name": "references/wooyun/file-traversal.md",
+      "description": "Local skill resource file-traversal.md",
+      "type": "file"
+    },
+    {
+      "name": "references/wooyun/file-upload.md",
+      "description": "Local skill resource file-upload.md",
+      "type": "file"
+    },
+    {
+      "name": "references/wooyun/info-disclosure.md",
+      "description": "Local skill resource info-disclosure.md",
+      "type": "file"
+    },
+    {
+      "name": "references/wooyun/logic-flaws.md",
+      "description": "Local skill resource logic-flaws.md",
+      "type": "file"
+    },
+    {
+      "name": "references/wooyun/sql-injection.md",
+      "description": "Local skill resource sql-injection.md",
+      "type": "file"
+    },
+    {
+      "name": "references/wooyun/unauthorized-access.md",
+      "description": "Local skill resource unauthorized-access.md",
+      "type": "file"
+    },
+    {
+      "name": "references/wooyun/xss.md",
+      "description": "Local skill resource xss.md",
+      "type": "file"
+    }
+  ]
+}

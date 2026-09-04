@@ -449,7 +449,7 @@ def dos_slow_send(ws_url):
 
 ```bash
 # 安装
-# Linux: wget https://github.com/vi/websocat/releases/download/v1.11.0/websocat_linux64
+# Linux: wget [upstream-repo]/releases/download/v1.11.0/websocat_linux64
 # macOS: brew install websocat
 
 # 连接 WebSocket
@@ -603,8 +603,8 @@ https://portswigger.net/web-security/websockets
 https://christian-schneider.net/CrossSiteWebSocketHijacking.html
 
 # WebSocket 工具
-https://github.com/vi/websocat
-https://github.com/websockets/wscat
+[upstream-repo]
+[upstream-repo]
 ```
 
 ---

@@ -324,7 +324,7 @@ flag = ''.join(knn.predict([extract_features(flag_audio, sr, p) for p in flag_pe
 **Pattern (cdimage):** Visual images encoded as pit/land patterns on a CD surface. A `.cdda` file (raw CD Digital Audio) contains only two byte values (e.g., `0x0d` and `0xa8`) representing reflective lands and non-reflective pits. When rendered as a spiral on a disc image, the binary pattern forms readable text or images — similar to LightScribe but using the data layer.
 
 **Key components:**
-1. **CIRC de-interleaving** — CD audio data is Cross-Interleaved for error correction. The encoding tool (e.g., [arduinocelentano/cdimage](https://github.com/arduinocelentano/cdimage)) pre-interleaves data to compensate. To decode, reverse the CIRC interleaving before rendering.
+1. **CIRC de-interleaving** — CD audio data is Cross-Interleaved for error correction. The encoding tool (e.g., [arduinocelentano/cdimage]([upstream-repo])) pre-interleaves data to compensate. To decode, reverse the CIRC interleaving before rendering.
 2. **Spiral geometry** — bytes per track increases linearly: `tr(n) = tr0 + n * dtr`, physical radius `r(n) = r0 + n * dr`. Default params: `tr0=22951.52`, `dtr=1.387`, `r0=24.5mm`.
 3. **Polar-to-Cartesian rendering** — accumulate byte values into a polar grid `(radius_pixel, angle_bin)`, then convert to a circular disc image.
 

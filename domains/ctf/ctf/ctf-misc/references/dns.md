@@ -104,7 +104,7 @@ class RebindResolver(BaseResolver):
         return reply
 ```
 
-**Tools:** [rbndr.us](http://rbndr.us/) for quick rebinding without custom DNS, [singularity](https://github.com/nccgroup/singularity) for automated attacks.
+**Tools:** [rbndr.us](http://rbndr.us/) for quick rebinding without custom DNS, [singularity]([upstream-repo]) for automated attacks.
 
 ---
 

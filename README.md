@@ -21,7 +21,7 @@
 | 给**多种 AI** 共用的同一套路径（不绑死 Hermes） | 必须安装某一种 AI 才能用 |
 | 初学可从 `START.md` 进，熟手可从 `MASTER`/`domains` 深挖 | 只有黑盒脚本、没有说明 |
 
-**规模（约）：** 24 个主题域 · **2800+** 文件（以 `MASTER.md` / 本地 `domains/` 为准）。
+**规模（约）：** 24 个主题域 · **3800+** 文件（以 `MASTER.md` / 本地 `domains/` 为准；随融合更新）。
 
 ---
 
@@ -107,7 +107,7 @@ MASTER.md                主题域矩阵 + 5 步路由 + 融合说明
 CLAUDE.md / .cursorrules / .github/copilot/  各客户端薄入口
 RULES.md                 通用短规则
 ai-config/               Claude/Cursor/Codex/Grok/Aider/Hermes/universal 源配置
-hermes-skills/           Hermes 伞形技能源（约 13 个入口）
+hermes-skills/           Hermes 伞形技能源（约 15 个入口，含 cdn-origin-tracing）
 scripts/
   install-windows.ps1    Win 一键
   install-linux.sh       Linux 一键
@@ -134,18 +134,18 @@ domains/                 ★ 知识正文（按攻击面）
 | `web-attack` | CSRF/WAF/走私/竞态/重定向/EdgeOne 等 |
 | `api-security` | GraphQL/JWT/OAuth/IDOR·BOLA/export 越权课 |
 | `auth-security` | 登录绕过/越权/Session 身份层 ROI/RuoYi DataScope 课 |
-| `file-vulns` | 上传/LFI/路径穿越/SCM |
+| `file-vulns` | 上传/LFI/路径穿越/SCM · **PHP/Java 白盒细粒度审计** |
 | `business-logic` | 支付/Crown 收款面/回调伪造课 |
-| `ad-attack` / `windows-post` / `linux-post` | 域与后渗 |
+| `ad-attack` / `windows-post` / `linux-post` | 域与后渗 · WinDump 凭证采集面 · LPE 编排 |
 | `cloud-security` | 云/K8s/容器/CI-CD |
-| `mobile-security` | APK/iOS/Frida/iOS 内核 CVE 研判 |
+| `mobile-security` | APK/iOS/Frida/iOS 内核 CVE · **Android ADB 真机评估** |
 | `binary-pwn` / `reverse-engineering` | Pwn 与逆向 |
 | `crypto-attacks` / `llm-ai-security` | 密码学 / AI 安全 |
 | `post-exp-tools` / `malware-dfir` | 后渗工具 / 样本取证 |
 | `0day-exploits` | 产品向 RCE/PoC 索引 |
-| `redteam-framework` | 状态机、lyan 工作流、**Anti-Logic A1–A6** |
+| `redteam-framework` | 状态机、lyan 工作流、**Anti-Logic A1–A6** · Web 评估门禁流水线 |
 | `gambling-pentest` | 博彩/代收类业务面 |
-| `ctf` / `social-eng` / `other` | 靶场、社工、杂项 |
+| `ctf` / `social-eng` / `other` | 靶场、社工/钓鱼IR、OT·ICS·合规薄域 |
 
 数字以仓库内 `MASTER.md` 为准（会随融合更新）。
 
@@ -176,10 +176,11 @@ domains/                 ★ 知识正文（按攻击面）
 | 工作流 / vuln-memory / 组件情报 | `redteam-framework/pentest-lyan-workflow`、`malware-dfir/vuln-hunter-memory`、`recon/component-vuln-intel` 等 |
 | 授权实战报告 | **只提炼**进 `case-lessons/`（无真实 Token/session/助记词） |
 | reverse-skill 路由思想 | `AGENTS.md` / `ROUTING.md` 方法论；完整引擎可本机自备，非必须 |
+| 2026-09-04 P0+P1 外部仓 | **按攻击面融合**（非堆仓名）：PHP/Java 白盒、WinDump、LPE 编排、web-assess-pipeline、recon-skills 增量、ADB、CTF 补强、AutoCVE skill_library、Anthropic 薄域抽样、CDN 溯源技能 |
 
-索引：`domains/FUSION-6000.md`。
+索引：`domains/FUSION-6000.md` · 吸收档案：`hermes-skills/security-kb-ingest`。
 
-**刻意不进仓：** 越狱「永不拒绝」类 ds.txt、无通用价值的 demo 壳、含密钥的原始报告全文。
+**刻意不进仓：** Awesome/Agent 产品壳、nuclei 整仓、HackTricks 整站、LPE exploit 二进制全量、AGPL 平台本体、Payloader UI、越狱「永不拒绝」类文、含密钥的原始报告全文。
 
 ---
 
@@ -213,7 +214,7 @@ bash scripts/bootstrap.sh --force    # 含技能同步
 bash scripts/sync-hermes-skills.sh
 ```
 
-然后**新开 Hermes 会话**。常用伞形：`tgsec-suite`、`pentest-execution`、`reverse-skill`、`hack-skills`、`web-sec`、`0day-exploit-library`、`gambling-platform-pentest` 等。  
+然后**新开 Hermes 会话**。常用伞形：`tgsec-suite`、`pentest-execution`、`cdn-origin-tracing`、`reverse-skill`、`hack-skills`、`web-sec`、`0day-exploit-library`、`gambling-platform-pentest`、`security-kb-ingest` 等。  
 
 `git pull` **不会**自动更新 `~/.hermes/skills`，需要再跑 sync/bootstrap。
 

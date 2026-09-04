@@ -20,7 +20,7 @@ description: "Use for hypothesis state-machine redteam flow."
 | 信号 | 读取 |
 |------|------|
 | 域名/前端/Web/API/GraphQL | `techniques/web.md` |
-| 信息收集/CDN/DNS/ASN/子域 | `techniques/recon.md` |
+| 信息收集/CDN/DNS/ASN/子域 | `techniques/recon.md` + Hermes `cdn-origin-tracing` |
 | AWS/Azure/GCP/K8s/容器 | `techniques/cloud.md` |
 | 数据库端口/连接串 | `techniques/database.md` |
 | APK/IPA/EXE/固件 | `techniques/reversing.md` |

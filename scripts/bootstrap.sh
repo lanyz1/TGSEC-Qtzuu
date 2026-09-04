@@ -84,17 +84,18 @@ if [ -f "$ROOT/ai-config/universal/RULES.md" ]; then
   echo "[✓] RULES.md"
 fi
 
-# --- Hermes memories + skills ---
+# --- 全 AI 技能目录（Claude/Cursor/agents/…）+ Hermes ---
+if [ -f "$ROOT/scripts/sync-agent-skills.sh" ]; then
+  bash "$ROOT/scripts/sync-agent-skills.sh" || true
+  echo "[✓] Agent skills → .claude/skills · ~/.claude/skills · cursor/agents …"
+fi
 if [ -d "$HOME/.hermes" ]; then
   if [ -f "$ROOT/ai-config/hermes/setup.sh" ]; then
     bash "$ROOT/ai-config/hermes/setup.sh" || true
   fi
-  if [ -f "$ROOT/scripts/sync-hermes-skills.sh" ]; then
-    bash "$ROOT/scripts/sync-hermes-skills.sh" || true
-  fi
-  echo "[✓] Hermes memories + security skills"
+  echo "[✓] Hermes memories（技能已由 sync-agent-skills 处理）"
 else
-  echo "[i] ~/.hermes 不存在 — 跳过 Hermes 技能同步（非 Hermes 机器正常）"
+  echo "[i] 无 ~/.hermes — 跳过 Hermes memories（正常）"
 fi
 
 # --- stamp ---
@@ -117,7 +118,7 @@ echo "  BOOTSTRAP OK"
 echo "================================================"
 echo "  知识库: $ROOT/domains + MASTER.md"
 echo "  任意 AI 先读: AGENTS.md + ROUTING.md + MASTER.md"
-echo "  Claude: CLAUDE.md | Cursor: .cursorrules | Codex: .github/copilot/"
+echo "  Claude: CLAUDE.md + .claude/skills | Cursor: .cursorrules + .cursor/skills"
 echo "  Hermes: ~/.hermes/skills/security + memories"
 echo "  验证: ls domains | head; test -f CLAUDE.md; test -f MASTER.md"
 echo "  开新会话后生效（Hermes skill 目录缓存）"

@@ -183,6 +183,27 @@ domains/                 ★ 知识正文（按攻击面）
 
 ---
 
+## 八、一键装到 Claude CLI / Cursor 等（推荐）
+
+```bash
+cd security-suite
+bash scripts/sync-agent-skills.sh          # Linux/Mac
+# Windows:
+# powershell -ExecutionPolicy Bypass -File .\scripts\sync-agent-skills.ps1
+```
+
+| 装到哪 | 路径 |
+|--------|------|
+| Claude Code 项目内 | `.claude/skills/<name>/SKILL.md` |
+| Claude 用户级 | `~/.claude/skills/` |
+| Cursor | `.cursor/skills/` 与 `~/.cursor/skills/` |
+| 通用 | `.agents/skills/` |
+| Codex / Gemini | `.codex/skills/` · `.gemini/skills/` |
+| Hermes | `~/.hermes/skills/security/`（一并同步） |
+
+`bootstrap.sh` / 一键 install **会自动调用**本脚本。  
+装完请**新开会话**；知识正文仍在 `domains/`。
+
 ## 八、Hermes 用户（可选）
 
 ```bash

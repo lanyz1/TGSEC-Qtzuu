@@ -228,10 +228,12 @@ Prompt 注入、Agent 安全、MCP、LLM 红队
 ## 8. 常用命令（在包根）
 
 ```bash
-# 配置入口 + Hermes 技能
+# 配置入口 + 全 AI 技能目录
 bash scripts/bootstrap.sh --force
 
-# 仅 Hermes 技能覆盖
+# 仅技能：Claude/Cursor/agents/Hermes
+bash scripts/sync-agent-skills.sh
+# 仅 Hermes：
 bash scripts/sync-hermes-skills.sh
 
 # 工具

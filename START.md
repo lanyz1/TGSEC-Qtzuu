@@ -54,6 +54,8 @@ curl -fsSL https://cdn.jsdelivr.net/gh/lanyz1/TGSEC-Qtzuu@master/scripts/install
 - `目标 https://xxx.com，客户已书面授权，只测该域名，要挖洞并出 PoC 步骤`
 - `已授权，先做信息收集和登录/越权面`
 - `JWT / 支付回调 / TG export 这类经验课在哪，按这个测`
+- `CDN / Cloudflare 找源站真实 IP`
+- `PHP/Java 白盒审计从哪开始`
 
 ---
 

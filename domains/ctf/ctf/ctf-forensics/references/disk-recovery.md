@@ -113,7 +113,7 @@ FemtoZip uses a shared dictionary model for compressing corpora of similar docum
 
 ```bash
 # Install femtozip
-git clone https://github.com/gtoubassi/femtozip
+git clone [upstream-repo]
 cd femtozip && make
 
 # Decompress using provided model

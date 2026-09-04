@@ -1,0 +1,34 @@
+{
+  "skills": [
+    {
+      "id": "audit_chat:secknowledge-skill",
+      "skill_id": "secknowledge-skill",
+      "slug": "secknowledge-skill",
+      "agent_type": "audit_chat",
+      "enabled": true,
+      "always_include": false,
+      "sort_order": 10,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/audit_chat/bindings.json",
+      "skill_file": "/app/skill_library/secknowledge-skill/SKILL.md",
+      "workspace_relative_path": "skill_library/secknowledge-skill",
+      "skill_root": "/app/skill_library/secknowledge-skill"
+    },
+    {
+      "id": "finding:secknowledge-skill",
+      "skill_id": "secknowledge-skill",
+      "slug": "secknowledge-skill",
+      "agent_type": "finding",
+      "enabled": true,
+      "always_include": true,
+      "sort_order": 0,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/finding/bindings.json",
+      "skill_file": "/app/skill_library/secknowledge-skill/SKILL.md",
+      "workspace_relative_path": "skill_library/secknowledge-skill",
+      "skill_root": "/app/skill_library/secknowledge-skill"
+    }
+  ]
+}

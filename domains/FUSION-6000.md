@@ -31,3 +31,9 @@
 - api-security/business-logic/auth-security/web-attack/recon 下 `case-lessons/`
 - 来源：6000 zip 内多份授权渗透报告，**仅模式与检查清单**
 
+## 2026-09-04 P0+P1 external fusion
+
+Attack-surface merge (no repo stacking): PHP/Java fine-grained code-audit, WinDump cred collection, LPE toolkit orchestration (no exploit binaries), web-assess-pipeline gates, recon-skills increments into src-methods, Android ADB assess, CTF upstream refs, AutoCVE skill_library only, Anthropic thin OT/compliance/IAM/SIEM/phishing sample.
+
+See MASTER.md changelog + security-kb-ingest archived table.
+

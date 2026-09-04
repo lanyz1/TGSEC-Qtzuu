@@ -46,8 +46,8 @@ Decode chunk payloads, walk PROP entries for `Source` field, dump `Script.Source
 **Pattern (Steal the Xmas):** Encrypted Godot .pck packages.
 
 **Tools:**
-- [gdsdecomp](https://github.com/GDRETools/gdsdecomp) - Extract Godot packages
-- [KeyDot](https://github.com/Titoot/KeyDot) - Extract encryption key from Godot executables
+- [gdsdecomp]([upstream-repo]) - Extract Godot packages
+- [KeyDot]([upstream-repo]) - Extract encryption key from Godot executables
 
 **Workflow:**
 1. Run KeyDot against game executable → extract encryption key

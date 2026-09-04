@@ -16,5 +16,8 @@ pentest-lyan-workflow
 - `hunter-6000/` — offensive skills
 - `pentest-lyan-workflow/` — 授权 Web 三阶段+威胁建模
 
+
+- `web-assess-pipeline/` — 测绘→挖洞→收敛门禁流水线
+
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理

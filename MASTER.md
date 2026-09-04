@@ -12,9 +12,9 @@ description: "Use for attack-surface domain knowledge matrix."
 > **任意 AI 打开本仓：先 `bash scripts/bootstrap.sh`，再读 AGENTS.md。**
 
 
-按攻击面组织的安全知识矩阵 — **24 个主题域、2866 个文件**，一个目录直达。
+按攻击面组织的安全知识矩阵 — **24 个主题域、约 2879 个文件**，一个目录直达。
 
-本地路径: `/root/security-suite`  
+Clone 后目录一般为 `~/security-suite`（Windows: `%USERPROFILE%\security-suite`）  
 融合索引: `domains/FUSION-6000.md`
 
 ## 使用方式

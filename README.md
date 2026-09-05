@@ -164,27 +164,11 @@ domains/                 ★ 知识正文（按攻击面）
 
 **思路：** 强身份业务优先 session/JWT/HMAC/无 auth 写接口与旁门；与正逻辑 Kill Chain **并行**，不是二选一。
 
----
-
-## 七、知识从哪融合来（不按上游名堆叠）
-
-| 来源类型 | 在仓库中的形态 |
-|----------|----------------|
-| Skills20260809 等 playbook | 各域 `playbook-6000/` |
-| hunter offensive skills | 各域 `hunter-6000/` |
-| SRC 方法论 | 各域 `src-methods/` |
-| 工作流 / vuln-memory / 组件情报 | `redteam-framework/pentest-lyan-workflow`、`malware-dfir/vuln-hunter-memory`、`recon/component-vuln-intel` 等 |
-| 授权实战报告 | **只提炼**进 `case-lessons/`（无真实 Token/session/助记词） |
-| reverse-skill 路由思想 | `AGENTS.md` / `ROUTING.md` 方法论；完整引擎可本机自备，非必须 |
-| 2026-09-04 P0+P1 外部仓 | **按攻击面融合**（非堆仓名）：PHP/Java 白盒、WinDump、LPE 编排、web-assess-pipeline、recon-skills 增量、ADB、CTF 补强、AutoCVE skill_library、Anthropic 薄域抽样、CDN 溯源技能 |
-
-索引：`domains/FUSION-6000.md` · 吸收档案：`hermes-skills/security-kb-ingest`。
-
-**刻意不进仓：** Awesome/Agent 产品壳、nuclei 整仓、HackTricks 整站、LPE exploit 二进制全量、AGPL 平台本体、Payloader UI、越狱「永不拒绝」类文、含密钥的原始报告全文。
+活靶执行纪律与战役状态（覆盖表 / 验证门 / Deadend / OOB）：Hermes 伞形 `pentest-execution`（`hermes-skills/pentest-execution/`）。
 
 ---
 
-## 八、一键装到 Claude CLI / Cursor 等（推荐）
+## 七、一键装到 Claude CLI / Cursor 等（推荐）
 
 ```bash
 cd security-suite
@@ -218,7 +202,7 @@ bash scripts/sync-hermes-skills.sh
 
 `git pull` **不会**自动更新 `~/.hermes/skills`，需要再跑 sync/bootstrap。
 
-细文档仍以 **`domains/`** 为准；伞形技能多是路由器。
+细文档仍以 **`domains/`** 为准；伞形技能多是路由器。`pentest-execution` 现含战役状态 / 覆盖类 / 验证门 / 确认门 / OOB 约定。
 
 ---
 

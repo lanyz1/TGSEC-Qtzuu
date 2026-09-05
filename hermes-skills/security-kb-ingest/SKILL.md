@@ -85,6 +85,8 @@ the router entry; 8 known cross-repo duplicate names exist among the absorbed re
 | AutoCVE skill_library | domains/file-vulns/code-audit/autocve-skill-library/ | skill_library only; AGPL platform skipped |
 | Anthropic-Cybersecurity-Skills | OT/ICS, phishing-IR, compliance, IAM, SIEM thin domains | Curated ≤60 skills; not full 800+ dump |
 | cdn-origin-tracing handbook | hermes-skills/cdn-origin-tracing | CDN/WAF origin tracing skill + scripts |
+| TORCH (Encod3d-Sec) methodology extract 2026-09-05 | fused into `pentest-execution` references | **Not full clone.** Absorbed: engagement-state, coverage-classes, campaign-loop, confirmation-gate, oob-callbacks. Skipped: Claude hooks/Obsidian/qmd/wiki dump |
+| pentest-pro-skills (manbamax) gates extract 2026-09-05 | fused into `pentest-execution` + anti-logic | **Not 13-skill dump.** Absorbed: validation-gates (6-door), 判定优先/版本≠漏洞, dual-session BOLA notes. Skills4RedTeam index-only skipped |
 
 ## Integration vs stacking (critical user correction)
 

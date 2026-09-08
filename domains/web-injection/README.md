@@ -45,3 +45,11 @@ xxe-xml-external-entity
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+<!-- fused:TORCH + SQL wordlist (2026-09-08) -->
+## TORCH + SQL wordlist (2026-09-08)
+
+- `torch-wiki/` / `torch-hunt/` — TORCH technique pages + hunt-sqli/xss/ssrf/rce/injection/deserialization
+- `Payload/sqli/sql-wordlist-orwa.txt` + `payload-orwa-unique.txt` — SQLi fuzz wordlist
+- Prefer unique payload file before full everything.txt at `/root/SQL-Wordlist/everything.txt`
+

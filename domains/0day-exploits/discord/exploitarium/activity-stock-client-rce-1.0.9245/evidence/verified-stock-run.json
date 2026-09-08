@@ -1,0 +1,28 @@
+{
+  "date": "2026-07-14",
+  "platform": "Windows 11 x64",
+  "discord": {
+    "channel": "stable",
+    "version": "1.0.9245",
+    "electron": "37.6.0",
+    "chrome": "138.0.7204.251",
+    "v8": "13.8.258.32-electron.0",
+    "executableSha256": "C14A6B393AAD5EFAF7E9CCB2BADDBE6943D00B2073D777A6786FDD5AC405722E"
+  },
+  "entry": "custom Activity in an enabled-sandbox renderer",
+  "boundary": "forged Electron IPC persisted the web application endpoint and requested relaunch",
+  "nativeApi": "CreateProcessW",
+  "nativeApplication": "C:\\Windows\\System32\\calc.exe",
+  "calculator": {
+    "windowsEventLog": "Microsoft-Windows-AppModel-Runtime/Admin",
+    "windowsEventId": 201,
+    "windowTitle": "Calculator",
+    "visible": true,
+    "minimized": false
+  },
+  "recovery": {
+    "settingsRestored": true,
+    "discordRelaunched": true
+  },
+  "result": "stock Discord Activity to native Windows process creation"
+}

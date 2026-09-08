@@ -21,3 +21,13 @@ pentest-lyan-workflow
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+<!-- fused:TORCH campaign layer (2026-09-08) -->
+## TORCH campaign layer (2026-09-08)
+
+- `torch-methodology-delta-20260908.md` — what was absorbed vs skipped
+- `torch-scripts/` — campaign.py, next_move.py, coverage-classes, playbook.json, wordlists
+- `torch-workflow/` — pt/bb/coverage/triage/evidence/learn/redteamlead/...
+- `torch-hunt/hunt-core` + `triggers.json`
+- Live gates still primary via hermes `pentest-execution` references
+

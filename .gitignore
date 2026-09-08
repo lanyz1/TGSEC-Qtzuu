@@ -4,3 +4,18 @@
 .tgsec-bootstrapped.*
 
 *.bak.*
+
+# secrets / local
+.env
+**/.env
+**/.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+.DS_Store
+__pycache__/
+*.pyc
+work/
+session/
+targets/

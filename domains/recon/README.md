@@ -45,3 +45,11 @@ tools
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+<!-- fused:TORCH wiki tools/cheatsheets (2026-09-08) -->
+## TORCH wiki tools/cheatsheets (2026-09-08)
+
+- `torch-wiki/tools|cheatsheets|osint|network|payloads`
+- `torch-workflow/wiki-recon|arsenal|wiki-arsenal`
+- `AboutSecurity-Dic/` — dictionaries mirror
+

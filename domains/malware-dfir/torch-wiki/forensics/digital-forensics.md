@@ -1,0 +1,183 @@
+---
+title: "Digital Forensics"
+type: technique
+tags: [forensics, ctf, memory, disk, pcap, volatility, incident-response]
+phase: post-exploitation
+date_created: 2026-06-16
+date_updated: 2026-08-13
+sources: [pcap-encoded-exfil-reconstruction, cve-2023-32784]
+---
+
+## What it is
+
+Recovering evidence and hidden data from disk images, memory dumps, packet captures, and file artifacts. A CTF category and the core skill of incident response / DFIR.
+
+## How it works
+
+Data persists in structure (filesystem metadata, process memory, packet streams) and in slack/deleted regions. Forensics parses these structures and carves data that was deleted, embedded, or in transit.
+
+## Attack phases
+Post-exploitation / analysis (CTF forensics; IR; evidence extraction).
+
+## Prerequisites
+- The artifact (image/dump/pcap) and its type. For memory: the OS profile/symbols.
+
+## Methodology
+
+### File triage (start here)
+```bash
+file artifact;  binwalk artifact            # embedded files/signatures ([[binwalk]])
+binwalk -e artifact                         # extract; foremost/scalpel for carving
+exiftool artifact;  strings -n8 artifact;  xxd artifact | head
+```
+Wrong/mismatched magic bytes -> fix header. Appended data after EOF -> carve. See [[steganography]] for media-embedded data.
+
+### Memory forensics (Volatility 3)
+```bash
+vol -f mem.raw windows.info                 # identify build
+vol -f mem.raw windows.pslist;  windows.pstree;  windows.cmdline
+vol -f mem.raw windows.netscan              # connections
+vol -f mem.raw windows.filescan | grep -i flag
+vol -f mem.raw windows.dumpfiles --virtaddr 0x...
+vol -f mem.raw windows.hashdump;  windows.lsadump;  windows.cachedump
+vol -f mem.raw windows.malfind              # injected code
+# Linux: linux.pslist / linux.bash (shell history)
+```
+`bulk_extractor mem.raw -o out` pulls emails, URLs, card numbers, keys.
+
+### Disk forensics
+```bash
+mmls disk.img;  fls -r -o <offset> disk.img    # sleuthkit: partition + file listing
+icat -o <offset> disk.img <inode> > recovered  # extract by inode (incl. deleted)
+```
+Autopsy GUI for timeline + deleted files. Windows: parse `$MFT`, registry (`regripper`), `NTUSER.dat`, prefetch, `$Recycle.Bin`, browser DBs, event logs (`evtx_dump`).
+
+### Network forensics (pcap)
+```bash
+tshark -r cap.pcap -q -z io,phs             # protocol hierarchy ([[tshark]])
+tshark -r cap.pcap -Y http.request -T fields -e http.host -e http.request.uri
+tcpflow -r cap.pcap;  foremost -i cap.pcap   # reassemble streams / carve files
+```
+- Wireshark: Follow TCP/HTTP Stream; File > Export Objects (HTTP/SMB/FTP). Credentials in cleartext protocols.
+- TLS decrypt: load `SSLKEYLOGFILE`. USB pcap: decode HID keystrokes from `usb.capdata`. ICMP/DNS exfil: reassemble payload bytes.
+- **Reassemble a raw TCP exfil stream + reverse its encoding.** A bulk transfer on an odd port is often a staged file (process dump, DB) sent as base64 of XOR'd bytes. Grab the big stream's index from `conv,tcp`, take the client->server direction only, then undo the transform (`0x41` is the example key from one sample; read the dropper for the real key):
+```bash
+tshark -r cap.pcap -q -z conv,tcp                        # find the largest stream + its index N
+tshark -r cap.pcap -q -z follow,tcp,raw,N | grep -E '^[0-9a-f]+$' | tr -d '\n' | xxd -r -p > exfil.b64
+python3 -c 'import base64;d=base64.b64decode(open("exfil.b64","rb").read());open("out","wb").write(bytes(b^0x41 for b in d))'
+```
+- **`[N bytes missing in capture file]` = a truncated/gap-dropped capture, NOT payload.** tshark injects that literal marker into `follow`/`Export` output where bytes were not captured (snaplen or drops). Do not blindly strip it: its text ("bytes missing in capture file") is valid base64 chars, so removing it corrupts and mis-aligns the stream and `base64` silently stops at the first gap (a short, truncated result). Replace each marker with N placeholder chars to preserve length and 4-alignment before decoding:
+```bash
+python3 -c 'import re,base64;d=open("exfil.b64","rb").read()
+d=re.sub(rb"\[(\d+) bytes missing in capture file\]\x00",lambda m:b"A"*int(m.group(1)),d)  # A -> 0x00 filler, keeps offsets
+open("out","wb").write(bytes(b^0x41 for b in base64.b64decode(d)))'   # gaps become known filler; captured regions decode intact
+```
+- **A KeePass process dump (`MDMP` magic) exfiltrated?** Recover the master password with CVE-2023-32784 (all chars but the first, no cracking) then brute the one missing char against the `.kdbx`. See [[password-cracking]] (the dump beats cracking the Argon2 KDF).
+
+### Logs / timeline
+`log2timeline.py` + `psort.py` (plaso) for super-timelines; grep auth/access logs for the intrusion path.
+
+## Bypasses and variants
+- Corrupted headers: repair PNG/ZIP/PDF magic + CRC (`pngcheck`, `zip -FF`).
+- Encrypted volumes: VeraCrypt/BitLocker key in memory dump (`vol ... bitlocker`); ZIP/Office hash -> [[wiki/tools/hashcat]].
+
+## Detection and defence
+Full-disk encryption, log integrity (append-only/remote), memory-acquisition resistance, secure deletion.
+
+## Tools
+`volatility3`, [[binwalk]], Wireshark / [[wiki/tools/tshark]], `foremost`, `exiftool`, Autopsy / sleuthkit, `bulk_extractor`, `regripper`, plaso. See [[steganography]], [[encoding-transformations]].
+
+## Sources
+
+### WMI CIM repository (fileless persistence extraction)
+
+Files `OBJECTS.DATA` + `INDEX.BTR` + `MAPPING{1,2,3}.MAP` = the **WMI CIM repository**
+(`%SystemRoot%\System32\wbem\Repository\`). WMI **event-subscription** persistence lives here, not in
+Run keys / Startup / Scheduled Tasks - which is exactly why autoruns-style tools miss it. Triage:
+```sh
+strings -n 6 OBJECTS.DATA | grep -aiE "__EventFilter|EventConsumer|FilterToConsumerBinding|ActiveScript|CommandLine"
+```
+Proper parsers: `python-cim` (flare-wmi), `PyWMIPersistenceFinder.py`, Mandiant `WMIParser`.
+
+- **Payload hidden in a custom class property.** A `CommandLineEventConsumer` running `powershell.exe
+  -enc <b64>` is the tell. Decode the `-enc` (base64 -> UTF-16LE: `base64 -d | iconv -f UTF-16LE -t
+  UTF-8`); it reads `([WmiClass]'ROOT\cimv2:<FakeClass>').Properties['<Prop>'].Value` and side-loads a
+  .NET assembly with `[Reflection.Assembly]::Load(...).EntryPoint.Invoke()`. The class name
+  masquerades as legitimate (e.g. `Win32_HardwareTelemetry` - no such real class); the property (e.g.
+  `ConfigData`) holds the payload. This is the "hidden custom configuration data / malicious class".
+- **Extract the payload:** the property value is usually `base64(raw-DEFLATE(PE))`. The one gotcha is
+  it's **raw DEFLATE** (PowerShell `DeflateStream`), so zlib needs `wbits=-15`, not the default:
+  ```py
+  import base64, zlib
+  asm = zlib.decompress(base64.b64decode(blob), -15)   # -15 = raw deflate; MZ/PE .NET assembly
+  ```
+  (`blob` = the one very long base64 run in OBJECTS.DATA: `strings -n 200 OBJECTS.DATA`.)
+- **Read the .NET payload statically - do NOT run it.** Such droppers are often environment-keyed
+  (fire only when `Environment.MachineName == "<victim>"`). Pull the flag/secret from metadata instead:
+  `#US` user-string heap via `dnfile`, or `strings -el` / `monodis` / ILSpy. Secrets frequently sit in
+  a `net user <name> <base64pass> /add` backdoor command - base64-decode the password.
+
+See offensive/creation side: [[windows-persistence]] (WMI Event Subscription).
+
+<!-- promoted-slug: wmi-cim-repository-forensics -->
+
+### Windows host triage: EVTX + Procmon .PML offline (no GUI)
+
+Pull the artifacts off a live/imaged host and parse them locally - you do NOT need the Windows GUI
+tools. Grab `C:\Windows\System32\winevt\Logs\*.evtx` and any Procmon `.PML` / Autoruns `.arn` via
+SMB/WinRM (`smbclient`, `nxc winrm -X`, impacket). Parse: EVTX -> `python-evtx` / `evtx_dump` /
+chainsaw; Procmon `.PML` -> **`procmon-parser`** (pip; `ProcmonLogsReader`, `.processes()`,
+per-event `.operation/.path/.details/.result/.stacktrace/.date()`).
+
+- **Timezone gotcha (bites every time):** `procmon-parser`'s `event.date()` returns **UTC**, but the
+  Procmon GUI and Event Viewer's "Date and Time" field display the **host's LOCAL** time. Convert with
+  the box TZ (`HKLM\SYSTEM\CurrentControlSet\Control\TimeZoneInformation\TimeZoneKeyName`, or note the
+  `...\Time Zones\<name>\TZI` the process reads). A UTC-vs-local answer mismatch is the classic error.
+- **`<unknown>` stack frame = process injection (T1055).** In a Procmon call stack, a frame whose
+  **Module = `<unknown>`** is executing from unbacked / private (RWX) memory = injected code (the frame
+  above the last named DLL). Corroborate with Sysmon **EID 8 CreateRemoteThread** and
+  **mscoree.dll/clr.dll loaded into a non-.NET host** (e.g. `explorer.exe`) = .NET/PowerShell (Empire)
+  injection. `procmon-parser` won't resolve that address to any module - that IS the finding.
+- **Key Sysmon EIDs for host IR:** 1 proc-create (+cmdline), 3 net-connect, 7 image-load, 8
+  CreateRemoteThread (injection), 13 RegistryValueSet (persistence). RuleName carries the mapped ATT&CK
+  id (e.g. `technique_id=T1547.001`).
+- **Follow layered persistence indirection.** A Run-key value may only launch a loader that reads the
+  REAL encoded payload from a SEPARATE reg value (seen: `HKCU\...\CurrentVersion\Debug` holding
+  base64/UTF-16LE PowerShell). Decode the value the loader points at, not the Run key string.
+- **PrintDemon (CVE-2020-1048) artifact:** PrintService/Admin **EID 823 (ChangingDefaultPrinter)** with
+  a rogue printer name = a printer port abused to write an arbitrary file (e.g. `ualapi.dll` ->
+  Fax-service DLL hijack -> SYSTEM). See offensive side [[windows-persistence]].
+- **PowerShell Empire (S0363) network IOCs:** default GET profile URIs `/admin/get.php,/news.php,
+  /login/process.php`, UA `Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko`,
+  RC4-staged beacon. More: [[modern-c2-frameworks]].
+
+<!-- promoted-slug: windows-host-dfir-evtx-procmon -->
+
+### Reconstruct a custom-crypto C2 implant from EVTX + pcap
+
+When the PowerShell Operational log + the C2 capture are both in hand and the implant is
+hand-rolled (not a known framework - for the known-framework case see the Empire IOCs above):
+
+1. **Stage-1 from ScriptBlock logs.** EID 4104 `ScriptBlockText` holds the deobfuscated
+   dropper (parse EVTX per the offline-triage section above; if the packaged `evtx_dump`
+   entry point is broken, import `python-evtx` `Evtx.Evtx` directly and pull the 4104
+   records). It reveals the stage-2 URL, the cipher (often hand-rolled RC4 KSA/PRGA), and the
+   key - the key is frequently split across string-concatenation (`'Ab1'+'2Cd'+'3Ef'...`) to
+   defeat naive `strings`; reassemble the literal.
+2. **Carve + decrypt stage-2.** `tshark --export-objects http,<dir>` pulls the payload (often
+   hex-text, not raw bytes); apply the step-1 cipher+key, then verify `MZ` + expected SHA-256
+   = the real PE.
+3. **Decompile statically, never run it.** `ilspycmd <asm>.exe` (dotnet global tool) gives
+   full C#; `strings -el` recovers the UTF-16 literals (crypto passphrase, C2 URL).
+4. **Custom-AES C2 pattern to expect, then decrypt every frame:**
+   - AES key = `SHA256(<passphrase-literal>)` used directly as the AES-256 key (no KDF/salt);
+   - IV is **prepended** to the ciphertext: wire blob = `base64(IV[16] || ciphertext)`, so
+     split the first 16 bytes as IV and CBC/PKCS7-decrypt the rest;
+   - directional encoding asymmetry - one channel single-base64, the other **double**
+     (`base64(base64(IV||ct))`); decode accordingly per direction;
+   - the command is hidden in a benign-looking response body, e.g. an HTML comment
+     `<!-- <marker>=<blob> --></body>` - grep the response body for the marker, not a header.
+   Decrypt command (server->implant) and output (implant->server) in frame order to rebuild
+   the attacker's session and pull the flag.
+
+<!-- promoted-slug: malware-c2-reconstruction-evtx-pcap -->

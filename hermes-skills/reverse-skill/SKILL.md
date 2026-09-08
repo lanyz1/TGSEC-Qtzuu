@@ -98,3 +98,21 @@ bash /root/reverse-skill/skills/scripts/refresh-tool-index.sh
 - [ ] PRIMARY SKILL.md 被打开
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+## panda-rev pack (2026-09-08)
+
+| Hint | Path |
+|------|------|
+| symbol restore / exports | `domains/reverse-engineering/panda-rev/rev-symbol` + package `skills/rev-symbol` |
+| struct recovery | `.../rev-struct` |
+| IDAPython / IDALib | `.../rev-idapython` |
+| Unicorn emulate snippet | `.../rev-unicorn-debug` |
+| Frida modern API | `domains/mobile-security/panda-rev/rev-frida` |
+| DEX dump unpack | `.../rev-dex-dumper` (binary bundled) |
+| Unity IL2CPP | `.../rev-u3d-dump` |
+| iOS 砸壳 dump | `.../rev-ios-dump` |
+
+`master-route.sh` may not list these until routing.json extended; open SKILL.md directly when hints match.
+
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理

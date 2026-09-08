@@ -88,6 +88,13 @@ the router entry; 8 known cross-repo duplicate names exist among the absorbed re
 | TORCH (Encod3d-Sec) methodology extract 2026-09-05 | fused into `pentest-execution` references | **Not full clone.** Absorbed: engagement-state, coverage-classes, campaign-loop, confirmation-gate, oob-callbacks. Skipped: Claude hooks/Obsidian/qmd/wiki dump |
 | pentest-pro-skills (manbamax) gates extract 2026-09-05 | fused into `pentest-execution` + anti-logic | **Not 13-skill dump.** Absorbed: validation-gates (6-door), 判定优先/版本≠漏洞, dual-session BOLA notes. Skills4RedTeam index-only skipped |
 
+
+| TORCH full absorb 2026-09-08 | domains/*/torch-wiki|torch-hunt|torch-workflow + redteam-framework/torch-scripts | Full wiki+hunt; still skip Claude hooks/Obsidian/qmd bootstrap |
+| P4nda0s reverse-skills 2026-09-08 | domains/reverse-engineering|mobile-security/panda-rev + reverse-skill/skills/rev-* | 8 RE skills + dex dumper binary |
+| SQL-Wordlist (orwa) 2026-09-08 | web-injection/Payload/sqli/*orwa* ; /root/SQL-Wordlist | sql.txt fused; everything.txt path-only |
+| bikini/exploitarium 2026-09-08 | 0day-exploits/<product>/exploitarium/ + EXPLOITARIUM-INDEX.md | ~40 public PoCs by product |
+| AboutSecurity / hack-skills re-verify 2026-09-08 | /root/AboutSecurity · /root/hack-skills | origin already current; Payload/Dic/Vuln delta sync |
+
 ## Integration vs stacking (critical user correction)
 
 User explicitly rejected repo-stacking (`knowledge/<repo-name>/` per source) as "not integrated".

@@ -1,7 +1,7 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
 > **@TGSEC社区 · @TGSEC-Qtzuu 整理**  
-> 面向 **AI + 人** 的授权安全知识库：渗透测试、挖洞、红队方法论、按**攻击面**组织，可直接丢给 Grok Build / Claude / Cursor / Hermes / Codex 等使用。
+> 面向 **AI + 人** 的授权安全知识库：渗透测试、挖洞、红队方法论，按**攻击面**组织，可直接丢给 Grok Build / Claude / Cursor / Hermes / Codex 等使用。
 
 **仓库地址：** https://github.com/lanyz1/TGSEC-Qtzuu  
 
@@ -13,15 +13,23 @@
 
 ## 一、这是什么
 
-本仓库不是「按上游项目名堆一堆文件夹」，而是把多份技能包、手册、实战报告**拆开后，按攻击面重新融合**进 `domains/`，让 AI 和人都能按「我现在测的是登录 / 支付 / 注入…」找到对应资料。
+本仓库不是「按上游项目名堆一堆文件夹」，而是把多份技能包、手册、PoC、字典、实战报告**拆开后，按攻击面重新融合**进 `domains/`，让 AI 和人都能按「我现在测的是登录 / 支付 / 注入…」找到对应资料，并在授权范围内**直接跑工具与 PoC**。
 
 | 它是 | 它不是 |
 |------|--------|
-| 授权渗透 / 挖洞 / 评估用的**知识与路由** | 未授权攻击教程或自动「输入域名就授权」 |
+| 授权渗透 / 挖洞 / 评估用的**知识 + 路由 + 可执行资产** | 未授权攻击教程或自动「输入域名就授权」 |
 | 给**多种 AI** 共用的同一套路径（不绑死 Hermes） | 必须安装某一种 AI 才能用 |
 | 初学可从 `START.md` 进，熟手可从 `MASTER`/`domains` 深挖 | 只有黑盒脚本、没有说明 |
+| **文档 + 工具链入口 + PoC/字典/战役脚本**一体 | 「只能读 md、真跑全靠宿主瞎猜」 |
 
-**规模（约）：** 24 个主题域 · **3800+** 文件（以 `MASTER.md` / 本地 `domains/` 为准；随融合更新）。
+**规模（以本机 `domains/` 实计，2026-09-08 融合后）：**
+
+- **24** 个主题域
+- **约 5200+** 文件（`domains/` 正文；随融合继续涨）
+- **14** 个伞形技能入口（`hermes-skills/` → 可 sync 到 Claude/Cursor/Hermes/…）
+- **80+** 工具清单（`scripts/tools-manifest.json` + `check-tools.sh` / `install-tools.sh`）
+
+> 旧文案里的「2879 / 3800+」是历史口径；**以本 README 与本地 `find domains -type f | wc -l` 为准**。
 
 ---
 
@@ -43,7 +51,7 @@ curl -fsSL https://cdn.jsdelivr.net/gh/lanyz1/TGSEC-Qtzuu@master/scripts/install
 ```bash
 git clone https://github.com/lanyz1/TGSEC-Qtzuu.git security-suite
 cd security-suite
-bash scripts/bootstrap.sh   # 可选：写各 AI 入口文件
+bash scripts/bootstrap.sh   # 写各 AI 入口 + 同步伞形技能
 ```
 
 默认目录：`~/security-suite`（Windows 多为 `C:\Users\<用户名>\security-suite`）。
@@ -55,7 +63,7 @@ bash scripts/bootstrap.sh   # 可选：写各 AI 入口文件
 | Grok Build | 打开文件夹 → 选 `security-suite` |
 | Claude CLI | 进入该目录再运行 `claude` |
 | Cursor | Open Folder → `security-suite` |
-| Hermes | 新会话，工作目录尽量指到该文件夹 |
+| Hermes | 新会话，工作目录尽量指到该文件夹；再 `bash scripts/sync-hermes-skills.sh` |
 | Codex / Aider | 以该目录为项目根 |
 
 ### 3）复制发给 AI（渗透 / 挖洞）
@@ -63,7 +71,8 @@ bash scripts/bootstrap.sh   # 可选：写各 AI 入口文件
 ```text
 请先读 START.md、AGENTS.md、ROUTING.md、MASTER.md。
 我做的是【已授权】渗透测试和挖洞（侦察、找漏洞、可复现验证、出报告）。
-按 ROUTING.md 去 domains/ 找资料，用简单中文一步步带我做。
+按 ROUTING.md 去 domains/ 找资料；开打前按「技能加载矩阵」把对应伞形技能全部 load 齐。
+用简单中文一步步带我做，给可复现命令，不要只讲概念。
 目标与授权说明：……（填域名/范围，并写明已授权）
 ```
 
@@ -77,7 +86,8 @@ bash scripts/bootstrap.sh   # 可选：写各 AI 入口文件
 AGENTS.md  →  AI 总规则（何时路由、授权边界、完成清单）
 ROUTING.md →  人话关键词 → domains/ 下具体路径
 MASTER.md  →  24 域导航 + 渗透阶段
-domains/   →  全部知识正文
+domains/   →  全部知识正文 + PoC + 字典 + 战役脚本
+scripts/   →  工具安装/检查/技能同步（可执行工具链入口）
 ```
 
 **同主题推荐阅读顺序：**
@@ -87,15 +97,34 @@ domains/<面>/README.md
   → playbook-6000/     （系统测试手册）
   → hunter-6000/       （进攻向专题）
   → src-methods/       （SRC 挖洞方法）
+  → torch-hunt/ / torch-wiki/   （TORCH 猎杀手册 + 技术页，2026-09-08）
   → case-lessons/      （实战报告提炼，脱敏）
-  → 其它专项 md
+  → 其它专项 md / Payload / exploit
 ```
 
-`hermes-skills/` 仅在 **Hermes** 上作可选加速（同步到 `~/.hermes/skills/security/`），**不是**使用本库的门槛。
+`hermes-skills/` 是 **伞形路由器**（约 14 个入口），sync 后加速定位；**细粮永远在 `domains/`**。
 
 ---
 
-## 四、目录结构
+## 四、文档 + 可执行，不是「只能看」
+
+别的模型如果说「只有文档、真跑靠宿主」——本仓的定位是：
+
+| 层 | 你在本仓得到什么 | 怎么跑 |
+|----|------------------|--------|
+| 路由 | `ROUTING` / `MASTER` / 伞形 SKILL | AI 打开即用 |
+| 方法论 | playbook / hunter / src-methods / torch-hunt | 逐步照做 |
+| 字典 / Payload | `domains/**/Payload`、`sql-wordlist-orwa.txt`、AboutSecurity-Dic | ffuf/sqlmap/自定义脚本直接喂 |
+| 产品 PoC | `domains/0day-exploits/**`（含 exploitarium 批次） | 授权实验室按 README 复现 |
+| 战役状态机 | `pentest-execution` + `redteam-framework/torch-scripts/` | coverage / Deadend / next-move |
+| 逆向专项 | `panda-rev`（Frida/DEX dump/砸壳/IL2CPP/IDAPython/Unicorn） | 本机 ADB/Frida/IDA 环境执行 |
+| 宿主工具 | `scripts/tools-manifest.json`（80+） | `bash scripts/check-tools.sh` → `install-tools.sh` |
+
+**边界说清楚：** 本仓**不**内嵌完整 C2 商业马、不替你装 Kali 全家桶；它提供的是「测什么 → 去哪读 → 用哪条命令/PoC/字典」的可执行闭环。工具二进制由 `install-tools` 按清单装到宿主——这是刻意设计，不是缺失。
+
+---
+
+## 五、目录结构
 
 ```text
 START.md                 小白 3 步
@@ -107,68 +136,96 @@ MASTER.md                主题域矩阵 + 5 步路由 + 融合说明
 CLAUDE.md / .cursorrules / .github/copilot/  各客户端薄入口
 RULES.md                 通用短规则
 ai-config/               Claude/Cursor/Codex/Grok/Aider/Hermes/universal 源配置
-hermes-skills/           Hermes 伞形技能源（约 15 个入口，含 cdn-origin-tracing）
+hermes-skills/           伞形技能源（14 入口，含 cdn-origin-tracing / 0day / reverse…）
 scripts/
-  install-windows.ps1    Win 一键
-  install-linux.sh       Linux 一键
-  bootstrap.sh           写各 AI 入口 + 可选同步 Hermes 技能
-  sync-hermes-skills.sh  仅覆盖 Hermes 技能
-  check-tools.sh / install-tools.sh
-domains/                 ★ 知识正文（按攻击面）
+  install-windows.ps1 / install-linux.sh
+  bootstrap.sh           写各 AI 入口 + 同步技能
+  sync-agent-skills.sh   Claude/Cursor/Codex/Gemini/agents/Hermes 一键技能
+  sync-hermes-skills.sh  仅 Hermes
+  check-tools.sh / install-tools.sh / tools-manifest.json
+domains/                 ★ 知识正文（按攻击面，~5200+ 文件）
   recon/ web-injection/ web-attack/ api-security/ auth-security/
   file-vulns/ business-logic/ ad-attack/ windows-post/ linux-post/
   cloud-security/ mobile-security/ binary-pwn/ reverse-engineering/
   crypto-attacks/ llm-ai-security/ post-exp-tools/ malware-dfir/
   social-eng/ ctf/ 0day-exploits/ redteam-framework/ gambling-pentest/ other/
-  FUSION-6000.md         6000 包融合索引
+  FUSION-6000.md / FUSION-20260908.md / FUSION-REPORT-20260908.md
 ```
 
 ---
 
-## 五、主题域一览（详见 MASTER.md）
+## 六、主题域规模（2026-09-08 实计）
 
-| 域 | 覆盖内容（摘要） |
-|----|------------------|
-| `recon` | 子域/端口/OSINT/FOFA/真假分离侦察/组件情报/报告课 |
-| `web-injection` | SQLi/XSS/SSRF/XXE/反序列化/Fastjson/Shiro/Log4j/Spring… |
-| `web-attack` | CSRF/WAF/走私/竞态/重定向/EdgeOne 等 |
-| `api-security` | GraphQL/JWT/OAuth/IDOR·BOLA/export 越权课 |
-| `auth-security` | 登录绕过/越权/Session 身份层 ROI/RuoYi DataScope 课 |
-| `file-vulns` | 上传/LFI/路径穿越/SCM · **PHP/Java 白盒细粒度审计** |
-| `business-logic` | 支付/Crown 收款面/回调伪造课 |
-| `ad-attack` / `windows-post` / `linux-post` | 域与后渗 · WinDump 凭证采集面 · LPE 编排 |
-| `cloud-security` | 云/K8s/容器/CI-CD |
-| `mobile-security` | APK/iOS/Frida/iOS 内核 CVE · **Android ADB 真机评估** |
-| `binary-pwn` / `reverse-engineering` | Pwn 与逆向 |
-| `crypto-attacks` / `llm-ai-security` | 密码学 / AI 安全 |
-| `post-exp-tools` / `malware-dfir` | 后渗工具 / 样本取证 |
-| `0day-exploits` | 产品向 RCE/PoC 索引 |
-| `redteam-framework` | 状态机、lyan 工作流、**Anti-Logic A1–A6** · Web 评估门禁流水线 |
-| `gambling-pentest` | 博彩/代收类业务面 |
-| `ctf` / `social-eng` / `other` | 靶场、社工/钓鱼IR、OT·ICS·合规薄域 |
+| 域 | 约文件数 | 覆盖摘要 |
+|----|----------|----------|
+| `web-injection` | 1100+ | SQLi/XSS/SSRF/XXE/反序列化/Fastjson/Shiro/Log4j + torch-hunt/wiki + orwa 字典 |
+| `recon` | 1050+ | 子域/端口/OSINT/FOFA/组件情报/TORCH tools·cheatsheets/Dic |
+| `0day-exploits` | 650+ | 产品 RCE 库 + **exploitarium** 批次索引 |
+| `file-vulns` | 390+ | 上传/LFI/白盒 PHP·Java 审计 |
+| `ctf` | 330+ | 靶场/题解/torch CTF workflow |
+| `ad-attack` | 190+ | Kerberos/ACL/ADCS/BloodHound + torch AD |
+| `cloud-security` | 180+ | AWS/Azure/K8s/CI-CD + torch cloud |
+| `redteam-framework` | 160+ | 状态机/Anti-Logic/torch campaign 脚本 |
+| `post-exp-tools` | 150+ | C2/隧道/Webshell/凭据 |
+| `web-attack` | 120+ | CSRF/WAF/走私/缓存/竞态 |
+| `windows-post` / `linux-post` | 100+ / 40+ | 提权/横移/凭证 |
+| `mobile-security` | 80+ | APK/iOS/Frida + **panda-rev**（DEX/砸壳/IL2CPP） |
+| `reverse-engineering` | 60+ | IDA/Ghidra + **panda-rev** 符号/结构体/Unicorn |
+| `auth` / `api` / `llm` / … | 见 MASTER | 认证、API、AI/MCP、密码学、博彩面等 |
 
-数字以仓库内 `MASTER.md` 为准（会随融合更新）。
+数字以仓库内统计为准，融合后会变。
 
 ---
 
-## 六、特色方法论（建议熟手必读）
+## 七、渗透时「技能必须用全」——加载矩阵
+
+开打**任意**授权目标时，AI / 操作者按资产类型 **load 对应伞形**，再进 `domains/`。  
+**禁止**不 load 技能就空手写临时脚本开喷。
+
+| 场景 | 必 load（伞形） | domains 落点（再读） |
+|------|-----------------|----------------------|
+| 每次活靶开局 | `pentest-execution` + `tgsec-suite` | `redteam-framework/` · coverage / Deadend |
+| CDN/WAF/找源站 IP | `cdn-origin-tracing` | `recon/` · handbook |
+| Web 注入/API/JWT/IDOR | `hack-skills` → `web-sec` | `web-injection` `web-attack` `auth` `api` · `torch-hunt` |
+| SQLi 字典 fuzz | （同上） | `web-injection/Payload/sqli/*orwa*` |
+| 组件/版本已识别 | （+ component intel） | `recon/component-vuln-intel/` · `0day-exploits/` |
+| 产品已知 RCE | `0day-exploit-library` | `0day-exploits/<product>/` · `EXPLOITARIUM-INDEX.md` |
+| APK/IPA/Frida/DEX/砸壳/IL2CPP/二进制 | `reverse-skill`（+ master-route） | `mobile-security/panda-rev` · `reverse-engineering/panda-rev` |
+| 博彩/代收/代理 BFLA | `gambling-platform-pentest` | `gambling-pentest/` |
+| 假设驱动状态机 | `black-cat-redteam` | `redteam-framework/black-cat/` |
+| OODA 自动化代理 | `stopen` | （技能内流程） |
+| Bug bounty 狩猎卡 | `claude-bughunter` | 与 `src-methods` 交叉 |
+| 结构化 payload/字典库 | `about-security` | `Payload/` `Dic/` 及 domains 镜像 |
+| YAML 技术卡片 | `secatlas` | SecAtlas 本地树 |
+| 吸收外部安全仓 | `security-kb-ingest` | 本 README 融合纪律 |
+| 业务身份层/反逻辑/支付 | `pentest-execution` refs | `auth-security` · `business-logic` · `anti-logic-*` |
+
+Hermes：`skill_view(<name>)`。  
+Claude/Cursor 等：项目内 `.claude/skills/<name>/` 或先 `bash scripts/sync-agent-skills.sh`。  
+**全 AI 兜底：** 不会 skill 系统 → 直接 `ROUTING.md` → `domains/`。
+
+活靶纪律（覆盖矩阵、验证门、OOB、禁止「已到极限」）在 `hermes-skills/pentest-execution/`。
+
+---
+
+## 八、特色方法论（熟手）
 
 | 主题 | 路径 |
 |------|------|
-| 真假分离侦察（诱饵面 vs 真后台） | `domains/recon/true-false-separation-recon.md` |
-| 业务系统 ≠ CMS：身份层 ROI | `domains/auth-security/session-crypto-identity-layer.md` |
-| Anti-Logic 反逻辑 A1–A6 | `domains/redteam-framework/anti-logic-layout.md` |
-| 身份层 + 反逻辑统一手册 | `domains/redteam-framework/identity-antilogic-playbook.md` |
-| 支付/QR/Crown 配置面 | `domains/business-logic/payment-config-crown-surface.md` |
-| 实战报告脱敏课（BOLA/支付回调/RuoYi/EdgeOne…） | `domains/*/case-lessons/` · 索引 `domains/recon/case-lessons/README.md` |
+| 真假分离侦察 | `domains/recon/true-false-separation-recon.md` |
+| 业务系统身份层 ROI | `domains/auth-security/session-crypto-identity-layer.md` |
+| Anti-Logic A1–A6 | `domains/redteam-framework/anti-logic-layout.md` |
+| 身份层 + 反逻辑手册 | `domains/redteam-framework/identity-antilogic-playbook.md` |
+| 支付/Crown 配置面 | `domains/business-logic/payment-config-crown-surface.md` |
+| TORCH 战役层（wiki/hunt/campaign） | `domains/**/torch-*` · `redteam-framework/torch-methodology-delta-20260908.md` |
+| exploitarium 产品 PoC 索引 | `domains/0day-exploits/EXPLOITARIUM-INDEX.md` |
+| 实战脱敏课 | `domains/*/case-lessons/` |
 
-**思路：** 强身份业务优先 session/JWT/HMAC/无 auth 写接口与旁门；与正逻辑 Kill Chain **并行**，不是二选一。
-
-活靶执行纪律与战役状态（覆盖表 / 验证门 / Deadend / OOB）：Hermes 伞形 `pentest-execution`（`hermes-skills/pentest-execution/`）。
+**思路：** 强身份业务优先 session/JWT/HMAC/无 auth 写接口与旁门；与正逻辑 Kill Chain **并行**。
 
 ---
 
-## 七、一键装到 Claude CLI / Cursor 等（推荐）
+## 九、一键装到 Claude / Cursor / Hermes 等
 
 ```bash
 cd security-suite
@@ -184,68 +241,71 @@ bash scripts/sync-agent-skills.sh          # Linux/Mac
 | Cursor | `.cursor/skills/` 与 `~/.cursor/skills/` |
 | 通用 | `.agents/skills/` |
 | Codex / Gemini | `.codex/skills/` · `.gemini/skills/` |
-| Hermes | `~/.hermes/skills/security/`（一并同步） |
+| Hermes | `~/.hermes/skills/security/` |
 
-`bootstrap.sh` / 一键 install **会自动调用**本脚本。  
-装完请**新开会话**；知识正文仍在 `domains/`。
-
-## 八、Hermes 用户（可选）
+`bootstrap.sh` / 一键 install **会自动调用**。装完请**新开会话**。
 
 ```bash
-cd security-suite
-bash scripts/bootstrap.sh --force    # 含技能同步
-# 或仅技能：
-bash scripts/sync-hermes-skills.sh
+bash scripts/sync-hermes-skills.sh   # 仅 Hermes
+bash scripts/check-tools.sh          # 看缺什么工具
+bash scripts/install-tools.sh        # 按清单补工具
 ```
 
-然后**新开 Hermes 会话**。常用伞形：`tgsec-suite`、`pentest-execution`、`cdn-origin-tracing`、`reverse-skill`、`hack-skills`、`web-sec`、`0day-exploit-library`、`gambling-platform-pentest`、`security-kb-ingest` 等。  
-
-`git pull` **不会**自动更新 `~/.hermes/skills`，需要再跑 sync/bootstrap。
-
-细文档仍以 **`domains/`** 为准；伞形技能多是路由器。`pentest-execution` 现含战役状态 / 覆盖类 / 验证门 / 确认门 / OOB 约定。
+`git pull` **不会**自动更新 `~/.hermes/skills`，需要再 sync。
 
 ---
 
-## 九、和 reverse-skill 的关系
+## 十、2026-09-08 融合批次（摘要）
 
-参考了 [reverse-skill](https://github.com/zhaoxuya520/reverse-skill) 的：**关键词路由、先读规则再动手、工具路径不瞎猜、完成清单**。  
+| 来源 | 融合方式 |
+|------|----------|
+| TORCH | wiki+hunt+workflow → 各域 `torch-*`；**不**吞 Claude/Obsidian 壳 |
+| P4nda0s reverse-skills | `panda-rev` + reverse-skill 路由 R50–R57 |
+| SQL-Wordlist | `web-injection/Payload/sqli/*orwa*` |
+| exploitarium | `0day-exploits/<product>/exploitarium/` + 索引 |
+| AboutSecurity / hack-skills | 本地对齐 + Dic/Vuln 增量 |
 
-**没有**把该仓整库再堆进本仓；本仓正文是 `domains/` 攻击面融合。本机若自备 reverse-skill，可在 AGENTS 指引下可选调用 `master-route`。
+详情：`domains/FUSION-REPORT-20260908.md`。
 
 ---
 
-## 十、更新
+## 十一、和 reverse-skill 的关系
 
-```powershell
-cd $HOME\security-suite
-git pull
-```
+吸收了 reverse-skill 的：**关键词路由、先读规则再动手、工具路径不瞎猜、完成清单**。  
+正文仍在 `domains/` 攻击面融合；本机若有 reverse-skill 包，可 `master-route`。  
+2026-09 另融 **panda-rev**（DEX dump 二进制、Frida 现代 API、砸壳、IL2CPP、符号/结构体、Unicorn）。
+
+---
+
+## 十二、更新
 
 ```bash
 cd ~/security-suite && git pull
+bash scripts/bootstrap.sh --force    # 或 sync-agent-skills / sync-hermes-skills
 ```
-
-安装脚本变更后可再执行一次对应 `install-*.ps1` / `install-linux.sh` 或 `bootstrap.sh --force`。
 
 ---
 
-## 十一、常见问题
+## 十三、常见问题
 
 **Q：技能是不是变少了？**  
-A：Hermes **入口**只有十几个伞形；**内容**在 `domains/`（含上百份 playbook/hunter/方法）。Win 上请走 `ROUTING.md`，不要只依赖文档里写的 Linux 路径 `/root/xxx`。
+A：伞形入口十几个是**路由器**；内容在 `domains/`（五千级文件）。渗透时按第七节矩阵 load，再下钻 domains。
+
+**Q：只有文档不能跑？**  
+A：见第四节。字典/PoC/战役脚本/工具清单都在仓内；二进制工具用 `install-tools` 装到宿主。
 
 **Q：必须 Hermes 吗？**  
 A：不必。Grok/Claude/Cursor 打开文件夹读 `START`→`ROUTING`→`domains` 即可。
 
 **Q：能否未授权打公网？**  
-A：不能。口令里的「已授权」指 SRC/客户书面授权/自有资产/CTF 等；不是自动盖章。
+A：不能。口令里的「已授权」指 SRC/客户书面授权/自有资产/CTF 等。
 
-**Q：小白和熟手怎么选文件？**  
-A：小白 `START.md`；熟手 `MASTER.md` + `domains/<面>/`；给 AI 规则看 `AGENTS.md`。
+**Q：文件数和 README 对不上？**  
+A：以 `find domains -type f | wc -l` 与本节「实计」为准；融合后会涨。
 
 ---
 
-## 十二、声明
+## 十四、声明
 
 本套件仅供**合法授权**的安全测试、CTF 训练、学术研究与防护研究使用。使用者须遵守所在地法律法规，对未授权行为自行承担责任。
 

@@ -42,3 +42,11 @@ read_file(/root/AboutSecurity/Payload/xss/xxx.txt)
 - Dictionaries organized by service/port for brute-force
 - Payloads organized by vulnerability type
 - claude-compatible skills in .claude/skills/
+
+## SQLi wordlist delta (2026-09-08)
+
+- Suite: `domains/web-injection/Payload/sqli/sql-wordlist-orwa.txt` (1080)
+- Unique vs prior: `payload-orwa-unique.txt` (835)
+- Full 1.3M dump: `/root/SQL-Wordlist/everything.txt` (path only)
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理

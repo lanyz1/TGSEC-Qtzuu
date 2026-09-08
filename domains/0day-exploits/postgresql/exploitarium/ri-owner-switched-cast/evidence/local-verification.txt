@@ -1,0 +1,13 @@
+postgres (PostgreSQL) 20devel
+e0ff7fd9aa2e6f77c38825e71200ced742220d55
+{
+  "database": "ri_cast_probe",
+  "owner_role": "ri_owner_probe",
+  "attacker_role": "ri_attacker_probe",
+  "direct_function_call_blocked": true,
+  "insert_returncode": 0,
+  "marker": "ri_owner_probe:ri_attacker_probe:off",
+  "expected_marker": "ri_owner_probe:ri_attacker_probe:off",
+  "reproduced": true,
+  "catalog_evidence": "owner_program | attacker_program | attacker_references | attacker_select \n---------------+------------------+---------------------+-----------------\n t             | f                | t                   | f\n(1 row)\n\n       castsource        | casttarget | castcontext | castmethod |  function_owner   | prosecdef \n-------------------------+------------+-------------+------------+-------------------+-----------\n ri_attacker_probe.fkkey | integer    | i           | f          | ri_attacker_probe | f\n(1 row)"
+}

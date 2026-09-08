@@ -1,0 +1,5 @@
+.state/
+logs/
+candidate.txt
+mode.txt
+*.log

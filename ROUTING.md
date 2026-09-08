@@ -113,3 +113,14 @@ E. 对应 web/api/auth playbook-6000 与 case-lessons
 ---
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+<!-- fused:batch-20260908-routes -->
+## 增量路由 2026-09-08
+
+| 关键词 | 路径 |
+|--------|------|
+| TORCH / campaign.py / hunt-sqli / wiki-recon | `domains/redteam-framework/torch-*` · `domains/*/torch-hunt` · `domains/*/torch-wiki` |
+| rev-frida / DEX dump / IL2CPP / unicorn emulate / IDAPython | `domains/mobile-security/panda-rev/*` · `domains/reverse-engineering/panda-rev/*` |
+| sql-wordlist / orwa sqli | `domains/web-injection/Payload/sqli/sql-wordlist-orwa.txt` |
+| exploitarium / 7zip MotW / discord activity rce / ghidra 12.1.2 | `domains/0day-exploits/EXPLOITARIUM-INDEX.md` |
+

@@ -20,3 +20,10 @@ vm-and-bytecode-reverse
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+<!-- fused:panda-rev (2026-09-08) -->
+## panda-rev (2026-09-08)
+
+- `panda-rev/rev-symbol|rev-struct|rev-idapython|rev-unicorn-debug`
+- See `panda-rev/README.md`. Also mirrored into local reverse-skill package.
+

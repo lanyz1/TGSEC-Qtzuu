@@ -124,3 +124,17 @@ ai-config/universal/ — 通用 PERSONA/MEMORY/RULES
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+<!-- fused:batch-20260908 -->
+## 知识融合批次 2026-09-08
+
+- TORCH wiki+hunt+workflow → 各域 `torch-*`
+- P4nda0s reverse-skills → `reverse-engineering|mobile-security/panda-rev`
+- SQL-Wordlist → `web-injection/Payload/sqli/*orwa*`
+- exploitarium → `0day-exploits/<product>/exploitarium/` + EXPLOITARIUM-INDEX.md
+- AboutSecurity/hack-skills：本地已与 origin 对齐，Payload/Dic/Vuln 增量同步
+- 报告: `/root/_kb_ingest_20260908/FUSION-REPORT-20260908.md`
+
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理
+

@@ -5,7 +5,7 @@
 这是 **TGSEC 安全知识聚合库**：按攻击面整理的授权渗透 / 挖洞资料 + 伞形技能路由 + 工具/PoC/字典入口。  
 给 **AI 和人**一起用（Grok / Claude / Cursor / Hermes / Codex…）。
 
-**规模体感：** 24 个主题域 · `domains/` 约 **5200+** 文件 · 14 个伞形技能 · 80+ 工具清单。
+**规模体感：** 24 个主题域 · `domains/` 约 **5500+** 文件 · 14 个伞形技能 · 80+ 工具清单。
 
 ---
 
@@ -106,16 +106,25 @@ bash scripts/sync-hermes-skills.sh
 
 ### 渗透时技能别漏（极简）
 
-| 你在干什么 | 先让 AI load |
+| 你在干什么 | 先让 AI load / 去哪 |
 |------------|----------------|
 | 任意开打 | `pentest-execution` + `tgsec-suite` |
+| 长任务卡死/乱循环/要凑链 | 同上 + `cyberstrike-progress-gates` / `capability-primitives` |
 | 找源站 / CDN | `cdn-origin-tracing` |
 | Web 注入/越权/API | `hack-skills` → `web-sec` |
-| 产品 RCE | `0day-exploit-library` |
+| 产品 RCE / 本地 POC 库 | `0day-exploit-library` · `POC-PLATFORM-INDEX` |
+| n8n / 内网 AD / K8s 逃逸 | `domains/` 下 n8n、`cve-2026-26128-*`、`copyfail-k8s` |
+| CTF / Payload 速查 | `ctf/ctf-solver-routing` · `ctf/payloads/` |
+| AI Agent/MCP 安全 | `llm-ai-security/ai-security-engineering/` |
 | APK/IPA/逆向 | `reverse-skill` |
 | 博彩/代收 | `gambling-platform-pentest` |
 
-完整表见 [`README.md`](README.md) 第七节。
+完整表见 [`README.md`](README.md) 第七节。  
+
+### 最近融了啥（一眼看懂）
+
+**2026-09-10：** 红队运行时闸门（防失忆/凑链）· AI 安全工程门禁 · n8n 全链 PoC · AD Kerberos 反射 · K8s Copy-Fail · CTF Payload/深度文/脚本 · POC 库索引（不吞 4000 条正文）。  
+详情：`README.md` 第十节 · `domains/FUSION-20260910-wechat4.md`。
 
 ### 工具不够？
 
@@ -142,7 +151,7 @@ cd ~/security-suite && git pull && bash scripts/sync-agent-skills.sh
 
 ## 还是懵？只记四件事
 
-1. **资料都在 `domains/`**（按攻击类型分好了，五千级文件）  
+1. **资料都在 `domains/`**（按攻击类型分好了，约 5500+ 文件）  
 2. **地图是 `MASTER.md` 和 `ROUTING.md`**  
 3. **先让 AI 读这几个 md，再按技能矩阵 load，再动手**  
 4. **要跑工具：`scripts/check-tools.sh`；要 PoC：`0day-exploits/`**

@@ -95,6 +95,8 @@ the router entry; 8 known cross-repo duplicate names exist among the absorbed re
 | bikini/exploitarium 2026-09-08 | 0day-exploits/<product>/exploitarium/ + EXPLOITARIUM-INDEX.md | ~40 public PoCs by product |
 | AboutSecurity / hack-skills re-verify 2026-09-08 | /root/AboutSecurity · /root/hack-skills | origin already current; Payload/Dic/Vuln delta sync |
 
+| WeChat4+AI安全工程+CVE/CTF 2026-09-10 | domains/redteam-framework/cyberstrike-methodology · llm-ai-security/ai-security-engineering · ctf/* · web-injection/.../n8n fullchain · ad-attack/cve-2026-26128-* · cloud-security/.../copyfail-k8s · 0day-exploits/POC-PLATFORM-INDEX | **Not full dump.** Methodology+selective PoC/CTF; skip Awesome-POC 1.7G & platform UI |
+
 ## Integration vs stacking (critical user correction)
 
 User explicitly rejected repo-stacking (`knowledge/<repo-name>/` per source) as "not integrated".

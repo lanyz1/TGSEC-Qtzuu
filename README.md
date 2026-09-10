@@ -149,8 +149,7 @@ domains/                 ★ 知识正文（按攻击面，~5200+ 文件）
   cloud-security/ mobile-security/ binary-pwn/ reverse-engineering/
   crypto-attacks/ llm-ai-security/ post-exp-tools/ malware-dfir/
   social-eng/ ctf/ 0day-exploits/ redteam-framework/ gambling-pentest/ other/
-  FUSION-6000.md / FUSION-20260908.md / FUSION-REPORT-20260908.md
-  FUSION-20260910-wechat4.md   ← 2026-09-10 批次说明
+  FUSION-6000.md / FUSION-20260908.md / FUSION-REPORT-20260908.md / FUSION-20260910-wechat4.md
 ```
 
 ---

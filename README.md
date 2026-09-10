@@ -265,7 +265,7 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ---
 
-## 十、融合批次（只写「融了什么」，不写从哪来）
+## 十、融合批次
 
 ### 2026-09-10
 
@@ -275,16 +275,14 @@ bash scripts/install-tools.sh        # 按清单补工具
 - AD Kerberos Unicode 反射利用器（CVE-2026-26128）  
 - K8s/容器 Copy-Fail 逃逸说明（宿主机 LPE 仍在 linux-post）  
 - Apache H2 双重释放索引卡（主 DoS）  
-- CTF：Payload 速查、12 类深度文、解题脚本、五模式路由、靶场 WP（大赛 WP 全文不进 Skill）  
-- 本地 POC 库查询索引（4393 条查库用，不灌进技能正文）
+- CTF：Payload 速查、12 类深度文、解题脚本、五模式路由、靶场 WP  
+- 本地 POC 库查询索引
 
 ### 2026-09-08
 
 - TORCH wiki/hunt/workflow → 各域 `torch-*`  
 - 移动/逆向 panda-rev（DEX/砸壳/IL2CPP 等）  
-- SQLi orwa 字典、exploitarium 产品 PoC 索引、Dic/Vuln 增量  
-
-> 每融一批：本表加几条「融了什么」+ 改 `START.md` 一句；不必写来源仓库名。
+- SQLi orwa 字典、exploitarium 产品 PoC 索引、Dic/Vuln 增量
 
 ---
 

@@ -1,0 +1,6 @@
+{
+  "WAF": {"total_tests": 0, "bypassed": 0, "coverage": "N/A", "critical_gaps": [], "affected_paths": []},
+  "EDR": {"total_tests": 0, "bypassed": 0, "coverage": "N/A", "critical_gaps": [], "affected_paths": []},
+  "IDS": {"total_tests": 0, "bypassed": 0, "coverage": "N/A", "critical_gaps": [], "affected_paths": []},
+  "业务逻辑": {"total_tests": 0, "bypassed": 0, "coverage": "N/A", "critical_gaps": [], "affected_paths": []}
+}

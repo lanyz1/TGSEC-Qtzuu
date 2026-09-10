@@ -22,14 +22,14 @@
 | 初学可从 `START.md` 进，熟手可从 `MASTER`/`domains` 深挖 | 只有黑盒脚本、没有说明 |
 | **文档 + 工具链入口 + PoC/字典/战役脚本**一体 | 「只能读 md、真跑全靠宿主瞎猜」 |
 
-**规模（以本机 `domains/` 实计，2026-09-08 融合后）：**
+**规模（以本机 `domains/` 实计，2026-09-10 融合后）：**
 
 - **24** 个主题域
-- **约 5200+** 文件（`domains/` 正文；随融合继续涨）
+- **约 5500+** 文件（`domains/` 正文；随融合继续涨；本机 `find domains -type f | wc -l` 为准）
 - **14** 个伞形技能入口（`hermes-skills/` → 可 sync 到 Claude/Cursor/Hermes/…）
 - **80+** 工具清单（`scripts/tools-manifest.json` + `check-tools.sh` / `install-tools.sh`）
 
-> 旧文案里的「2879 / 3800+」是历史口径；**以本 README 与本地 `find domains -type f | wc -l` 为准**。
+> 旧文案里的「2879 / 3800+ / 5200+」是历史口径；**以本 README 与本地实计为准**。
 
 ---
 
@@ -150,11 +150,12 @@ domains/                 ★ 知识正文（按攻击面，~5200+ 文件）
   crypto-attacks/ llm-ai-security/ post-exp-tools/ malware-dfir/
   social-eng/ ctf/ 0day-exploits/ redteam-framework/ gambling-pentest/ other/
   FUSION-6000.md / FUSION-20260908.md / FUSION-REPORT-20260908.md
+  FUSION-20260910-wechat4.md   ← 2026-09-10 批次说明
 ```
 
 ---
 
-## 六、主题域规模（2026-09-08 实计）
+## 六、主题域规模（约数，融合后会变）
 
 | 域 | 约文件数 | 覆盖摘要 |
 |----|----------|----------|
@@ -185,11 +186,17 @@ domains/                 ★ 知识正文（按攻击面，~5200+ 文件）
 | 场景 | 必 load（伞形） | domains 落点（再读） |
 |------|-----------------|----------------------|
 | 每次活靶开局 | `pentest-execution` + `tgsec-suite` | `redteam-framework/` · coverage / Deadend |
+| 长任务失忆/原地循环/凑链 | （开局）+ `cyberstrike-progress-gates` · `capability-primitives` | `redteam-framework/cyberstrike-methodology/` |
 | CDN/WAF/找源站 IP | `cdn-origin-tracing` | `recon/` · handbook |
 | Web 注入/API/JWT/IDOR | `hack-skills` → `web-sec` | `web-injection` `web-attack` `auth` `api` · `torch-hunt` |
 | SQLi 字典 fuzz | （同上） | `web-injection/Payload/sqli/*orwa*` |
-| 组件/版本已识别 | （+ component intel） | `recon/component-vuln-intel/` · `0day-exploits/` |
+| 组件/版本已识别 | （+ component intel） | `recon/component-vuln-intel/` · `0day-exploits/` · `POC-PLATFORM-INDEX.md` |
 | 产品已知 RCE | `0day-exploit-library` | `0day-exploits/<product>/` · `EXPLOITARIUM-INDEX.md` |
+| n8n / Form 工作流 | （+ 0day） | `web-injection/Vuln/middleware/n8n/`（含 fullchain + exploit） |
+| 内网 AD / Kerberos 反射 | （开局） | `ad-attack/cve-2026-26128-kerberos-unicode-reflection/` |
+| K8s/容器逃逸（Copy-Fail） | （开局） | `cloud-security/container-escape-techniques/cve-2026-31431-copyfail-k8s.md` |
+| CTF / Payload 速查 | （开局） | `ctf/payloads/` · `ctf-solver-routing.md` · `depth-articles/` |
+| AI Agent/MCP/RAG 运行时 · SOC 研判门禁 | （开局） | `llm-ai-security/ai-security-engineering/` |
 | APK/IPA/Frida/DEX/砸壳/IL2CPP/二进制 | `reverse-skill`（+ master-route） | `mobile-security/panda-rev` · `reverse-engineering/panda-rev` |
 | 博彩/代收/代理 BFLA | `gambling-platform-pentest` | `gambling-pentest/` |
 | 假设驱动状态机 | `black-cat-redteam` | `redteam-framework/black-cat/` |
@@ -218,7 +225,10 @@ Claude/Cursor 等：项目内 `.claude/skills/<name>/` 或先 `bash scripts/sync
 | 身份层 + 反逻辑手册 | `domains/redteam-framework/identity-antilogic-playbook.md` |
 | 支付/Crown 配置面 | `domains/business-logic/payment-config-crown-surface.md` |
 | TORCH 战役层（wiki/hunt/campaign） | `domains/**/torch-*` · `redteam-framework/torch-methodology-delta-20260908.md` |
+| 能力原语凑链 + 长任务进度闸 | `domains/redteam-framework/cyberstrike-methodology/` · `pentest-execution/references/*` |
+| AI 安全工程（宪法/门禁/研判） | `domains/llm-ai-security/ai-security-engineering/` |
 | exploitarium 产品 PoC 索引 | `domains/0day-exploits/EXPLOITARIUM-INDEX.md` |
+| 本地 POC 库查询（不灌 Skill） | `domains/0day-exploits/POC-PLATFORM-INDEX.md` |
 | 实战脱敏课 | `domains/*/case-lessons/` |
 
 **思路：** 强身份业务优先 session/JWT/HMAC/无 auth 写接口与旁门；与正逻辑 Kill Chain **并行**。
@@ -255,7 +265,24 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ---
 
-## 十、2026-09-08 融合批次（摘要）
+## 十、融合批次（每次更新写清楚融了什么）
+
+### 2026-09-10（微信四文仓库 + AI安全工程 · 本批）
+
+| 来源 | 融进哪里 | 怎么用 / 明确没吞 |
+|------|----------|-------------------|
+| AI 红队运行时改造实践 + 公开 Agent Skill 套件 | `redteam-framework/cyberstrike-methodology/` + `pentest-execution` 的 Runtime Gates（progress-gates / capability-primitives） | **通用活靶**：防失忆、防原地循环、无单点 RCE 时凑链。**不**整仓平台 Go/MCP/UI |
+| AI安全工程 V4.1 包 | `llm-ai-security/ai-security-engineering/` | AI Agent/MCP/RAG 运行时门禁 + SOC 证据研判。按攻击面融，**不**单独堆「数智人」目录 |
+| n8n CVE-2026-21858 全链 PoC | `web-injection/Vuln/middleware/n8n/`（fullchain + exploit） | 指纹到 n8n/Form 工作流时用 |
+| CVE-2026-26128 Kerberos Unicode 反射 | `ad-attack/cve-2026-26128-kerberos-unicode-reflection/` | **内网 AD** 演练 |
+| Copy-Fail K8s 逃逸角 | `cloud-security/container-escape-techniques/cve-2026-31431-copyfail-k8s.md` | 容器/集群逃逸；宿主机 LPE 仍看 `linux-post` |
+| Apache mod_http2 CVE-2026-23918 | `0day-exploits/apache/CVE-2026-23918.md` | **索引卡**（主 DoS） |
+| Des-CTF 知识库 | `ctf/payloads` · `depth-articles` · `scripts/des-ctf-tools` · `ctf-solver-routing.md` | CTF/速查；**1156 篇 WP 不进 Skill**（见 `des-ctf-wp-index.md`） |
+| POC 管理平台 4393 库 | `0day-exploits/POC-PLATFORM-INDEX.md` | 本地 `poc.db` 查询；**不**灌 4000 条进技能；**不**拷 Awesome-POC 1.7G |
+
+清单全文：`domains/FUSION-20260910-wechat4.md`。
+
+### 2026-09-08
 
 | 来源 | 融合方式 |
 |------|----------|
@@ -266,6 +293,8 @@ bash scripts/install-tools.sh        # 按清单补工具
 | AboutSecurity / hack-skills | 本地对齐 + Dic/Vuln 增量 |
 
 详情：`domains/FUSION-REPORT-20260908.md`。
+
+> **约定：** 每融一批必须改本表 + `domains/FUSION-YYYYMMDD-*.md`，并同步改 `START.md` 一句体感；禁止只改仓不写自述。
 
 ---
 

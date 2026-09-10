@@ -265,36 +265,26 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ---
 
-## 十、融合批次（每次更新写清楚融了什么）
+## 十、融合批次（只写「融了什么」，不写从哪来）
 
-### 2026-09-10（微信四文仓库 + AI安全工程 · 本批）
+### 2026-09-10
 
-| 来源 | 融进哪里 | 怎么用 / 明确没吞 |
-|------|----------|-------------------|
-| AI 红队运行时改造实践 + 公开 Agent Skill 套件 | `redteam-framework/cyberstrike-methodology/` + `pentest-execution` 的 Runtime Gates（progress-gates / capability-primitives） | **通用活靶**：防失忆、防原地循环、无单点 RCE 时凑链。**不**整仓平台 Go/MCP/UI |
-| AI安全工程 V4.1 包 | `llm-ai-security/ai-security-engineering/` | AI Agent/MCP/RAG 运行时门禁 + SOC 证据研判。按攻击面融，**不**单独堆「数智人」目录 |
-| n8n CVE-2026-21858 全链 PoC | `web-injection/Vuln/middleware/n8n/`（fullchain + exploit） | 指纹到 n8n/Form 工作流时用 |
-| CVE-2026-26128 Kerberos Unicode 反射 | `ad-attack/cve-2026-26128-kerberos-unicode-reflection/` | **内网 AD** 演练 |
-| Copy-Fail K8s 逃逸角 | `cloud-security/container-escape-techniques/cve-2026-31431-copyfail-k8s.md` | 容器/集群逃逸；宿主机 LPE 仍看 `linux-post` |
-| Apache mod_http2 CVE-2026-23918 | `0day-exploits/apache/CVE-2026-23918.md` | **索引卡**（主 DoS） |
-| Des-CTF 知识库 | `ctf/payloads` · `depth-articles` · `scripts/des-ctf-tools` · `ctf-solver-routing.md` | CTF/速查；**1156 篇 WP 不进 Skill**（见 `des-ctf-wp-index.md`） |
-| POC 管理平台 4393 库 | `0day-exploits/POC-PLATFORM-INDEX.md` | 本地 `poc.db` 查询；**不**灌 4000 条进技能；**不**拷 Awesome-POC 1.7G |
-
-清单全文：`domains/FUSION-20260910-wechat4.md`。
+- 红队运行时：长任务进度闸、能力原语凑链、验证/改动台账、ControlIntent 闭环 → `cyberstrike-methodology/` + `pentest-execution` Runtime Gates  
+- AI 安全工程：宪法门禁、公式速查、运行时信任、SOC 研判 → `llm-ai-security/ai-security-engineering/`  
+- n8n 未授权全链 + 可运行 exploit  
+- AD Kerberos Unicode 反射利用器（CVE-2026-26128）  
+- K8s/容器 Copy-Fail 逃逸说明（宿主机 LPE 仍在 linux-post）  
+- Apache H2 双重释放索引卡（主 DoS）  
+- CTF：Payload 速查、12 类深度文、解题脚本、五模式路由、靶场 WP（大赛 WP 全文不进 Skill）  
+- 本地 POC 库查询索引（4393 条查库用，不灌进技能正文）
 
 ### 2026-09-08
 
-| 来源 | 融合方式 |
-|------|----------|
-| TORCH | wiki+hunt+workflow → 各域 `torch-*`；**不**吞 Claude/Obsidian 壳 |
-| P4nda0s reverse-skills | `panda-rev` + reverse-skill 路由 R50–R57 |
-| SQL-Wordlist | `web-injection/Payload/sqli/*orwa*` |
-| exploitarium | `0day-exploits/<product>/exploitarium/` + 索引 |
-| AboutSecurity / hack-skills | 本地对齐 + Dic/Vuln 增量 |
+- TORCH wiki/hunt/workflow → 各域 `torch-*`  
+- 移动/逆向 panda-rev（DEX/砸壳/IL2CPP 等）  
+- SQLi orwa 字典、exploitarium 产品 PoC 索引、Dic/Vuln 增量  
 
-详情：`domains/FUSION-REPORT-20260908.md`。
-
-> **约定：** 每融一批必须改本表 + `domains/FUSION-YYYYMMDD-*.md`，并同步改 `START.md` 一句体感；禁止只改仓不写自述。
+> 每融一批：本表加几条「融了什么」+ 改 `START.md` 一句；不必写来源仓库名。
 
 ---
 

@@ -121,10 +121,11 @@ bash scripts/sync-hermes-skills.sh
 
 完整表见 [`README.md`](README.md) 第七节。  
 
-### 最近融了啥（一眼看懂）
+### 最近融了啥
 
-**2026-09-10：** 红队运行时闸门（防失忆/凑链）· AI 安全工程门禁 · n8n 全链 PoC · AD Kerberos 反射 · K8s Copy-Fail · CTF Payload/深度文/脚本 · POC 库索引（不吞 4000 条正文）。  
-详情：`README.md` 第十节 · `domains/FUSION-20260910-wechat4.md`。
+**2026-09-10：** 运行时闸门/能力原语 · AI 安全工程门禁 · n8n 全链 · AD 反射 · K8s 逃逸 · CTF Payload/深度文/脚本 · POC 库索引。  
+**2026-09-08：** TORCH · panda-rev · SQLi 字典 · exploitarium。  
+详见 `README.md` 第十节。
 
 ### 工具不够？
 

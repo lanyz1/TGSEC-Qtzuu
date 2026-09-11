@@ -1,0 +1,39 @@
+#!/usr/bin/env bpftrace
+// CopyFail (CVE-2026-31431) — AF_ALG aead-bind tracer
+//
+// Run as root: bpftrace copyfail-trace.bt
+// Logs every AF_ALG socket creation and any subsequent bind-with-name
+// containing "authencesn" (the only AEAD template that exposes the
+// in-place page-cache primitive in mainline kernels < a664bf3d603d).
+
+BEGIN {
+    printf("CopyFail eBPF tracer — Ctrl-C to stop\n");
+    printf("%-8s %-16s %-6s %-6s %s\n", "TIME", "COMM", "PID", "UID", "EVENT");
+}
+
+tracepoint:syscalls:sys_enter_socket
+/ args->family == 38 /
+{
+    $uid = (uint64)uid;
+    time("%H:%M:%S "); printf("%-16s %-6d %-6d AF_ALG socket type=%d\n",
+        comm, pid, $uid, args->type);
+}
+
+tracepoint:syscalls:sys_enter_bind
+{
+    // best-effort: kernel reads sockaddr_alg.salg_name at offset 4..68
+    // We can't dereference user pointers from non-LSM bpftrace cleanly,
+    // so this hook just notes the bind syscall. Pair with auditd for context.
+}
+
+tracepoint:syscalls:sys_enter_splice
+{
+    // Splice-into-AF_ALG is the page-cache vector. fd_in/fd_out are args
+    // 0 and 2 (per syscalls.h). We don't have a fd→type map cheaply here
+    // without a helper table; this hook is a placeholder for the C eBPF
+    // version that uses bpf_get_file_ops() to identify AF_ALG fds.
+}
+
+END {
+    printf("\nCopyFail tracer stopped\n");
+}

@@ -25,7 +25,7 @@
 **规模（以本机 `domains/` 实计，2026-09-10 融合后）：**
 
 - **24** 个主题域
-- **约 5500+** 文件（`domains/` 正文；随融合继续涨；本机 `find domains -type f | wc -l` 为准）
+- **约 14000+** 文件（`domains/` 正文；含 poc-catalog 全量；以 `find domains -type f | wc -l` 为准）
 - **14** 个伞形技能入口（`hermes-skills/` → 可 sync 到 Claude/Cursor/Hermes/…）
 - **80+** 工具清单（`scripts/tools-manifest.json` + `check-tools.sh` / `install-tools.sh`）
 
@@ -270,12 +270,11 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 - 红队运行时：长任务进度闸、能力原语凑链、验证/改动台账、ControlIntent 闭环 → `cyberstrike-methodology/` + `pentest-execution` Runtime Gates  
 - AI 安全工程：宪法门禁、公式速查、运行时信任、SOC 研判 → `llm-ai-security/ai-security-engineering/`  
-- n8n 未授权全链 + 可运行 exploit  
-- AD Kerberos Unicode 反射利用器（CVE-2026-26128）  
-- K8s/容器 Copy-Fail 逃逸说明（宿主机 LPE 仍在 linux-post）  
-- Apache H2 双重释放索引卡（主 DoS）  
-- CTF：Payload 速查、12 类深度文、解题脚本、五模式路由、靶场 WP  
-- 本地 POC 库查询索引
+- n8n 未授权全链 + 可运行 exploit；AD Kerberos Unicode 反射；K8s/宿主机 Copy-Fail 多实现；Apache H2 / Office / npm-tar 等单洞  
+- CTF：Payload、深度文、脚本、路由、靶场 WP、工具手册、大赛 WP meta  
+- **POC/0day 全量目录** → `0day-exploits/poc-catalog/`（sec-fork / eeee / vuln-wiki / awesome-md / from-poc-db）；总索引 `POC-CATALOG-INDEX.md`；CVE 卡 800+；4393 摘要 JSONL  
+- recon：`cyberstrike-recon-skills`（攻击面 / 组件情报 / 源码狩猎）  
+- 手法 skill 全文 → `cyberstrike-methodology/skills-full/`
 
 ### 2026-09-08
 

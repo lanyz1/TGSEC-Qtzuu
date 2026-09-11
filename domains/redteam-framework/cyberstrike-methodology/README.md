@@ -35,3 +35,12 @@ capability-primitives
 
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理 · 2026-09-10
+
+## 技能全文与平台参考（补全）
+
+- `skills-full/` — 手法 skill 全文（含后渗/云/0day 引擎等）
+- `skills-restricted/` — 不设限 / 钓鱼社工 / OPSEC（专项授权启用）
+- `platform-reference/` — roles、agents、docs、tools 配置参考
+
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理 · 2026-09-11

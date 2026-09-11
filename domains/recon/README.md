@@ -53,3 +53,12 @@ tools
 - `torch-workflow/wiki-recon|arsenal|wiki-arsenal`
 - `AboutSecurity-Dic/` — dictionaries mirror
 
+## cyberstrike-recon-skills（2026-09-10）
+
+- `cyberstrike-recon-skills/attack-surface-recon/`
+- `cyberstrike-recon-skills/component-vuln-intel/`
+- `cyberstrike-recon-skills/source-code-hunting/`
+- `cyberstrike-recon-skills/knowledge_base/`
+
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理 · 2026-09-10

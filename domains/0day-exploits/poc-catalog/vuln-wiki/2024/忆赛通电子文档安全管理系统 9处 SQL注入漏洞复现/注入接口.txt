@@ -1,0 +1,9 @@
+/CDGServer3/js/../OrganiseAjax
+/CDGServer3/js/../MultiServerAjax
+/CDGServer3/js/../LogicGroupAjax
+/CDGServer3/device/SecureUsbService;login
+/CDGServer3/js/../DeviceAjax
+/CDGServer3/js/../FileFormatAjax
+/CDGServer3/js/../NetSecPolicyAjax
+/CDGServer3/js/../NoticeAjax
+/CDGServer3/js/../DocInfoAjax

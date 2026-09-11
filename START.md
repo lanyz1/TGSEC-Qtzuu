@@ -5,7 +5,7 @@
 这是 **TGSEC 安全知识聚合库**：按攻击面整理的授权渗透 / 挖洞资料 + 伞形技能路由 + 工具/PoC/字典入口。  
 给 **AI 和人**一起用（Grok / Claude / Cursor / Hermes / Codex…）。
 
-**规模体感：** 24 个主题域 · `domains/` 约 **5500+** 文件 · 14 个伞形技能 · 80+ 工具清单。
+**规模体感：** 24 个主题域 · `domains/` 约 **14000+** 文件 · 14 个伞形技能 · 80+ 工具清单。
 
 ---
 
@@ -123,9 +123,9 @@ bash scripts/sync-hermes-skills.sh
 
 ### 最近融了啥
 
-**2026-09-10：** 运行时闸门/能力原语 · AI 安全工程门禁 · n8n 全链 · AD 反射 · K8s 逃逸 · CTF Payload/深度文/脚本 · POC 库索引。  
+**2026-09-10：** 运行时闸门/能力原语 · AI 安全工程 · n8n/AD/K8s/Copy-Fail · CTF 全套 · **POC 全量目录（poc-catalog + CVE 卡）** · recon 技能全文。  
 **2026-09-08：** TORCH · panda-rev · SQLi 字典 · exploitarium。  
-详见 `README.md` 第十节。
+详见 `README.md` 第十节 · `0day-exploits/POC-CATALOG-INDEX.md`。
 
 ### 工具不够？
 

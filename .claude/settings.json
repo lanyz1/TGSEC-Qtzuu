@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -X utf8 \"${CLAUDE_PROJECT_DIR}/.claude/skills/pentest-redteam/scripts/case_ledger.py\" context \"${CLAUDE_PROJECT_DIR}/case\""
+          }
+        ]
+      }
+    ]
+  }
+}

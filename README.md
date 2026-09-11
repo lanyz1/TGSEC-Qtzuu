@@ -61,7 +61,7 @@ bash scripts/bootstrap.sh   # 写各 AI 入口 + 同步伞形技能
 | AI | 做法 |
 |----|------|
 | Grok Build | 打开文件夹 → 选 `security-suite` |
-| Claude CLI | 进入该目录再运行 `claude` |
+| Claude Code | 进入该目录再运行 `claude`，然后 `/skill pentest-redteam` |
 | Cursor | Open Folder → `security-suite` |
 | Hermes | 新会话，工作目录尽量指到该文件夹；再 `bash scripts/sync-hermes-skills.sh` |
 | Codex / Aider | 以该目录为项目根 |
@@ -184,7 +184,7 @@ domains/                 ★ 知识正文（按攻击面，~5200+ 文件）
 
 | 场景 | 必 load（伞形） | domains 落点（再读） |
 |------|-----------------|----------------------|
-| 每次活靶开局 | `pentest-execution` + `tgsec-suite` | `redteam-framework/` · coverage / Deadend |
+| 每次活靶开局 | `pentest-execution` + `tgsec-suite`（Claude Code 优先 `/skill pentest-redteam`） | `redteam-framework/` · coverage / Deadend · `case/` |
 | 长任务失忆/原地循环/凑链 | （开局）+ `cyberstrike-progress-gates` · `capability-primitives` | `redteam-framework/cyberstrike-methodology/` |
 | CDN/WAF/找源站 IP | `cdn-origin-tracing` | `recon/` · handbook |
 | Web 注入/API/JWT/IDOR | `hack-skills` → `web-sec` | `web-injection` `web-attack` `auth` `api` · `torch-hunt` |
@@ -271,7 +271,8 @@ bash scripts/install-tools.sh        # 按清单补工具
 - 补全专项技能全文：不设限 / 钓鱼社工初始访问 / OPSEC（`skills-full` + `skills-restricted`）
 - 平台参考：roles、agents、docs、tools 配置树
 - AI 安全工程剩余 stub Agent、graph、原文副本
-- 失败拉取记录：`0day-exploits/FAILED-CVE-FETCHES.md`（cPanel/KiviCare 上游 404）
+- 失败拉取记录：`0day-exploits/FAILED-CVE-FETCHES.md`（cPanel/KiviCare 上游 404；已用替代 PoC 入库）
+- **Claude Code 开打**：vendoring Black-cat `pentest-redteam` + SessionStart Hook + 执行向 `CLAUDE.md`；`scripts/ensure-claude-pentest.sh`
 
 ### 2026-09-10
 

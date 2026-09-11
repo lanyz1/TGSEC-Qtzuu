@@ -37,7 +37,7 @@ curl -fsSL https://cdn.jsdelivr.net/gh/lanyz1/TGSEC-Qtzuu@master/scripts/install
 | 你用的 AI | 怎么做 |
 |-----------|--------|
 | **Grok Build** | 打开文件夹 → 选 `security-suite` |
-| **Claude** | 进入该文件夹再运行 `claude` |
+| **Claude Code** | 进入该文件夹再运行 `claude`，然后 `/skill pentest-redteam` |
 | **Cursor** | File → Open Folder → `security-suite` |
 | **Hermes** | 新开对话（工作目录指到该文件夹更好） |
 
@@ -56,16 +56,26 @@ cd $HOME\security-suite
 powershell -ExecutionPolicy Bypass -File .\scripts\sync-agent-skills.ps1
 ```
 
+### Claude Code 本机没有 `claude`？
+
+```bash
+npm install -g @anthropic-ai/claude-code
+cd ~/security-suite && bash scripts/ensure-claude-pentest.sh
+claude
+```
+
+然后输入：`/skill pentest-redteam`
+
 ---
 
 ## 第 3 步：复制这句话发给 AI
 
 ```text
-请先读 START.md、AGENTS.md、ROUTING.md、MASTER.md。
-我做的是【已授权】渗透测试和挖洞（侦察、找漏洞、可复现验证、出报告）。
-按 ROUTING.md 去 domains/ 找资料；开打前按 README「技能加载矩阵」把相关伞形技能 load 齐，再给可复现命令。
-用简单中文一步步带我做。
-目标与授权说明：……（填域名/范围，并写明已授权）
+加载 pentest-redteam。我做【已授权】渗透测试（书面授权/SRC/自有/CTF）。
+授权范围：……（域名/网段/深度）。
+按假设驱动状态机直接打：信号→technique→observation/reproduction/impact；
+弹药用 domains/ 与 0day-exploits/poc-catalog；需要时再用 pentest-execution 纪律。
+不要只给建议清单，授权已声明就开打。
 ```
 
 然后补上你的目标，例如：
@@ -108,7 +118,8 @@ bash scripts/sync-hermes-skills.sh
 
 | 你在干什么 | 先让 AI load / 去哪 |
 |------------|----------------|
-| 任意开打 | `pentest-execution` + `tgsec-suite` |
+| 任意开打（Claude Code） | `/skill pentest-redteam`（状态机）+ TGSEC `domains/` |
+| 任意开打（Hermes 等） | `pentest-execution` + `tgsec-suite` |
 | 长任务卡死/乱循环/要凑链 | 同上 + `cyberstrike-progress-gates` / `capability-primitives` |
 | 找源站 / CDN | `cdn-origin-tracing` |
 | Web 注入/越权/API | `hack-skills` → `web-sec` |
@@ -123,7 +134,7 @@ bash scripts/sync-hermes-skills.sh
 
 ### 最近融了啥
 
-**2026-09-11：** 专项技能（不设限/钓鱼/OPSEC）· 平台 roles/docs/tools 参考 · AI stub 补全 · 失败 CVE 记录。  
+**2026-09-11：** 专项技能（不设限/钓鱼/OPSEC）· 平台参考 · AI stub · cPanel/KiviCare 替代 PoC · **Claude Code=`pentest-redteam` 状态机开打**。  
 **2026-09-10：** 运行时闸门/能力原语 · AI 安全工程 · n8n/AD/K8s/Copy-Fail · CTF 全套 · **POC 全量目录（poc-catalog + CVE 卡）** · recon 技能全文。  
 **2026-09-08：** TORCH · panda-rev · SQLi 字典 · exploitarium。  
 详见 `README.md` 第十节 · `0day-exploits/POC-CATALOG-INDEX.md`。

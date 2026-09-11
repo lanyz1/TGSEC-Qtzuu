@@ -266,6 +266,13 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ## 十、融合批次
 
+### 2026-09-11
+
+- 补全专项技能全文：不设限 / 钓鱼社工初始访问 / OPSEC（`skills-full` + `skills-restricted`）
+- 平台参考：roles、agents、docs、tools 配置树
+- AI 安全工程剩余 stub Agent、graph、原文副本
+- 失败拉取记录：`0day-exploits/FAILED-CVE-FETCHES.md`（cPanel/KiviCare 上游 404）
+
 ### 2026-09-10
 
 - 红队运行时：长任务进度闸、能力原语凑链、验证/改动台账、ControlIntent 闭环 → `cyberstrike-methodology/` + `pentest-execution` Runtime Gates  

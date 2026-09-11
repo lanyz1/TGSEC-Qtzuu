@@ -1,0 +1,32 @@
+title: CopyFail Exploit Attempt — AF_ALG AEAD Socket
+id: 4e1511d9-e58d-4348-9f0a-e07fae3de4d2
+description: >
+  Detects creation of AF_ALG socket with type=aead by a non-root process.
+  Highly specific to CVE-2026-31431 (CopyFail) exploitation. The exploit
+  must bind an AF_ALG aead socket to compose the authencesn template that
+  triggers the page-cache write.
+references:
+  - https://copy.fail/
+  - https://github.com/diemoeve/copyfail-rs
+status: experimental
+author: diemoeve
+date: 2026/04/30
+tags:
+  - attack.privilege_escalation
+  - attack.t1068
+logsource:
+  product: linux
+  service: auditd
+detection:
+  selection:
+    type: SYSCALL
+    syscall: socket
+    a0: 0x26
+    a1: 0x05
+  filter_root:
+    uid: 0
+  condition: selection and not filter_root
+falsepositives:
+  - Crypto-aware userspace tools (rare on production servers)
+  - Kernel test suites running as non-root
+level: high

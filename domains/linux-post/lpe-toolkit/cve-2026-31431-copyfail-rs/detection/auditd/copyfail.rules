@@ -1,0 +1,14 @@
+# CopyFail (CVE-2026-31431) detection — load with: auditctl -R copyfail.rules
+# Or copy to /etc/audit/rules.d/ and run: augenrules --load
+#
+# AF_ALG = 38 (0x26), SOCK_SEQPACKET = 5 (0x05)
+# Detects ANY AF_ALG socket creation. Pair with eBPF for setsockopt(ALG_SET_KEY)
+# and template-name granularity if needed.
+
+-a always,exit -F arch=b64 -S socket -F a0=0x26 -F a1=0x05 -k copyfail_afalg_socket
+-a always,exit -F arch=b32 -S socket -F a0=0x26 -F a1=0x05 -k copyfail_afalg_socket
+
+# Note: detects creation, not exploitation. A successful exploit additionally
+# composes "authencesn(hmac(sha256),cbc(aes))" via bind() and triggers
+# splice() with the op_fd. The socket-creation rule above is the cheapest
+# detection signal; eBPF (see ../ebpf/) catches the full chain.

@@ -1,0 +1,59 @@
+{
+    "Id": "sha256:3c471cf273e44f68c91b48985c27627d581915b9ee5e72f7227bbf2146008b5e",
+    "RepoTags": [
+        "registry.k8s.io/kube-proxy:v1.35.2"
+    ],
+    "RepoDigests": [
+        "registry.k8s.io/kube-proxy@sha256:015265214cc874b593a7adccdcfe4ac15d2b8e9ae89881bdcd5bcb99d42e1862"
+    ],
+    "Parent": "",
+    "Comment": "buildkit.dockerfile.v0",
+    "Created": "2026-02-26T20:09:25.897666859Z",
+    "Container": "",
+    "ContainerConfig": null,
+    "DockerVersion": "",
+    "Author": "",
+    "Config": {
+        "Hostname": "",
+        "Domainname": "",
+        "User": "",
+        "AttachStdin": false,
+        "AttachStdout": false,
+        "AttachStderr": false,
+        "Tty": false,
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "Env": [
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ],
+        "Cmd": null,
+        "Image": "",
+        "Volumes": null,
+        "WorkingDir": "/",
+        "Entrypoint": null,
+        "OnBuild": null,
+        "Labels": null
+    },
+    "Architecture": "amd64",
+    "Os": "linux",
+    "Size": 70410548,
+    "GraphDriver": {
+        "Data": {
+            "LowerDir": "/var/lib/docker/overlay2/816794be37b1884c56c292a2d82b50a7fe523ca5a677f1e2f8b80798b042a404/diff",
+            "MergedDir": "/var/lib/docker/overlay2/e9e7c2216061ba79905a2f88175afccc23918458abefca5ef4cbdb422b9c2ca7/merged",
+            "UpperDir": "/var/lib/docker/overlay2/e9e7c2216061ba79905a2f88175afccc23918458abefca5ef4cbdb422b9c2ca7/diff",
+            "WorkDir": "/var/lib/docker/overlay2/e9e7c2216061ba79905a2f88175afccc23918458abefca5ef4cbdb422b9c2ca7/work"
+        },
+        "Name": "overlay2"
+    },
+    "RootFS": {
+        "Type": "layers",
+        "Layers": [
+            "sha256:ff32924af9e3fb95556a4b30b9ba3308ef7a019bbb3cd6d96783c83481c9902c",
+            "sha256:1075b2a84e84822bf4022262aed3f9e0455a8bd425fe29e39205cc7f3c2647b2"
+        ]
+    },
+    "Metadata": {
+        "LastTagTime": "2026-03-03T09:41:41.971288266+08:00"
+    }
+}

@@ -123,3 +123,11 @@ echo "  Hermes: ~/.hermes/skills/security + memories"
 echo "  验证: ls domains | head; test -f CLAUDE.md; test -f MASTER.md"
 echo "  开新会话后生效（Hermes skill 目录缓存）"
 echo ""
+
+# Claude Code: Black-cat pentest-redteam + SessionStart
+if [ -x "$ROOT/scripts/ensure-claude-pentest.sh" ]; then
+  bash "$ROOT/scripts/ensure-claude-pentest.sh" || true
+elif [ -x "$(dirname "$0")/ensure-claude-pentest.sh" ]; then
+  bash "$(dirname "$0")/ensure-claude-pentest.sh" || true
+fi
+

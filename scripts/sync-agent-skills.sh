@@ -148,3 +148,9 @@ echo "  项目内: $ROOT/.claude/skills  （在包根启动 Claude 会加载）"
 echo "  用户级: ~/.claude/skills  ~/.cursor/skills  ~/.agents/skills …"
 echo "  正文:   $ROOT/domains + ROUTING.md + START.md"
 echo ""
+
+# Keep Black-cat Claude skill + SessionStart hook after sync
+if [ -x "$ROOT/scripts/ensure-claude-pentest.sh" ]; then
+  bash "$ROOT/scripts/ensure-claude-pentest.sh" || true
+fi
+

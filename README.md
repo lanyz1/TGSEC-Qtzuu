@@ -7,7 +7,23 @@
 
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
-**👉 全部主题地图：[`MASTER.md`](MASTER.md)**
+**👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
+**👉 本轮更新说明：[`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)**（2026-09-17）
+
+---
+
+## 〇、本轮更新了什么（2026-09-17）
+
+详情见 [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)。摘要：
+
+| 块 | 落点 | 本轮增量 |
+|----|------|----------|
+| CVE / PoC 批次 A–D | `domains/0day-exploits/` | 批次 D：Umer69 + XZ64 + zulloper25；库内 CVE 目录约 **200+** |
+| 方法论 | `pentest-redteam` 等 | Qtzuu technique **7→22**；猎洞十二技散入各域 `src-methods/` |
+| 逆向原子包 | `domains/reverse-engineering/rev-skills-pack/` | **122** 技能独立包（不覆盖本机 reverse-skill） |
+| 实战报告.zip | 各域 `case-reports/` + `case-lessons/` | 去重后融 **44**；密钥已脱敏 |
+
+`git pull` 后记得再跑 `bash scripts/bootstrap.sh --force`（或 `sync-agent-skills.sh`），技能目录才会跟上。
 
 ---
 
@@ -306,6 +322,8 @@ bash scripts/install-tools.sh        # 按清单补工具
 cd ~/security-suite && git pull
 bash scripts/bootstrap.sh --force    # 或 sync-agent-skills / sync-hermes-skills
 ```
+
+**更新说明文件：** 根目录 `UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)）。自述首页「〇、本轮更新了什么」同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
 
 ---
 

@@ -282,6 +282,17 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ## 十、融合批次
 
+### 2026-09-17
+
+完整说明：[`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)
+
+- **CVE/PoC 批次 A–D** → `domains/0day-exploits/`：批次 D 差分吸收 SecureWithUmer（69）+ XZ1r0（64）+ zulloper（25）；库内 `CVE-*` 目录约 **200+**；HARD 投毒跳过、SOFT 标注后仍融
+- **方法论**：Qtzuu-pentest-toolbox → `pentest-redteam` technique **7→22**（多 AI 技能目录同步）；web-security-skills（猎洞十二技）散入各域 `src-methods/hunter12-*`
+- **逆向原子包**：`dslsdzc/rev-skills` → `domains/reverse-engineering/rev-skills-pack/`（**122** 技能独立包，不覆盖本机 reverse-skill；伞形技能加指针）
+- **实战报告.zip**：去重后融 **44** → 各域 `case-reports/` + `case-lessons/`；情梦后门只吸分析文本/IOC；云厂商 AccessKey（`LTAI*`/`AKID*`）入库前脱敏为 `[REDACTED]`
+- 索引：`INGEST-20260917*.md` · `REPORTS-INGEST-20260917-INDEX.md` · `rev-skills-pack/README.md`
+- `.gitignore`：忽略 `_ingest_*/`、`_probe_*/` 等暂存审计目录
+
 ### 2026-09-11
 
 - 补全专项技能全文：不设限 / 钓鱼社工初始访问 / OPSEC（`skills-full` + `skills-restricted`）

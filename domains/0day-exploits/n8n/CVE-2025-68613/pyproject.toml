@@ -1,0 +1,13 @@
+[project]
+name = "cve-2026-21858"
+version = "1.0.0"
+description = "n8n Ni8mare - Unauthenticated Arbitrary File Read Exploit"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.28.0",
+    "pyjwt>=2.8.0",
+]
+
+[project.scripts]
+exploit = "exploit:main"
+

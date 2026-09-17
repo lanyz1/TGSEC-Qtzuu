@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+uv.lock
+
+# Downloaded files during testing
+*.pdf
+*.docx
+*.mp4
+*.png
+*.jpg# Keep our actual README
+!README.md

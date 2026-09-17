@@ -16,7 +16,7 @@ metadata:
 
 # CDN Origin Tracing
 
-Find origin IPs behind Cloudflare/Akamai/阿里云/腾讯云/AWS CDN. Prefer layered discovery + fingerprint verification over single tricks. Full handbook: `references/full-handbook-v5.1.md`.
+Find origin IPs behind Cloudflare/Akamai/阿里云/腾讯云/AWS CDN. Prefer layered discovery + fingerprint verification over single tricks. Full handbook: `references/full-handbook-v5.1.md`. Cost-tiered P0–P4 pipeline: `references/p0-p4-priority-playbook.md`.
 
 ## When to Use
 
@@ -52,10 +52,10 @@ Frame all invocations via `terminal`. Use `web_search` / `web_extract` when FOFA
 1. **Identify CDN** — `curl -sI https://target` for `cf-ray`/`x-amz-cf`/`via`/`x-cache`; multi-geo ping if needed. Done when vendor known or "no CDN".
 2. **Discover candidates (layer 1–2)** — run `cdn_quick_trace.py` or manually: crt.sh → subdomains (mail/dev/origin/direct) → historical DNS → MX/SPF → FOFA/Shodan `cert="target"` excluding CDN issuer. Done when ≥1 non-CDN A/AAAA exists.
 3. **Filter** — `cdn_ranges.py --filter <ips>`; drop CDN ranges. Done when candidate list is non-CDN only.
-4. **Verify (mandatory)** — Host-header curl to candidate: `curl -sk --resolve target:443:IP https://target/ -o /tmp/o.html -D -`. Confirm with body hash / title / TLS SAN match. Host 200 alone ≠ origin (shared host / CDN node). Done when hash/title/SAN align or P≥0.80 with fingerprint evidence.
+4. **Verify (mandatory)** — Host-header curl to candidate: `curl -sk --resolve target:443:IP https://target/ -o /tmp/o.html -D -`. Confirm with body hash / title / TLS SAN match. Host 200 alone ≠ origin (shared host / CDN node). Decisive check: TLS cert serial exact-match vs CDN node (and different default cert). Done when hash/title/SAN align or P≥0.80 with fingerprint evidence.
 5. **Exploit path** — direct IP + Host/`--resolve` for WAF-bypassed scans (xmlrpc, admin, brute). Record origin in engagement notes.
 
-Branching by portrait: see `references/decision-tree.md`. Method ranking: `references/method-matrix.md`.
+Branching by portrait: see `references/decision-tree.md`. Method ranking: `references/method-matrix.md`. Cost-tiered P0–P4 pipeline: `references/p0-p4-priority-playbook.md`.
 
 ## Quick Reference
 
@@ -64,6 +64,8 @@ Branching by portrait: see `references/decision-tree.md`. Method ranking: `refer
 | CT subs | `curl -s "https://crt.sh/?q=%.target.com&output=json" \| jq -r '.[].name_value' \| sort -u` |
 | Passive DNS free | `curl -s "https://api.hackertarget.com/iphistory/?q=target.com"` |
 | MX/SPF | `dig MX target.com +short`; `dig TXT target.com +short` |
+| History DNS (CN) | `https://ipchaxun.com/target.com/` ; `https://site.ip138.com/target.com/` |
+| Cert serial (decisive) | `echo \| openssl s_client -connect IP:443 -servername target.com 2>/dev/null \| openssl x509 -noout -serial` |
 | Host verify | `curl -sk --resolve target.com:443:IP https://target.com/ -D- -o /tmp/b.html` |
 | FOFA | `cert="target.com" && header!="cf-ray"` |
 | Shodan | `ssl.cert.subject.cn:target.com` |
@@ -90,5 +92,6 @@ High-hit bypass sub labels: `mail smtp cpanel direct origin backend dev staging 
 ## Related
 
 - Full 50-method handbook: `references/full-handbook-v5.1.md`
+- Cost-tiered P0–P4 pipeline: `references/p0-p4-priority-playbook.md`
 - Pentest early step: `pentest-execution` § CDN bypass
 - Recon routing: `black-cat-redteam` → `techniques/recon.md`

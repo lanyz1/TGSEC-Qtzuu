@@ -1,0 +1,76 @@
+123:CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o xiazai xiazai.go
+134:mipsel-linux-gnu-gcc -fcommon udp.c -o mipsel -static
+135:apt install gcc-mipsel-linux-gnu
+136:mipsel-linux-gnu-gcc -fcommon udp.c -o mipsel -static
+138:wget https://musl.cc/riscv32-linux-musl-cross.tgz
+147:mv linux_mipsel linux_mpsel
+151:./toolchain/sh4/bin/sh4-linux-musl-gcc -static -v -o test udp.c -pthread
+152:wget https://toolchains.bootlin.com/downloads/releases/toolchains/sh4/tarball/sh4--musl--stable-2024.02-1.tar.bz2
+153:tar -xjf sh4--musl--stable-2024.02-1.tar.bz2
+154:# 解压后，工具链在 sh4--musl--stable-2024.02-1/ 目录下，bin 内有 sh4-linux-musl-gcc
+155:export PATH=$PWD/sh4--musl--stable-2024.02-1/bin:$PATH
+156:sh4-linux-musl-gcc -static -s -O2 -D_GNU_SOURCE -o linux_sh4 udp.c -pthread
+157:tar -xjf sh4--musl--stable-2024.02-1.tar.bz2
+158:wget https://toolchains.bootlin.com/downloads/releases/toolchains/sh-sh4aeb/tarballs/sh-sh4aeb--musl--stable-2025.08-1.tar.bz2
+159:git clone https://github.com/richfelker/musl-cross-make.git
+160:cd musl-cross-make
+161:echo "TARGET = sh4-linux-musl" >> config.mak
+164:sh4-linux-musl-gcc -static -s -O2 -D_GNU_SOURCE -o linux_sh4 udp.c -pthread
+166:sh4-linux-musl-gcc -sta
+167:tic -s -O2 -D_GNU_SOURCE -o linux_sh4 udp.c -pthread
+168:sh4-linux-musl-gcc -static -s -O2 -D_GNU_SOURCE -o linux_sh4 udp.c -pthread
+170:sh4-linux-musl-gcc -static -s -O2 -D_GNU_SOURCE -o linux_sh4 udp.c -pthread
+171:sh4-linux-musl-gcc --version
+172:# 1. 进入 musl-cross-make 目录
+173:cd ~/musl-cross-make
+175:echo "TARGET = sh4-linux-musl" >> config.mak
+181:sh4-linux-musl-gcc --version
+183:sh4-linux-musl-gcc -static -s -O2 -D_GNU_SOURCE -o linux_sh4 udp.c -pthread
+185:cd ~/musl-cross-make
+187:cd ~/musl-cross-make
+195:# 将 chroot 内 /root/linux_mipsel 复制到当前目录
+196:sudo cp ./rootfs-mipsel/root/linux_mipsel ./
+197:sudo chroot ./rootfs-mipsel /usr/bin/qemu-mipsel-static /bin/bash
+199:sudo cp udp.c ./rootfs-mipsel/root/
+200:sudo chroot ./rootfs-mipsel /usr/bin/qemu-mipsel-static /bin/bash
+202:sudo cp udp.c ./rootfs-mipsel/root/
+203:sudo cp ./rootfs-mipsel/root/linux_mipsel ./
+205:sudo cp udp.c ./rootfs-mipsel/root/
+207:pkill -9 -f linux_mipsel
+209:sudo kill -9 $(pgrep -f linux_mipsel) 2>/dev/null
+211:pkill -9 -f linux_mipsel
+212:sudo kill -9 $(pgrep -f linux_mipsel) 2>/dev/null
+214:sudo pkill -9 qemu-mipsel-static
+216:sudo pkill -9 qemu-mipsel-static
+218:sudo pkill -9 qemu-mipsel-static
+219:# 1. 查找所有 mipsel 客户端进程
+220:ps aux | grep linux_mipsel | grep -v grep
+225:qemu-mipsel-static ./linux_mipsel
+228:sudo pkill -9 -f "linux_mipsel|qemu-mipsel"
+230:sudo lsof | grep linux_mipsel | awk '{print $2}' | sort -u | xargs sudo kill -9
+247:pkill -9 -f "linux_mipsel|qemu-mipsel-static" 2>/dev/null
+254:        if [[ "$exe" == *"linux_mipsel"* ]] || [[ "$exe" == *"qemu-mipsel"* ]] || [[ "$cmd" == *"linux_mipsel"* ]] || [[ "$cmd" == *"qemu-mipsel"* ]]; then
+264:ps aux | grep -E "linux_mipsel|qemu-mipsel" | grep -v grep || echo "✅ 已全部清理"
+277:pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null || true
+279:for pid in $(ls /proc | grep -E '^[0-9]+$' 2>/dev/null); do     if [ -L "/proc/$pid/exe" ]; then         exe=$(readlink "/proc/$pid/exe" 2>/dev/null);         cmd=$(cat "/proc/$pid/cmdline" 2>/dev/null | tr '\0' ' ');         if [[ "$exe" == *"linux_mipsel"* ]] || [[ "$exe" == *"udpclient"* ]] ||            [[ "$exe" == *".sysbak"* ]] || [[ "$cmd" == *"linux_mipsel"* ]] ||            [[ "$cmd" == *"udpclient"* ]] || [[ "$cmd" == *".sysbak"* ]]; then             kill -9 $pid 2>/dev/null || true;         fi;     fi; done
+287:sudo pkill -9 -f "udpclient|.sysbak|linux_mipsel" 2>/dev/null
+291:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak"
+294:ls -d ./rootfs-mipsel
+295:sudo chroot ./rootfs-mipsel /usr/bin/qemu-mipsel-static /bin/bash
+301:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak"
+314:pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null || true
+316:for pid in $(ls /proc | grep -E '^[0-9]+$' 2>/dev/null); do     if [ -L "/proc/$pid/exe" ]; then         exe=$(readlink "/proc/$pid/exe" 2>/dev/null);         cmd=$(cat "/proc/$pid/cmdline" 2>/dev/null | tr '\0' ' ');         if [[ "$exe" == *"linux_mipsel"* ]] || [[ "$exe" == *"udpclient"* ]] ||            [[ "$exe" == *".sysbak"* ]] || [[ "$cmd" == *"linux_mipsel"* ]] ||            [[ "$cmd" == *"udpclient"* ]] || [[ "$cmd" == *".sysbak"* ]]; then             kill -9 $pid 2>/dev/null || true;         fi;     fi; done
+322:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null
+326:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null
+337:sudo pkill -9 -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null
+354:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null
+358:sudo pkill -9 -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null
+369:sudo pkill -9 -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null
+377:for signal in 9 15; do     pkill -$signal -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null || true;     pkill -$signal -f "kworker|ksoftirqd|watchdog" 2>/dev/null || true  # 误杀风险，但系统会重启这些内核线程，没关系
+394:for signal in 9 15; do     pkill -$signal -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null || true;     pkill -$signal -f "kworker|ksoftirqd|watchdog" 2>/dev/null || true  # 误杀风险，但系统会重启这些内核线程，没关系
+411:sudo umount -l ./rootfs-mipsel/proc 2>/dev/null
+412:sudo rm -rf ./rootfs-mipsel
+414:sudo umount -l ./rootfs-mipsel/proc 2>/dev/null
+415:sudo rm -rf ./rootfs-mipsel
+416:rm -f ./linux_mipsel   # 删除之前编译的二进制
+438:mv linux_x86_64 linux_amd64

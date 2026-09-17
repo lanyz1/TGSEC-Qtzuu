@@ -31,3 +31,9 @@ pentest-lyan-workflow
 - `torch-hunt/hunt-core` + `triggers.json`
 - Live gates still primary via hermes `pentest-execution` references
 
+<!-- fused:case-reports-20260917 -->
+## case-reports / case-lessons（实战报告 2026-09-17）
+
+- `redteam-chain-reasoning-matrix` — see `case-reports/redteam-chain-reasoning-matrix/` + `case-lessons/redteam-chain-reasoning-matrix.md`
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理

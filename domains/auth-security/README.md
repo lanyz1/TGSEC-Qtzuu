@@ -32,3 +32,15 @@ src-methods
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+## 猎洞十二技（2026-09-17）
+
+见 `src-methods/hunter12-*`（五步猎洞法手册，来自 web-security-skills 差分融合）。
+
+<!-- fused:case-reports-20260917 -->
+## case-reports / case-lessons（实战报告 2026-09-17）
+
+- `cloudflare-mcp-dcr` — see `case-reports/cloudflare-mcp-dcr/` + `case-lessons/cloudflare-mcp-dcr.md`
+- `okx-mcp-dcr` — see `case-reports/okx-mcp-dcr/` + `case-lessons/okx-mcp-dcr.md`
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理

@@ -19,3 +19,20 @@ __pycache__/
 work/
 session/
 targets/
+
+# ingest staging / audit scratch (not published knowledge)
+_ingest_*/
+**/_ingest_*/
+_probe_*/
+**/_probe_*/
+*.bak
+backup_local_*/
+
+# large lab binaries / media (keep analysis, not blobs)
+**/qemu-system-*
+**/vmlinuz*
+**/*.mov
+**/weights1.bin
+**/demo.gif
+**/demo.mp4
+**/VID_*.mp4

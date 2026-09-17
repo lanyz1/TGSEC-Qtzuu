@@ -1,0 +1,20 @@
+# PostgreSQL to_char('TZ'/'TZtz') heap-overflow exploit lab.
+services:
+  postgres:
+    image: postgres@sha256:a6bdd01b51b115f446a03135f9395575b3eb6ba90a92bfb692da82088f8820f8
+    container_name: pg-tzlab
+    # Avoid background vacuum work to improve groom stability
+    command:
+      - postgres
+      - -c
+      - autovacuum=off
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "127.0.0.1:55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30

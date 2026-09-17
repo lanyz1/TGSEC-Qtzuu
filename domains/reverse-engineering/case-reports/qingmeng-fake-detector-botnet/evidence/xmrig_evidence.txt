@@ -1,0 +1,155 @@
+      --algo-min-time=N         when mining, avoid switching more often than every N seconds (default: 0/disabled)
+      --cpu-memory-pool=N       number of 2 MB pages for persistent memory pool, -1 (auto), 0 (disable)
+      --daemon                  use daemon RPC instead of pool for solo mining
+      --donate-level=N          donate level, default 1%% (1 minute in 100 minutes)
+      --donate-over-proxy=N     control donate over xmrig-proxy feature
+      --huge-pages-jit          enable huge pages support for RandomX JIT code
+      --no-cpu                  disable CPU mining backend
+      --randomx-1gb-pages       use 1GB hugepages for RandomX dataset (Linux only)
+      --randomx-cache-qos       enable Cache QoS
+      --randomx-init=N          threads count to initialize RandomX dataset
+      --randomx-mode=MODE       RandomX mode: auto, fast, light
+      --randomx-no-numa         disable NUMA support for RandomX
+      --randomx-no-rdmsr        disable reverting initial MSR values on exit
+      --randomx-wrmsr=N         write custom value(s) to MSR registers or disable MSR mod (-1)
+      --rig-id=ID               rig identifier for pool-side statistics (needs pool support)
+      --seed=SEED               custom RandomX seed for benchmark
+      --tls                     enable SSL/TLS support (needs pool support)
+      --tls-fingerprint=HEX     pool TLS certificate fingerprint for strict certificate pinning
+      --user-agent              set custom user-agent string for pool
+  -O, --userpass=U:P            username:password pair for mining server
+  -a, --algo=ALGO               mining algorithm https://xmrig.com/docs/algorithms
+  -k, --keepalive               send keepalived packet for prevent timeout (needs pool support)
+  -o, --url=URL                 URL of mining server
+  -p, --pass=PASSWORD           password for mining server
+  -u, --user=USERNAME           username for mining server
+.config/xmrig.json
+.eh_poolATUH
+.xmrig.json
+/root/xmrig-C3/scripts/build/hwloc-2.12.1/include/hwloc/helper.h
+/root/xmrig-C3/scripts/build/hwloc-2.12.1/include/hwloc/plugins.h
+BN_POOL_get
+Invalid mining.subscribe response: extra nonce is too long
+Invalid wallet address.
+Monero
+MoneroOcean Benchmark (algo-perf):
+RandomX
+RandomX-Graft
+RandomXEQ
+RandomXYadaCoin
+UV_THREADPOOL_SIZE
+Usage: xmrig [OPTIONS]
+Wallet address and spend key don't match.
+Wallet address and view key don't match.
+XMRIG_CWD
+XMRIG_DATA_DIR
+XMRIG_EXE
+XMRIG_EXE_DIR
+XMRIG_HOME_DIR
+XMRIG_HOSTNAME
+XMRIG_KIND
+XMRIG_TEMP_DIR
+XMRIG_VERSION
+XMRig
+XMRig 6.26.0-C4
+[0;31minvalid mining.notify notification: invalid blob size
+[0;31minvalid mining.notify notification: invalid job id
+[0;31minvalid mining.notify notification: invalid param array
+[0;31minvalid mining.notify notification: param 4 is invalid
+[0;31minvalid mining.notify notification: params array has wrong size
+[0;31minvalid mining.notify notification: params is not an array
+[0;31minvalid mining.set_difficulty notification: difficulty is not a number
+[0;31minvalid mining.set_difficulty notification: params array is empty
+[0;31minvalid mining.set_difficulty notification: params is not an array
+[0;31minvalid mining.set_extranonce notification: params array is empty
+[0;31minvalid mining.set_extranonce notification: params is not an array
+[0;31mno active pools, stop mining
+[1;31mfailed to allocate RandomX dataset using 1GB pages
+[1;31mfailed to allocate RandomX memory
+[1;31mfast RandomX mode disabled by config
+[1;31mnot enough memory for RandomX dataset
+[1;33mcache QoS can only be enabled when all mining threads have affinity set
+[1;33mfailed to allocate RandomX dataset, switching to slow mode
+[1;33mfailed to allocate RandomX datasets, switching to slow mode
+[1;36mhttps://xmrig.com/benchmark/%s
+[1;37m monero  
+[1;37m randomx 
+[1;37mPOOL #%-7zu
+api.xmrig.com
+auto.c3pool.org
+brainpoolP160r1
+brainpoolP160t1
+brainpoolP192r1
+brainpoolP192t1
+brainpoolP224r1
+brainpoolP224t1
+brainpoolP256r1
+brainpoolP256t1
+brainpoolP320r1
+brainpoolP320t1
+brainpoolP384r1
+brainpoolP384t1
+brainpoolP512r1
+brainpoolP512t1
+c3pool.com
+cpu-memory-pool
+cryptonight-monerov7
+cryptonight-monerov8
+donate-level
+error entropy pool was ignored
+failed to set pool
+glibcxx.eh_pool
+invalid mining.authorize response: result is not a boolean
+invalid mining.subscribe response: extra nonce has an odd number of hex chars
+invalid mining.subscribe response: extra nonce is not a string
+invalid mining.subscribe response: result array is too short
+invalid mining.subscribe response: result is not an array
+invalid pool size
+mining.authorize
+mining.authorize call failed
+mining.extranonce.subscribe
+mining.notify
+mining.set_difficulty
+mining.set_extranonce
+mining.set_target
+mining.submit
+mining.subscribe
+no valid configuration found, try https://xmrig.com/wizard
+ossl_rand_pool_add
+ossl_rand_pool_add_begin
+ossl_rand_pool_add_end
+ossl_rand_pool_attach
+ossl_rand_pool_bytes_needed
+ossl_rand_pool_new
+pool address
+pool-side hashes
+pool_wallet
+pools
+rand_pool_grow
+random pool overflow
+random pool underflow
+randomx
+randomx-1gb-pages
+randomx-cache-qos
+randomx-init
+randomx-mode
+randomx-no-numa
+randomx-no-rdmsr
+randomx-wrmsr
+randomx/0
+randomx/arq
+randomx/graft
+randomx/keva
+randomx/sfx
+randomx/test
+randomx/v2
+randomx/wow
+randomx/xeq
+randomx/yada
+randomxeq
+src/threadpool.c
+stratum+ssl://randomx.xmrig.com:443
+uv__queue_empty(&loop->wq) && "thread pool work queue not empty!"
+wallet_address
+whirlpool
+xmrig

@@ -1,0 +1,14 @@
+magento2-src/
+.env
+.env.*
+__pycache__/
+*.py[cod]
+*.log
+*.swp
+.idea/
+.vscode/
+
+stylesmuggler_pwned.txt
+stylesmuggler_curl.txt
+var/
+generated/

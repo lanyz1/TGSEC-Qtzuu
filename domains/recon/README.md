@@ -62,3 +62,14 @@ tools
 
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理 · 2026-09-10
+
+<!-- fused:case-reports-20260917 -->
+## case-reports / case-lessons（实战报告 2026-09-17）
+
+- `176-122-161-117-audit` — see `case-reports/176-122-161-117-audit/` + `case-lessons/176-122-161-117-audit.md`
+- `vuln-batch-export-20260901` — see `case-reports/vuln-batch-export-20260901/` + `case-lessons/vuln-batch-export-20260901.md`
+- `quta-zhixin-mapping` — see `case-reports/quta-zhixin-mapping/` + `case-lessons/quta-zhixin-mapping.md`
+- `recent-targets-digest-20260913` — see `case-reports/recent-targets-digest-20260913/` + `case-lessons/recent-targets-digest-20260913.md`
+- `multi-target-chain-20260803` — see `case-reports/multi-target-chain-20260803/` + `case-lessons/multi-target-chain-20260803.md`
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理

@@ -53,3 +53,6 @@ xxe-xml-external-entity
 - `Payload/sqli/sql-wordlist-orwa.txt` + `payload-orwa-unique.txt` — SQLi fuzz wordlist
 - Prefer unique payload file before full everything.txt at `/root/SQL-Wordlist/everything.txt`
 
+## 猎洞十二技（2026-09-17）
+
+见 `src-methods/hunter12-*`（五步猎洞法手册，来自 web-security-skills 差分融合）。

@@ -1,0 +1,6 @@
+build/
+dirtyfail
+*.o
+*.dSYM
+*.swp
+.DS_Store

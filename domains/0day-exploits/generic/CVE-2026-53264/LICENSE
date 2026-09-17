@@ -1,0 +1,95 @@
+SECURITY RESEARCH LICENSE (SRL-1.0)
+
+Copyright (c) 2026
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, and distribute the Software, subject to the following conditions:
+
+---
+
+## 1. Permitted Use
+
+The Software is provided solely for:
+
+- Educational purposes
+- Academic research
+- Controlled cybersecurity testing
+- Vulnerability analysis in isolated environments
+- Defensive security improvement and learning
+
+Use is permitted only in environments where the user has explicit authorization.
+
+---
+
+## 2. Strict Prohibitions
+
+You MAY NOT use this Software for any of the following:
+
+- Unauthorized access to systems, networks, or services
+- Exploitation of production or live environments
+- Malicious hacking, intrusion, or data exfiltration
+- Illegal, unethical, or harmful activities of any kind
+- Any activity that violates applicable local, national, or international laws
+
+Any such use is strictly outside the scope of this license.
+
+---
+
+## 3. No Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY CLAIM, DAMAGES,
+OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE,
+ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+---
+
+## 4. Limitation of Liability
+
+The author and contributors of this Software:
+
+- Are NOT responsible for any misuse of the Software
+- Are NOT liable for any damages, losses, or legal consequences
+- Do NOT endorse or authorize any illegal or malicious use
+- Accept NO responsibility for how the Software is used, modified, or distributed
+
+Users are solely responsible for their actions and compliance with applicable laws.
+
+---
+
+## 5. Security Research Disclaimer
+
+This Software is intended exclusively for security research and defensive purposes.
+It is designed to help understand vulnerabilities and improve system security.
+
+It must NOT be used against systems without explicit written permission.
+
+---
+
+## 6. Responsibility of the User
+
+By using this Software, you agree that:
+
+- You are legally authorized to perform all testing activities
+- You will use the Software only in controlled environments
+- You will comply with all applicable laws and regulations
+- You assume full responsibility for any consequences of your use
+
+---
+
+## 7. Termination of Use
+
+Any violation of this license automatically terminates your rights to use,
+modify, or distribute the Software.
+
+---
+
+## 8. Final Statement
+
+This Software is provided for ethical cybersecurity research only.
+Any misuse is strictly prohibited and is solely the responsibility of the user.

@@ -1,0 +1,21 @@
+version: "3.8"
+
+# Windmill All-in-One Lab
+# PostgreSQL + Windmill in same container for path traversal testing
+
+services:
+  windmill:
+    build: .
+    container_name: windmill-allinone
+    ports:
+      - "8100:8000"
+    volumes:
+      - windmill_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/version"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  windmill_data:

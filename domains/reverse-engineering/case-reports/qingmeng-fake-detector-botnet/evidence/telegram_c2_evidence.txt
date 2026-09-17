@@ -1,0 +1,4 @@
+66:curl -s "https://api.telegram.org/bot<7642554965:AAEpE_TFnLzzEnD2MeeNZV20z6D5_kyfDXg>/getUpdates"
+67:curl -s "https://api.telegram.org/bot7642554965:AAEpE_TFnLzzEnD2MeeNZV20z6D5_kyfDXg/getUpdates"
+93:curl -X POST "https://api.telegram.org/bot7642554965:AAEpE_TFnLzzEnD2MeeNZV20z6D5_kyfDXg/sendMessage" -H "Content-Type: application/json" -d '{
+94:  "chat_id": 7210850213,

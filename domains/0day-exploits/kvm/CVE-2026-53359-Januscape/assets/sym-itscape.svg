@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="200" height="200" role="img" aria-label="ITScape">
+<defs><linearGradient id="ibg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f1ef"/><stop offset="1" stop-color="#c7cacc"/></linearGradient></defs>
+<rect x="0" y="0" width="160" height="160" rx="14" fill="url(#ibg)"/>
+<g fill="none" stroke="#101010" stroke-linecap="round">
+<rect x="12" y="15" width="136" height="133" rx="9" stroke-width="7"/>
+<g stroke-width="8">
+<line x1="33" y1="28" x2="33" y2="146"/><line x1="127" y1="28" x2="127" y2="146"/>
+<path d="M58 28 C58 44 60 52 66 60"/><path d="M56 146 C56 122 54 108 48 98"/>
+<path d="M102 28 C102 44 100 52 94 60"/><path d="M104 146 C104 122 106 108 112 98"/>
+</g>
+</g>
+<g fill="#161616">
+<path d="M40 60 l6 3 -3 6 -6 -3 z"/><path d="M120 58 l6 -3 3 6 -6 3 z"/>
+<path d="M46 108 l5 2 -2 5 -5 -2 z"/><path d="M114 110 l5 -2 2 5 -5 2 z"/>
+<path d="M82 32 l5 3 -3 5 -5 -3 z"/>
+</g>
+<g stroke="#8a8d8f" stroke-width="1.6" fill="none" stroke-linecap="round">
+<path d="M80 74 l-15 -8"/><path d="M80 74 l17 -5"/><path d="M80 74 l-9 13"/>
+</g>
+<g transform="rotate(40 80 72)">
+<g fill="#f4f4f2" stroke="#f4f4f2" stroke-width="1.2" stroke-linejoin="round">
+<rect x="72" y="62" width="16" height="84" rx="8"/>
+<rect x="48" y="44" width="64" height="30" rx="7"/>
+</g>
+<rect x="74" y="64" width="12" height="80" rx="6" fill="#5c5c5d"/>
+<line x1="80" y1="78" x2="80" y2="140" stroke="#3d3d3e" stroke-width="1.4"/>
+<rect x="50" y="46" width="60" height="26" rx="5" fill="#0b0b0b"/>
+<rect x="50" y="46" width="13" height="26" rx="4" fill="#262626"/>
+<rect x="97" y="46" width="13" height="26" rx="4" fill="#262626"/>
+</g>
+<rect x="52" y="7" width="56" height="22" rx="4" fill="#141414" stroke="#3a3a3a" stroke-width="2"/>
+<text x="80" y="23" text-anchor="middle" font-size="13" font-weight="800" letter-spacing="1.5" fill="#f1f1ef" font-family="Helvetica Neue,Arial,sans-serif">KVM</text>
+</svg>

@@ -1,0 +1,101 @@
+22:kill 15220
+40:kill 3585546
+74:kill 3544870
+77:kill 706402
+98:kill 124165
+100:kill 246448
+207:pkill -9 -f linux_mipsel
+209:sudo kill -9 $(pgrep -f linux_mipsel) 2>/dev/null
+211:pkill -9 -f linux_mipsel
+212:sudo kill -9 $(pgrep -f linux_mipsel) 2>/dev/null
+214:sudo pkill -9 qemu-mipsel-static
+216:sudo pkill -9 qemu-mipsel-static
+218:sudo pkill -9 qemu-mipsel-static
+222:sudo kill -9 12345
+228:sudo pkill -9 -f "linux_mipsel|qemu-mipsel"
+230:sudo lsof | grep linux_mipsel | awk '{print $2}' | sort -u | xargs sudo kill -9
+232:pkill -f udpclient
+233:pkill -f /var/tmp/.sysbak
+234:chattr -i /usr/bin/udpclient /var/tmp/.sysbak /etc/rc.local /etc/init.d/udpclient /etc/inittab /etc/profile 2>/dev/null
+235:rm -f /usr/bin/udpclient /var/tmp/.sysbak /tmp/.cronudp /tmp/udp_shell.log
+236:sed -i "/udpclient/d" /etc/rc.local
+237:crontab -l 2>/dev/null | grep -v udpclient | crontab - 2>/dev/null
+238:update-rc.d udpclient remove 2>/dev/null
+239:chkconfig --del udpclient 2>/dev/null
+240:rm -f /etc/init.d/udpclient
+241:sed -i "/udpclient/d" /etc/inittab
+242:sed -i "/\/usr\/bin\/udpclient/d" /etc/profile
+246:# 1. 用 pkill 直接杀掉
+247:pkill -9 -f "linux_mipsel|qemu-mipsel-static" 2>/dev/null
+255:            kill -9 $pid 2>/dev/null
+277:pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null || true
+279:for pid in $(ls /proc | grep -E '^[0-9]+$' 2>/dev/null); do     if [ -L "/proc/$pid/exe" ]; then         exe=$(readlink "/proc/$pid/exe" 2>/dev/null);         cmd=$(cat "/proc/$pid/cmdline" 2>/dev/null | tr '\0' ' ');         if [[ "$exe" == *"linux_mipsel"* ]] || [[ "$exe" == *"udpclient"* ]] ||            [[ "$exe" == *".sysbak"* ]] || [[ "$cmd" == *"linux_mipsel"* ]] ||            [[ "$cmd" == *"udpclient"* ]] || [[ "$cmd" == *".sysbak"* ]]; then             kill -9 $pid 2>/dev/null || true;         fi;     fi; done
+280:# 查找所有包含 "udpclient" 或 ".sysbak" 的文件
+281:find / -type f -name "*udpclient*" 2>/dev/null
+282:find / -type f -name "*.sysbak*" 2>/dev/null
+284:grep -r "udpclient" /etc/ 2>/dev/null
+285:grep -r ".sysbak" /etc/ 2>/dev/null
+287:sudo pkill -9 -f "udpclient|.sysbak|linux_mipsel" 2>/dev/null
+290:sudo chattr -i /usr/bin/udpclient /var/tmp/.sysbak 2>/dev/null
+291:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak"
+293:sudo chattr -i /usr/bin/udpclient /var/tmp/.sysbak /etc/init.d/udpclient 2>/dev/null
+299:sudo chattr -i /usr/bin/udpclient /var/tmp/.sysbak 2>/dev/null
+301:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak"
+303:sudo chattr -i /usr/bin/udpclient /var/tmp/.sysbak /etc/init.d/udpclient 2>/dev/null
+314:pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null || true
+316:for pid in $(ls /proc | grep -E '^[0-9]+$' 2>/dev/null); do     if [ -L "/proc/$pid/exe" ]; then         exe=$(readlink "/proc/$pid/exe" 2>/dev/null);         cmd=$(cat "/proc/$pid/cmdline" 2>/dev/null | tr '\0' ' ');         if [[ "$exe" == *"linux_mipsel"* ]] || [[ "$exe" == *"udpclient"* ]] ||            [[ "$exe" == *".sysbak"* ]] || [[ "$cmd" == *"linux_mipsel"* ]] ||            [[ "$cmd" == *"udpclient"* ]] || [[ "$cmd" == *".sysbak"* ]]; then             kill -9 $pid 2>/dev/null || true;         fi;     fi; done
+317:# 查找所有包含关键字“udpclient”的文件
+318:find / -type f -name "*udpclient*" 2>/dev/null
+320:grep -r "udpclient" /etc/ /var/spool/cron/ 2>/dev/null
+322:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null
+326:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null
+327:# 扫描所有用户的 crontab
+328:for user in $(cut -f1 -d: /etc/passwd); do     sudo crontab -u $user -l 2>/dev/null | grep udpclient && echo "找到 $user 的 crontab"; done
+330:sudo systemctl list-timers --all | grep udpclient
+332:grep -r udpclient /etc/cron* 2>/dev/null
+333:sudo crontab -l | grep -v udpclient | sudo crontab -
+334:# 1. 清除 root 的 crontab
+335:sudo crontab -l | grep -v udpclient | sudo crontab -
+337:sudo pkill -9 -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null
+340:pkill -f udpclient
+341:pkill -f /var/tmp/.sysbak
+342:chattr -i /usr/bin/udpclient /var/tmp/.sysbak /etc/rc.local /etc/init.d/udpclient /etc/inittab /etc/profile 2>/dev/null
+343:rm -f /usr/bin/udpclient /var/tmp/.sysbak /tmp/.cronudp /tmp/udp_shell.log
+344:sed -i "/udpclient/d" /etc/rc.local
+345:crontab -l 2>/dev/null | grep -v udpclient | crontab - 2>/dev/null
+346:update-rc.d udpclient remove 2>/dev/null
+347:chkconfig --del udpclient 2>/dev/null
+348:rm -f /etc/init.d/udpclient
+349:sed -i "/udpclient/d" /etc/inittab
+350:sed -i "/\/usr\/bin\/udpclient/d" /etc/profile
+354:sudo pkill -9 -f "linux_mipsel|qemu-mipsel-static|udpclient|.sysbak" 2>/dev/null
+355:# 1. 清除 root 的 crontab
+356:sudo crontab -l | grep -v udpclient | sudo crontab -
+358:sudo pkill -9 -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null
+360:# 清除 root 的 crontab（@reboot 任务）
+361:sudo crontab -l 2>/dev/null | grep -v udpclient | sudo crontab - 2>/dev/null
+362:# 清除其他用户的 crontab（如果有）
+363:for user in $(cut -f1 -d: /etc/passwd); do     sudo crontab -u "$user" -l 2>/dev/null | grep -v udpclient | sudo crontab -u "$user" - 2>/dev/null; done
+365:sudo systemctl stop udpclient 2>/dev/null
+367:sudo chattr -i /usr/bin/udpclient /var/tmp/.sysbak /etc/init.d/udpclient 2>/dev/null
+369:sudo pkill -9 -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null
+371:sudo touch /usr/bin/udpclient
+377:for signal in 9 15; do     pkill -$signal -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null || true;     pkill -$signal -f "kworker|ksoftirqd|watchdog" 2>/dev/null || true  # 误杀风险，但系统会重启这些内核线程，没关系
+380:chattr -i /usr/bin/udpclient /var/tmp/.sysbak /etc/init.d/udpclient /etc/rc.local /etc/profile /etc/inittab 2>/dev/null || true
+382:find / -name "*udpclient*" -type f -exec rm -f {} \; 2>/dev/null
+383:find / -name "*.sysbak*" -type f -exec rm -f {} \; 2>/dev/null
+385:systemctl stop udpclient 2>/dev/null || true
+386:systemctl disable udpclient 2>/dev/null || true
+387:rm -f /etc/systemd/system/udpclient.service /run/systemd/generator.late/udpclient.service
+388:update-rc.d udpclient remove 2>/dev/null || true
+389:chkconfig --del udpclient 2>/dev/null || true
+394:for signal in 9 15; do     pkill -$signal -f "udpclient|linux_mipsel|qemu-mipsel-static|.sysbak" 2>/dev/null || true;     pkill -$signal -f "kworker|ksoftirqd|watchdog" 2>/dev/null || true  # 误杀风险，但系统会重启这些内核线程，没关系
+397:chattr -i /usr/bin/udpclient /var/tmp/.sysbak /etc/init.d/udpclient /etc/rc.local /etc/profile /etc/inittab 2>/dev/null || true
+399:find / -name "*udpclient*" -type f -exec rm -f {} \; 2>/dev/null
+400:find / -name "*.sysbak*" -type f -exec rm -f {} \; 2>/dev/null
+402:systemctl stop udpclient 2>/dev/null || true
+403:systemctl disable udpclient 2>/dev/null || true
+404:rm -f /etc/systemd/system/udpclient.service /run/systemd/generator.late/udpclient.service
+405:update-rc.d udpclient remove 2>/dev/null || true
+406:chkconfig --del udpclient 2>/dev/null || true
+407:sed -i '/udpclient/d' /etc/rc.local /etc/profile /etc/inittab /etc/crontab 2>/dev/null

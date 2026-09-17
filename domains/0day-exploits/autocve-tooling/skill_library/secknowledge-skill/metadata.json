@@ -1,0 +1,210 @@
+{
+  "name": "secknowledge-skill",
+  "slug": "secknowledge-skill",
+  "description": "Web+AI 安全测试知识库。融合 WooYun 88,636 案例 + 先知 L1-L4 方法论 + GAARM 150 风险\n+ OWASP Top 10 (LLM/ASI/WSTG)。\nTRIGGER when 任务是实战安全测试：渗透测试、漏洞挖掘/利用、红队攻防、安全审计 (SAST/DAST)、\nCTF、AI/LLM 安全测试 (Prompt 注入/越狱/MCP/Agent/沙箱逃逸)。用户明确给出测试目标\n(URL/代码/模型/Agent 架构) 且意图是\"测试/审计/挖漏洞/利用\"。\nDO NOT trigger:\n- 安全概念讨论（\"什么是 XSS\"、\"SQL 注入原理是什么\"）→ 普通问答\n- 非安全性质的 code review / debug / 性能优化 → code-audit-skill 或其他\n- 修复语法错误 / 业务逻辑 bug → 普通编程协助\n- 纯 Web 白盒代码审计（完整项目目录 / Source-Sink 污点分析）→ code-audit-skill\n- 仅引用 CVE 编号查文档 → WebSearch\n边界细则: CTF 短代码片段 + 利用思路 → 本 Skill；完整项目目录 + 系统白盒审计 → code-audit-skill",
+  "tags": [],
+  "source_type": "github",
+  "source_url": "https://github.com/Pa55w0rd/secknowledge-skill",
+  "metadata": {
+    "imported_from": "https://github.com/Pa55w0rd/secknowledge-skill",
+    "repo_slug": "Pa55w0rd/secknowledge-skill",
+    "branch": "main",
+    "subdir": ""
+  },
+  "extension_manifest": [
+    {
+      "name": "references/ai-app-agent-cot.md",
+      "description": "Imported from references/ai-app-agent-cot.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-app-deploy.md",
+      "description": "Imported from references/ai-app-deploy.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-app-frontier.md",
+      "description": "Imported from references/ai-app-frontier.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-app-mcp.md",
+      "description": "Imported from references/ai-app-mcp.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-app-prompt.md",
+      "description": "Imported from references/ai-app-prompt.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-app-train.md",
+      "description": "Imported from references/ai-app-train.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-baseline-app.md",
+      "description": "Imported from references/ai-baseline-app.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-baseline-deploy.md",
+      "description": "Imported from references/ai-baseline-deploy.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-baseline-escape.md",
+      "description": "Imported from references/ai-baseline-escape.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-baseline-train.md",
+      "description": "Imported from references/ai-baseline-train.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-data-app.md",
+      "description": "Imported from references/ai-data-app.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-data-deploy.md",
+      "description": "Imported from references/ai-data-deploy.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-data-train.md",
+      "description": "Imported from references/ai-data-train.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-identity-app.md",
+      "description": "Imported from references/ai-identity-app.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-identity-deploy.md",
+      "description": "Imported from references/ai-identity-deploy.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-identity-train.md",
+      "description": "Imported from references/ai-identity-train.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-model-content.md",
+      "description": "Imported from references/ai-model-content.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-model-copyright.md",
+      "description": "Imported from references/ai-model-copyright.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-model-deploy.md",
+      "description": "Imported from references/ai-model-deploy.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-model-extraction.md",
+      "description": "Imported from references/ai-model-extraction.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-model-hallucination.md",
+      "description": "Imported from references/ai-model-hallucination.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-model-jailbreak.md",
+      "description": "Imported from references/ai-model-jailbreak.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-model-misuse.md",
+      "description": "Imported from references/ai-model-misuse.md",
+      "type": "file"
+    },
+    {
+      "name": "references/ai-model-train.md",
+      "description": "Imported from references/ai-model-train.md",
+      "type": "file"
+    },
+    {
+      "name": "references/gaarm-risk-matrix.md",
+      "description": "Imported from references/gaarm-risk-matrix.md",
+      "type": "file"
+    },
+    {
+      "name": "references/testing-methodology.md",
+      "description": "Imported from references/testing-methodology.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-deployment-security.md",
+      "description": "Imported from references/web-deployment-security.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-deser.md",
+      "description": "Imported from references/web-deser.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-leak.md",
+      "description": "Imported from references/web-leak.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-logic-auth.md",
+      "description": "Imported from references/web-logic-auth.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-modern-protocols.md",
+      "description": "Imported from references/web-modern-protocols.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-rce.md",
+      "description": "Imported from references/web-rce.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-sqli.md",
+      "description": "Imported from references/web-sqli.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-ssrf-misc.md",
+      "description": "Imported from references/web-ssrf-misc.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-traversal.md",
+      "description": "Imported from references/web-traversal.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-upload.md",
+      "description": "Imported from references/web-upload.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-xss.md",
+      "description": "Imported from references/web-xss.md",
+      "type": "file"
+    },
+    {
+      "name": "references/web-xxe.md",
+      "description": "Imported from references/web-xxe.md",
+      "type": "file"
+    }
+  ],
+  "is_system": false,
+  "is_active": true,
+  "installed_at": "2026-05-27T09:52:48.320518+00:00",
+  "updated_at": "2026-05-27T09:52:48.320533+00:00"
+}

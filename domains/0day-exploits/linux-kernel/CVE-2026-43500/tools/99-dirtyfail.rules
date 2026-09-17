@@ -1,0 +1,100 @@
+# DIRTYFAIL — auditd detection rules
+#
+# Drop into /etc/audit/rules.d/, then reload:
+#
+#   sudo install -m 0640 99-dirtyfail.rules /etc/audit/rules.d/
+#   sudo augenrules --load
+#   sudo systemctl restart auditd
+#
+# These rules generate audit events for the syscalls the DIRTYFAIL
+# exploit chain uses. They are intentionally noisy on systems that
+# legitimately use rootless containers, IPsec, or AFS — review the
+# Tuning section before enabling on a production host.
+#
+# Search recorded events:
+#
+#   sudo ausearch -k dirtyfail-xfrm
+#   sudo ausearch -k dirtyfail-rxkey
+#   sudo ausearch -k dirtyfail-userns
+#
+# Rules MUST stay on single lines — auditctl(8) does not honor
+# backslash-newline continuations in rule files.
+#
+# Tested on: Debian 13, Ubuntu 24.04/26.04, AlmaLinux 10, Fedora 44.
+
+## ----------------------------------------------------------------- ##
+## 1. XFRM netlink registration from a non-root account
+##
+## socket(AF_NETLINK, SOCK_RAW, NETLINK_XFRM) is an extremely strong
+## signal: legitimate use is "ip xfrm" (root) or `swanctl`/charon (root)
+## or networkd (root). An unprivileged account creating this socket
+## is the precondition for ESP v4/v6/GCM exploitation.
+##
+##   socket() args: a0=family(16=AF_NETLINK) a2=protocol(6=NETLINK_XFRM)
+##   auid filter:   ignore kernel/system processes (auid=4294967295)
+##                  match interactive logins (auid >= 1000)
+## ----------------------------------------------------------------- ##
+-a always,exit -F arch=b64 -S socket -F a0=16 -F a2=6 -F auid>=1000 -F auid!=4294967295 -k dirtyfail-xfrm
+-a always,exit -F arch=b32 -S socket -F a0=16 -F a2=6 -F auid>=1000 -F auid!=4294967295 -k dirtyfail-xfrm
+
+## ----------------------------------------------------------------- ##
+## 2. add_key("rxrpc", ...) — RxRPC session-key registration
+##
+## The rxkad-handshake forgery requires registering a rxrpc-typed key
+## via add_key(2). On most servers this should never happen from an
+## unprivileged uid; AFS clients that legitimately use this run as
+## root or a service account.
+## ----------------------------------------------------------------- ##
+-a always,exit -F arch=b64 -S add_key -F auid>=1000 -F auid!=4294967295 -k dirtyfail-rxkey
+-a always,exit -F arch=b32 -S add_key -F auid>=1000 -F auid!=4294967295 -k dirtyfail-rxkey
+
+## ----------------------------------------------------------------- ##
+## 3. unshare(CLONE_NEWUSER) from interactive accounts
+##
+## CLONE_NEWUSER == 0x10000000. Every DIRTYFAIL exploit mode does this
+## once. WARNING: this fires on every legitimate `unshare -U`, every
+## podman/buildah container start, every chrome/firefox sandbox spawn.
+## Filter to executions you don't expect, or treat as low-fidelity noise
+## that pairs well with the dirtyfail-xfrm key for high-fidelity alerts.
+## ----------------------------------------------------------------- ##
+-a always,exit -F arch=b64 -S unshare -F a0&268435456 -F auid>=1000 -F auid!=4294967295 -k dirtyfail-userns
+-a always,exit -F arch=b32 -S unshare -F a0&268435456 -F auid>=1000 -F auid!=4294967295 -k dirtyfail-userns
+
+## ----------------------------------------------------------------- ##
+## 4. AF_ALG socket creation — Copy Fail / GCM precondition
+##
+## socket(AF_ALG, ...). a0=38 (PF_ALG). Legitimate uses: cryptsetup,
+## kernel-side TLS offload, some QEMU paths. Suspicious from a shell
+## account.
+## ----------------------------------------------------------------- ##
+-a always,exit -F arch=b64 -S socket -F a0=38 -F auid>=1000 -F auid!=4294967295 -k dirtyfail-afalg
+-a always,exit -F arch=b32 -S socket -F a0=38 -F auid>=1000 -F auid!=4294967295 -k dirtyfail-afalg
+
+## ----------------------------------------------------------------- ##
+## 5. Directly watch /etc/passwd and /etc/shadow for in-place modifications
+##
+## A successful exploit modifies the page-cache copy (which is what
+## PAM reads), but these watches fire when /usr/bin/passwd, vipw, or
+## anything else opens these files for writing. Useful as a baseline
+## change-detection rule independent of DIRTYFAIL.
+## ----------------------------------------------------------------- ##
+-w /etc/passwd -p wa -k dirtyfail-passwd-write
+-w /etc/shadow -p wa -k dirtyfail-shadow-write
+
+## ----------------------------------------------------------------- ##
+## Tuning notes
+##
+## - On servers running rootless containers, dirtyfail-userns will be
+##   high-volume noise. Either drop rule 3, or filter on `comm!=podman`
+##   etc. for your specific runtime.
+## - On IPsec gateways, dirtyfail-xfrm fires for every legitimate SA
+##   install. Drop the rule or filter `comm` to your VPN daemon.
+## - Pair dirtyfail-userns + dirtyfail-xfrm with a SIEM correlation
+##   rule: "same auid emits both within 5 seconds" → high-confidence
+##   exploit-attempt alert.
+##
+## Note: the AppArmor `change_onexec` rule that an earlier draft
+## included is omitted — auditctl won't reliably match writes to
+## /proc/self/attr/exec via -F path because the path is per-pid.
+## Use the userns + xfrm pair instead for the bypass-detection signal.
+## ----------------------------------------------------------------- ##

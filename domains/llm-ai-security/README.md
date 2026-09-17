@@ -20,3 +20,10 @@ src-methods
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+<!-- fused:case-reports-20260917 -->
+## case-reports / case-lessons（实战报告 2026-09-17）
+
+- `badhost-litellm` — see `case-reports/badhost-litellm/` + `case-lessons/badhost-litellm.md`
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理

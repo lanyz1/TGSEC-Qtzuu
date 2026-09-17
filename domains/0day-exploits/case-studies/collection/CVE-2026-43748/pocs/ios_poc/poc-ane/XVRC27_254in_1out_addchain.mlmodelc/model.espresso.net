@@ -1,0 +1,3560 @@
+{
+  "storage" : "model.espresso.weights",
+  "analyses" : {
+
+  },
+  "properties" : {
+
+  },
+  "format_version" : 200,
+  "metadata_in_weights" : [
+
+  ],
+  "layers" : [
+    {
+      "bottom" : "x_000,x_001",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_001",
+      "top" : "sum_001",
+      "type" : "elementwise",
+      "name" : "add_001",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_001,x_002",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_002",
+      "top" : "sum_002",
+      "type" : "elementwise",
+      "name" : "add_002",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_002,x_003",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_003",
+      "top" : "sum_003",
+      "type" : "elementwise",
+      "name" : "add_003",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_003,x_004",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_004",
+      "top" : "sum_004",
+      "type" : "elementwise",
+      "name" : "add_004",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_004,x_005",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_005",
+      "top" : "sum_005",
+      "type" : "elementwise",
+      "name" : "add_005",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_005,x_006",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_006",
+      "top" : "sum_006",
+      "type" : "elementwise",
+      "name" : "add_006",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_006,x_007",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_007",
+      "top" : "sum_007",
+      "type" : "elementwise",
+      "name" : "add_007",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_007,x_008",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_008",
+      "top" : "sum_008",
+      "type" : "elementwise",
+      "name" : "add_008",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_008,x_009",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_009",
+      "top" : "sum_009",
+      "type" : "elementwise",
+      "name" : "add_009",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_009,x_010",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_010",
+      "top" : "sum_010",
+      "type" : "elementwise",
+      "name" : "add_010",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_010,x_011",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_011",
+      "top" : "sum_011",
+      "type" : "elementwise",
+      "name" : "add_011",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_011,x_012",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_012",
+      "top" : "sum_012",
+      "type" : "elementwise",
+      "name" : "add_012",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_012,x_013",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_013",
+      "top" : "sum_013",
+      "type" : "elementwise",
+      "name" : "add_013",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_013,x_014",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_014",
+      "top" : "sum_014",
+      "type" : "elementwise",
+      "name" : "add_014",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_014,x_015",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_015",
+      "top" : "sum_015",
+      "type" : "elementwise",
+      "name" : "add_015",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_015,x_016",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_016",
+      "top" : "sum_016",
+      "type" : "elementwise",
+      "name" : "add_016",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_016,x_017",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_017",
+      "top" : "sum_017",
+      "type" : "elementwise",
+      "name" : "add_017",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_017,x_018",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_018",
+      "top" : "sum_018",
+      "type" : "elementwise",
+      "name" : "add_018",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_018,x_019",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_019",
+      "top" : "sum_019",
+      "type" : "elementwise",
+      "name" : "add_019",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_019,x_020",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_020",
+      "top" : "sum_020",
+      "type" : "elementwise",
+      "name" : "add_020",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_020,x_021",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_021",
+      "top" : "sum_021",
+      "type" : "elementwise",
+      "name" : "add_021",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_021,x_022",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_022",
+      "top" : "sum_022",
+      "type" : "elementwise",
+      "name" : "add_022",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_022,x_023",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_023",
+      "top" : "sum_023",
+      "type" : "elementwise",
+      "name" : "add_023",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_023,x_024",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_024",
+      "top" : "sum_024",
+      "type" : "elementwise",
+      "name" : "add_024",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_024,x_025",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_025",
+      "top" : "sum_025",
+      "type" : "elementwise",
+      "name" : "add_025",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_025,x_026",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_026",
+      "top" : "sum_026",
+      "type" : "elementwise",
+      "name" : "add_026",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_026,x_027",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_027",
+      "top" : "sum_027",
+      "type" : "elementwise",
+      "name" : "add_027",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_027,x_028",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_028",
+      "top" : "sum_028",
+      "type" : "elementwise",
+      "name" : "add_028",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_028,x_029",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_029",
+      "top" : "sum_029",
+      "type" : "elementwise",
+      "name" : "add_029",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_029,x_030",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_030",
+      "top" : "sum_030",
+      "type" : "elementwise",
+      "name" : "add_030",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_030,x_031",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_031",
+      "top" : "sum_031",
+      "type" : "elementwise",
+      "name" : "add_031",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_031,x_032",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_032",
+      "top" : "sum_032",
+      "type" : "elementwise",
+      "name" : "add_032",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_032,x_033",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_033",
+      "top" : "sum_033",
+      "type" : "elementwise",
+      "name" : "add_033",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_033,x_034",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_034",
+      "top" : "sum_034",
+      "type" : "elementwise",
+      "name" : "add_034",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_034,x_035",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_035",
+      "top" : "sum_035",
+      "type" : "elementwise",
+      "name" : "add_035",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_035,x_036",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_036",
+      "top" : "sum_036",
+      "type" : "elementwise",
+      "name" : "add_036",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_036,x_037",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_037",
+      "top" : "sum_037",
+      "type" : "elementwise",
+      "name" : "add_037",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_037,x_038",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_038",
+      "top" : "sum_038",
+      "type" : "elementwise",
+      "name" : "add_038",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_038,x_039",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_039",
+      "top" : "sum_039",
+      "type" : "elementwise",
+      "name" : "add_039",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_039,x_040",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_040",
+      "top" : "sum_040",
+      "type" : "elementwise",
+      "name" : "add_040",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_040,x_041",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_041",
+      "top" : "sum_041",
+      "type" : "elementwise",
+      "name" : "add_041",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_041,x_042",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_042",
+      "top" : "sum_042",
+      "type" : "elementwise",
+      "name" : "add_042",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_042,x_043",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_043",
+      "top" : "sum_043",
+      "type" : "elementwise",
+      "name" : "add_043",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_043,x_044",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_044",
+      "top" : "sum_044",
+      "type" : "elementwise",
+      "name" : "add_044",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_044,x_045",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_045",
+      "top" : "sum_045",
+      "type" : "elementwise",
+      "name" : "add_045",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_045,x_046",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_046",
+      "top" : "sum_046",
+      "type" : "elementwise",
+      "name" : "add_046",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_046,x_047",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_047",
+      "top" : "sum_047",
+      "type" : "elementwise",
+      "name" : "add_047",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_047,x_048",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_048",
+      "top" : "sum_048",
+      "type" : "elementwise",
+      "name" : "add_048",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_048,x_049",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_049",
+      "top" : "sum_049",
+      "type" : "elementwise",
+      "name" : "add_049",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_049,x_050",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_050",
+      "top" : "sum_050",
+      "type" : "elementwise",
+      "name" : "add_050",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_050,x_051",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_051",
+      "top" : "sum_051",
+      "type" : "elementwise",
+      "name" : "add_051",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_051,x_052",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_052",
+      "top" : "sum_052",
+      "type" : "elementwise",
+      "name" : "add_052",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_052,x_053",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_053",
+      "top" : "sum_053",
+      "type" : "elementwise",
+      "name" : "add_053",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_053,x_054",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_054",
+      "top" : "sum_054",
+      "type" : "elementwise",
+      "name" : "add_054",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_054,x_055",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_055",
+      "top" : "sum_055",
+      "type" : "elementwise",
+      "name" : "add_055",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_055,x_056",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_056",
+      "top" : "sum_056",
+      "type" : "elementwise",
+      "name" : "add_056",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_056,x_057",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_057",
+      "top" : "sum_057",
+      "type" : "elementwise",
+      "name" : "add_057",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_057,x_058",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_058",
+      "top" : "sum_058",
+      "type" : "elementwise",
+      "name" : "add_058",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_058,x_059",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_059",
+      "top" : "sum_059",
+      "type" : "elementwise",
+      "name" : "add_059",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_059,x_060",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_060",
+      "top" : "sum_060",
+      "type" : "elementwise",
+      "name" : "add_060",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_060,x_061",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_061",
+      "top" : "sum_061",
+      "type" : "elementwise",
+      "name" : "add_061",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_061,x_062",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_062",
+      "top" : "sum_062",
+      "type" : "elementwise",
+      "name" : "add_062",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_062,x_063",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_063",
+      "top" : "sum_063",
+      "type" : "elementwise",
+      "name" : "add_063",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_063,x_064",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_064",
+      "top" : "sum_064",
+      "type" : "elementwise",
+      "name" : "add_064",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_064,x_065",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_065",
+      "top" : "sum_065",
+      "type" : "elementwise",
+      "name" : "add_065",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_065,x_066",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_066",
+      "top" : "sum_066",
+      "type" : "elementwise",
+      "name" : "add_066",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_066,x_067",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_067",
+      "top" : "sum_067",
+      "type" : "elementwise",
+      "name" : "add_067",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_067,x_068",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_068",
+      "top" : "sum_068",
+      "type" : "elementwise",
+      "name" : "add_068",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_068,x_069",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_069",
+      "top" : "sum_069",
+      "type" : "elementwise",
+      "name" : "add_069",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_069,x_070",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_070",
+      "top" : "sum_070",
+      "type" : "elementwise",
+      "name" : "add_070",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_070,x_071",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_071",
+      "top" : "sum_071",
+      "type" : "elementwise",
+      "name" : "add_071",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_071,x_072",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_072",
+      "top" : "sum_072",
+      "type" : "elementwise",
+      "name" : "add_072",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_072,x_073",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_073",
+      "top" : "sum_073",
+      "type" : "elementwise",
+      "name" : "add_073",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_073,x_074",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_074",
+      "top" : "sum_074",
+      "type" : "elementwise",
+      "name" : "add_074",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_074,x_075",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_075",
+      "top" : "sum_075",
+      "type" : "elementwise",
+      "name" : "add_075",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_075,x_076",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_076",
+      "top" : "sum_076",
+      "type" : "elementwise",
+      "name" : "add_076",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_076,x_077",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_077",
+      "top" : "sum_077",
+      "type" : "elementwise",
+      "name" : "add_077",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_077,x_078",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_078",
+      "top" : "sum_078",
+      "type" : "elementwise",
+      "name" : "add_078",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_078,x_079",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_079",
+      "top" : "sum_079",
+      "type" : "elementwise",
+      "name" : "add_079",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_079,x_080",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_080",
+      "top" : "sum_080",
+      "type" : "elementwise",
+      "name" : "add_080",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_080,x_081",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_081",
+      "top" : "sum_081",
+      "type" : "elementwise",
+      "name" : "add_081",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_081,x_082",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_082",
+      "top" : "sum_082",
+      "type" : "elementwise",
+      "name" : "add_082",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_082,x_083",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_083",
+      "top" : "sum_083",
+      "type" : "elementwise",
+      "name" : "add_083",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_083,x_084",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_084",
+      "top" : "sum_084",
+      "type" : "elementwise",
+      "name" : "add_084",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_084,x_085",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_085",
+      "top" : "sum_085",
+      "type" : "elementwise",
+      "name" : "add_085",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_085,x_086",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_086",
+      "top" : "sum_086",
+      "type" : "elementwise",
+      "name" : "add_086",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_086,x_087",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_087",
+      "top" : "sum_087",
+      "type" : "elementwise",
+      "name" : "add_087",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_087,x_088",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_088",
+      "top" : "sum_088",
+      "type" : "elementwise",
+      "name" : "add_088",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_088,x_089",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_089",
+      "top" : "sum_089",
+      "type" : "elementwise",
+      "name" : "add_089",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_089,x_090",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_090",
+      "top" : "sum_090",
+      "type" : "elementwise",
+      "name" : "add_090",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_090,x_091",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_091",
+      "top" : "sum_091",
+      "type" : "elementwise",
+      "name" : "add_091",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_091,x_092",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_092",
+      "top" : "sum_092",
+      "type" : "elementwise",
+      "name" : "add_092",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_092,x_093",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_093",
+      "top" : "sum_093",
+      "type" : "elementwise",
+      "name" : "add_093",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_093,x_094",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_094",
+      "top" : "sum_094",
+      "type" : "elementwise",
+      "name" : "add_094",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_094,x_095",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_095",
+      "top" : "sum_095",
+      "type" : "elementwise",
+      "name" : "add_095",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_095,x_096",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_096",
+      "top" : "sum_096",
+      "type" : "elementwise",
+      "name" : "add_096",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_096,x_097",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_097",
+      "top" : "sum_097",
+      "type" : "elementwise",
+      "name" : "add_097",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_097,x_098",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_098",
+      "top" : "sum_098",
+      "type" : "elementwise",
+      "name" : "add_098",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_098,x_099",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_099",
+      "top" : "sum_099",
+      "type" : "elementwise",
+      "name" : "add_099",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_099,x_100",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_100",
+      "top" : "sum_100",
+      "type" : "elementwise",
+      "name" : "add_100",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_100,x_101",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_101",
+      "top" : "sum_101",
+      "type" : "elementwise",
+      "name" : "add_101",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_101,x_102",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_102",
+      "top" : "sum_102",
+      "type" : "elementwise",
+      "name" : "add_102",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_102,x_103",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_103",
+      "top" : "sum_103",
+      "type" : "elementwise",
+      "name" : "add_103",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_103,x_104",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_104",
+      "top" : "sum_104",
+      "type" : "elementwise",
+      "name" : "add_104",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_104,x_105",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_105",
+      "top" : "sum_105",
+      "type" : "elementwise",
+      "name" : "add_105",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_105,x_106",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_106",
+      "top" : "sum_106",
+      "type" : "elementwise",
+      "name" : "add_106",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_106,x_107",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_107",
+      "top" : "sum_107",
+      "type" : "elementwise",
+      "name" : "add_107",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_107,x_108",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_108",
+      "top" : "sum_108",
+      "type" : "elementwise",
+      "name" : "add_108",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_108,x_109",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_109",
+      "top" : "sum_109",
+      "type" : "elementwise",
+      "name" : "add_109",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_109,x_110",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_110",
+      "top" : "sum_110",
+      "type" : "elementwise",
+      "name" : "add_110",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_110,x_111",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_111",
+      "top" : "sum_111",
+      "type" : "elementwise",
+      "name" : "add_111",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_111,x_112",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_112",
+      "top" : "sum_112",
+      "type" : "elementwise",
+      "name" : "add_112",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_112,x_113",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_113",
+      "top" : "sum_113",
+      "type" : "elementwise",
+      "name" : "add_113",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_113,x_114",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_114",
+      "top" : "sum_114",
+      "type" : "elementwise",
+      "name" : "add_114",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_114,x_115",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_115",
+      "top" : "sum_115",
+      "type" : "elementwise",
+      "name" : "add_115",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_115,x_116",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_116",
+      "top" : "sum_116",
+      "type" : "elementwise",
+      "name" : "add_116",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_116,x_117",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_117",
+      "top" : "sum_117",
+      "type" : "elementwise",
+      "name" : "add_117",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_117,x_118",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_118",
+      "top" : "sum_118",
+      "type" : "elementwise",
+      "name" : "add_118",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_118,x_119",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_119",
+      "top" : "sum_119",
+      "type" : "elementwise",
+      "name" : "add_119",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_119,x_120",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_120",
+      "top" : "sum_120",
+      "type" : "elementwise",
+      "name" : "add_120",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_120,x_121",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_121",
+      "top" : "sum_121",
+      "type" : "elementwise",
+      "name" : "add_121",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_121,x_122",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_122",
+      "top" : "sum_122",
+      "type" : "elementwise",
+      "name" : "add_122",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_122,x_123",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_123",
+      "top" : "sum_123",
+      "type" : "elementwise",
+      "name" : "add_123",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_123,x_124",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_124",
+      "top" : "sum_124",
+      "type" : "elementwise",
+      "name" : "add_124",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_124,x_125",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_125",
+      "top" : "sum_125",
+      "type" : "elementwise",
+      "name" : "add_125",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_125,x_126",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_126",
+      "top" : "sum_126",
+      "type" : "elementwise",
+      "name" : "add_126",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_126,x_127",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_127",
+      "top" : "sum_127",
+      "type" : "elementwise",
+      "name" : "add_127",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_127,x_128",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_128",
+      "top" : "sum_128",
+      "type" : "elementwise",
+      "name" : "add_128",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_128,x_129",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_129",
+      "top" : "sum_129",
+      "type" : "elementwise",
+      "name" : "add_129",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_129,x_130",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_130",
+      "top" : "sum_130",
+      "type" : "elementwise",
+      "name" : "add_130",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_130,x_131",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_131",
+      "top" : "sum_131",
+      "type" : "elementwise",
+      "name" : "add_131",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_131,x_132",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_132",
+      "top" : "sum_132",
+      "type" : "elementwise",
+      "name" : "add_132",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_132,x_133",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_133",
+      "top" : "sum_133",
+      "type" : "elementwise",
+      "name" : "add_133",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_133,x_134",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_134",
+      "top" : "sum_134",
+      "type" : "elementwise",
+      "name" : "add_134",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_134,x_135",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_135",
+      "top" : "sum_135",
+      "type" : "elementwise",
+      "name" : "add_135",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_135,x_136",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_136",
+      "top" : "sum_136",
+      "type" : "elementwise",
+      "name" : "add_136",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_136,x_137",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_137",
+      "top" : "sum_137",
+      "type" : "elementwise",
+      "name" : "add_137",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_137,x_138",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_138",
+      "top" : "sum_138",
+      "type" : "elementwise",
+      "name" : "add_138",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_138,x_139",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_139",
+      "top" : "sum_139",
+      "type" : "elementwise",
+      "name" : "add_139",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_139,x_140",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_140",
+      "top" : "sum_140",
+      "type" : "elementwise",
+      "name" : "add_140",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_140,x_141",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_141",
+      "top" : "sum_141",
+      "type" : "elementwise",
+      "name" : "add_141",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_141,x_142",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_142",
+      "top" : "sum_142",
+      "type" : "elementwise",
+      "name" : "add_142",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_142,x_143",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_143",
+      "top" : "sum_143",
+      "type" : "elementwise",
+      "name" : "add_143",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_143,x_144",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_144",
+      "top" : "sum_144",
+      "type" : "elementwise",
+      "name" : "add_144",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_144,x_145",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_145",
+      "top" : "sum_145",
+      "type" : "elementwise",
+      "name" : "add_145",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_145,x_146",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_146",
+      "top" : "sum_146",
+      "type" : "elementwise",
+      "name" : "add_146",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_146,x_147",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_147",
+      "top" : "sum_147",
+      "type" : "elementwise",
+      "name" : "add_147",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_147,x_148",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_148",
+      "top" : "sum_148",
+      "type" : "elementwise",
+      "name" : "add_148",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_148,x_149",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_149",
+      "top" : "sum_149",
+      "type" : "elementwise",
+      "name" : "add_149",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_149,x_150",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_150",
+      "top" : "sum_150",
+      "type" : "elementwise",
+      "name" : "add_150",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_150,x_151",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_151",
+      "top" : "sum_151",
+      "type" : "elementwise",
+      "name" : "add_151",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_151,x_152",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_152",
+      "top" : "sum_152",
+      "type" : "elementwise",
+      "name" : "add_152",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_152,x_153",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_153",
+      "top" : "sum_153",
+      "type" : "elementwise",
+      "name" : "add_153",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_153,x_154",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_154",
+      "top" : "sum_154",
+      "type" : "elementwise",
+      "name" : "add_154",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_154,x_155",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_155",
+      "top" : "sum_155",
+      "type" : "elementwise",
+      "name" : "add_155",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_155,x_156",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_156",
+      "top" : "sum_156",
+      "type" : "elementwise",
+      "name" : "add_156",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_156,x_157",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_157",
+      "top" : "sum_157",
+      "type" : "elementwise",
+      "name" : "add_157",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_157,x_158",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_158",
+      "top" : "sum_158",
+      "type" : "elementwise",
+      "name" : "add_158",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_158,x_159",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_159",
+      "top" : "sum_159",
+      "type" : "elementwise",
+      "name" : "add_159",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_159,x_160",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_160",
+      "top" : "sum_160",
+      "type" : "elementwise",
+      "name" : "add_160",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_160,x_161",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_161",
+      "top" : "sum_161",
+      "type" : "elementwise",
+      "name" : "add_161",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_161,x_162",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_162",
+      "top" : "sum_162",
+      "type" : "elementwise",
+      "name" : "add_162",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_162,x_163",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_163",
+      "top" : "sum_163",
+      "type" : "elementwise",
+      "name" : "add_163",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_163,x_164",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_164",
+      "top" : "sum_164",
+      "type" : "elementwise",
+      "name" : "add_164",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_164,x_165",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_165",
+      "top" : "sum_165",
+      "type" : "elementwise",
+      "name" : "add_165",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_165,x_166",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_166",
+      "top" : "sum_166",
+      "type" : "elementwise",
+      "name" : "add_166",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_166,x_167",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_167",
+      "top" : "sum_167",
+      "type" : "elementwise",
+      "name" : "add_167",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_167,x_168",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_168",
+      "top" : "sum_168",
+      "type" : "elementwise",
+      "name" : "add_168",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_168,x_169",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_169",
+      "top" : "sum_169",
+      "type" : "elementwise",
+      "name" : "add_169",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_169,x_170",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_170",
+      "top" : "sum_170",
+      "type" : "elementwise",
+      "name" : "add_170",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_170,x_171",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_171",
+      "top" : "sum_171",
+      "type" : "elementwise",
+      "name" : "add_171",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_171,x_172",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_172",
+      "top" : "sum_172",
+      "type" : "elementwise",
+      "name" : "add_172",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_172,x_173",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_173",
+      "top" : "sum_173",
+      "type" : "elementwise",
+      "name" : "add_173",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_173,x_174",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_174",
+      "top" : "sum_174",
+      "type" : "elementwise",
+      "name" : "add_174",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_174,x_175",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_175",
+      "top" : "sum_175",
+      "type" : "elementwise",
+      "name" : "add_175",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_175,x_176",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_176",
+      "top" : "sum_176",
+      "type" : "elementwise",
+      "name" : "add_176",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_176,x_177",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_177",
+      "top" : "sum_177",
+      "type" : "elementwise",
+      "name" : "add_177",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_177,x_178",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_178",
+      "top" : "sum_178",
+      "type" : "elementwise",
+      "name" : "add_178",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_178,x_179",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_179",
+      "top" : "sum_179",
+      "type" : "elementwise",
+      "name" : "add_179",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_179,x_180",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_180",
+      "top" : "sum_180",
+      "type" : "elementwise",
+      "name" : "add_180",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_180,x_181",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_181",
+      "top" : "sum_181",
+      "type" : "elementwise",
+      "name" : "add_181",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_181,x_182",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_182",
+      "top" : "sum_182",
+      "type" : "elementwise",
+      "name" : "add_182",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_182,x_183",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_183",
+      "top" : "sum_183",
+      "type" : "elementwise",
+      "name" : "add_183",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_183,x_184",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_184",
+      "top" : "sum_184",
+      "type" : "elementwise",
+      "name" : "add_184",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_184,x_185",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_185",
+      "top" : "sum_185",
+      "type" : "elementwise",
+      "name" : "add_185",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_185,x_186",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_186",
+      "top" : "sum_186",
+      "type" : "elementwise",
+      "name" : "add_186",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_186,x_187",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_187",
+      "top" : "sum_187",
+      "type" : "elementwise",
+      "name" : "add_187",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_187,x_188",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_188",
+      "top" : "sum_188",
+      "type" : "elementwise",
+      "name" : "add_188",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_188,x_189",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_189",
+      "top" : "sum_189",
+      "type" : "elementwise",
+      "name" : "add_189",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_189,x_190",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_190",
+      "top" : "sum_190",
+      "type" : "elementwise",
+      "name" : "add_190",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_190,x_191",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_191",
+      "top" : "sum_191",
+      "type" : "elementwise",
+      "name" : "add_191",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_191,x_192",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_192",
+      "top" : "sum_192",
+      "type" : "elementwise",
+      "name" : "add_192",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_192,x_193",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_193",
+      "top" : "sum_193",
+      "type" : "elementwise",
+      "name" : "add_193",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_193,x_194",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_194",
+      "top" : "sum_194",
+      "type" : "elementwise",
+      "name" : "add_194",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_194,x_195",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_195",
+      "top" : "sum_195",
+      "type" : "elementwise",
+      "name" : "add_195",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_195,x_196",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_196",
+      "top" : "sum_196",
+      "type" : "elementwise",
+      "name" : "add_196",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_196,x_197",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_197",
+      "top" : "sum_197",
+      "type" : "elementwise",
+      "name" : "add_197",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_197,x_198",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_198",
+      "top" : "sum_198",
+      "type" : "elementwise",
+      "name" : "add_198",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_198,x_199",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_199",
+      "top" : "sum_199",
+      "type" : "elementwise",
+      "name" : "add_199",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_199,x_200",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_200",
+      "top" : "sum_200",
+      "type" : "elementwise",
+      "name" : "add_200",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_200,x_201",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_201",
+      "top" : "sum_201",
+      "type" : "elementwise",
+      "name" : "add_201",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_201,x_202",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_202",
+      "top" : "sum_202",
+      "type" : "elementwise",
+      "name" : "add_202",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_202,x_203",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_203",
+      "top" : "sum_203",
+      "type" : "elementwise",
+      "name" : "add_203",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_203,x_204",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_204",
+      "top" : "sum_204",
+      "type" : "elementwise",
+      "name" : "add_204",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_204,x_205",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_205",
+      "top" : "sum_205",
+      "type" : "elementwise",
+      "name" : "add_205",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_205,x_206",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_206",
+      "top" : "sum_206",
+      "type" : "elementwise",
+      "name" : "add_206",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_206,x_207",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_207",
+      "top" : "sum_207",
+      "type" : "elementwise",
+      "name" : "add_207",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_207,x_208",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_208",
+      "top" : "sum_208",
+      "type" : "elementwise",
+      "name" : "add_208",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_208,x_209",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_209",
+      "top" : "sum_209",
+      "type" : "elementwise",
+      "name" : "add_209",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_209,x_210",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_210",
+      "top" : "sum_210",
+      "type" : "elementwise",
+      "name" : "add_210",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_210,x_211",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_211",
+      "top" : "sum_211",
+      "type" : "elementwise",
+      "name" : "add_211",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_211,x_212",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_212",
+      "top" : "sum_212",
+      "type" : "elementwise",
+      "name" : "add_212",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_212,x_213",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_213",
+      "top" : "sum_213",
+      "type" : "elementwise",
+      "name" : "add_213",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_213,x_214",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_214",
+      "top" : "sum_214",
+      "type" : "elementwise",
+      "name" : "add_214",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_214,x_215",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_215",
+      "top" : "sum_215",
+      "type" : "elementwise",
+      "name" : "add_215",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_215,x_216",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_216",
+      "top" : "sum_216",
+      "type" : "elementwise",
+      "name" : "add_216",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_216,x_217",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_217",
+      "top" : "sum_217",
+      "type" : "elementwise",
+      "name" : "add_217",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_217,x_218",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_218",
+      "top" : "sum_218",
+      "type" : "elementwise",
+      "name" : "add_218",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_218,x_219",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_219",
+      "top" : "sum_219",
+      "type" : "elementwise",
+      "name" : "add_219",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_219,x_220",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_220",
+      "top" : "sum_220",
+      "type" : "elementwise",
+      "name" : "add_220",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_220,x_221",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_221",
+      "top" : "sum_221",
+      "type" : "elementwise",
+      "name" : "add_221",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_221,x_222",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_222",
+      "top" : "sum_222",
+      "type" : "elementwise",
+      "name" : "add_222",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_222,x_223",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_223",
+      "top" : "sum_223",
+      "type" : "elementwise",
+      "name" : "add_223",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_223,x_224",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_224",
+      "top" : "sum_224",
+      "type" : "elementwise",
+      "name" : "add_224",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_224,x_225",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_225",
+      "top" : "sum_225",
+      "type" : "elementwise",
+      "name" : "add_225",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_225,x_226",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_226",
+      "top" : "sum_226",
+      "type" : "elementwise",
+      "name" : "add_226",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_226,x_227",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_227",
+      "top" : "sum_227",
+      "type" : "elementwise",
+      "name" : "add_227",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_227,x_228",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_228",
+      "top" : "sum_228",
+      "type" : "elementwise",
+      "name" : "add_228",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_228,x_229",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_229",
+      "top" : "sum_229",
+      "type" : "elementwise",
+      "name" : "add_229",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_229,x_230",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_230",
+      "top" : "sum_230",
+      "type" : "elementwise",
+      "name" : "add_230",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_230,x_231",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_231",
+      "top" : "sum_231",
+      "type" : "elementwise",
+      "name" : "add_231",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_231,x_232",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_232",
+      "top" : "sum_232",
+      "type" : "elementwise",
+      "name" : "add_232",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_232,x_233",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_233",
+      "top" : "sum_233",
+      "type" : "elementwise",
+      "name" : "add_233",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_233,x_234",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_234",
+      "top" : "sum_234",
+      "type" : "elementwise",
+      "name" : "add_234",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_234,x_235",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_235",
+      "top" : "sum_235",
+      "type" : "elementwise",
+      "name" : "add_235",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_235,x_236",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_236",
+      "top" : "sum_236",
+      "type" : "elementwise",
+      "name" : "add_236",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_236,x_237",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_237",
+      "top" : "sum_237",
+      "type" : "elementwise",
+      "name" : "add_237",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_237,x_238",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_238",
+      "top" : "sum_238",
+      "type" : "elementwise",
+      "name" : "add_238",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_238,x_239",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_239",
+      "top" : "sum_239",
+      "type" : "elementwise",
+      "name" : "add_239",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_239,x_240",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_240",
+      "top" : "sum_240",
+      "type" : "elementwise",
+      "name" : "add_240",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_240,x_241",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_241",
+      "top" : "sum_241",
+      "type" : "elementwise",
+      "name" : "add_241",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_241,x_242",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_242",
+      "top" : "sum_242",
+      "type" : "elementwise",
+      "name" : "add_242",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_242,x_243",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_243",
+      "top" : "sum_243",
+      "type" : "elementwise",
+      "name" : "add_243",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_243,x_244",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_244",
+      "top" : "sum_244",
+      "type" : "elementwise",
+      "name" : "add_244",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_244,x_245",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_245",
+      "top" : "sum_245",
+      "type" : "elementwise",
+      "name" : "add_245",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_245,x_246",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_246",
+      "top" : "sum_246",
+      "type" : "elementwise",
+      "name" : "add_246",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_246,x_247",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_247",
+      "top" : "sum_247",
+      "type" : "elementwise",
+      "name" : "add_247",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_247,x_248",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_248",
+      "top" : "sum_248",
+      "type" : "elementwise",
+      "name" : "add_248",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_248,x_249",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_249",
+      "top" : "sum_249",
+      "type" : "elementwise",
+      "name" : "add_249",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_249,x_250",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_250",
+      "top" : "sum_250",
+      "type" : "elementwise",
+      "name" : "add_250",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_250,x_251",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_251",
+      "top" : "sum_251",
+      "type" : "elementwise",
+      "name" : "add_251",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_251,x_252",
+      "alpha" : 1,
+      "operation" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_252",
+      "top" : "sum_252",
+      "type" : "elementwise",
+      "name" : "add_252",
+      "beta" : 0
+    },
+    {
+      "bottom" : "sum_252,x_253",
+      "alpha" : 1,
+      "operation" : 0,
+      "beta" : 0,
+      "weights" : {
+
+      },
+      "fused_relu" : 0,
+      "debug_info" : "add_253",
+      "top" : "y",
+      "type" : "elementwise",
+      "name" : "add_253",
+      "attributes" : {
+        "is_output" : 1
+      }
+    }
+  ]
+}

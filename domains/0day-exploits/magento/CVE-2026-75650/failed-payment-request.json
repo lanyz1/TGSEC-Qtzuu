@@ -1,0 +1,7 @@
+{
+  "query": "mutation FailedPayment($cartId: String!, $payload: String!) { handlePayflowProResponse(input: {cart_id: $cartId, paypal_payload: $payload}) { cart { id } } }",
+  "variables": {
+    "cartId": "REPLACE_WITH_GUEST_CART_ID",
+    "payload": "RESULT=12&RESPMSG=Declined"
+  }
+}

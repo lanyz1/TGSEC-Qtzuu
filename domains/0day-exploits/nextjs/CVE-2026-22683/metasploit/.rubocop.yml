@@ -1,0 +1,204 @@
+# Metasploit Framework compatible RuboCop configuration
+# Based on https://github.com/rapid7/metasploit-framework/.rubocop.yml
+
+AllCops:
+  TargetRubyVersion: 2.7
+  SuggestExtensions: false
+  NewCops: disable
+
+# Metasploit-specific disables
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/BlockNesting:
+  Enabled: false
+
+Metrics/BlockLength:
+  Max: 300
+
+Metrics/MethodLength:
+  Max: 300
+
+Metrics/ParameterLists:
+  Max: 8
+
+Layout/LineLength:
+  Enabled: false
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  Enabled: false
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/LineContinuationLeadingSpace:
+  Enabled: false
+
+Layout/FirstArgumentIndentation:
+  EnforcedStyle: consistent
+
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_first_argument
+
+Layout/FirstHashElementIndentation:
+  EnforcedStyle: consistent
+
+Layout/FirstHashElementLineBreak:
+  Enabled: true
+
+Layout/FirstArrayElementLineBreak:
+  Enabled: true
+
+Layout/FirstArrayElementIndentation:
+  EnforcedStyle: consistent
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/MutableConstant:
+  Enabled: false
+
+Style/RedundantReturn:
+  Enabled: false
+
+Style/GuardClause:
+  Enabled: false
+
+Style/NegatedIf:
+  Enabled: false
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Style/NumericLiterals:
+  Enabled: false
+
+Style/NumericPredicate:
+  Enabled: false
+
+Style/RedundantPercentQ:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/StringConcatenation:
+  Enabled: false
+
+Style/RedundantParentheses:
+  Enabled: false
+
+Style/RedundantAssignment:
+  Enabled: false
+
+Style/RedundantArgument:
+  Enabled: false
+
+Style/BlockComments:
+  Enabled: false
+
+Style/CaseLikeIf:
+  Enabled: false
+
+Style/IfWithBooleanLiteralBranches:
+  Enabled: false
+
+Style/NegatedIfElseCondition:
+  Enabled: false
+
+Style/MultipleComparison:
+  Enabled: false
+
+Style/SwapValues:
+  Enabled: false
+
+Style/SafeNavigation:
+  Enabled: false
+
+Style/UnpackFirst:
+  Enabled: false
+
+Style/TernaryParentheses:
+  Enabled: false
+
+Style/EmptyLiteral:
+  Enabled: false
+
+Style/ParenthesesAroundCondition:
+  Enabled: false
+
+Style/TrailingCommaInArrayLiteral:
+  Enabled: false
+
+Style/EvenOdd:
+  Enabled: false
+
+Style/FloatDivision:
+  Enabled: false
+
+Style/FormatString:
+  Enabled: false
+
+Style/For:
+  Enabled: false
+
+Style/Encoding:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    default: ()
+    '%q': '{}'
+    '%w': '[]'
+
+Naming/HeredocDelimiterNaming:
+  Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false
+
+Naming/ConstantName:
+  Enabled: false
+
+Naming/VariableNumber:
+  Enabled: false
+
+Naming/MethodParameterName:
+  MinNameLength: 2
+
+Naming/PredicatePrefix:
+  Enabled: false
+
+Lint/DuplicateBranch:
+  Enabled: false
+
+Lint/DuplicateRegexpCharacterClassElement:
+  Enabled: false
+
+Lint/EmptyBlock:
+  Enabled: false
+
+Lint/EmptyClass:
+  Enabled: false
+
+Lint/UnusedMethodArgument:
+  Exclude:
+    - 'lib/**/*'

@@ -1,0 +1,130 @@
+{"app_name":"pwn","timestamp":"2026-03-25 10:16:08.00 -0700","app_version":"","slice_uuid":"54d614e9-274c-3af0-9bd5-78bbdb97d878","build_version":"","platform":2,"share_with_app_devs":0,"is_first_party":1,"bug_type":"309","os_version":"iPhone OS 26.1 (23B85)","roots_installed":0,"incident_id":"D6C2F973-4E8C-41F1-86D1-D68C96A17251","name":"pwn"}
+{
+  "uptime" : 6200,
+  "procRole" : "Unspecified",
+  "version" : 2,
+  "userID" : 501,
+  "deployVersion" : 210,
+  "modelCode" : "iPhone99,11",
+  "coalitionID" : 516,
+  "osVersion" : {
+    "isEmbedded" : true,
+    "train" : "iPhone OS 26.1",
+    "releaseType" : "User",
+    "build" : "23B85"
+  },
+  "captureTime" : "2026-03-25 10:16:08.5083 -0700",
+  "codeSigningMonitor" : 2,
+  "incident" : "D6C2F973-4E8C-41F1-86D1-D68C96A17251",
+  "pid" : 646,
+  "translated" : false,
+  "cpuType" : "ARM-64",
+  "roots_installed" : 0,
+  "bug_type" : "309",
+  "procLaunch" : "2026-03-25 10:16:08.4900 -0700",
+  "procStartAbsTime" : 151053600566,
+  "procExitAbsTime" : 151054034639,
+  "procName" : "pwn",
+  "procPath" : "\/private\/preboot\/6CA4E4AE26D00E871AD250854E05620EF7081A73067162691CF1995C70E1FFC7D8B7D942086C333A3C85FAD6131784F5\/jb-vphone\/procursus\/var\/mobile\/out\/pwn",
+  "parentProc" : "zsh",
+  "parentPid" : 308,
+  "coalitionName" : "com.openssh.sshd.96CA1935-6AF8-4E04-99AA-D83E5DF7FF5A",
+  "crashReporterKey" : "2369c9f424ecbb9a26a744d89f191a8e4f1b7883",
+  "appleIntelligenceStatus" : {"reasons":["deviceNotCapable"],"state":"unavailable"},
+  "developerMode" : 1,
+  "codeSigningID" : "pwn",
+  "codeSigningTeamID" : "",
+  "codeSigningFlags" : 578813965,
+  "codeSigningValidationCategory" : 1,
+  "codeSigningTrustLevel" : 9,
+  "codeSigningAuxiliaryInfo" : 0,
+  "instructionByteStream" : {"beforePC":"EKIqkVAAALUEAAAUAAIf1l8kA9UBAAAUPwVA8eoDAJHDAABUSgVA0Q==","atPC":"XwFAOSkFQNE\/BUDxiP\/\/VEoBCctfAUA5wANf1gAAAAADAAHLfwAC6w=="},
+  "bootSessionUUID" : "B1C94908-EC01-48AB-AF03-B6E960F59A9B",
+  "vmRegionInfo" : "0x104e578b0 is in 0x104e54000-0x104e58000;  bytes after start: 14512  bytes before end: 1871\n      REGION TYPE                 START - END      [ VSIZE] PRT\/MAX SHRMOD  REGION DETAIL\n      __LINKEDIT               104e50000-104e54000 [   16K] r--\/r-- SM=COW  out\/pwn\n--->  VM_ALLOCATE              104e54000-104e58000 [   16K] ---\/rwx SM=NUL  \n      VM_ALLOCATE              104e58000-104ed8000 [  512K] r--\/rwx SM=PRV  ",
+  "exception" : {"codes":"0x0000000000000002, 0x0000000104e578b0","rawCodes":[2,4377114800],"type":"EXC_BAD_ACCESS","signal":"SIGKILL","subtype":"KERN_PROTECTION_FAILURE at 0x0000000104e578b0"},
+  "termination" : {"namespace":"<0x2A>","flags":2,"code":2},
+  "vmregioninfo" : "0x104e578b0 is in 0x104e54000-0x104e58000;  bytes after start: 14512  bytes before end: 1871\n      REGION TYPE                 START - END      [ VSIZE] PRT\/MAX SHRMOD  REGION DETAIL\n      __LINKEDIT               104e50000-104e54000 [   16K] r--\/r-- SM=COW  out\/pwn\n--->  VM_ALLOCATE              104e54000-104e58000 [   16K] ---\/rwx SM=NUL  \n      VM_ALLOCATE              104e58000-104ed8000 [  512K] r--\/rwx SM=PRV  ",
+  "faultingThread" : 0,
+  "threads" : [{"triggered":true,"id":29122,"threadState":{"x":[{"value":8647086640,"symbolLocation":4496,"symbol":"lsl::sPoolBytes"},{"value":792168},{"value":4390158336},{"value":6},{"value":16384},{"value":1},{"value":4377631416},{"value":4377634360},{"value":2},{"value":280168},{"value":4377114800},{"value":4390174720},{"value":792176},{"value":1},{"value":4396668798},{"value":48},{"value":6818802344,"symbolLocation":0,"symbol":"___chkstk_darwin"},{"value":8678452088},{"value":0},{"value":168},{"value":128},{"value":99000},{"value":4377631376},{"value":3},{"value":4377631416},{"value":4377634360},{"value":4390158336},{"value":6},{"value":16384}],"flavor":"ARM_THREAD_STATE64","lr":{"value":6818961608},"cpsr":{"value":536870912},"fp":{"value":4377631024},"sp":{"value":4377630896},"esr":{"value":2449473543,"description":"(Data Abort) byte read Translation fault"},"pc":{"value":6818802368,"matchesCrashFrame":1},"far":{"value":4377114800}},"queue":"com.apple.main-thread","frames":[{"imageOffset":35520,"symbol":"__chkstk_darwin_probe","symbolLocation":16,"imageIndex":3},{"imageOffset":194760,"symbol":"dyld4::setUpPageInLinkingRegions(dyld4::RuntimeState&, dyld4::Loader const*, unsigned long, unsigned short, unsigned short, bool, dyld3::Array<dyld4::PageInLinkingRange> const&, dyld3::Array<void const*> const&)","symbolLocation":208,"imageIndex":3},{"imageOffset":193972,"symbol":"invocation function for block in dyld4::Loader::setUpPageInLinking(Diagnostics&, dyld4::RuntimeState&, unsigned long, unsigned long long, dyld3::Array<void const*> const&) const","symbolLocation":380,"imageIndex":3},{"imageOffset":191800,"symbol":"dyld4::Loader::setUpPageInLinking(Diagnostics&, dyld4::RuntimeState&, unsigned long, unsigned long long, dyld3::Array<void const*> const&) const","symbolLocation":560,"imageIndex":3},{"imageOffset":189084,"symbol":"dyld4::Loader::applyFixupsGeneric(Diagnostics&, dyld4::RuntimeState&, unsigned long long, dyld3::Array<void const*> const&, dyld3::Array<void const*> const&, bool, dyld3::Array<dyld4::Loader::MissingFlatLazySymbol> const&) const","symbolLocation":216,"imageIndex":3},{"imageOffset":253660,"symbol":"dyld4::JustInTimeLoader::applyFixups(Diagnostics&, dyld4::RuntimeState&, dyld4::DyldCacheDataConstLazyScopedWriter&, bool, lsl::Vector<std::__1::pair<dyld4::Loader const*, char const*>>*) const","symbolLocation":668,"imageIndex":3},{"imageOffset":256880,"symbol":"dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const","symbolLocation":888,"imageIndex":3},{"imageOffset":255664,"symbol":"callWithProtectedStack","symbolLocation":80,"imageIndex":3},{"imageOffset":255392,"symbol":"lsl::ProtectedStack::withProtectedStack(void () block_pointer)","symbolLocation":368,"imageIndex":3},{"imageOffset":254148,"symbol":"void dyld4::RuntimeLocks::withLoadersWriteLockAndProtectedStack<dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()>(dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'())::'lambda'()::operator()() const","symbolLocation":192,"imageIndex":3},{"imageOffset":251808,"symbol":"dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const","symbolLocation":1004,"imageIndex":3},{"imageOffset":149660,"symbol":"dyld4::APIs::dlopen_from(char const*, int, void*)","symbolLocation":936,"imageIndex":3},{"imageOffset":16424,"symbol":"main","symbolLocation":40,"imageIndex":0},{"imageOffset":20008,"symbol":"start","symbolLocation":7116,"imageIndex":3}]}],
+  "usedImages" : [
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4377034752,
+    "size" : 32768,
+    "uuid" : "54d614e9-274c-3af0-9bd5-78bbdb97d878",
+    "path" : ".\/out\/pwn",
+    "name" : "pwn"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64e",
+    "base" : 4377640960,
+    "size" : 32768,
+    "uuid" : "852daf91-f260-3ff3-91c0-91e8d26e9048",
+    "path" : "\/cores\/systemhook.dylib",
+    "name" : "systemhook.dylib"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64e",
+    "base" : 4377804800,
+    "size" : 32768,
+    "uuid" : "a458b0ba-2b6b-35cf-9afb-c590a0d53881",
+    "path" : "\/private\/preboot\/6CA4E4AE26D00E871AD250854E05620EF7081A73067162691CF1995C70E1FFC7D8B7D942086C333A3C85FAD6131784F5\/jb-vphone\/procursus\/usr\/lib\/TweakLoader.dylib",
+    "name" : "TweakLoader.dylib"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64e",
+    "base" : 6818766848,
+    "size" : 649944,
+    "uuid" : "ef27e386-3cff-3752-b152-d96a0aa9effd",
+    "path" : "\/usr\/lib\/dyld",
+    "name" : "dyld"
+  },
+  {
+    "size" : 0,
+    "source" : "A",
+    "base" : 0,
+    "uuid" : "00000000-0000-0000-0000-000000000000"
+  }
+],
+  "sharedCache" : {
+  "base" : 6817628160,
+  "size" : 5095014400,
+  "uuid" : "db7850a6-cce8-37db-bffe-e126675d6a88"
+},
+  "vmSummary" : "ReadOnly portion of Libraries: Total=269.9M resident=0K(0%) swapped_out_or_unallocated=269.9M(100%)\nWritable regions: Total=15.2M written=288K(2%) resident=288K(2%) swapped_out=0K(0%) unallocated=14.9M(98%)\n\n                                VIRTUAL   REGION \nREGION TYPE                        SIZE    COUNT (non-coalesced) \n===========                     =======  ======= \nActivity Tracing                   256K        1 \nKernel Alloc Once                   32K        1 \nMALLOC                            12.7M        7 \nMALLOC guard page                 3744K        4 \nStack                             1008K        1 \nStack Guard                         16K        1 \nVM_ALLOCATE                        528K        2 \n__AUTH                            1154K       58 \n__AUTH_CONST                      5695K      137 \n__DATA                            1524K      120 \n__DATA_CONST                      7911K      139 \n__DATA_DIRTY                       579K      115 \n__LINKEDIT                       177.5M        4 \n__OBJC_RO                         84.1M        1 \n__OBJC_RW                         3169K        1 \n__TEXT                            92.4M      143 \n__TPRO_CONST                       128K        2 \ndyld private memory               1184K        5 \nmapped file                       9168K        6 \npage table in kernel               288K        1 \nshared memory                       48K        2 \n===========                     =======  ======= \nTOTAL                            402.3M      751 \n",
+  "legacyInfo" : {
+  "threadTriggered" : {
+    "queue" : "com.apple.main-thread"
+  }
+},
+  "logWritingSignature" : "83d5031d018f11e39279ebcc970fd749de1001d4",
+  "trialInfo" : {
+  "rollouts" : [
+    {
+      "rolloutId" : "639124e81d92412bfb4880b3",
+      "factorPackIds" : [
+
+      ],
+      "deploymentId" : 240000012
+    },
+    {
+      "rolloutId" : "66d35d7fe4d6bf7664f40ddf",
+      "factorPackIds" : [
+        "68c1a34bd359577bbe8f2182"
+      ],
+      "deploymentId" : 240000069
+    }
+  ],
+  "experiments" : [
+    {
+      "treatmentId" : "7700c1cc-f4dc-4846-8df6-b7eea2b9edca",
+      "experimentId" : "68f7ea85fb844b65bdae7ead",
+      "deploymentId" : 400000006
+    }
+  ]
+}
+}

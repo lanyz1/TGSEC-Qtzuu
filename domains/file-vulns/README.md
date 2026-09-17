@@ -27,3 +27,7 @@ upload-insecure-files
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+## 猎洞十二技（2026-09-17）
+
+见 `src-methods/hunter12-*`（五步猎洞法手册，来自 web-security-skills 差分融合）。

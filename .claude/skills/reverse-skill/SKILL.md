@@ -119,3 +119,26 @@ bash /root/reverse-skill/skills/scripts/refresh-tool-index.sh
 
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+## rev-skills 原子技能包（2026-09-17）
+
+`/root/security-suite/domains/reverse-engineering/rev-skills-pack/`
+
+| 需求 | 打开 |
+|------|------|
+| 内核/驱动/rootkit | `re-kernel/SKILL.md` |
+| RTOS/单片机固件 | `re-rtos/SKILL.md` |
+| hypervisor/KVM | `re-hypervisor/SKILL.md` |
+| TEE/TrustZone/OP-TEE | `re-tee/SKILL.md` |
+| 智能卡/APDU | `re-javacard/SKILL.md` |
+| eBPF/UEFI/固件提取 | `re-ebpf` `re-uefi` `re-fw-extract` |
+| 车载/工控 | `re-automotive` `re-ics` |
+| 游戏机/游戏/反作弊 | `re-console` `re-game` `re-anti-cheat` |
+| Flutter/Electron/WASM/混合App | `re-flutter` `re-electron` `re-wasm` `re-hybrid-app` |
+| 入口编排 | `re-analyze/SKILL.md` |
+
+索引：`rev-skills-pack/README.md`（122 技能全表）
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理
+
+

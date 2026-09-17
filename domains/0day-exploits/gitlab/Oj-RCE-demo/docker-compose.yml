@@ -1,0 +1,31 @@
+name: gitlab-oj-rce
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce@sha256:49bd9fd166d8f82d443415c50aa65de2675a020b218c5949061db4b87442c7e1
+    platform: linux/amd64
+    container_name: gl-fresh
+    hostname: gl-fresh
+    shm_size: "256m"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://localhost:18935'
+        gitlab_rails['initial_root_password'] = 'Password1!'
+        puma['worker_processes'] = 2
+        prometheus_monitoring['enable'] = false
+        sidekiq['concurrency'] = 5
+    ports:
+      - "18935:18935"
+    networks:
+      recording:
+        ipv4_address: 10.250.250.2
+    healthcheck:
+      disable: true
+
+networks:
+  recording:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.250.250.0/24
+          gateway: 10.250.250.1

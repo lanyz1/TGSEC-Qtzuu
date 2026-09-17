@@ -1,0 +1,80 @@
+services:
+  pg12:
+    image: postgres:12
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg12data:/var/lib/postgresql/data
+    ports:
+      - "15012:5432"
+
+  pg13:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg13data:/var/lib/postgresql/data
+    ports:
+      - "15013:5432"
+
+  pg14:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg14data:/var/lib/postgresql/data
+    ports:
+      - "15014:5432"
+
+  pg15:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg15data:/var/lib/postgresql/data
+    ports:
+      - "15015:5432"
+
+  pg16:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg16data:/var/lib/postgresql/data
+    ports:
+      - "15016:5432"
+
+  pg17:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg17data:/var/lib/postgresql/data
+    ports:
+      - "15017:5432"
+
+volumes:
+  pg12data:
+  pg13data:
+  pg14data:
+  pg15data:
+  pg16data:
+  pg17data:

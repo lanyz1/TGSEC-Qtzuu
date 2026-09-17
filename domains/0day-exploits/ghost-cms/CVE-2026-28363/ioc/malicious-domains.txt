@@ -1,0 +1,69 @@
+# OpenClaw Known Malicious Domains
+# Source: Koi Security, VirusTotal, Snyk research, Endor Labs, Oasis Security, Huntress, Socket, Lazarus, Semgrep
+# Format: domain|type|campaign|notes
+# Last updated: 2026-03-15
+
+# Payload hosting
+install.app-distribution.net|payload|clawhavoc|AMOS installer distribution
+glot.io|payload-host|clawhavoc|Base64-obfuscated shell scripts (legitimate service abused)
+
+# Exfiltration
+webhook.site|exfil|generic|Data exfiltration webhook service
+pipedream.net|exfil|generic|Data exfiltration
+requestbin.com|exfil|generic|Data exfiltration
+hookbin.com|exfil|generic|Data exfiltration
+burpcollaborator.net|exfil|generic|Pentest tool (suspicious in skills)
+ngrok.io|exfil|generic|Tunneling service for exfiltration
+interact.sh|exfil|generic|OAST tool for exfiltration
+
+# Moltbook infrastructure (CSA report - monitor for agent-to-agent poisoning)
+moltbook.com|monitor|csa-report|AI agent social network - monitor for credential exposure and content poisoning
+
+# Fake distribution & decoy domains
+github.com/hedefbari|payload|clawhavoc|Attacker GitHub - openclaw-agent.zip
+github.com/Ddoy233|payload|opensourcemalware|GitHub repo openclawcli - Windows infostealer
+download.setup-service.com|decoy|clawhavoc|Decoy domain string in bash payload scripts
+open-meteo.com|data-cover|bloom-campaign|Legitimate weather API abused as cover for exfiltration (skill: reddit-trends)
+
+# Vidar infostealer infrastructure (Hudson Rock, Feb 13 2026)
+# Vidar uses fast-flux DNS; these are known distribution and panel domains
+# targeting OpenClaw config directories (openclaw.json, device.json, soul.md)
+
+# Log poisoning injection endpoints (Eye Security, Feb 2026)
+# Injected via WebSocket Origin/User-Agent headers into gateway logs
+# Pattern: attacker-controlled domains appearing in log files
+
+# VirusTotal scanning integration bypass attempts
+# Skills trying to evade SHA-256 hash scanning via dynamic generation
+
+# Fake OpenClaw installer infrastructure (Huntress, Feb-Mar 2026)
+# GhostSocks proxy malware + Vidar stealer distributed via fake GitHub repos
+# Bing AI search results poisoned to promote these malicious repos
+github.com/openclaw-installer|fake-installer|ghostsocks|Fake OpenClaw installer - GhostSocks + Vidar (Huntress, removed Feb 10)
+github.com/install-openclaw|fake-installer|ghostsocks|Fake OpenClaw installer org/repo cluster (Huntress)
+github.com/simple-claw|fake-installer|ghostsocks|Fake OpenClaw installer org/repo cluster (Huntress)
+github.com/comfyui-auto-installer|fake-installer|ghostsocks|Cross-project installer lure tied to same actor cluster
+github.com/openclaw-trading-assistant|payload|ghostsocks|Self-promotion lure repository linked to installer campaign
+
+# Stealth Packer C2 infrastructure (Huntress, Feb 2026)
+# Rust-based malware loaders that inject infostealers in memory
+# Vidar payloads contact Telegram/Steam profiles for C2 data
+serverconect.cc|c2|ghostsocks-purelogs|PureLogs C2 endpoint used by fake installer chain
+socifiapp.com|exfil|openclawbot-amos|OpenClawBot upload endpoint /api/reports/upload in AMOS chain
+
+# SANDWORM_MODE worm infrastructure (Socket, Feb 20 2026)
+# 19 typosquatted npm packages inject rogue MCP servers into AI tool configs
+# Harvests SSH keys, AWS creds, npm tokens, and LLM API keys across 9 providers
+# Self-propagates via discovered git repos with 48-hour delayed activation
+
+# Malicious MCP server "rug pull" (Semgrep/Docker, Feb 2026)
+# postmark-mcp on npm: 15 clean versions before adding BCC exfiltration to all emails
+# MCP clients don't re-prompt when tool descriptions change post-update
+
+# Lazarus XPACK campaign (Feb 4 2026)
+# North Korea-linked npm/PyPI supply chain attack via fake crypto job offers
+# 200+ malicious packages distributing RATs via HTTP 402 social engineering paywall
+
+# DXT zero-click attack surface (LayerX, Feb 2026)
+# Malicious Google Calendar events inject hidden instructions into DXT extensions
+# Extensions run unsandboxed with full system privileges

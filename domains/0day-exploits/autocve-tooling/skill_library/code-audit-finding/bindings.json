@@ -1,0 +1,42 @@
+{
+  "skills": [
+    {
+      "id": "audit_chat:code-audit-finding",
+      "skill_id": "code-audit-finding",
+      "slug": "code-audit-finding",
+      "agent_type": "audit_chat",
+      "enabled": true,
+      "always_include": false,
+      "sort_order": 10,
+      "match_keywords": [],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/audit_chat/bindings.json",
+      "skill_file": "/app/skill_library/code-audit-finding/SKILL.md",
+      "workspace_relative_path": "skill_library/code-audit-finding",
+      "skill_root": "/app/skill_library/code-audit-finding"
+    },
+    {
+      "id": "finding:code-audit-finding",
+      "skill_id": "code-audit-finding",
+      "slug": "code-audit-finding",
+      "agent_type": "finding",
+      "enabled": true,
+      "always_include": true,
+      "sort_order": 0,
+      "match_keywords": [
+        "auth",
+        "authorization",
+        "business-logic",
+        "code-audit",
+        "idor",
+        "security",
+        "source-review"
+      ],
+      "match_config": {},
+      "bindings_file": "/app/skill_library/agents/finding/bindings.json",
+      "skill_file": "/app/skill_library/code-audit-finding/SKILL.md",
+      "workspace_relative_path": "skill_library/code-audit-finding",
+      "skill_root": "/app/skill_library/code-audit-finding"
+    }
+  ]
+}

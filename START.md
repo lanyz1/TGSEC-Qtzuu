@@ -7,6 +7,9 @@
 
 **规模体感：** 24 个主题域 · `domains/` 约 **14000+** 文件 · 14 个伞形技能 · 80+ 工具清单。
 
+**本轮更新（2026-09-17）：** CVE/PoC 批次 A–D（CVE 目录约 200+）· 红队 technique 7→22 · 逆向原子包 122 · 实战报告融 44。  
+完整说明 → [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md) · 自述摘要 → [`README.md`](README.md)「〇、本轮更新了什么」。
+
 ---
 
 ## 第 1 步：下载到电脑
@@ -159,6 +162,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\sync-agent-skills.ps1
 ```bash
 cd ~/security-suite && git pull && bash scripts/sync-agent-skills.sh
 ```
+
+看「这次更新了啥」：打开根目录最新的 `UPDATE-*.md`（现在是 [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)）。
 
 ---
 

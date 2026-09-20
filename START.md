@@ -11,7 +11,8 @@
 
 **本轮更新（2026-09-20）：**  
 **整改** — bak 歧义清掉 / 私有技能进强制矩阵 / sinian 迁 `_vendor` / CASE-INDEX 中途闸门。  
-**更新** — 51 课实战总表 · 712win3 课 · Cloudflare security-audit 轻量提炼 · 攻防技能卡增量。  
+**更新** — 51 课实战总表 · 712win3 课 · Cloudflare security-audit 轻量提炼 · 攻防技能卡增量。
+**CVE批次(09-21)** — 13 条情报差分进 `0day-exploits`（见 `INGEST-20260921-INDEX.md`）。  
 完整说明 → [`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md) · 自述首页「〇、本轮更新了什么」。
 
 ---

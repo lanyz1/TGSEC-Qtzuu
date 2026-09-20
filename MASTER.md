@@ -98,6 +98,7 @@ Clone 后目录一般为 `~/security-suite`（Windows: `%USERPROFILE%\security-s
 | 产品 0day RCE | `0day-exploit-library` |
 | PHP/Java 白盒审计 | `domains/file-vulns/code-audit/` |
 | Cloudflare 白盒多智能体审计提炼 | `domains/file-vulns/code-audit/cloudflare-security-audit/` |
+| CVE 情报批次 2026-09-21 | `domains/0day-exploits/INGEST-20260921-INDEX.md` |
 | iOS26.6/65343/KASLR 研判 | `mobile-security/ios-kernel-cve/ANALYSIS.md` |
 
 ## 打开即配置 / 旧机器覆盖

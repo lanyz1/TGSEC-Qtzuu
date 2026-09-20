@@ -1,0 +1,284 @@
+# 敏感信息泄露黄金样本。
+#
+# 期望值全部**照着 body 手推**：这一类载荷是路径，body 就是 "<<file>>" 一个占位符，
+# 槽位先填、变量后替换，之后没有绕过、没有传输编码，所以 raw 就是代入后的原串。
+# 唯一需要多推一层的是 curl 那两条——submit 与 param 决定载荷落在哪，再逐字符算编码。
+#
+# 覆盖：VCS 元数据 / 配置与凭据 / 构建文件 / 调试端点 / 打包备份 / 自定义路径。
+# 每条模板至少一条样本；槽位有多个取值的另补一条切到非默认值的，
+# 免得哪天默认值改了、模板和样本一起错还看不出来。
+# custom 那条特意留了一条不填 filepath 的样本，钉住契约 3（漏填保留字面量）。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= 版本控制元数据 =================
+
+  - name: 泄露 · Git 元数据（默认 config，走 curl 层）
+    state:
+      vuln: leak
+      template: leak.generic.vcs.git
+      outputs: [raw, curl]
+    expect:
+      # <<file>> 取默认值 "/.git/config"
+      payload: "/.git/config"
+      # 默认提交方式 query + param=id + host=example.com：
+      # 载荷按 safe="" 整体 URL 编码（/ → %2F，. 不是保留字符、不编码），
+      # 拼成 http://example.com/?id=...，再由 bash 的 shell_quote 包一层单引号
+      outputs:
+        curl: "curl 'http://example.com/?id=%2F.git%2Fconfig'"
+
+  - name: 泄露 · Git 元数据（index，配 git-dumper）
+    state:
+      vuln: leak
+      template: leak.generic.vcs.git
+      slots: {file: "/.git/index"}
+      outputs: [raw]
+    expect:
+      payload: "/.git/index"
+
+  - name: 泄露 · Git 元数据（提交方式改成 URL 路径）
+    state:
+      vuln: leak
+      template: leak.generic.vcs.git
+      submit: path
+      outputs: [raw, curl]
+    expect:
+      payload: "/.git/config"
+      # submit=path 时 place 先 rstrip 掉基址结尾的斜杠，再补一个斜杠、接编码后的载荷：
+      # http://example.com/ → http://example.com + "/" + "%2F.git%2Fconfig"
+      outputs:
+        curl: "curl 'http://example.com/%2F.git%2Fconfig'"
+
+  - name: 泄露 · SVN 元数据（默认 entries）
+    state:
+      vuln: leak
+      template: leak.generic.vcs.svn
+      outputs: [raw]
+    expect:
+      payload: "/.svn/entries"
+
+  - name: 泄露 · SVN 元数据（1.7 以后的 wc.db）
+    state:
+      vuln: leak
+      template: leak.generic.vcs.svn
+      slots: {file: "/.svn/wc.db"}
+      outputs: [raw]
+    expect:
+      payload: "/.svn/wc.db"
+
+  - name: 泄露 · Mercurial 元数据
+    state:
+      vuln: leak
+      template: leak.generic.vcs.hg
+      outputs: [raw]
+    expect:
+      # 这条没有槽位，body 原样输出
+      payload: "/.hg/requires"
+
+  # ================= 配置与凭据 =================
+
+  - name: 泄露 · .env 环境文件（默认）
+    state:
+      vuln: leak
+      template: leak.generic.config.env
+      outputs: [raw]
+    expect:
+      payload: "/.env"
+
+  - name: 泄露 · .env 备份副本
+    state:
+      vuln: leak
+      template: leak.generic.config.env
+      slots: {file: "/.env.backup"}
+      outputs: [raw]
+    expect:
+      payload: "/.env.backup"
+
+  - name: 泄露 · 配置与编辑器备份（默认 config.php.bak）
+    state:
+      vuln: leak
+      template: leak.generic.config.backup
+      outputs: [raw]
+    expect:
+      payload: "/config.php.bak"
+
+  - name: 泄露 · 配置与编辑器备份（.DS_Store）
+    state:
+      vuln: leak
+      template: leak.generic.config.backup
+      slots: {file: "/.DS_Store"}
+      outputs: [raw]
+    expect:
+      payload: "/.DS_Store"
+
+  - name: 泄露 · 凭据与历史文件（默认 AWS 凭据）
+    state:
+      vuln: leak
+      template: leak.generic.config.credential
+      outputs: [raw]
+    expect:
+      payload: "/.aws/credentials"
+
+  - name: 泄露 · 凭据与历史文件（SSH 私钥）
+    state:
+      vuln: leak
+      template: leak.generic.config.credential
+      slots: {file: "/.ssh/id_rsa"}
+      outputs: [raw]
+    expect:
+      payload: "/.ssh/id_rsa"
+
+  - name: 泄露 · 构建与编排文件（默认 GitLab CI）
+    state:
+      vuln: leak
+      template: leak.generic.config.ci
+      outputs: [raw]
+    expect:
+      payload: "/.gitlab-ci.yml"
+
+  - name: 泄露 · 构建与编排文件（docker-compose）
+    state:
+      vuln: leak
+      template: leak.generic.config.ci
+      slots: {file: "/docker-compose.yml"}
+      outputs: [raw]
+    expect:
+      payload: "/docker-compose.yml"
+
+  # ================= 调试 / 管理端点 =================
+
+  - name: 泄露 · Actuator（默认根路径）
+    state:
+      vuln: leak
+      template: leak.generic.debug.actuator
+      outputs: [raw]
+    expect:
+      payload: "/actuator"
+
+  - name: 泄露 · Actuator（env 读明文配置）
+    state:
+      vuln: leak
+      template: leak.generic.debug.actuator
+      slots: {file: "/actuator/env"}
+      outputs: [raw]
+    expect:
+      payload: "/actuator/env"
+
+  - name: 泄露 · Actuator（heapdump 堆转储）
+    state:
+      vuln: leak
+      template: leak.generic.debug.actuator
+      slots: {file: "/actuator/heapdump"}
+      outputs: [raw]
+    expect:
+      payload: "/actuator/heapdump"
+
+  - name: 泄露 · 接口文档（默认 swagger-ui）
+    state:
+      vuln: leak
+      template: leak.generic.debug.apidoc
+      outputs: [raw]
+    expect:
+      payload: "/swagger-ui.html"
+
+  - name: 泄露 · 接口文档（v2/api-docs 的 JSON）
+    state:
+      vuln: leak
+      template: leak.generic.debug.apidoc
+      slots: {file: "/v2/api-docs"}
+      outputs: [raw]
+    expect:
+      payload: "/v2/api-docs"
+
+  - name: 泄露 · phpinfo（默认 phpinfo.php）
+    state:
+      vuln: leak
+      template: leak.generic.debug.phpinfo
+      outputs: [raw]
+    expect:
+      payload: "/phpinfo.php"
+
+  - name: 泄露 · phpinfo（info.php 变体）
+    state:
+      vuln: leak
+      template: leak.generic.debug.phpinfo
+      slots: {file: "/info.php"}
+      outputs: [raw]
+    expect:
+      payload: "/info.php"
+
+  - name: 泄露 · 调试控制台（默认 H2 console）
+    state:
+      vuln: leak
+      template: leak.generic.debug.console
+      outputs: [raw]
+    expect:
+      payload: "/console"
+
+  - name: 泄露 · 调试控制台（Druid 监控页）
+    state:
+      vuln: leak
+      template: leak.generic.debug.console
+      slots: {file: "/druid/index.html"}
+      outputs: [raw]
+    expect:
+      payload: "/druid/index.html"
+
+  # ================= 打包备份 =================
+
+  - name: 泄露 · 整站打包备份（默认 www.zip）
+    state:
+      vuln: leak
+      template: leak.generic.backup.webroot
+      outputs: [raw]
+    expect:
+      payload: "/www.zip"
+
+  - name: 泄露 · 整站打包备份（wwwroot.rar）
+    state:
+      vuln: leak
+      template: leak.generic.backup.webroot
+      slots: {file: "/wwwroot.rar"}
+      outputs: [raw]
+    expect:
+      payload: "/wwwroot.rar"
+
+  - name: 泄露 · 数据库导出（默认 backup.sql）
+    state:
+      vuln: leak
+      template: leak.generic.backup.sql
+      outputs: [raw]
+    expect:
+      payload: "/backup.sql"
+
+  - name: 泄露 · 数据库导出（db.sql）
+    state:
+      vuln: leak
+      template: leak.generic.backup.sql
+      slots: {file: "/db.sql"}
+      outputs: [raw]
+    expect:
+      payload: "/db.sql"
+
+  # ================= 自定义路径 =================
+
+  - name: 泄露 · 自定义路径（填 .htpasswd）
+    state:
+      vuln: leak
+      template: leak.generic.config.custom
+      vars: {filepath: "/.htpasswd"}
+      outputs: [raw]
+    expect:
+      # 变量替换把 <<filepath>> 换成 /.htpasswd，路径里的斜杠来自变量本身
+      payload: "/.htpasswd"
+
+  - name: 泄露 · 自定义路径没填 filepath（契约 3，不给默认值）
+    state:
+      vuln: leak
+      template: leak.generic.config.custom
+      outputs: [raw]
+    expect:
+      # body 就是 <<filepath>> 一个占位符，漏填时整串保留——产出一个明显不可用的串，
+      # 而不是替用户猜一个路径
+      payload: "<<filepath>>"

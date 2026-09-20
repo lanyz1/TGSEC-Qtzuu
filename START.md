@@ -1,5 +1,7 @@
 # 小白从这里开始（3 步）
 
+- 2026-09-20：增量融合攻防技能卡与 payload/工具面（注入/授权/API/云/AD/移动/无线等）
+
 仓库：https://github.com/lanyz1/TGSEC-Qtzuu
 
 这是 **TGSEC 安全知识聚合库**：按攻击面整理的授权渗透 / 挖洞资料 + 伞形技能路由 + 工具/PoC/字典入口。  
@@ -7,8 +9,8 @@
 
 **规模体感：** 24 个主题域 · `domains/` 约 **14000+** 文件 · 14 个伞形技能 · 80+ 工具清单。
 
-**本轮更新（2026-09-17）：** CVE/PoC 批次 A–D（CVE 目录约 200+）· 红队 technique 7→22 · 逆向原子包 122 · 实战报告融 44。  
-完整说明 → [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md) · 自述摘要 → [`README.md`](README.md)「〇、本轮更新了什么」。
+**本轮更新（2026-09-20）：** CASE-INDEX 实战课总表 · 调用闭环（bak 歧义清掉 / 私有技能矩阵 / sinian `_vendor`）· 712win3 课 · 攻防技能卡增量融合。  
+完整说明 → [`domains/FUSION-20260920-callpath-optimize.md`](domains/FUSION-20260920-callpath-optimize.md) · 自述 → [`README.md`](README.md)「十、融合批次」。
 
 ---
 

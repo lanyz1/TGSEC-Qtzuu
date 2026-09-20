@@ -1,0 +1,83 @@
+ruleDB: v0.1.0
+# requires 的受控词表。
+#
+# 背景：模板里的 requires 原来是自由文本，攒到 95 个互不相同的短语，
+# 其中大量同义重复（「已在 lhost 上起监听」/「已起监听」/「已在 lhost 上起对应服务」）。
+# 自由文本做不了筛选，所以收敛成这张表。
+#
+# 语义：**载荷要生效，目标必须具备这个条件**。
+# 用户用 `--without <id>` 声明「我的目标没有这个条件」，工具据此硬排除需要的模板。
+# 这是用户声明事实、工具据此收窄，与「工具不替用户判断」不冲突——
+# 和 `--component mysql` 是同一类操作。
+#
+# 颗粒度取舍：粗的地方（echo/stacked/outbound）覆盖几十条模板，筛选价值最高；
+# 细的地方（weak-upload-check 之类）只影响一两条，但**保持词表封闭**才能做校验。
+
+requires:
+  # ---- 回显方式 ----
+  - {id: echo,    name: "页面有回显位",       desc: "注入结果直接出现在响应正文里"}
+  - {id: error,   name: "页面回显报错",       desc: "数据库/解析器的报错信息可见，报错注入靠它带出数据"}
+  - {id: boolean, name: "页面真假条件有差异",  desc: "真假条件返回的页面不同，布尔盲注靠它"}
+
+  # ---- 目标能力 ----
+  - {id: stacked,        name: "支持堆叠查询/多语句", desc: "驱动允许多语句，堆叠注入与 xp_cmdshell 这类靠它"}
+  - {id: outbound,       name: "目标可出网",         desc: "带外、反弹、下载执行都靠它"}
+  - {id: writable,       name: "目标上有可写路径",    desc: "写 webshell 或落文件"}
+  - {id: os-windows,     name: "目标为 Windows",     desc: "路径分隔符、命令、UNC 相关"}
+  - {id: cloud,          name: "目标运行在云上",      desc: "云元数据地址才有意义"}
+
+  # ---- 权限 ----
+  - {id: dba,       name: "数据库高权限",      desc: "sysadmin / 超级用户 / DBA 级账号"}
+  - {id: file-priv, name: "数据库文件读写权限", desc: "FILE 权限、secure_file_priv 允许、pg_read_server_files 等"}
+
+  # ---- 攻击侧准备 ----
+  - {id: listener,  name: "已在 lhost 上起监听/服务", desc: "带外接收、反弹 shell、外部 DTD 都靠它"}
+  - {id: generator, name: "需外部生成器产出载荷",     desc: "二进制载荷走 ysoserial / phpggc，见 §3 的边界说明"}
+
+  # ---- 可控点 ----
+  - {id: template-ctrl, name: "模板内容可控",       desc: "用户输入会进到模板引擎里"}
+  - {id: deser-sink,    name: "存在反序列化入口",    desc: "不可信数据会走到反序列化"}
+  - {id: fetch-sink,    name: "应用会访问注入的值",  desc: "SSRF / JNDI lookup 的本质"}
+  - {id: proto-open,    name: "应用未限制协议白名单", desc: "file:// gopher:// dict:// 才可用"}
+  - {id: redirect-follow, name: "应用跟随跳转",     desc: "用 302 绕首跳域名校验"}
+  - {id: reflect,       name: "用户输入会回显到页面", desc: "反射型 XSS 的必要条件：输入未经转义就出现在 HTML 输出里"}
+  - {id: stored,        name: "输入会被存下来再渲染", desc: "存储型 / 盲打 XSS 靠它：这次提交的内容在别的页面（常见是后台）才执行"}
+  - {id: include-sink,  name: "用户输入会进到包含语句", desc: "include / require 的参数可控，文件包含的本质"}
+  - {id: redirect-sink, name: "应用把参数当跳转地址", desc: "开放重定向：Location / window.location 直接取自用户输入"}
+  - {id: dom-sink,      name: "前端把可控数据写进危险 DOM 接口", desc: "innerHTML / document.write / eval 这类 sink 吃到了 URL 里的数据，DOM 型 XSS 靠它"}
+
+  # ---- 目标缺陷 ----
+  - {id: weak-hardening,    name: "目标加固不到位",     desc: "未开 safeMode / 未配白名单 / 未禁外部实体 / 沙箱未启用 / xp_cmdshell 仍开着 / ad hoc 查询开启 / utl_inaddr 未回收"}
+  - {id: weak-filter,       name: "目标过滤存在缺陷",   desc: "有过滤但可绕（只匹配明文、只解码一次、删除而非拒绝…）"}
+  - {id: weak-upload-check, name: "上传校验存在缺陷",   desc: "后缀 / 内容 / MIME 只查其一，或解析顺序有缺陷"}
+  - {id: upload-accessible, name: "上传的文件可被访问", desc: "能被直接请求或解析"}
+  - {id: no-httponly,       name: "Cookie 未设 HttpOnly", desc: "document.cookie 读得到，窃取 Cookie 的载荷才有意义"}
+  - {id: url-include,       name: "allow_url_include 已开启", desc: "PHP 的 allow_url_include=On。http:// data:// 以及 php://input 都受它管——只有 php://filter 不受影响"}
+
+  # ---- 目标能力（续）----
+  - {id: log-writable, name: "日志或会话文件可控", desc: "日志包含用：UA / 路径等字段会原样写进日志或 session 文件"}
+
+  # ---- JWT ----
+  # 这一组是「验签环节具体缺哪一块」，四条的修法各不相同，合成一条会让用户
+  # 勾了「JWT 校验有缺陷」却看到一堆自己用不上的载荷。
+  - {id: jwt-none,         name: "服务端接受 alg=none",     desc: "验签时没有把 none 挡掉——改个 header 就能免签"}
+  - {id: jwt-weak-secret,  name: "HMAC 密钥是弱口令",        desc: "HS256 的密钥能猜/能爆破（常见是 secret、密钥本身、或从别处泄露的串）"}
+  - {id: jwt-key-confusion, name: "不校验 alg 与密钥类型",   desc: "服务端拿同一份密钥同时当 RSA 公钥和 HMAC 密钥用，能把 RS256 降级成 HS256"}
+  - {id: jwt-kid-inject,   name: "kid 参与路径或查询拼接",  desc: "kid 被拿去读密钥文件或查库，可用路径穿越或 SQL 注入控制密钥"}
+  - {id: jwt-jku-open,     name: "服务端会取 jku/x5u 的密钥", desc: "header 里的 jku / x5u 指向哪就去哪取公钥，等于把验签密钥交给你"}
+
+  # ---- 原型链污染 ----
+  - {id: proto-sink,   name: "输入会走到递归合并", desc: "可控数据进了 Object.assign / $.extend(true,…) / lodash merge 这类会遍历 __proto__ 的合并逻辑"}
+  - {id: proto-gadget, name: "有吃污染属性的下游逻辑", desc: "某个 gadget 会把原型上的属性当配置读（模板选项、子进程参数、序列化输出…），污染才能升级成实际效果"}
+
+  # ---- 敏感信息泄露 ----
+  - {id: vcs-exposed,     name: "版本控制元数据可访问", desc: ".git / .svn / .hg 目录被部署到了 Web 目录，能直接拉下来还原源码"}
+  - {id: debug-endpoint-open, name: "调试或管理端点未鉴权", desc: "actuator / swagger / 控制台 / phpinfo 这类端点没做认证或没限制来源"}
+
+  # ---- CORS / CRLF / CSRF ----
+  - {id: cors-misconfig, name: "CORS 反射 Origin 或放开任意源", desc: "Access-Control-Allow-Origin 跟着请求里的 Origin 走（或写成 *），配合带凭据才能读跨站响应"}
+  - {id: header-sink,    name: "用户输入会进到响应头", desc: "输入被拼进 Location / Set-Cookie 这类响应头，CRLF 才能拆出新头或新响应"}
+  - {id: no-csrf-token,  name: "关键操作没有 CSRF 校验", desc: "改密码 / 转账这类操作不校验 token，也不检查 Referer，跨站表单就能直接提交"}
+
+  # ---- 侦察 ----
+  - {id: recon, name: "需要事先侦察出的目标信息", desc: "表名、类名、下标、后缀解析方式这类，选模板前得先摸清楚"}

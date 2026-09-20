@@ -1,0 +1,225 @@
+ruleDB: v0.1.0
+# 界面展示用的中文标签。
+#
+# **只影响显示，不影响取值。** 选项底层仍然是 id（`sqli` / `close` / `sql-expression`），
+# 文档、黄金样本、报错信息、`import forge` 的脚本里引用的也全是 id。
+# 显示成「中文 id」是为了让不熟悉这套术语的人看懂，同时不切断和 id 的对应关系。
+#
+# 查不到的键**原样显示 id**，所以这张表可以按需要慢慢补，不必一次填满。
+# 新加的槽位/变量没登记也不会报错，只是少一层中文。
+#
+# 这张表放在 data/ 而不是引擎里，理由和模板一样：它是可编辑的数据，不是代码。
+
+labels:
+  # ---- 漏洞类型（字段 1）----
+  vuln:
+    sqli: SQL 注入
+    rce: 命令注入
+    ssti: 模板注入
+    xxe: XML 外部实体
+    ssrf: 服务端请求伪造
+    traversal: 路径穿越
+    lfi: 文件包含
+    upload: 文件上传
+    deser: 反序列化
+    nosql: NoSQL 注入
+    ldap: LDAP 注入
+    xpath: XPath 注入
+    xss: 跨站脚本
+    redirect: 开放重定向
+    jwt: JWT 攻击
+    proto: 原型链污染
+    leak: 敏感信息泄露
+    cors: CORS 配置错误
+    crlf: CRLF 响应头注入
+    csrf: 跨站请求伪造
+
+  # ---- 内容类型（字段 3）：描述**载荷文本的语法**，不是它达成的效果 ----
+  content_type:
+    sql-expression: SQL 表达式
+    shell-command: Shell 命令
+    powershell-command: PowerShell 命令
+    template-expression: 模板表达式
+    xml: XML 文档
+    json: JSON
+    yaml: YAML
+    serialized: 序列化串
+    ldap-filter: LDAP 过滤器
+    xpath: XPath 表达式
+    url: URL
+    file-path: 文件路径
+    html: HTML 片段
+    raw: 纯文本
+
+  # ---- 提交方式（字段 6）：载荷放在 HTTP 请求的哪个位置 ----
+  submit:
+    query: URL 参数
+    path: URL 路径
+    header: 请求头
+    cookie: Cookie
+    json: JSON 字段
+    json-body: JSON 请求体
+    form: 表单
+    raw: 请求体原文
+    multipart: 文件上传表单
+
+  # ---- 输出层（字段 5）：你最后复制走的东西长什么样 ----
+  render:
+    raw: 原始载荷
+    encoded: 仅 URL 编码
+    request: 原始 HTTP 报文
+    curl: curl 命令
+    httpie: HTTPie 命令
+    powershell: PowerShell 脚本
+    python: Python 代码
+    node: Node 代码
+    java: Java 代码
+    php: PHP 代码
+    burp: Burp 报文
+
+  # ---- 槽位：模板里可选的有限取值 ----
+  slot:
+    close: 闭合符
+    comment: 注释符
+    cols: 列数
+    pos: 回显位
+    colidx: 目标表第几列
+    hashcol: 哈希所在的列名
+    as_: BULK 读取方式
+    code: 写进去的代码
+    cmd: Redis 命令
+    dec: 解码方式
+    drive: 盘符
+    f: 管道文件路径
+    log: 日志文件路径
+    sess: 会话文件前缀
+    w: 包装器前缀
+    pname: 跳转参数名
+    src: 数据来源
+    style: 混淆写法
+    t: 目标表列数
+    tool: 外发工具
+    trick: 尾部技巧
+    key: 配置项名
+    where: 库名限定方式
+    alg: 签名算法
+    kid: 密钥 ID
+    jwk: 内嵌 JWK
+    secret: HMAC 密钥
+    ct: Content-Type 取值
+    verb: 请求方法
+    cb: JSONP 回调参数名
+    ctrl: 控制字符写法
+    ep: 端点形态
+    fmt: token 格式
+    gap: 属性间分隔写法
+    inj: 注入的请求头内容
+    mxss: mXSS 变异点
+    pre: 值的前缀写法
+    chain: 反序列化链
+    conv: 报错注入的包装写法
+    lang: 存储过程语言
+    reg: 注册表落点
+    resp: 响应状态
+    shape: DOM clobbering 形态
+    stem: 文件名主干
+    sep: 命令分隔符
+    nl: 换行写法
+    ifs: 空格替代写法
+    expr: 表达式
+    marker: 回显标记
+    depth: 穿越层级
+    ext: 后缀名
+    first: 前面的后缀
+    second: 后面的后缀
+    fake: 白名单用的假后缀
+    magic: 魔术字节
+    proto: 协议
+    port: 端口
+    target: 目标地址／目标文件
+    webroot: Web 根目录
+    func: 调用的函数
+    sh: 命令解释器
+    enc: 编码方式
+    attr: 属性名
+    node: 节点名
+    d: 定界符
+    form: 变形写法
+    n: 数量
+    idx: 下标
+    size: 数据量
+    secs: 延时时长（秒）
+    ms: 延时时长（毫秒）
+    v: 取值
+    uf: 用户名字段名
+    pf: 密码字段名
+    username: 用户名
+    ctx: 注入点上下文
+    tag: 标签
+    event: 事件
+    js: 要执行的 JS
+    host: 跳转目标
+    scheme: 协议头
+    wrapper: 伪协议
+    file: 目标文件
+    bypass: 绕过写法
+
+  # ---- 变量：模板里自由文本填的洞 ----
+  var:
+    cmd: 要执行的命令
+    command: 要执行的命令
+    js: 要执行的 JS
+    db: 库名
+    col: 列名
+    token: 待改的 token
+    pubkey: RSA 公钥
+    modulus: RSA 公钥模数（base64url）
+    subject: JWT 主体（sub 声明）
+    secret: HMAC 密钥
+    kid: 密钥 ID
+    claims: 声明（payload）
+    fields: 字段列表
+    values: 值列表
+    hex: Hex 编码后的串
+    inner: 压缩包内的路径
+    sid: 会话 ID
+    target: 目标地址
+    evil: 要跳转到的地址
+    trusted: 被信任的域名
+    origin: Origin 头里的域名（攻击者控制的那个）
+    endpoint: 目标端点
+    tokenname: CSRF token 的参数名
+    json: 要提交的 JSON 体
+    sub: 子域名
+    field: 文档字段名
+    filepath: 文件路径
+    lhost: 回调地址
+    lport: 回调端口
+    rhost: 内网地址
+    rport: 内网端口
+    domain: 带外域名
+    file: 文件名
+    share: 共享名
+    expr: 表达式
+    cond: 判断条件
+    table: 表名
+    cls: 类名
+    prop: 属性名
+    key: 键名
+    value: 值
+    name: 名称
+    user: 用户名
+    prefix: 已知前缀
+    ch: 猜测字符
+    pos: 位置
+    n: 数字
+    spec: PHP 结构描述
+    dir: 目录对象名
+    ext: 文件后缀
+    stars: 通配符个数
+    stmt: SQL 语句
+    b64: Base64 载荷
+    blob: 外部生成的载荷
+    payload: 内层载荷
+    uri: uri 属性
+    loc: location 属性

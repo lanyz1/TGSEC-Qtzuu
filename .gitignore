@@ -36,3 +36,6 @@ backup_local_*/
 **/demo.gif
 **/demo.mp4
 **/VID_*.mp4
+
+# absorb scratch diffs (not published)
+**/README.md.upstream-new

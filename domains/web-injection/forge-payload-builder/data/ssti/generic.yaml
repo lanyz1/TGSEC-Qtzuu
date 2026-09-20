@@ -1,0 +1,76 @@
+ruleDB: v0.1.0
+# 引擎无关的 SSTI 探测模板。
+#
+# 这就是「配对定界符槽位」的用武之地：`{{ }}` / `${ }` / `<%= %>` / `{ }` 的
+# 开闭必须配套。拆成两个独立槽位的话，用户能拼出 `{{` + `%>` 这种垃圾，
+# 而且 validate_rules 无法静态拦住——两个取值各自都合法。
+#
+# 所以这里用**字典型槽位选项**：一组值联合选择，写成 <<d.字段>>。
+
+templates:
+  - id: ssti.generic.detect.arith
+    name: SSTI 探测（算术）
+    desc: 最基础的模板注入探测，把 7*7 换成 49 说明存在表达式求值
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    slots:
+      d:
+        options:
+          - {id: jinja2,     name: "Jinja2 / Twig / Nunjucks",      open: "{{",   close: "}}"}
+          - {id: freemarker, name: "Freemarker / Thymeleaf / SpEL", open: "${",   close: "}"}
+          - {id: erb,        name: "ERB / EJS",                     open: "<%=",  close: "%>"}
+          - {id: smarty,     name: "Smarty / Latte",                open: "{",    close: "}"}
+          - {id: thymeleaf,  name: "Thymeleaf 预处理",              open: "__${", close: "}__"}
+        default: jinja2
+    body: "<<d.open>>7*7<<d.close>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.generic.detect.str
+    name: SSTI 探测（字符串乘法）
+    desc: 7*'7' 在 Jinja2 里得 7777777，在 Twig 里得 49 —— 用来区分引擎
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    slots:
+      d:
+        options:
+          - {id: jinja2,     name: "Jinja2",                        open: "{{",   close: "}}"}
+          - {id: freemarker, name: "Freemarker / Thymeleaf / SpEL", open: "${",   close: "}"}
+          - {id: erb,        name: "ERB / EJS",                     open: "<%=",  close: "%>"}
+        default: jinja2
+    body: "<<d.open>>7*'7'<<d.close>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.generic.detect.config
+    name: SSTI 探测（配置对象）
+    desc: 探测能否读到引擎的配置对象，比算术探测更进一步
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    slots:
+      d:
+        options:
+          - {id: jinja2,     name: "Jinja2 / Twig",                 open: "{{", close: "}}"}
+          - {id: freemarker, name: "Freemarker / Thymeleaf / SpEL", open: "${", close: "}"}
+        default: jinja2
+    body: "<<d.open>>config<<d.close>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17

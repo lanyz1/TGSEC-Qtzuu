@@ -1,6 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
-- 2026-09-20：增量融合攻防技能卡与 payload/工具面（注入/授权/API/云/AD/移动/无线等）
+- 2026-09-20：调用闭环整改 + CASE-INDEX + Cloudflare 白盒提炼 + 攻防技能卡增量
 
 > **@TGSEC社区 · @TGSEC-Qtzuu 整理**  
 > 面向 **AI + 人** 的授权安全知识库：渗透测试、挖洞、红队方法论，按**攻击面**组织，可直接丢给 Grok Build / Claude / Cursor / Hermes / Codex 等使用。
@@ -10,20 +10,33 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：[`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)**（2026-09-17）
+**👉 本轮更新说明：[`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)**（2026-09-20）· 上轮 [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)
 
 ---
 
-## 〇、本轮更新了什么（2026-09-17）
+## 〇、本轮更新了什么（2026-09-20）
 
-详情见 [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)。摘要：
+详情见 [`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)。摘要：
+
+### 整改（调用硬伤）
+
+| 整改项 | 结果 |
+|--------|------|
+| `skill_view` 裸名 Ambiguous（树内 `security.bak.*`） | bak 迁出；sync 备份 → `~/.hermes/skill-backups/`（留 3 份） |
+| 私有专项经常调不到 | `pentest-execution` / `tgsec-suite` 强制矩阵补齐 |
+| sinian 114 平铺噪声 | → 各域 `src-methods/_vendor/sinian/`（默认不遍历） |
+| 实战课散落 | `domains/CASE-INDEX.md`（**51** 课）中途强制入口 |
+
+### 更新（知识增量）
 
 | 块 | 落点 | 本轮增量 |
 |----|------|----------|
-| CVE / PoC 批次 A–D | `domains/0day-exploits/` | 批次 D：Umer69 + XZ64 + zulloper25；库内 CVE 目录约 **200+** |
-| 方法论 | `pentest-redteam` 等 | Qtzuu technique **7→22**；猎洞十二技散入各域 `src-methods/` |
-| 逆向原子包 | `domains/reverse-engineering/rev-skills-pack/` | **122** 技能独立包（不覆盖本机 reverse-skill） |
-| 实战报告.zip | 各域 `case-reports/` + `case-lessons/` | 去重后融 **44**；密钥已脱敏 |
+| CASE-INDEX / 调用闭环 | `domains/CASE-INDEX.md` · FUSION-callpath | 渗透：伞形 → 私有专项 → CASE → case-lessons≥1 |
+| 712win3 实战课 | `gambling-pentest/case-lessons/` | 白标大厅部分用户方法论；仓内报告脱敏 |
+| Cloudflare 白盒审计提炼 | `file-vulns/code-audit/cloudflare-security-audit/` | 6 阶段 + coverage-ledger + findings schema/validators + 缺面攻击类（轻量，非整仓） |
+| 攻防技能卡 / 工具面 | 各域 `aimy-tools` · `claude-red` · `wireless` 等 | Telegram Desktop 等增量融合 |
+
+上一轮（2026-09-17）CVE/方法论/逆向包摘要仍见 [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)。
 
 `git pull` 后记得再跑 `bash scripts/bootstrap.sh --force`（或 `sync-agent-skills.sh`），技能目录才会跟上。
 
@@ -347,7 +360,7 @@ cd ~/security-suite && git pull
 bash scripts/bootstrap.sh --force    # 或 sync-agent-skills / sync-hermes-skills
 ```
 
-**更新说明文件：** 根目录 `UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)）。自述首页「〇、本轮更新了什么」同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
+**更新说明文件：** 根目录 `UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)）。自述首页「〇、本轮更新了什么」同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
 
 ---
 

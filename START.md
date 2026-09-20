@@ -1,6 +1,6 @@
 # 小白从这里开始（3 步）
 
-- 2026-09-20：增量融合攻防技能卡与 payload/工具面（注入/授权/API/云/AD/移动/无线等）
+- 2026-09-20：调用闭环整改 + CASE-INDEX + Cloudflare 白盒提炼 + 攻防技能卡增量
 
 仓库：https://github.com/lanyz1/TGSEC-Qtzuu
 
@@ -9,8 +9,10 @@
 
 **规模体感：** 24 个主题域 · `domains/` 约 **14000+** 文件 · 14 个伞形技能 · 80+ 工具清单。
 
-**本轮更新（2026-09-20）：** CASE-INDEX 实战课总表 · 调用闭环（bak 歧义清掉 / 私有技能矩阵 / sinian `_vendor`）· 712win3 课 · 攻防技能卡增量融合。  
-完整说明 → [`domains/FUSION-20260920-callpath-optimize.md`](domains/FUSION-20260920-callpath-optimize.md) · 自述 → [`README.md`](README.md)「十、融合批次」。
+**本轮更新（2026-09-20）：**  
+**整改** — bak 歧义清掉 / 私有技能进强制矩阵 / sinian 迁 `_vendor` / CASE-INDEX 中途闸门。  
+**更新** — 51 课实战总表 · 712win3 课 · Cloudflare security-audit 轻量提炼 · 攻防技能卡增量。  
+完整说明 → [`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md) · 自述首页「〇、本轮更新了什么」。
 
 ---
 

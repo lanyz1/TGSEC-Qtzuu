@@ -131,3 +131,9 @@ F. 对应 web/api/auth playbook-6000
 | sql-wordlist / orwa sqli | `domains/web-injection/Payload/sqli/sql-wordlist-orwa.txt` |
 | exploitarium / 7zip MotW / discord activity rce / ghidra 12.1.2 | `domains/0day-exploits/EXPLOITARIUM-INDEX.md` |
 
+## 白盒多智能体审计（2026-09-20）
+
+关键词：coverage-ledger / findings.json schema / 对抗验证 / 数据隔离 / 本地IPC / RPC消息 / 资源耗尽
+
+路径：`domains/file-vulns/code-audit/cloudflare-security-audit/`
+

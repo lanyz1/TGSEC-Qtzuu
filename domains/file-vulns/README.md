@@ -24,6 +24,7 @@ upload-insecure-files
 
 
 - `code-audit/` — PHP 细粒度审计 + Java audit-skills + methodology + autocve skill_library
+- `code-audit/cloudflare-security-audit/` — Cloudflare security-audit-skill **轻量提炼**（6 阶段 + coverage-ledger/findings schema + 缺面攻击类）；非整仓 vendor
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理

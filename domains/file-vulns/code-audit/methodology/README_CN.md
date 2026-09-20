@@ -4,6 +4,18 @@
 
 [English](README.md)
 
+## 增量：Cloudflare 多智能体审计提炼（2026-09-20）
+
+轻量提炼（非整仓堆叠）见同级：
+
+[`../cloudflare-security-audit/`](../cloudflare-security-audit/)
+
+- 6 阶段管线 / coverage-ledger / findings 三态：`methodology/`
+- 缺面攻击类（数据隔离、本地 IPC、RPC/消息、资源耗尽、供应链…）：`attack-classes/`
+- 机器校验：`schema/validate-*.cjs` + `report-schema.json`
+
+活靶外网渗透仍走 `pentest-execution`；本增量只服务**源码优先白盒审计**。
+
 ## 概述
 
 Code Audit 是为 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) 设计的专业安全审计技能。采用白盒静态分析方法论，系统性发现和验证源代码中的安全漏洞。

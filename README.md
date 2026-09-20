@@ -1,5 +1,7 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
+- 2026-09-20：增量融合攻防技能卡与 payload/工具面（注入/授权/API/云/AD/移动/无线等）
+
 > **@TGSEC社区 · @TGSEC-Qtzuu 整理**  
 > 面向 **AI + 人** 的授权安全知识库：渗透测试、挖洞、红队方法论，按**攻击面**组织，可直接丢给 Grok Build / Claude / Cursor / Hermes / Codex 等使用。
 
@@ -281,6 +283,15 @@ bash scripts/install-tools.sh        # 按清单补工具
 ---
 
 ## 十、融合批次
+
+### 2026-09-20
+
+完整说明：[`domains/FUSION-20260920-absorb.md`](domains/FUSION-20260920-absorb.md) · 调用闭环：[`domains/FUSION-20260920-callpath-optimize.md`](domains/FUSION-20260920-callpath-optimize.md)
+
+- **CASE-INDEX**：`domains/CASE-INDEX.md`（现 **51** 课）— 渗透中途强制入口；`MASTER`/`ROUTING`/`pentest-execution`/`tgsec-suite` 已挂闸门
+- **调用闭环优化**：清掉树内 `security.bak.*` 歧义；`sync-hermes-skills.sh` 备份改到 `~/.hermes/skill-backups/`（只留 3 份）；私有专项技能进强制矩阵；sinian **114** 迁入各域 `src-methods/_vendor/sinian/`（默认不遍历）
+- **712win3 实战课**：`gambling-pentest/case-lessons/712win3-partial-users.md` + 脱敏 case-reports 指针（明文 loot 不进仓）
+- **增量融合**：Telegram Desktop / 攻防技能卡与 payload 工具面 → 各域 `aimy-tools` / `claude-red` / `src-methods` / `wireless` 等（见 absorb 账本）
 
 ### 2026-09-17
 

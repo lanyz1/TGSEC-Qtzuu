@@ -59,11 +59,31 @@ if [ "$PULL" = 1 ]; then
 fi
 
 mkdir -p "$HERMES_DIR/skills"
+# IMPORTANT: never put backups under $HERMES_DIR/skills/ — Hermes skill_view bare-name
+# resolution rglob's that tree and treats security.bak.*/<name> as Ambiguous.
 STAMP=$(date +%Y%m%d%H%M%S)
+BAK_ROOT="${HERMES_SKILL_BAK_ROOT:-$HERMES_DIR/skill-backups}"
 if [ -d "$DEST" ] && [ "$DRY" = 0 ]; then
-  BAK="$HERMES_DIR/skills/security.bak.$STAMP"
+  mkdir -p "$BAK_ROOT"
+  BAK="$BAK_ROOT/security.bak.$STAMP"
   cp -a "$DEST" "$BAK"
   echo "[i] backup → $BAK"
+  # keep last 3 backups only
+  ls -1dt "$BAK_ROOT"/security.bak.* 2>/dev/null | tail -n +4 | while read -r old; do
+    rm -rf "$old"
+    echo "[i] pruned old backup → $old"
+  done
+fi
+# migrate/remove any legacy in-tree bak dirs that break skill_view
+if [ "$DRY" = 0 ]; then
+  for legacy in "$HERMES_DIR"/skills/security.bak.*; do
+    [ -e "$legacy" ] || continue
+    mkdir -p "$BAK_ROOT"
+    base=$(basename "$legacy")
+    echo "[!] moving legacy ambiguous bak out of skills/: $legacy"
+    rm -rf "$BAK_ROOT/$base"
+    mv "$legacy" "$BAK_ROOT/$base"
+  done
 fi
 
 COUNT=$(find "$SRC" -name SKILL.md | wc -l | tr -d ' ')

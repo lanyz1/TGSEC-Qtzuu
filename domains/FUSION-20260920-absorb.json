@@ -1,0 +1,552 @@
+{
+  "copied": 519,
+  "skipped_same": 0,
+  "skipped_exists": 0,
+  "upstream_new": 7,
+  "by_domain": {
+    "linux-post": 12,
+    "post-exp-tools": 8,
+    "llm-ai-security": 2,
+    "business-logic": 15,
+    "mobile-security": 3,
+    "windows-post": 2,
+    "file-vulns": 12,
+    "redteam-framework": 135,
+    "web-attack": 27,
+    "binary-pwn": 4,
+    "web-injection": 154,
+    "recon": 26,
+    "auth-security": 28,
+    "cloud-security": 11,
+    "crypto-attacks": 1,
+    "other": 40,
+    "api-security": 8,
+    "wireless": 29,
+    "malware-dfir": 4,
+    "ad-attack": 2,
+    "0day-exploits": 1,
+    "reverse-engineering": 1,
+    "social-eng": 1
+  },
+  "sinian_skills": [
+    {
+      "name": "401-403-bypass-techniques",
+      "domain": "auth-security"
+    },
+    {
+      "name": "account-opening-security",
+      "domain": "business-logic"
+    },
+    {
+      "name": "active-directory-lateral-movement",
+      "domain": "ad-attack"
+    },
+    {
+      "name": "ai-llm-attack-surface",
+      "domain": "llm-ai-security"
+    },
+    {
+      "name": "anti-forensics",
+      "domain": "malware-dfir"
+    },
+    {
+      "name": "api-agent",
+      "domain": "api-security"
+    },
+    {
+      "name": "api-auth-and-jwt-abuse",
+      "domain": "auth-security"
+    },
+    {
+      "name": "api-authorization-and-bola",
+      "domain": "auth-security"
+    },
+    {
+      "name": "api-recon-and-docs",
+      "domain": "api-security"
+    },
+    {
+      "name": "api-sec",
+      "domain": "api-security"
+    },
+    {
+      "name": "api-security-testing",
+      "domain": "api-security"
+    },
+    {
+      "name": "auth-agent",
+      "domain": "auth-security"
+    },
+    {
+      "name": "auth-sec",
+      "domain": "auth-security"
+    },
+    {
+      "name": "authbypass-authentication-flaws",
+      "domain": "auth-security"
+    },
+    {
+      "name": "business-agent",
+      "domain": "business-logic"
+    },
+    {
+      "name": "business-logic-testing",
+      "domain": "business-logic"
+    },
+    {
+      "name": "business-logic-vuln",
+      "domain": "business-logic"
+    },
+    {
+      "name": "business-logic-vulnerabilities",
+      "domain": "business-logic"
+    },
+    {
+      "name": "ci-cd-attack-testing",
+      "domain": "cloud-security"
+    },
+    {
+      "name": "clickjacking",
+      "domain": "web-attack"
+    },
+    {
+      "name": "cloud-security-audit",
+      "domain": "cloud-security"
+    },
+    {
+      "name": "cloud-security-pentesting",
+      "domain": "cloud-security"
+    },
+    {
+      "name": "command-injection-testing",
+      "domain": "web-injection"
+    },
+    {
+      "name": "container-security-testing",
+      "domain": "cloud-security"
+    },
+    {
+      "name": "cors-cross-origin-misconfiguration",
+      "domain": "web-attack"
+    },
+    {
+      "name": "crlf-injection",
+      "domain": "web-injection"
+    },
+    {
+      "name": "csp-bypass-advanced",
+      "domain": "web-attack"
+    },
+    {
+      "name": "csrf-cross-site-request-forgery",
+      "domain": "web-attack"
+    },
+    {
+      "name": "csrf-testing",
+      "domain": "web-attack"
+    },
+    {
+      "name": "csv-formula-injection",
+      "domain": "web-injection"
+    },
+    {
+      "name": "cyberstrike-eino-demo",
+      "domain": "redteam-framework"
+    },
+    {
+      "name": "dangling-markup-injection",
+      "domain": "web-injection"
+    },
+    {
+      "name": "data-exfiltration",
+      "domain": "post-exp-tools"
+    },
+    {
+      "name": "deserialization-insecure",
+      "domain": "file-vulns"
+    },
+    {
+      "name": "deserialization-testing",
+      "domain": "file-vulns"
+    },
+    {
+      "name": "dns-pollution-hijacking",
+      "domain": "recon"
+    },
+    {
+      "name": "dns-rebinding-attacks",
+      "domain": "web-attack"
+    },
+    {
+      "name": "email-header-injection",
+      "domain": "web-injection"
+    },
+    {
+      "name": "exploit-development-framework",
+      "domain": "binary-pwn"
+    },
+    {
+      "name": "expression-language-injection",
+      "domain": "web-injection"
+    },
+    {
+      "name": "fastjson-exploitation",
+      "domain": "web-injection"
+    },
+    {
+      "name": "file-access-vuln",
+      "domain": "file-vulns"
+    },
+    {
+      "name": "file-agent",
+      "domain": "file-vulns"
+    },
+    {
+      "name": "file-upload-testing",
+      "domain": "file-vulns"
+    },
+    {
+      "name": "ghost-bits-cast-attack",
+      "domain": "web-attack"
+    },
+    {
+      "name": "graphql-and-hidden-parameters",
+      "domain": "api-security"
+    },
+    {
+      "name": "http-host-header-attacks",
+      "domain": "web-attack"
+    },
+    {
+      "name": "http-parameter-pollution",
+      "domain": "web-attack"
+    },
+    {
+      "name": "http2-specific-attacks",
+      "domain": "web-attack"
+    },
+    {
+      "name": "idor-broken-object-authorization",
+      "domain": "auth-security"
+    },
+    {
+      "name": "idor-testing",
+      "domain": "auth-security"
+    },
+    {
+      "name": "incident-response",
+      "domain": "malware-dfir"
+    },
+    {
+      "name": "information-gathering",
+      "domain": "recon"
+    },
+    {
+      "name": "injection-agent",
+      "domain": "web-injection"
+    },
+    {
+      "name": "injection-checking",
+      "domain": "web-injection"
+    },
+    {
+      "name": "insecure-source-code-management",
+      "domain": "file-vulns"
+    },
+    {
+      "name": "intranet-penetration-testing",
+      "domain": "ad-attack"
+    },
+    {
+      "name": "iot-security-testing",
+      "domain": "other"
+    },
+    {
+      "name": "isp-traffic-hijacking",
+      "domain": "recon"
+    },
+    {
+      "name": "jndi-injection",
+      "domain": "web-injection"
+    },
+    {
+      "name": "jwt-oauth-token-attacks",
+      "domain": "auth-security"
+    },
+    {
+      "name": "ldap-injection-testing",
+      "domain": "web-injection"
+    },
+    {
+      "name": "log4shell-exploitation",
+      "domain": "web-injection"
+    },
+    {
+      "name": "misc-agent",
+      "domain": "other"
+    },
+    {
+      "name": "mobile-app-security-testing",
+      "domain": "mobile-security"
+    },
+    {
+      "name": "network-penetration-testing",
+      "domain": "redteam-framework"
+    },
+    {
+      "name": "oauth-oidc-misconfiguration",
+      "domain": "auth-security"
+    },
+    {
+      "name": "open-redirect",
+      "domain": "web-attack"
+    },
+    {
+      "name": "password-attacks-credential-access",
+      "domain": "auth-security"
+    },
+    {
+      "name": "path-traversal-lfi",
+      "domain": "file-vulns"
+    },
+    {
+      "name": "persistence-mechanisms",
+      "domain": "post-exp-tools"
+    },
+    {
+      "name": "poc-agent",
+      "domain": "0day-exploits"
+    },
+    {
+      "name": "post-exploitation-framework",
+      "domain": "post-exp-tools"
+    },
+    {
+      "name": "prototype-pollution",
+      "domain": "web-injection"
+    },
+    {
+      "name": "prototype-pollution-advanced",
+      "domain": "web-injection"
+    },
+    {
+      "name": "race-condition",
+      "domain": "web-attack"
+    },
+    {
+      "name": "recon-and-methodology",
+      "domain": "recon"
+    },
+    {
+      "name": "recon-for-sec",
+      "domain": "recon"
+    },
+    {
+      "name": "request-smuggling",
+      "domain": "other"
+    },
+    {
+      "name": "reverse-engineering",
+      "domain": "reverse-engineering"
+    },
+    {
+      "name": "saml-sso-assertion-attacks",
+      "domain": "auth-security"
+    },
+    {
+      "name": "secure-code-review",
+      "domain": "file-vulns"
+    },
+    {
+      "name": "security-automation",
+      "domain": "other"
+    },
+    {
+      "name": "security-awareness-training",
+      "domain": "other"
+    },
+    {
+      "name": "security-scanning",
+      "domain": "other"
+    },
+    {
+      "name": "shiro-exploitation",
+      "domain": "other"
+    },
+    {
+      "name": "sinian-omnipotent",
+      "domain": "other"
+    },
+    {
+      "name": "social-engineering-framework",
+      "domain": "social-eng"
+    },
+    {
+      "name": "spring-exploitation",
+      "domain": "other"
+    },
+    {
+      "name": "sql-injection-testing",
+      "domain": "other"
+    },
+    {
+      "name": "sqli-sql-injection",
+      "domain": "other"
+    },
+    {
+      "name": "ssrf-server-side-request-forgery",
+      "domain": "other"
+    },
+    {
+      "name": "ssrf-testing",
+      "domain": "other"
+    },
+    {
+      "name": "ssti-server-side-template-injection",
+      "domain": "web-injection"
+    },
+    {
+      "name": "subdomain-takeover",
+      "domain": "other"
+    },
+    {
+      "name": "supply-chain-attacks",
+      "domain": "cloud-security"
+    },
+    {
+      "name": "telegram-mini-app-bot-security",
+      "domain": "mobile-security"
+    },
+    {
+      "name": "type-juggling",
+      "domain": "other"
+    },
+    {
+      "name": "unauthorized-access-common-services",
+      "domain": "other"
+    },
+    {
+      "name": "vuln-analysis-agent",
+      "domain": "recon"
+    },
+    {
+      "name": "vulnerability-assessment",
+      "domain": "recon"
+    },
+    {
+      "name": "waf-bypass-techniques",
+      "domain": "other"
+    },
+    {
+      "name": "web-cache-deception",
+      "domain": "web-attack"
+    },
+    {
+      "name": "web3-dev-services",
+      "domain": "other"
+    },
+    {
+      "name": "websocket-security",
+      "domain": "web-attack"
+    },
+    {
+      "name": "windows-privilege-escalation",
+      "domain": "windows-post"
+    },
+    {
+      "name": "wireless-security",
+      "domain": "other"
+    },
+    {
+      "name": "xpath-injection-testing",
+      "domain": "other"
+    },
+    {
+      "name": "xslt-injection",
+      "domain": "other"
+    },
+    {
+      "name": "xss-cross-site-scripting",
+      "domain": "other"
+    },
+    {
+      "name": "xss-testing",
+      "domain": "web-injection"
+    },
+    {
+      "name": "xxe-injection-testing",
+      "domain": "other"
+    },
+    {
+      "name": "xxe-testing",
+      "domain": "web-injection"
+    },
+    {
+      "name": "xxe-xml-external-entity",
+      "domain": "other"
+    }
+  ],
+  "sample_paths": [
+    "domains/linux-post/README.md.upstream-new",
+    "domains/linux-post/claude-red/offensive-linux-privesc/SKILL.md",
+    "domains/linux-post/aimy-tools/interactive_shell.py",
+    "domains/linux-post/aimy-tools/post_exploit.py",
+    "domains/linux-post/aimy-tools/lateral_move.py",
+    "domains/linux-post/aimy-tools/db_lateral.py",
+    "domains/linux-post/aimy-tools/smb_lateral.py",
+    "domains/linux-post/icmp-void-lkm/setup.sh",
+    "domains/linux-post/icmp-void-lkm/TECHNIQUE.md",
+    "domains/linux-post/icmp-void-lkm/snd_hda_codec.c",
+    "domains/linux-post/icmp-void-lkm/README.md",
+    "domains/linux-post/icmp-void-lkm/dev.injector.py",
+    "domains/post-exp-tools/README.md.upstream-new",
+    "domains/post-exp-tools/claude-red/offensive-c2-frameworks/SKILL.md",
+    "domains/post-exp-tools/aimy-tools/reverse_shell.py",
+    "domains/post-exp-tools/aimy-tools/c2_beacon.py",
+    "domains/post-exp-tools/aimy-tools/tunnel_agent.py",
+    "domains/llm-ai-security/aimy-tools/ai_vuln_hunter.py",
+    "domains/business-logic/aimy-tools/biz_logic_v2.py",
+    "domains/business-logic/aimy-tools/biz_logic_scanner.py",
+    "domains/business-logic/aimy-tools/workflow.py",
+    "domains/mobile-security/aimy-tools/mobile_scanner.py",
+    "domains/windows-post/claude-red/offensive-windows-privesc/SKILL.md",
+    "domains/file-vulns/aimy-tools/response_profiler.py",
+    "domains/file-vulns/aimy-tools/code_audit.py",
+    "domains/file-vulns/aimy-tools/file_upload.py",
+    "domains/redteam-framework/aimy-INDEX.md",
+    "domains/redteam-framework/README.md.upstream-new",
+    "domains/redteam-framework/claude-red-INDEX.md",
+    "domains/redteam-framework/aimy-tools/smart_fuzzer.py",
+    "domains/redteam-framework/aimy-tools/_enrich.py",
+    "domains/redteam-framework/aimy-tools/payload_mutator.py",
+    "domains/redteam-framework/aimy-tools/http_client.py",
+    "domains/redteam-framework/aimy-tools/deviation_oracle.py",
+    "domains/redteam-framework/aimy-tools/response_analyzer.py",
+    "domains/redteam-framework/aimy-tools/mitm_proxy.py",
+    "domains/redteam-framework/aimy-tools/weaponize_engine.py",
+    "domains/redteam-framework/aimy-tools/packet_capture.py",
+    "domains/redteam-framework/aimy-tools/payload_engine.py",
+    "domains/redteam-framework/aimy-tools/second_order_verifier.py",
+    "domains/redteam-framework/aimy-tools/cross_validator.py",
+    "domains/redteam-framework/aimy-tools/tool_registry.py",
+    "domains/redteam-framework/aimy-tools/kali_executor.py",
+    "domains/redteam-framework/aimy-tools/pipeline.py",
+    "domains/redteam-framework/aimy-tools/retry.py",
+    "domains/redteam-framework/aimy-tools/playwright_engine.py",
+    "domains/redteam-framework/aimy-tools/chain_engine.py",
+    "domains/redteam-framework/aimy-tools/challenge.py",
+    "domains/redteam-framework/aimy-tools/log_utils.py",
+    "domains/redteam-framework/aimy-tools/protocol_fuzzer.py",
+    "domains/redteam-framework/aimy-tools/_context.py",
+    "domains/redteam-framework/aimy-tools/_finding.py",
+    "domains/redteam-framework/aimy-tools/false_positive_filter.py",
+    "domains/redteam-framework/aimy-tools/kali_capture.py",
+    "domains/redteam-framework/aimy-tools/robust_verifier.py",
+    "domains/redteam-framework/aimy-tools/verification_oracle.py",
+    "domains/redteam-framework/aimy-tools/service_mapping.py",
+    "domains/redteam-framework/aimy-tools/adaptive_fuzzer.py",
+    "domains/redteam-framework/aimy-tools/orchestrator.py",
+    "domains/redteam-framework/aimy-tools/settings.py"
+  ],
+  "total_copied_paths": 526
+}

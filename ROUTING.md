@@ -20,14 +20,16 @@
 3) 按用户任务关键词打开下表「必读路径」
 4) 同主题深入顺序：
    domains/<面>/README.md
+   → case-lessons/（同面有则必读 ≥1）
    → playbook-6000/（若有）
    → hunter-6000/（若有）
-   → src-methods/（若有）
-   → case-lessons/（若有）
+   → src-methods/（非 `_vendor/`；sinian 在 `_vendor/sinian/` 默认不遍历）
    → 其它子目录
 ```
 
 可选：`bash scripts/bootstrap.sh`（写各 IDE 入口文件；无 bash 可跳过，直接读 md）。
+
+**实战课总表（强制）：** `domains/CASE-INDEX.md` — 开打/继续深挖时先查，再下钻单案。
 
 ---
 
@@ -35,32 +37,36 @@
 
 | 用户话里的信号 | 先读这些路径（相对包根） |
 |----------------|--------------------------|
-| 渗透、打点、审计、漏洞、SRC、报告 | `MASTER.md` + 本表继续往下 |
+| 渗透、打点、审计、漏洞、SRC、报告 | `MASTER.md` + `domains/CASE-INDEX.md` + 本表继续往下 |
+| 实战报告、同类案、Evidence、怎么写报告 | `domains/CASE-INDEX.md` + `domains/recon/case-lessons/README.md` |
 | 侦察、子域、端口、指纹、FOFA、信息收集 | `domains/recon/README.md` |
 | 真假后台、诱饵、矛盾点 | `domains/recon/true-false-separation-recon.md` |
 | SQLi、XSS、SSRF、SSTI、反序列化、Fastjson、Shiro、Log4j、Spring | `domains/web-injection/README.md` |
-| CSRF、WAF、走私、竞态、开放重定向、EdgeOne | `domains/web-attack/README.md` |
+| CSRF、WAF、走私、竞态、开放重定向、EdgeOne | `domains/web-attack/README.md` + `CASE-INDEX` web-attack 节 |
 | 上传、LFI、路径穿越 | `domains/file-vulns/README.md` |
 | API、GraphQL、Swagger、导出 export、BOLA | `domains/api-security/README.md` |
 | 登录、JWT、OAuth、越权、IDOR、session、Flask、HMAC、Telegram 登录 | `domains/auth-security/README.md` |
 | 身份层、业务系统不是 CMS、算力别砸错 | `domains/auth-security/session-crypto-identity-layer.md` |
 | 支付、TRC20、收款、QR、回调伪造、卡密、Crown | `domains/business-logic/README.md` + `payment-config-crown-surface.md` + `case-lessons/payment-callback-forge-card-leak.md` |
+| 发卡、独角、ACG、FBDWJ、卡商后台 | `domains/CASE-INDEX.md` → business-logic（dujiao/acg/fbdwj/kashang） |
+| 钱包、VI钱包、福利来、海外付 | `domains/CASE-INDEX.md` → business-logic（vi-wallet/fllqb/haiwaipay） |
 | 反逻辑、A1–A6、旁门、不爆 admin | `domains/redteam-framework/anti-logic-layout.md` + `identity-antilogic-playbook.md` |
-| 博彩、代收、代理 | `domains/gambling-pentest/README.md` |
+| 博彩、代收、代理、白标大厅、WSS | `domains/gambling-pentest/README.md` + `CASE-INDEX` gambling 节 |
+| TG云控、export 越权、筛号/群发 | `domains/api-security/case-lessons/` + `CASE-INDEX` api 节 |
 | APK、Frida、jadx、iOS、IPA | `domains/mobile-security/README.md` |
 | iOS 26.6、KASLR、内核 CVE | `domains/mobile-security/ios-kernel-cve/ANALYSIS.md` |
 | 逆向、IDA、Ghidra、pwn、固件 | `domains/reverse-engineering/README.md` + `domains/binary-pwn/README.md` |
 | 域、AD、BloodHound、横向 | `domains/ad-attack/README.md` + `windows-post` / `linux-post` |
 | 云、K8s、容器、CI/CD | `domains/cloud-security/README.md` |
-| LLM、Prompt、Agent | `domains/llm-ai-security/README.md` |
+| LLM、Prompt、Agent、LiteLLM | `domains/llm-ai-security/README.md` + `case-lessons/badhost-litellm.md` |
+| 无线、WiFi、BLE、Zigbee | `domains/wireless/README.md` |
 | 产品名+版本、0day、RCE 库 | `domains/0day-exploits/README.md` + `domains/recon/component-vuln-intel/SKILL.md` |
-| 实战报告怎么写、Evidence | `domains/recon/case-lessons/README.md` |
 | TG 云控 export 越权 | `domains/api-security/case-lessons/tg-cloud-export-bola.md` |
 | RuoYi 列表大数据 | `domains/auth-security/case-lessons/ruoyi-datascope-list-bola.md` |
 | EdgeOne + 注册 + 上传 | `domains/web-attack/case-lessons/edgeone-waf-open-register-upload.md` |
 | settings/Bot/付费下载未授权 | `domains/recon/case-lessons/unauth-settings-bot-token-download.md` |
 
-未命中：打开 `MASTER.md` 主题矩阵，选最接近的 `domains/<面>/`，**不要猜。**
+未命中：打开 `MASTER.md` 主题矩阵 + `domains/CASE-INDEX.md`，选最接近的 `domains/<面>/`，**不要猜。**
 
 ---
 
@@ -71,7 +77,8 @@ A. domains/recon/true-false-separation-recon.md
 B. domains/auth-security/session-crypto-identity-layer.md
 C. 正逻辑登录/权限  ∥  domains/redteam-framework/anti-logic-layout.md
 D. domains/business-logic/payment-config-crown-surface.md（若涉支付）
-E. 对应 web/api/auth playbook-6000 与 case-lessons
+E. domains/CASE-INDEX.md → 同面 case-lessons ≥1
+F. 对应 web/api/auth playbook-6000
 ```
 
 ---
@@ -97,9 +104,9 @@ E. 对应 web/api/auth playbook-6000 与 case-lessons
 ```text
 工作区是 TGSEC 包根。先读 AGENTS.md 和 ROUTING.md，再读 MASTER.md。
 按 ROUTING 关键词表打开 domains/ 下对应文件；
-顺序 README → playbook-6000 → hunter-6000 → src-methods → case-lessons。
-不要依赖 Hermes skill_view；有则可选。
-授权范围内执行；业务系统走真假分离+身份层+反逻辑。
+顺序：CASE-INDEX → README → case-lessons(≥1) → playbook-6000 → hunter-6000 → src-methods。
+不要依赖 Hermes skill_view；有则可选加速。
+授权范围内执行；业务系统走真假分离+身份层+反逻辑；同类案必须先查 CASE-INDEX。
 ```
 
 ---

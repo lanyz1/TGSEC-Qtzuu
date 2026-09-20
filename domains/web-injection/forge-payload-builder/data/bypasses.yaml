@@ -1,0 +1,340 @@
+ruleDB: v0.1.0
+# 绕过：类型集合封闭（case / replace / wrap / encode / join），加新绕过 = 加一条数据行。
+# 运行时只用到 id / name / type / params / incompatible_with，其余字段不参与计算。
+
+bypasses:
+  # ---- encode ----
+  - id: bypass.url
+    name: URL 编码
+    type: encode
+    params: {codec: url}
+
+  - id: bypass.url2
+    name: 双重 URL 编码
+    type: encode
+    params: {codec: url2}
+
+  - id: bypass.base64
+    name: Base64 编码
+    type: encode
+    params: {codec: base64}
+
+  - id: bypass.hex
+    name: Hex 编码
+    type: encode
+    params: {codec: hex}
+
+  - id: bypass.unicode
+    name: Unicode 转义
+    type: encode
+    params: {codec: unicode}
+
+  - id: bypass.html
+    name: HTML 实体
+    type: encode
+    params: {codec: html}
+
+  # 名字里写明「后 Base64」：压缩结果是字节，本工具管线是文本，
+  # 不做 Base64 没法往下传（见 bypass.py 里 _codec_gzip 的说明）
+  - id: bypass.gzip
+    name: Gzip 压缩后 Base64
+    type: encode
+    params: {codec: gzip}
+
+  - id: bypass.zlib
+    name: Zlib 压缩后 Base64
+    type: encode
+    params: {codec: zlib}
+
+  # ---- case ----
+  # 注意：没有 random 模式，随机会破坏 §4.3 的输出确定性
+  # skip_quoted: true —— 只在引号外变换。不加的话会改掉字符串字面量里的内容，
+  # 例如 `'a b'` 被空格替换加工成 `'a/**/b'`：**语法依旧合法，语义已经错了**。
+
+  # 会改大小写的绕过与「靠字面匹配关键字」的绕过互斥：前者跑完，后者就找不到目标了。
+  # 这一族（含下面的 keyword.* 和 and/or.symbol）的关系是对称的表，改一个要回填其余。
+  - id: bypass.case.alternate
+    name: 交替大小写
+    type: case
+    params: {mode: alternate, words: [UNION, SELECT, AND, OR, FROM, WHERE], skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.keyword.split, bypass.keyword.select, bypass.keyword.double.union,
+                       bypass.keyword.double.select, bypass.keyword.inline.union,
+                       bypass.keyword.inline.select, bypass.and.symbol, bypass.or.symbol]
+
+  - id: bypass.case.upper
+    name: 关键字大写
+    type: case
+    params: {mode: upper, words: [union, select, and, or, from, where], skip_quoted: true}
+    applies_to: [sqli]
+
+  - id: bypass.case.lower
+    name: 关键字小写
+    type: case
+    params: {mode: lower, words: [UNION, SELECT, AND, OR, FROM, WHERE], skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.keyword.split, bypass.keyword.select, bypass.keyword.double.union,
+                       bypass.keyword.double.select, bypass.keyword.inline.union,
+                       bypass.keyword.inline.select, bypass.and.symbol, bypass.or.symbol]
+
+  # ---- replace ----
+  # 空格替换器**两两互斥**：任何一个先跑，后面那个就找不到空格了。
+  # 互斥必须双向声明（validate_rules.py 会查），所以加一个新成员要回填到**每一个**
+  # 已有成员上——这是这一族维护成本高的原因，加之前先想清楚值不值。
+  #
+  # 覆盖的写法：注释 `/**/`、加号 `+`（表单编码）、Tab `%09`、
+  # 百分号编码 `%20`、换行 `%0a`、垂直制表 `%0b`。
+  # MySQL 全部认这几种；`+` 只在 urlencoded 表单里有空格语义。
+  - id: bypass.space.comment
+    name: 注释替代空格
+    type: replace
+    params: {pattern: " ", with: "/**/", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.space.plus, bypass.space.tab, bypass.space.percent20,
+                       bypass.space.newline, bypass.space.vtab]
+
+  - id: bypass.space.plus
+    name: 加号替代空格
+    type: replace
+    params: {pattern: " ", with: "+", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.space.comment, bypass.space.tab, bypass.space.percent20,
+                       bypass.space.newline, bypass.space.vtab]
+
+  - id: bypass.space.tab
+    name: Tab 替代空格
+    type: replace
+    params: {pattern: " ", with: "%09", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.space.comment, bypass.space.plus, bypass.space.percent20,
+                       bypass.space.newline, bypass.space.vtab]
+
+  - id: bypass.space.percent20
+    name: "%20 替代空格"
+    type: replace
+    params: {pattern: " ", with: "%20", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.space.comment, bypass.space.plus, bypass.space.tab,
+                       bypass.space.newline, bypass.space.vtab]
+
+  - id: bypass.space.newline
+    name: 换行替代空格
+    type: replace
+    params: {pattern: " ", with: "%0a", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.space.comment, bypass.space.plus, bypass.space.tab,
+                       bypass.space.percent20, bypass.space.vtab]
+
+  - id: bypass.space.vtab
+    name: 垂直制表替代空格
+    type: replace
+    params: {pattern: " ", with: "%0b", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.space.comment, bypass.space.plus, bypass.space.tab,
+                       bypass.space.percent20, bypass.space.newline]
+
+  # ---- 关键字变形 ----
+  # 全是字面替换，需要关键字保持原样大小写，所以与会改大小写的两条互斥
+  # （互斥必须双向声明，见 validate_rules.py）。
+  #
+  # 同一关键字的三种变形**互相冲突**——它们都盯着同一段字面量，
+  # 谁先跑其余的就找不到目标了。所以 UNION 一族和 SELECT 一族各自内部也两两互斥。
+
+  - id: bypass.keyword.split
+    name: 关键字拆分（UNION）
+    type: replace
+    params: {pattern: "UNION", with: "UN/**/ION", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.case.alternate, bypass.case.lower, bypass.keyword.double.union,
+                       bypass.keyword.inline.union]
+
+  - id: bypass.keyword.select
+    name: 关键字拆分（SELECT）
+    type: replace
+    params: {pattern: "SELECT", with: "SEL/**/ECT", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.case.alternate, bypass.case.lower, bypass.keyword.double.select,
+                       bypass.keyword.inline.select]
+
+  # 双写绕过：WAF 是「检出后删除」而不是「检出后拒绝」时，删一次正好还原成原关键字。
+  # 空转的 `union` 夹在中间不构成合法关键字，MySQL 解析时被忽略。
+  - id: bypass.keyword.double.union
+    name: 关键字双写（UNION）
+    type: replace
+    params: {pattern: "UNION", with: "UNIUNIONON", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.case.alternate, bypass.case.lower, bypass.keyword.split,
+                       bypass.keyword.inline.union]
+
+  - id: bypass.keyword.double.select
+    name: 关键字双写（SELECT）
+    type: replace
+    params: {pattern: "SELECT", with: "SELSELECTECT", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.case.alternate, bypass.case.lower, bypass.keyword.select,
+                       bypass.keyword.inline.select]
+
+  # MySQL 版本注释：`/*!50000UNION*/` 在 5.0.0 及以上会**执行**注释里的内容，
+  # 而多数 WAF 只把它当注释跳过。这是 MySQL 独有的一条，所以 applies_to 只标 sqli。
+  - id: bypass.keyword.inline.union
+    name: 版本注释包裹（UNION）
+    type: replace
+    params: {pattern: "UNION", with: "/*!50000UNION*/", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.case.alternate, bypass.case.lower, bypass.keyword.split,
+                       bypass.keyword.double.union]
+
+  - id: bypass.keyword.inline.select
+    name: 版本注释包裹（SELECT）
+    type: replace
+    params: {pattern: "SELECT", with: "/*!50000SELECT*/", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.case.alternate, bypass.case.lower, bypass.keyword.select,
+                       bypass.keyword.double.select]
+
+  # ---- 逻辑运算符等价替换 ----
+  # `AND` 与 `&&`、`OR` 与 `||` 在 MySQL 里完全等价，WAF 常常只拦其中一个。
+  #
+  # 模式**带两侧空格**（`" AND "` 而不是 `"AND"`）：裸 `OR` 会打中 `ORDER BY`，
+  # 把 `ORDER` 切成 `||DER`——语法依旧合法、语义已经错了的典型静默损坏。
+  # 代价是写在一起的 `OR(` 匹配不到，这只是少生效，方向是安全的。
+  #
+  # 注意：**SQL Server / Oracle 不认 `&&` / `||`**（Oracle 的 `||` 是字符串拼接，
+  # 语义完全不同），所以这两条只标 sqli，跨方言用会得到错误的载荷。
+  - id: bypass.and.symbol
+    name: AND 改写为 &&
+    type: replace
+    params: {pattern: " AND ", with: " && ", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.case.alternate, bypass.case.lower]
+
+  - id: bypass.or.symbol
+    name: OR 改写为 ||
+    type: replace
+    params: {pattern: " OR ", with: " || ", skip_quoted: true}
+    applies_to: [sqli]
+    incompatible_with: [bypass.case.alternate, bypass.case.lower]
+
+  # 宽字节注入：GBK 编码下 `%df` 与转义符 `\`（0x5c）拼成一个合法汉字，
+  # 把反斜杠「吃掉」，原本被转义的引号就逃逸出来了。只对 GBK/GB2312 连接有效。
+  - id: bypass.gbk.wide
+    name: 宽字节注入（%df）
+    type: replace
+    params: {pattern: "'", with: "%df'", skip_quoted: true}
+    applies_to: [sqli]
+
+  - id: bypass.comment.rewrite
+    name: "注释符改为 #"
+    type: replace
+    params: {pattern: "-- -", with: "#", skip_quoted: true}
+    applies_to: [sqli]
+
+  # ---- XSS 专用 ----
+  # `<scr<script>ipt>` 被「检出后删除」型过滤器删掉中间那段后，还原成 `<script>`。
+  - id: bypass.xss.tag.split
+    name: script 标签双写
+    type: replace
+    params: {pattern: "<script>", with: "<scr<script>ipt>", skip_quoted: true}
+    applies_to: [xss]
+    incompatible_with: [bypass.xss.tag.case]
+
+  # HTML 的标签名大小写不敏感，`<ScRiPt>` 照样执行，而只匹配小写的过滤器会漏掉它。
+  - id: bypass.xss.tag.case
+    name: 标签名大小写混排
+    type: replace
+    params: {pattern: "<script", with: "<ScRiPt", skip_quoted: true}
+    applies_to: [xss]
+    incompatible_with: [bypass.xss.tag.split]
+
+  # ---- wrap ----
+  - id: bypass.wrap.paren
+    name: 括号包裹
+    type: wrap
+    params: {prefix: "(", suffix: ")"}
+
+  - id: bypass.wrap.quote
+    name: 单引号包裹
+    type: wrap
+    params: {prefix: "'", suffix: "'"}
+
+  # ---- SSRF 的 IP 等价写法 ----
+  # 这些是纯字符串替换，落在闭类型集里，**没有为 SSRF 新增绕过类型**。
+  # 四种写法在同一次选择里互斥：替换完 127.0.0.1 就没了，后面那几个都找不到目标。
+  - id: bypass.ip.decimal
+    name: IP 转十进制
+    type: replace
+    params: {pattern: "127.0.0.1", with: "2130706433", skip_quoted: true}
+    applies_to: [ssrf]
+    incompatible_with: [bypass.ip.hex, bypass.ip.octal, bypass.ip.ipv6,
+                       bypass.ip.short, bypass.ip.zero]
+
+  - id: bypass.ip.hex
+    name: IP 转十六进制
+    type: replace
+    params: {pattern: "127.0.0.1", with: "0x7f000001", skip_quoted: true}
+    applies_to: [ssrf]
+    incompatible_with: [bypass.ip.decimal, bypass.ip.octal, bypass.ip.ipv6,
+                       bypass.ip.short, bypass.ip.zero]
+
+  - id: bypass.ip.octal
+    name: IP 转八进制
+    type: replace
+    params: {pattern: "127.0.0.1", with: "0177.0.0.1", skip_quoted: true}
+    applies_to: [ssrf]
+    incompatible_with: [bypass.ip.decimal, bypass.ip.hex, bypass.ip.ipv6,
+                       bypass.ip.short, bypass.ip.zero]
+
+  - id: bypass.ip.ipv6
+    name: IP 转 IPv6 简写
+    type: replace
+    params: {pattern: "127.0.0.1", with: "[::1]", skip_quoted: true}
+    applies_to: [ssrf]
+    incompatible_with: [bypass.ip.decimal, bypass.ip.hex, bypass.ip.octal,
+                       bypass.ip.short, bypass.ip.zero]
+
+  # `127.1` 是不全写形式，inet_aton 会补零成 127.0.0.1；`0.0.0.0` 连的是本机。
+  # 两者都只绕**字符串黑名单**，解析器照样把它解析成回环地址——
+  # 所以拿它们绕「禁止访问 127.0.0.1」这类检查很常见。
+  - id: bypass.ip.short
+    name: IP 省略写法（127.1）
+    type: replace
+    params: {pattern: "127.0.0.1", with: "127.1", skip_quoted: true}
+    applies_to: [ssrf]
+    incompatible_with: [bypass.ip.decimal, bypass.ip.hex, bypass.ip.octal,
+                       bypass.ip.ipv6, bypass.ip.zero]
+
+  - id: bypass.ip.zero
+    name: IP 未指定地址（0.0.0.0）
+    type: replace
+    params: {pattern: "127.0.0.1", with: "0.0.0.0", skip_quoted: true}
+    applies_to: [ssrf]
+    incompatible_with: [bypass.ip.decimal, bypass.ip.hex, bypass.ip.octal,
+                       bypass.ip.ipv6, bypass.ip.short]
+
+  # ---- join ----
+  # 在载荷**前面**拼一条无害命令再分隔开，让整串看起来像「正常命令 + 额外命令」。
+  # 分号和换行在 Linux 通用；`|` 会把前一条的输出接给后一条；
+  # `&` 是 Windows cmd 的分隔符（Windows 不认 `;`）。
+  - id: bypass.join.semicolon
+    name: 分号分隔前置命令
+    type: join
+    params: {separator: ";", parts: ["id"]}
+    applies_to: [rce]
+
+  - id: bypass.join.pipe
+    name: 管道分隔前置命令
+    type: join
+    params: {separator: "|", parts: ["id"]}
+    applies_to: [rce]
+
+  - id: bypass.join.newline
+    name: 换行分隔前置命令
+    type: join
+    params: {separator: "%0a", parts: ["id"]}
+    applies_to: [rce]
+
+  - id: bypass.join.amp
+    name: 与号分隔前置命令（Windows）
+    type: join
+    params: {separator: "&", parts: ["whoami"]}
+    applies_to: [rce]

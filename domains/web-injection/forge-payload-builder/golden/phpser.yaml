@@ -1,0 +1,240 @@
+# PHP 序列化结构 DSL（`<<phpser>>`）的黄金样本。
+#
+# 这一类载荷的期望值**不能靠肉眼数长度**——那正是它要解决的问题。所以这里的
+# 期望值是**按 DSL 的规则逐个字符推出来的**：先写结构，再按
+# 「s:<UTF-8 字节数>:"内容";」把每一段拼出来，最后拿 syntax.check 过一遍。
+#
+# 每个样本都断言 syntax: ok。序列化串的校验器是**独立于 DSL 的第二份实现**
+# （forge/syntax.py），它认了才说明两边对同一套格式的理解一致。
+
+ruleDB: v0.1.0
+
+samples:
+  - name: PHP 结构 · 单属性对象
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'O:Foo{ bar=s:"x" }'}
+      outputs: [raw]
+    expect:
+      # 类名 3 字节、属性名 3 字节、值 1 字节
+      payload: 'O:3:"Foo":1:{s:3:"bar";s:1:"x";}'
+      syntax: ok
+
+  - name: PHP 结构 · private 属性（长度含两个 NUL）
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'O:User{ #name=s:"admin" }'}
+      outputs: [raw]
+    expect:
+      # 属性名实际是两个真实 NUL 夹着的 User/name —— 1+4+1+4 = 10 字节。
+      # 这里**必须用 YAML 双引号标量**：单引号不处理转义，用单引号写
+      # 出来的会是「反斜杠 + 字符 0」两个字节，长度对不上——第一版就是这么挂的。
+      payload: "O:4:\"User\":1:{s:10:\"\0User\0name\";s:5:\"admin\";}"
+      syntax: ok
+
+  - name: PHP 结构 · protected 属性
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'O:User{ -role=s:"admin" }'}
+      outputs: [raw]
+    expect:
+      # \0*\0role = 1+1+1+4 = 7 字节
+      payload: "O:4:\"User\":1:{s:7:\"\0*\0role\";s:5:\"admin\";}"
+      syntax: ok
+
+  - name: PHP 结构 · 嵌套对象与命名空间
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      # POP 链的真实形状：类名带命名空间反斜杠，属性值又是一个对象
+      vars: {spec: 'O:App\Cache{socket=O:SoapClient{uri=s:"http://x"}}'}
+      outputs: [raw]
+    expect:
+      # App\Cache 9 字节、socket 6、SoapClient 10、uri 3、http://x 8
+      payload: 'O:9:"App\Cache":1:{s:6:"socket";O:10:"SoapClient":1:{s:3:"uri";s:8:"http://x";}}'
+      syntax: ok
+
+  - name: PHP 结构 · 父类的私有属性（显式指定 mangling 类）
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      # 属性 comments 声明在父类上、对象却是子类时，mangled 名里的类名要写**父类**。
+      # 外层 O: 给的是子类，所以用 `#类名/属性名` 显式指定。
+      vars: {spec: 'O:Sub{ #Base/p=i:1 }'}
+      outputs: [raw]
+    expect:
+      # 属性名是两个 NUL 夹着的 Base/p —— 1+4+1+1 = 7 字节
+      payload: "O:3:\"Sub\":1:{s:7:\"\0Base\0p\";i:1;}"
+      syntax: ok
+
+  - name: PHP 结构 · 数组
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'a{ i:0=s:"a" i:1=s:"b" }'}
+      outputs: [raw]
+    expect:
+      payload: 'a:2:{i:0;s:1:"a";i:1;s:1:"b";}'
+      syntax: ok
+
+  - name: PHP 结构 · 几种标量
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'a{ i:0=N i:1=b:1 i:2=i:-42 i:3=d:1.5 }'}
+      outputs: [raw]
+    expect:
+      payload: 'a:4:{i:0;N;i:1;b:1;i:2;i:-42;i:3;d:1.5;}'
+      syntax: ok
+
+  - name: PHP 结构 · 内容里有分隔符与中文
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'O:Foo{ a=s:"x;y}z" b=s:"管理员" }'}
+      outputs: [raw]
+    expect:
+      # 字符串不转义分隔符，靠长度定位——`x;y}z` 5 字节、`管理员` 9 字节
+      payload: 'O:3:"Foo":2:{s:1:"a";s:5:"x;y}z";s:1:"b";s:9:"管理员";}'
+      syntax: ok
+
+  - name: PHP 结构 · 结构里嵌变量
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'O:Foo{ url=s:"http://<<lhost>>/" }', lhost: 10.0.0.1}
+      outputs: [raw]
+    expect:
+      # 先替换 <<lhost>> 再算长度：http://10.0.0.1/ 是 16 字节。
+      # 不先替换的话长度会把 `<<lhost>>` 这 9 个字符算进去。
+      payload: 'O:3:"Foo":1:{s:3:"url";s:16:"http://10.0.0.1/";}'
+      syntax: ok
+
+  - name: PHP 结构 · 结构写坏了要报出来
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'O:Foo{ bar='}
+      outputs: [raw]
+    expect:
+      # **不吐半截串**：载荷里留着占位符，同时给一条提示说明哪儿不对
+      payload: "<<phpser(spec)>>"
+      checks_count: 1
+
+  # ================= 引用（R: / r:）=================
+  #
+  # `&标签` 标在一个值前面，`r:标签` 指同一对象、`R:标签` 指真引用。
+  #
+  # **这一组的期望值全部与真实 PHP 7.0.12 逐字节对拍过**——同样一份数据结构
+  # 用 `serialize()` 跑一遍，两边结果必须完全相同。不是照着实现推的。
+  #
+  # 编号规则三条，每条都有实测出处：
+  #   1. 先序——容器先占自己的号，再递归子值
+  #   2. 键不占号（数组键、属性名都一样）
+  #   3. **`r:` / `R:` 的产出本身也占一个号**（下面「引用后面跟新值」那条钉的就是它）
+
+  - name: PHP 结构 · 自引用（根上打标签）
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: '&r O:A{ p=r:r }'}
+      outputs: [raw]
+    expect:
+      # `$a->p = $a` 的形态。根上也能打标签——不打的话最外层对象没名字可指。
+      payload: 'O:1:"A":1:{s:1:"p";r:1;}'
+      syntax: ok
+
+  - name: PHP 结构 · 两个属性指向同一个对象
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'O:B{ x=&o O:A{ p=N } y=r:o }'}
+      outputs: [raw]
+    expect:
+      # 对象 A 是第 2 个值，所以 y 是 r:2
+      payload: 'O:1:"B":2:{s:1:"x";O:1:"A":1:{s:1:"p";N;}s:1:"y";r:2;}'
+      syntax: ok
+
+  - name: PHP 结构 · 真引用（R:）
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'O:B{ x=&v s:"hi" y=R:v }'}
+      outputs: [raw]
+    expect:
+      # `R:` 是 PHP 的 `&` 引用，`r:` 是「同一个对象」。标量也能被引用。
+      payload: 'O:1:"B":2:{s:1:"x";s:2:"hi";s:1:"y";R:2;}'
+      syntax: ok
+
+  - name: PHP 结构 · 数组里重复引用同一个对象
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'a{ i:0=&z O:Z{} i:1=r:z i:2=r:z }'}
+      outputs: [raw]
+    expect:
+      # 对象只写一遍（第 2 个值），后面两处都指回它。
+      # 注意**引用自己占号**：两个 r: 分别吃掉 3、4，但它们指向的都是 2。
+      payload: 'a:3:{i:0;O:1:"Z":0:{}i:1;r:2;i:2;r:2;}'
+      syntax: ok
+
+  - name: PHP 结构 · 嵌套里的跨层引用（先序编号）
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: '&o O:Outer{ i=s:"X" j=&in O:Inner{a=s:"A"} k=r:in }'}
+      outputs: [raw]
+    expect:
+      # 编号：Outer=1, "X"=2, Inner=3, "A"=4 —— 内层对象是第 3 个值，
+      # 所以外层后面那个 k 是 r:3 而不是 r:2。先序，不是层序。
+      payload: 'O:5:"Outer":3:{s:1:"i";s:1:"X";s:1:"j";O:5:"Inner":1:{s:1:"a";s:1:"A";}s:1:"k";r:3;}'
+      syntax: ok
+
+  - name: PHP 结构 · 引用后面跟新值（真引用 R:）
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'a{ i:0=&w s:"w" i:1=s:"new" i:2=R:w }'}
+      outputs: [raw]
+    expect:
+      # 数组=1, "w"=2, "new"=3, 末项引用自己=4 → R:2 指回 "w"
+      payload: 'a:3:{i:0;s:1:"w";i:1;s:3:"new";i:2;R:2;}'
+      syntax: ok
+
+  - name: PHP 结构 · 连续引用同一个对象
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'a{ i:0=&z O:Z{} i:1=r:z i:2=r:z i:3=s:"after" }'}
+      outputs: [raw]
+    expect:
+      # 对象只写一遍（2 号），两个 r: 都指回 2
+      payload: 'a:4:{i:0;O:1:"Z":0:{}i:1;r:2;i:2;r:2;i:3;s:5:"after";}'
+      syntax: ok
+
+  - name: PHP 结构 · ★ 引用本身占号（这条专门钉死编号规则第 3 条）
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'a{ i:0=&z O:Z{} i:1=r:z i:2=s:"after" i:3=&y O:Y{} i:4=r:y }'}
+      outputs: [raw]
+    expect:
+      # 数组=1, Z=2, 引用=3, "after"=4, Y=5 → 末项是 **r:5**。
+      #
+      # 这条是**唯一能区分**「引用占不占号」的样本：若实现成引用不占号，
+      # Y 会落在 4 号、输出 r:4。前面那几条都碰巧两种实现都对，钉不住。
+      payload: 'a:5:{i:0;O:1:"Z":0:{}i:1;r:2;i:2;s:5:"after";i:3;O:1:"Y":0:{}i:4;r:5;}'
+      syntax: ok
+
+  - name: PHP 结构 · 标签没定义要报出来
+    state:
+      vuln: deser
+      template: deser.php.custom.structure
+      vars: {spec: 'O:A{ p=r:nope }'}
+      outputs: [raw]
+    expect:
+      payload: "<<phpser(spec)>>"
+      checks_count: 1

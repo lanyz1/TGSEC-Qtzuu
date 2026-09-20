@@ -12,47 +12,50 @@ description: "Use for attack-surface domain knowledge matrix."
 > **任意 AI 打开本仓：先 `bash scripts/bootstrap.sh`，再读 AGENTS.md。**
 
 
-按攻击面组织的安全知识矩阵 — **24 个主题域、约 5200+ 个文件**，一个目录直达。
+按攻击面组织的安全知识矩阵 — **25 个主题域、约 18700+ 个文件**，一个目录直达。
 
 Clone 后目录一般为 `~/security-suite`（Windows: `%USERPROFILE%\security-suite`）  
-融合索引: `domains/FUSION-6000.md`
+融合索引: `domains/FUSION-6000.md` · `domains/FUSION-20260920-absorb.md`  
+**实战报告总入口（渗透中途强制）：** [`domains/CASE-INDEX.md`](domains/CASE-INDEX.md)
 
 ## 使用方式
 
 1. 活靶先 `skill_view(pentest-execution)` + `tgsec-suite`
 2. 定攻击面 → 读 `domains/<主题>/README.md`
-3. 同面优先: `playbook-6000/` → `hunter-6000/` → `src-methods/` → 其它子目录
-4. APK/IPA/二进制逆向 → `reverse-skill` + `master-route.sh`
-5. 组件/版本已识别 → `domains/recon/component-vuln-intel/`
+3. **查实战课** → 读 `domains/CASE-INDEX.md`，同面至少打开 1 篇 `case-lessons/`（无命中则注明）
+4. 同面优先: `case-lessons/` → `playbook-6000/` → `hunter-6000/` → `src-methods/` → 其它
+5. APK/IPA/二进制逆向 → `reverse-skill` + `master-route.sh`
+6. 组件/版本已识别 → `domains/recon/component-vuln-intel/`
 
 ## 主题矩阵
 
 | 主题域 | 覆盖 | 文件 |
 |--------|------|------|
-| `recon` | 侦察情报 — 子域/端口/OSINT/组件CVE情报/FOFA/SRC规则/playbook | 1056 |
-| `web-injection` | Web注入 — SQLi/XSS/SSRF/XXE/反序列化/Fastjson/Shiro/Log4j/Spring | 1101 |
-| `web-attack` | Web攻击 — CSRF/CORS/走私/缓存投毒/WAF/竞态/重定向 | 120 |
-| `api-security` | API安全 — GraphQL/JWT/OAuth/IDOR·BOLA/网关/未授权 | 57 |
-| `auth-security` | 认证授权 — 认证绕过/IDOR/OAuth-JWT/401-403/SSO | 76 |
-| `file-vulns` | 文件漏洞 — 上传/LFI-RFI/路径穿越/SCM泄露 | 397 |
-| `business-logic` | 业务逻辑 — 支付绕过/越权/竞态/威胁建模 | 23 |
-| `ad-attack` | AD域攻击 — Kerberos/ACL/ADCS/NTLM/BloodHound | 197 |
-| `windows-post` | Windows后渗透 — 提权/横移/凭证/免杀/EDR | 103 |
-| `linux-post` | Linux后渗透 — 提权/隧道/持久化/内网横移 | 46 |
-| `cloud-security` | 云安全 — AWS/Azure/GCP/K8s/容器/CI-CD | 185 |
-| `mobile-security` | 移动端 — Android/iOS/APK/Frida/iOS26.6内核CVE | 81 |
-| `binary-pwn` | 二进制Pwn — 栈堆/ROP/fuzz/shellcode/exploit dev | 58 |
-| `reverse-engineering` | 逆向工程 — PE/ELF/脱壳/调试/固件/协议 | 64 |
-| `crypto-attacks` | 密码学攻击 — RSA/对称/格子/哈希/链上 | 22 |
-| `llm-ai-security` | AI/LLM安全 — Prompt注入/RAG/Agent/MCP | 59 |
-| `post-exp-tools` | 后渗透工具 — C2/隧道/代理/Webshell/凭据 | 150 |
-| `malware-dfir` | 恶意样本与取证 — YARA/IR/内存/vuln-memory | 78 |
-| `social-eng` | 社会工程 — 钓鱼/水坑/意识培训/物理 | 67 |
-| `ctf` | CTF与靶场 — Web/Pwn/Crypto/Reverse/报告样例 | 337 |
-| `0day-exploits` | 0day漏洞库 — 产品RCE PoC/自动利用 | 653 |
-| `redteam-framework` | 红队框架 — 状态机/多阶段/lyan工作流 | 166 |
-| `gambling-pentest` | 赌博平台 — BFLA/支付/代理/WebSocket | 3 |
-| `other` | 其他 — 框架专项/自动化/代码审计 | 98 |
+| `recon` | 侦察情报 — 子域/端口/OSINT/组件CVE情报/FOFA/SRC规则/playbook | 1112 |
+| `web-injection` | Web注入 — SQLi/XSS/SSRF/XXE/反序列化/Fastjson/Shiro/Log4j/Spring | 1271 |
+| `web-attack` | Web攻击 — CSRF/CORS/走私/缓存投毒/WAF/竞态/重定向 | 173 |
+| `api-security` | API安全 — GraphQL/JWT/OAuth/IDOR·BOLA/网关/未授权 | 83 |
+| `auth-security` | 认证授权 — 认证绕过/IDOR/OAuth-JWT/401-403/SSO | 112 |
+| `file-vulns` | 文件漏洞 — 上传/LFI-RFI/路径穿越/SCM泄露 | 410 |
+| `business-logic` | 业务逻辑 — 支付绕过/越权/竞态/威胁建模/发卡钱包案 | 78 |
+| `ad-attack` | AD域攻击 — Kerberos/ACL/ADCS/NTLM/BloodHound | 250 |
+| `windows-post` | Windows后渗透 — 提权/横移/凭证/免杀/EDR | 105 |
+| `linux-post` | Linux后渗透 — 提权/隧道/持久化/内网横移 | 143 |
+| `cloud-security` | 云安全 — AWS/Azure/GCP/K8s/容器/CI-CD | 296 |
+| `mobile-security` | 移动端 — Android/iOS/APK/Frida/iOS26.6内核CVE | 84 |
+| `binary-pwn` | 二进制Pwn — 栈堆/ROP/fuzz/shellcode/exploit dev | 62 |
+| `reverse-engineering` | 逆向工程 — PE/ELF/脱壳/调试/固件/协议 | 366 |
+| `crypto-attacks` | 密码学攻击 — RSA/对称/格子/哈希/链上 | 23 |
+| `llm-ai-security` | AI/LLM安全 — Prompt注入/RAG/Agent/MCP | 110 |
+| `post-exp-tools` | 后渗透工具 — C2/隧道/代理/Webshell/凭据 | 158 |
+| `malware-dfir` | 恶意样本与取证 — YARA/IR/内存/vuln-memory | 82 |
+| `social-eng` | 社会工程 — 钓鱼/水坑/意识培训/物理 | 68 |
+| `ctf` | CTF与靶场 — Web/Pwn/Crypto/Reverse/报告样例 | 1743 |
+| `0day-exploits` | 0day漏洞库 — 产品RCE PoC/自动利用 | 11308 |
+| `redteam-framework` | 红队框架 — 状态机/多阶段/lyan工作流 | 534 |
+| `gambling-pentest` | 赌博平台 — BFLA/支付/代理/WebSocket | 18 |
+| `wireless` | 无线 — WiFi/BLE/Zigbee/Z-Wave/LoRa | 29 |
+| `other` | 其他 — 框架专项/自动化/代码审计 | 138 |
 
 ## 渗透闭环
 

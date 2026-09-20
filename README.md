@@ -308,6 +308,8 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 - **Cloudflare security-audit-skill 轻量提炼** → `domains/file-vulns/code-audit/cloudflare-security-audit/`（coverage-ledger + findings schema/validators + 缺面攻击类；非整仓、不新建伞形技能）
 
+- **CVE 情报批次 2026-09-21**：近 24h KEV/高危 13 条本地全缺 → 已差分入库 `domains/0day-exploits/`（PoC 3 + 分析 10；Cisco ISE mock lab 跳过）· 索引 [`INGEST-20260921-INDEX.md`](domains/0day-exploits/INGEST-20260921-INDEX.md)
+
 ### 2026-09-17
 
 完整说明：[`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)

@@ -803,7 +803,7 @@ Phase 5 落地：
   生成工单（含 PoC 步骤）→ 人工复核 → 修复 → 复测闭环
 ```
 
-**开源参考（2026）：** Cloudflare security-audit-skill（6 阶段多智能体 + 对抗验证）、Trail of Bits skills、Capital One VulnHunter（Hunt/Fix/Verify 三阶段，Falsification Engine）、Google mantis、Vercel deepsec、raptor（Semgrep+CodeQL+fuzz 综合）。
+**开源参考（2026）：** Cloudflare security-audit-skill（6 阶段多智能体 + 对抗验证）→ **本库已轻量提炼**：[`domains/file-vulns/code-audit/cloudflare-security-audit/`](../../../file-vulns/code-audit/cloudflare-security-audit/)（pipeline + coverage-ledger + findings schema/validators + 缺面攻击类）。另：Trail of Bits skills、Capital One VulnHunter（Hunt/Fix/Verify + Falsification）、Google mantis、Vercel deepsec、raptor（Semgrep+CodeQL+fuzz）。
 
 ### 8.5 大模型代码审计的边界与幻觉治理
 

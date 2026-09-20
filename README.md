@@ -293,6 +293,8 @@ bash scripts/install-tools.sh        # 按清单补工具
 - **712win3 实战课**：`gambling-pentest/case-lessons/712win3-partial-users.md` + 脱敏 case-reports 指针（明文 loot 不进仓）
 - **增量融合**：Telegram Desktop / 攻防技能卡与 payload 工具面 → 各域 `aimy-tools` / `claude-red` / `src-methods` / `wireless` 等（见 absorb 账本）
 
+- **Cloudflare security-audit-skill 轻量提炼** → `domains/file-vulns/code-audit/cloudflare-security-audit/`（coverage-ledger + findings schema/validators + 缺面攻击类；非整仓、不新建伞形技能）
+
 ### 2026-09-17
 
 完整说明：[`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)

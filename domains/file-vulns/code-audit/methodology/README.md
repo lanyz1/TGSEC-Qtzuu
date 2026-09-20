@@ -4,6 +4,16 @@
 
 [中文文档](README_CN.md)
 
+## Add-on: Cloudflare multi-agent audit distill (2026-09-20)
+
+Lightweight extract (not a full vendor dump): [`../cloudflare-security-audit/`](../cloudflare-security-audit/)
+
+- 6-phase pipeline / coverage-ledger / findings verdicts under `methodology/`
+- Gap attack-class companions under `attack-classes/`
+- Machine validators: `schema/validate-*.cjs`
+
+For live external pentests keep using `pentest-execution`. This add-on is **source-first white-box**.
+
 ## Overview
 
 Code Audit is a professional security audit skill for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). It performs static white-box analysis to systematically discover and verify security vulnerabilities in source code.

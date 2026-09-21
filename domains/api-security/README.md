@@ -34,6 +34,8 @@ unauthorized-access-common-services
 ## 融合亮点
 
 - `case-lessons/tg-cloud-export-bola.md` — TG/库存 export BOLA
+- `case-lessons/uu-im-8089-multiface.md` — UU/iM/8089 未授权上传回读+WebWS+SSRF
+- `playbook-6000/uu-im-8089-multiface-chain.md` — 同段横向接管顺序
 
 - `playbook-6000/` — 测试方法论 playbook
 - `hunter-6000/` — offensive skills

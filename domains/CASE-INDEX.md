@@ -3,7 +3,7 @@
 > **渗透中途必查。** 命中资产类型后：先本表 → `case-lessons/<slug>.md`（课）→ `case-reports/<slug>/`（全文）。
 > 不要只读通用 playbook 就开打；同面有 case 时必须至少打开 1 篇相关课。
 
-- 课（case-lessons）：**51**
+- 课（case-lessons）：**56**
 - 域覆盖：api-security, auth-security, business-logic, cloud-security, gambling-pentest, llm-ai-security, recon, redteam-framework, reverse-engineering, web-attack
 - 生成：2026-09-20（闭环优化后）
 
@@ -36,7 +36,7 @@
 | MCP / DCR / OAuth 客户端 | auth-security cloudflare-mcp / okx-mcp |
 | LLM / LiteLLM 网关 | `llm-gateway-pentest` + badhost-litellm |
 
-## `api-security`（7）
+## `api-security`（11）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -47,14 +47,19 @@
 | `tg-cloud-export-bola` | 平台：Telegram 云控 / 筛号 / 账号库存（Go/Gin 或同类 + Vue SPA + CDN）。 | `domains/api-security/case-lessons/tg-cloud-export-bola.md` | — |
 | `tg-filter-platform` | - Source report: TG筛号平台-渗透测试报告.md | `domains/api-security/case-lessons/tg-filter-platform.md` | `domains/api-security/case-reports/tg-filter-platform/` |
 | `tg-ops-cluster-alanyhq` | - Source report: TG运营集群-综合渗透报告.md | `domains/api-security/case-lessons/tg-ops-cluster-alanyhq.md` | `domains/api-security/case-reports/tg-ops-cluster-alanyhq/` |
+| `uu-im-8089-multiface` | UU钱包/iM/8089注单：未授权upload+download/resource XSS；WebWS设备表；accounts SSRF；群管OpenAPI | `domains/api-security/case-lessons/uu-im-8089-multiface.md` | — |
+| `darksword-coruna-c2` | 同机 ThinkPHP刷单+DarkSword+Coruna：phar/FPM/PwnKit 或 payload %2f LFI | `domains/api-security/case-lessons/darksword-coruna-c2.md` | — |
+| `bms-pc28-console` | BMS/PC28：算法.py沙箱逃逸→root；占位session伪造；OKPAY回调 | `domains/api-security/case-lessons/bms-pc28-console.md` | — |
+| `chatnet-lsky-cloudreve-ugc` | Lsky is_admin + ChatNet未授权建管 + OSS根AK→云助手root | `domains/api-security/case-lessons/chatnet-lsky-cloudreve-ugc.md` | — |
 
-## `auth-security`（3）
+## `auth-security`（4）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
 | `cloudflare-mcp-dcr` | - Source report: Cloudflare_DCR_漏洞报告.md | `domains/auth-security/case-lessons/cloudflare-mcp-dcr.md` | `domains/auth-security/case-reports/cloudflare-mcp-dcr/` |
 | `okx-mcp-dcr` | - Source report: OKX_DCR_漏洞报告.md | `domains/auth-security/case-lessons/okx-mcp-dcr.md` | `domains/auth-security/case-reports/okx-mcp-dcr/` |
 | `ruoyi-datascope-list-bola` | - 登录角色 charge/业务客户，权限点很多但 system/ 管理面 403 | `domains/auth-security/case-lessons/ruoyi-datascope-list-bola.md` | — |
+| `ruoyi-plus-anonymous-gettoken` | RuoYi-Vue-Plus 匿名/getToken发固定会员会话→批量PII | `domains/auth-security/case-lessons/ruoyi-plus-anonymous-gettoken.md` | — |
 
 ## `business-logic`（14）
 

@@ -4,9 +4,6 @@ description: "Use when absorbing security repos into skills."
 version: 1.0.0
 ---
 
-> **路径说明（全 AI）：** 知识正文在包根 `domains/`；配合 `ROUTING.md` / `MASTER.md` / `START.md`。Windows 请优先用 `domains/`，勿依赖 Linux 专用绝对路径。
-
-
 # Security Knowledge-Base Ingestion & Archiving
 
 How to absorb external security/red-team repos (GitHub or local dirs) into the Hermes skill
@@ -61,7 +58,7 @@ the router entry; 8 known cross-repo duplicate names exist among the absorbed re
 | hack-skills (yaklang) | /root/hack-skills | 102 SKILL.md, router: `hack-skills` |
 | SecAtlas (shuaiqideyu) | /root/SecAtlas | YAML technique cards, router: `secatlas` |
 | reverse-skill (local) | /root/reverse-skill | routing engine; Hermes router: `reverse-skill` |
-| CVE-2026-65343 iOS kernel batch | domains/mobile-security/ios-kernel-cve | ANALYSIS only; fused into mobile-security |
+| CVE-2026-65343 iOS kernel batch | /root/security-suite/domains/mobile-security/ios-kernel-cve | ANALYSIS only; fused into mobile-security |
 | 6000RMB skills.zip (2026-09-03) | fused into domains/*/playbook-6000+hunter-6000 | 145 new/83 dedup; FUSION-6000.md |
 | AboutSecurity (wgpsec) | /root/AboutSecurity | 68MB, 1884 files, router: `about-security` |
 | Claude-BugHunter | /root/Claude-BugHunter | 83 hunt skills, router: `claude-bughunter` |
@@ -69,9 +66,9 @@ the router entry; 8 known cross-repo duplicate names exist among the absorbed re
 | web-sec (ReAbout) | /root/web-sec | EXP/VUL/PEN 3-layer, router: `web-sec` |
 | skill dir (local) | /www/wwwroot/skill | content churn expected; router: `skill-arsenal` |
 | Black-cat (0rangec3t) | /root/Black-cat | Hypothesis-driven state-machine pentest framework; 7 technique dirs (web/recon/cloud/db/reversing/ad/evasion); router: `black-cat-redteam` |
-| 0day-Rubbish (Exploit-Garbage) | domains/0day-exploits | 76 products, 90 RCE vulns, each with exploit/*.py + analysis.md + summary.md; router: `0day-exploit-library` |
-| Redis CVE-2026-81934 PoC (berabuddies) | domains/0day-exploits/redis/CVE-2026-81934 | Redis TLS UAF→RCE, CVSS 9.8, exploits for 6.2/7.4/8.6/8.8; merged into 0day-exploit-library |
-| RuoYi-Vue-Plus tenant_id SQLi (2026-09-02) | domains/0day-exploits/ruoyi-vue-plus/ | Pre-auth SQLi via POST /auth/register tenantId; Error-based extractvalue; merged into 0day-exploit-library |
+| 0day-Rubbish (Exploit-Garbage) | /root/security-suite/domains/0day-exploits | 76 products, 90 RCE vulns, each with exploit/*.py + analysis.md + summary.md; router: `0day-exploit-library` |
+| Redis CVE-2026-81934 PoC (berabuddies) | /root/security-suite/domains/0day-exploits/redis/CVE-2026-81934 | Redis TLS UAF→RCE, CVSS 9.8, exploits for 6.2/7.4/8.6/8.8; merged into 0day-exploit-library |
+| RuoYi-Vue-Plus tenant_id SQLi (2026-09-02) | /root/security-suite/domains/0day-exploits/ruoyi-vue-plus/ | Pre-auth SQLi via POST /auth/register tenantId; Error-based extractvalue; merged into 0day-exploit-library |
 | clown-src-6k-skill (SRC methods) | merged into 9 domains | 49 vuln test methods + 11 rules + FOFA MCP; fused into web-injection/web-attack/auth-security/file-vulns/recon/etc. src-methods/ subdirs |
 | PHP-Code-Audit-Skill | domains/file-vulns/code-audit/php/ | Fine-grained PHP route-mapper/tracer + class audits; kept aggregated php-*-audit |
 | java-audit-skills | domains/file-vulns/code-audit/java/audit-skills/ | Workspace convention + component YAML + evidence gate |
@@ -229,3 +226,15 @@ When absorbing a vulnerability methodology knowledge base (e.g. clown-src-6k-ski
 - `references/wordpress-pentest-playbook.md` — WordPress pentest chain (xmlrpc multicall bruteforce, wp-json IP+Host bypass, plugin CVEs, vhost discovery, SPA backend pivot)
 - `references/github-token-push.md` — GitHub token capability probing + push recipe
 - `references/deep-audit-workflow.md` — persistent audit workflow (when to continue vs when to stop)
+
+## Report absorb: 未覆盖栈 → 新 Skill（第四步硬门）
+
+Absorbing a report pack is **not done** after case-lesson only. Gap gate:
+
+1. Extract stack fingerprints (framework/product/ports/title) from **new** reports only (dedupe by sha).
+2. Cross-check `~/.hermes/skills/security/*/SKILL.md` + `domains/*/case-lessons/` + relevant references.
+3. **If stack has no dedicated skill AND chain is reusable** → create Skill under `security/` (user/curator absorb request counts as adopt for that batch): fingerprint → ROI chain → pitfalls → checklist. Mirror a short `case-lessons/<slug>.md` + CASE-INDEX row + `tgsec-suite` 实战课表一行.
+4. If stack already covered → patch references / case-lesson only (do not clone skill).
+5. Skip pure credential dumps / duplicate packs / already-stopped cases.
+
+2026-09-22 batch created: `darksword-coruna-c2-pentest`, `bms-pc28-console-pentest`, `chatnet-lsky-cloudreve-ugc` (+ auth lesson `ruoyi-plus-anonymous-gettoken`).

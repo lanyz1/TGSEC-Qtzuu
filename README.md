@@ -1,6 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
-- 2026-09-20：调用闭环整改 + CASE-INDEX + Cloudflare 白盒提炼 + 攻防技能卡增量
+- 2026-09-22：报告吸收硬门（未覆盖栈→新 Skill）+ UU/iM/8089·DarkSword·BMS·ChatNet·RuoYi-Plus 课
 
 > **@TGSEC社区 · @TGSEC-Qtzuu 整理**  
 > 面向 **AI + 人** 的授权安全知识库：渗透测试、挖洞、红队方法论，按**攻击面**组织，可直接丢给 Grok Build / Claude / Cursor / Hermes / Codex 等使用。
@@ -10,33 +10,32 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：[`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)**（2026-09-20）· 上轮 [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)
+**👉 本轮更新说明：[`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)（2026-09-22）· 上轮 [`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)
 
 ---
 
-## 〇、本轮更新了什么（2026-09-20）
+## 〇、本轮更新了什么（2026-09-22）
 
-详情见 [`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)。摘要：
+详情见 [`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)。摘要：
 
-### 整改（调用硬伤）
+### 整改（吸收硬门）
 
 | 整改项 | 结果 |
 |--------|------|
-| `skill_view` 裸名 Ambiguous（树内 `security.bak.*`） | bak 迁出；sync 备份 → `~/.hermes/skill-backups/`（留 3 份） |
-| 私有专项经常调不到 | `pentest-execution` / `tgsec-suite` 强制矩阵补齐 |
-| sinian 114 平铺噪声 | → 各域 `src-methods/_vendor/sinian/`（默认不遍历） |
-| 实战课散落 | `domains/CASE-INDEX.md`（**51** 课）中途强制入口 |
+| 报告吸收只写课、不开 Skill | `security-kb-ingest` **第四步硬门**：未覆盖栈且链可复用 → 必须开新 Skill |
+| 重复报告包反复通读 | 按 sha 去重；已有卡只补 references |
+| 实战课路由缺口 | CASE-INDEX + `tgsec-suite` 课表挂 DarkSword / BMS / ChatNet / RuoYi-Plus getToken |
 
 ### 更新（知识增量）
 
 | 块 | 落点 | 本轮增量 |
 |----|------|----------|
-| CASE-INDEX / 调用闭环 | `domains/CASE-INDEX.md` · FUSION-callpath | 渗透：伞形 → 私有专项 → CASE → case-lessons≥1 |
-| 712win3 实战课 | `gambling-pentest/case-lessons/` | 白标大厅部分用户方法论；仓内报告脱敏 |
-| Cloudflare 白盒审计提炼 | `file-vulns/code-audit/cloudflare-security-audit/` | 6 阶段 + coverage-ledger + findings schema/validators + 缺面攻击类（轻量，非整仓） |
-| 攻防技能卡 / 工具面 | 各域 `aimy-tools` · `claude-red` · `wireless` 等 | Telegram Desktop 等增量融合 |
+| UU/iM/8089 多面课+链 | `api-security/case-lessons` · `playbook-6000` · 总册 | 未授权 upload+resource、WebWS、accounts SSRF、群管 OpenAPI |
+| DarkSword/Coruna / BMS-PC28 / ChatNet-Lsky | 私有 Skill（本机 Hermes）+ 入库课 | C2 payload LFI、算法沙箱逃逸、UGC→云根 AK |
+| RuoYi-Plus 匿名 getToken | `auth-security/case-lessons` + ruoyi playbook | 固定会员会话 → 批量 PII |
+| 旧卡补强 | fastapi / 彩票 xxpay / case-lessons-index | 群管指纹、8089/TCR e 码 |
 
-上一轮（2026-09-17）CVE/方法论/逆向包摘要仍见 [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)。
+上一轮（2026-09-20）调用闭环 / CASE-INDEX / Cloudflare 白盒见 [`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)。
 
 `git pull` 后记得再跑 `bash scripts/bootstrap.sh --force`（或 `sync-agent-skills.sh`），技能目录才会跟上。
 

@@ -9,11 +9,11 @@
 
 **规模体感：** 24 个主题域 · `domains/` 约 **14000+** 文件 · 14 个伞形技能 · **62** 实战课 · 80+ 工具清单。
 
-**本轮更新（2026-09-23）：**  
-**0day** — V8 85046/87491 可跑 harness；PaperCut/Cisco SEG/Win ALPC·Update 只写 KEV 分析卡；GitLab 85706 改成 KEV 在野。  
-**微信** — 2FA 缺的 5 条 + glob 错例 + CRS PL 补进旧卡（不是新 Skill）。  
-**报告.zip** — 课：82vip 调账 / Kylin 黑卡 / aqlm / xmnyme；DarkSword 补 JackApple。**全文 loot 不入库**。  
-完整说明 → [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)。
+**本轮更新（2026-09-23，commit `1d12151c` 起）：**  
+**0day** — V8 可跑 harness；独立仓 23b–e（WP Core / Zabbix / RustyTux / Forminator / macOS LPE / copyfail-rs PAM…）；**@cvebird 对照 1.3 万仓后只融 9 条真缺口**（Solr / Netlogon / ActiveMQ / vBulletin / cPanel parking / Next-Win / OpenClaw / Docker 2375 / XWiki）。SecureWithUmer stub **整仓不吸**。  
+**锁面** — `pentest-execution` §0：点名 URL 的 A 记录 IP 才算同机。  
+**微信 / 报告.zip** — 2FA+glob 补旧卡；82vip / Kylin 课。loot 不入库。  
+完整说明 → [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md) · 融合批次见 README **第十节**。
 
 ---
 
@@ -142,10 +142,12 @@ bash scripts/sync-hermes-skills.sh
 
 ### 最近融了啥
 
-**2026-09-11：** 专项技能（不设限/钓鱼/OPSEC）· 平台参考 · AI stub · cPanel/KiviCare 替代 PoC · **Claude Code=`pentest-redteam` 状态机开打**。  
-**2026-09-10：** 运行时闸门/能力原语 · AI 安全工程 · n8n/AD/K8s/Copy-Fail · CTF 全套 · **POC 全量目录（poc-catalog + CVE 卡）** · recon 技能全文。  
-**2026-09-08：** TORCH · panda-rev · SQLi 字典 · exploitarium。  
-详见 `README.md` 第十节 · `0day-exploits/POC-CATALOG-INDEX.md`。
+**2026-09-23：** CVE 独立仓 23b–g + @cvebird 最优 9 harness + src-6k 锁面 + 微信/报告.zip 课。USBPrint 搬出 ghost-cms。聚合仓 stub 不吸。  
+**2026-09-22：** 报告吸收硬门 · UU/DarkSword/BMS/ChatNet 课。  
+**2026-09-20：** CASE-INDEX 闸门 · sinian 114 迁 `_vendor` · 712win3 课。  
+**2026-09-11：** 专项技能（不设限/钓鱼/OPSEC）· Claude Code=`pentest-redteam` 开打。  
+**2026-09-10：** 运行时闸门 · n8n/AD/K8s/Copy-Fail · **POC 全量目录**。  
+详见 `README.md` **第十节（融合批次）** · [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)。
 
 ### 工具不够？
 
@@ -168,7 +170,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\sync-agent-skills.ps1
 cd ~/security-suite && git pull && bash scripts/sync-agent-skills.sh
 ```
 
-看「这次更新了啥」：打开根目录最新的 `UPDATE-*.md`（现在是 [`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)）。
+看「这次更新了啥」：打开根目录最新的 `UPDATE-*.md`（现在是 [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)）。
 
 ---
 

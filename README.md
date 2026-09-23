@@ -1,6 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
-- 2026-09-23：CVE-2026 0day 差分（V8 harness + KEV 分析卡）· 报告.zip 两枚新 Skill 课 · 微信 2FA/glob 补进旧卡
+- 2026-09-23：CVE 差分 · 报告.zip · 微信 · src-6k 锁面 · **cvebird 最优 9 harness（Solr/Netlogon/ActiveMQ/vBulletin/cPanel/Next-Win/OpenClaw/Docker/XWiki）**
 
 > **@TGSEC社区 · @TGSEC-Qtzuu 整理**  
 > 面向 **AI + 人** 的授权安全知识库：渗透测试、挖洞、红队方法论，按**攻击面**组织，可直接丢给 Grok Build / Claude / Cursor / Hermes / Codex 等使用。
@@ -36,7 +36,13 @@
 | 82vip `/ll/center` · Kylin `/ucard` | 本机私有 Skill + 入库课 | Nacos Host→XFF 调账；会员票 IDOR→超管 |
 | DarkSword JackApple | 旧卡补指纹 | 面板未破 ≠ 失败；洞在 `DS_SHARED_SECRET` 数据面 |
 | 2FA 13 条 / glob `?` | `logic-flaw-patterns` §2.7 · cmdi Wildcard · SecAtlas yaml | 开 2FA 不踢旧会话；CRS PL 表；长整型 IP |
-| aqlm/999db · xmnyme forget | 课（混栈/已有面） | 不新开 Skill |
+|| aqlm/999db · xmnyme forget | 课（混栈/已有面） | 不新开 Skill |
+|| src-6k-skill.zip 锁面 | `pentest-execution` §0 | 点名 URL 禁切邻机；方法卡已在库不重融 |
+|| CVE-2026 独立仓 09-23b | 6 POC_FUSED + 1 ANALYSIS | WP Core 87902 / nginx-ignition / Zabbix / SGLang / Cisco FMC / PeopleSoft；isomorphic-git GHSA。SecureWithUmer stub 整仓 SKIP |
+|| CVE-2026 独立仓 09-23c | RustyTux + 纠错 + 第二 harness | USBPrint 搬出 ghost-cms；K8s Copy-Fail Go；Cisco Workload checker；Tomcat lab sh；4xura C；Icex0/vulpecuna |
+|| CVE-2026 独立仓 09-23d | Forminator 92229 · macOS 43783 | 未授权 quiz shortcode；DesktopServicesHelper 任意 fchown→PAM LPE |
+|| CVE-2026 独立仓 09-23e | copyfail-rs · sergiointel · 59309 | PAM 4-byte killshot；SQLi 建超管不喷密；vCenter checker。SecureWithUmer 再抽 8 份仍 stub |
+|| @cvebird 09-23g | 9 POC_FUSED | Solr 22444 · Netlogon 41089 · ActiveMQ 42588 · vB 61511 · cPanel 65643 · Next-Win 75604 · OpenClaw 28466 · Docker 9074 · XWiki 24893。exe/整站 SKIP |
 
 CASE-INDEX 课 **62**。私有 Skill（`82vip-ll-center-pentest` / `kylin-worldpay-ucard-pentest`）在本机 Hermes，不强制进 git。
 

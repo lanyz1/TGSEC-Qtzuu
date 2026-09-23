@@ -1,6 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
-- 2026-09-22：报告吸收硬门（未覆盖栈→新 Skill）+ UU/iM/8089·DarkSword·BMS·ChatNet·RuoYi-Plus 课
+- 2026-09-23：CVE-2026 0day 差分（V8 harness + KEV 分析卡）· 报告.zip 两枚新 Skill 课 · 微信 2FA/glob 补进旧卡
 
 > **@TGSEC社区 · @TGSEC-Qtzuu 整理**  
 > 面向 **AI + 人** 的授权安全知识库：渗透测试、挖洞、红队方法论，按**攻击面**组织，可直接丢给 Grok Build / Claude / Cursor / Hermes / Codex 等使用。
@@ -10,32 +10,37 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：[`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)（2026-09-22）· 上轮 [`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)
+**👉 本轮更新说明：[`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)（2026-09-23）· 上轮 [`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)
 
 ---
 
-## 〇、本轮更新了什么（2026-09-22）
+## 〇、本轮更新了什么（2026-09-23）
 
-详情见 [`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)。摘要：
+详情见 [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)。摘要：
 
-### 整改（吸收硬门）
+### 整改
 
 | 整改项 | 结果 |
 |--------|------|
-| 报告吸收只写课、不开 Skill | `security-kb-ingest` **第四步硬门**：未覆盖栈且链可复用 → 必须开新 Skill |
-| 重复报告包反复通读 | 按 sha 去重；已有卡只补 references |
-| 实战课路由缺口 | CASE-INDEX + `tgsec-suite` 课表挂 DarkSword / BMS / ChatNet / RuoYi-Plus getToken |
+| 微信译文当「无新栈」掠过 | 对照 playbook：2FA 缺 5 条、glob 例子写错、GitLab ANALYSIS 仍写未在野 → **补进会加载的卡** |
+| 报告全文/账密包进 git | `case-reports` loot **不入库**；课 + CASE-INDEX 指针即可 |
+| 聚合仓/Cisco 假靶盲吞 | 0day 批次只融真缺口；ISE/SEG Flask lab、nomi-sec/trickest 整仓 SKIP |
 
 ### 更新（知识增量）
 
 | 块 | 落点 | 本轮增量 |
 |----|------|----------|
-| UU/iM/8089 多面课+链 | `api-security/case-lessons` · `playbook-6000` · 总册 | 未授权 upload+resource、WebWS、accounts SSRF、群管 OpenAPI |
-| DarkSword/Coruna / BMS-PC28 / ChatNet-Lsky | 私有 Skill（本机 Hermes）+ 入库课 | C2 payload LFI、算法沙箱逃逸、UGC→云根 AK |
-| RuoYi-Plus 匿名 getToken | `auth-security/case-lessons` + ruoyi playbook | 固定会员会话 → 批量 PII |
-| 旧卡补强 | fastapi / 彩票 xxpay / case-lessons-index | 群管指纹、8089/TCR e 码 |
+| V8 CVE-2026-85046+87491 | `0day-exploits/v8/sort-confusion-writeup/exploit/` | JS harness（`run.py` → `PWNED 2026`）；renderer 不是 LPE |
+| PaperCut 81578/82078 · Cisco SEG 76461 · Win ALPC 85880 · Update Stack 81963 | 各产品 `ANALYSIS_ONLY_KEV` 卡 | 无公开 EXP，不编造 |
+| GitLab 85706 | 已有 PoC/lab；改 ANALYSIS | CISA KEV + 24h 探测；`db_key_base` 禁暴力重置 |
+| 82vip `/ll/center` · Kylin `/ucard` | 本机私有 Skill + 入库课 | Nacos Host→XFF 调账；会员票 IDOR→超管 |
+| DarkSword JackApple | 旧卡补指纹 | 面板未破 ≠ 失败；洞在 `DS_SHARED_SECRET` 数据面 |
+| 2FA 13 条 / glob `?` | `logic-flaw-patterns` §2.7 · cmdi Wildcard · SecAtlas yaml | 开 2FA 不踢旧会话；CRS PL 表；长整型 IP |
+| aqlm/999db · xmnyme forget | 课（混栈/已有面） | 不新开 Skill |
 
-上一轮（2026-09-20）调用闭环 / CASE-INDEX / Cloudflare 白盒见 [`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)。
+CASE-INDEX 课 **62**。私有 Skill（`82vip-ll-center-pentest` / `kylin-worldpay-ucard-pentest`）在本机 Hermes，不强制进 git。
+
+上一轮（2026-09-22）报告吸收硬门 / UU·DarkSword·BMS·ChatNet 见 [`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)。
 
 `git pull` 后记得再跑 `bash scripts/bootstrap.sh --force`（或 `sync-agent-skills.sh`），技能目录才会跟上。
 

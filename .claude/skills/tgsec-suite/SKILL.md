@@ -68,6 +68,9 @@ version: 1.3.0
 | DarkSword / Coruna / iOS C2 / payload entry | `darksword-coruna-c2-pentest` | `darksword-coruna-c2` |
 | BMS / PC28 / 算法.py 上传沙箱 | `bms-pc28-console-pentest` | `bms-pc28-console` |
 | ChatNet / LskyPro / Cloudreve UGC | `chatnet-lsky-cloudreve-ugc` | `chatnet-lsky-cloudreve-ugc` |
+| 82vip / LL.VIP / `/ll/center` 调账 | `82vip-ll-center-pentest` | `82vip-ll-center` |
+| Kylin / 麒麟黑卡 /ucard | `kylin-worldpay-ucard-pentest` | `kylin-worldpay-ucard` |
+| xmnyme 未授权发码 forget | （auth 面） | `xmnyme-forget-unauth-code` |
 | MCP/DCR | （auth 面） | cloudflare-mcp / okx-mcp |
 | LLM 网关中转 | `llm-gateway-pentest` | badhost-litellm |
 

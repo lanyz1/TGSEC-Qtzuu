@@ -1,6 +1,6 @@
 # 小白从这里开始（3 步）
 
-- 2026-09-23：82vip `/ll/center` 调账 Skill · Kylin 黑卡 Skill · 微信 2FA/glob 课 · GitLab 85706 已在库
+- 2026-09-23：82vip/Kylin · 微信 · src-6k 锁面 · **CVE 23b–23g（cvebird：Solr/Netlogon/ActiveMQ/vB/cPanel/Next-Win）**
 
 仓库：https://github.com/lanyz1/TGSEC-Qtzuu
 

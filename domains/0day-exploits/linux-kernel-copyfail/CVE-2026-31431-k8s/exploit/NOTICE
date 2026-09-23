@@ -1,0 +1,21 @@
+CVE-2026-31431 Kubernetes Container Escape PoC
+
+The payload implementation in `payload/payload.c` is based on Tony Gies'
+cross-platform C port of Copy Fail:
+
+  https://github.com/tgies/copy-fail-c
+
+Upstream author of the C port:
+
+  Tony Gies <tony.gies@crashunited.com>
+
+Original CVE-2026-31431 discovery and disclosure:
+
+  Theori / Xint
+  https://copy.fail/
+
+The derived payload keeps the upstream dual-license terms:
+
+  SPDX-License-Identifier: LGPL-2.1-or-later OR MIT
+
+See `LICENSE-MIT` and `LICENSE-LGPL`.

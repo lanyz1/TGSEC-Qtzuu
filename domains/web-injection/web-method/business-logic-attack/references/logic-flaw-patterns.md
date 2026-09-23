@@ -73,8 +73,19 @@ ffuf -w <(seq -w 000000 999999) -u https://target/api/verify-2fa \
 - "记住设备" Cookie 预测：`remember_2fa=base64(user_id+timestamp)`
 - IP 伪装：`X-Forwarded-For: <victim_ip>`
 - 旧版子域名/API（`/v1/login`）可能未实施 2FA
-- CSRF/Clickjacking 禁用 2FA 设置
+- CSRF/Clickjacking 禁用 2FA 设置（查 **关闭 2FA 那一页** 的 `X-Frame-Options` / `frame-ancestors`，别只看登录页）
 - 备份码若存在 CORS 错误或 XSS 可被窃取
+- 备份码用一次后是否能直接走「关闭 2FA / 换绑定」而不再要 TOTP（重置通道，不只爆破）
+- OTP 口单独测空值 / `null` / `000000` / `123456`（空值节默认写在 CAPTCHA，2FA 常漏）
+- 登录/校验 JS：测试码写死、`__DEV__` 未剥、OTP 生成函数在 bundle
+
+### 2.7 启用 2FA 不踢历史会话（learn365 / 微信 2026-09）
+
+本地原先没有这一条。
+
+密码过了、2FA 还没开时拿到的 cookie（XSS、会话固定、共享电脑）在受害者**事后开启 2FA** 后是否仍能打 `/api/me` 和业务写口。服务端若不 `session.invalidate` 全量旧票，新装的 2FA 形同虚设。配合过宽 idle + 心跳/WS 保活可长期挂着。
+
+测法：会话 A 停在「已登录未开 2FA」→ 会话 B 开启 2FA → 用 A 的 cookie 打受保护 API。
 
 ---
 

@@ -1,19 +1,19 @@
 # 小白从这里开始（3 步）
 
-- 2026-09-22：报告吸收硬门（未覆盖栈→新 Skill）+ UU/iM/8089·DarkSword·BMS·ChatNet·RuoYi-Plus 课
+- 2026-09-23：82vip `/ll/center` 调账 Skill · Kylin 黑卡 Skill · 微信 2FA/glob 课 · GitLab 85706 已在库
 
 仓库：https://github.com/lanyz1/TGSEC-Qtzuu
 
 这是 **TGSEC 安全知识聚合库**：按攻击面整理的授权渗透 / 挖洞资料 + 伞形技能路由 + 工具/PoC/字典入口。  
 给 **AI 和人**一起用（Grok / Claude / Cursor / Hermes / Codex…）。
 
-**规模体感：** 24 个主题域 · `domains/` 约 **14000+** 文件 · 14 个伞形技能 · **56** 实战课 · 80+ 工具清单。
+**规模体感：** 24 个主题域 · `domains/` 约 **14000+** 文件 · 14 个伞形技能 · **62** 实战课 · 80+ 工具清单。
 
-**本轮更新（2026-09-22）：**  
-**整改** — 报告吸收第四步硬门：缺栈就开新 Skill（不只写课）。  
-**更新** — UU/iM/8089 多面课 · DarkSword/Coruna · BMS/PC28 · ChatNet+Lsky+Cloudreve · RuoYi-Plus 匿名 getToken；总册/CASE-INDEX/tgsec 课表同步。  
-完整说明 → [`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md) · 自述首页「〇、本轮更新了什么」。  
-上轮（09-20 调用闭环 / 09-21 CVE 批次）仍见 [`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)。
+**本轮更新（2026-09-23）：**  
+**0day** — V8 85046/87491 可跑 harness；PaperCut/Cisco SEG/Win ALPC·Update 只写 KEV 分析卡；GitLab 85706 改成 KEV 在野。  
+**微信** — 2FA 缺的 5 条 + glob 错例 + CRS PL 补进旧卡（不是新 Skill）。  
+**报告.zip** — 课：82vip 调账 / Kylin 黑卡 / aqlm / xmnyme；DarkSword 补 JackApple。**全文 loot 不入库**。  
+完整说明 → [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)。
 
 ---
 

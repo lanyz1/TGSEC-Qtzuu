@@ -3,7 +3,7 @@
 > **渗透中途必查。** 命中资产类型后：先本表 → `case-lessons/<slug>.md`（课）→ `case-reports/<slug>/`（全文）。
 > 不要只读通用 playbook 就开打；同面有 case 时必须至少打开 1 篇相关课。
 
-- 课（case-lessons）：**56**
+- 课（case-lessons）：**62**
 - 域覆盖：api-security, auth-security, business-logic, cloud-security, gambling-pentest, llm-ai-security, recon, redteam-framework, reverse-engineering, web-attack
 - 生成：2026-09-20（闭环优化后）
 
@@ -48,11 +48,11 @@
 | `tg-filter-platform` | - Source report: TG筛号平台-渗透测试报告.md | `domains/api-security/case-lessons/tg-filter-platform.md` | `domains/api-security/case-reports/tg-filter-platform/` |
 | `tg-ops-cluster-alanyhq` | - Source report: TG运营集群-综合渗透报告.md | `domains/api-security/case-lessons/tg-ops-cluster-alanyhq.md` | `domains/api-security/case-reports/tg-ops-cluster-alanyhq/` |
 | `uu-im-8089-multiface` | UU钱包/iM/8089注单：未授权upload+download/resource XSS；WebWS设备表；accounts SSRF；群管OpenAPI | `domains/api-security/case-lessons/uu-im-8089-multiface.md` | — |
-| `darksword-coruna-c2` | 同机 ThinkPHP刷单+DarkSword+Coruna：phar/FPM/PwnKit 或 payload %2f LFI | `domains/api-security/case-lessons/darksword-coruna-c2.md` | — |
+| `darksword-coruna-c2` | 同机 ThinkPHP刷单+DarkSword+Coruna：phar/FPM/PwnKit 或 payload %2f LFI；JackApple 数据面密钥 | `domains/api-security/case-lessons/darksword-coruna-c2.md` | — |
 | `bms-pc28-console` | BMS/PC28：算法.py沙箱逃逸→root；占位session伪造；OKPAY回调 | `domains/api-security/case-lessons/bms-pc28-console.md` | — |
 | `chatnet-lsky-cloudreve-ugc` | Lsky is_admin + ChatNet未授权建管 + OSS根AK→云助手root | `domains/api-security/case-lessons/chatnet-lsky-cloudreve-ugc.md` | — |
 
-## `auth-security`（4）
+## `auth-security`（6）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -60,8 +60,10 @@
 | `okx-mcp-dcr` | - Source report: OKX_DCR_漏洞报告.md | `domains/auth-security/case-lessons/okx-mcp-dcr.md` | `domains/auth-security/case-reports/okx-mcp-dcr/` |
 | `ruoyi-datascope-list-bola` | - 登录角色 charge/业务客户，权限点很多但 system/ 管理面 403 | `domains/auth-security/case-lessons/ruoyi-datascope-list-bola.md` | — |
 | `ruoyi-plus-anonymous-gettoken` | RuoYi-Vue-Plus 匿名/getToken发固定会员会话→批量PII | `domains/auth-security/case-lessons/ruoyi-plus-anonymous-gettoken.md` | — |
+| `xmnyme-forget-unauth-code` | 未授权 send_email type=2 + forget_password 改密接管邮箱号；后台 429 禁喷 | `domains/auth-security/case-lessons/xmnyme-forget-unauth-code.md` | — |
+| `2fa-logic-bypass-13` | 2FA 逻辑绕过 13 条（响应篡改/码复用/关 2FA CSRF/不踢旧会话） | `domains/auth-security/case-lessons/2fa-logic-bypass-13.md` | — |
 
-## `business-logic`（14）
+## `business-logic`（15）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -79,6 +81,7 @@
 | `sundapp-status` | - Source report: STATUS.md | `domains/business-logic/case-lessons/sundapp-status.md` | `domains/business-logic/case-reports/sundapp-status/` |
 | `sundapp-status-continued` | - Source report: STATUS (2).md | `domains/business-logic/case-lessons/sundapp-status-continued.md` | `domains/business-logic/case-reports/sundapp-status-continued/` |
 | `vi-wallet-admin-takeover` | - Source report: 2026-07-23_VI钱包后台-完整控制报告.md | `domains/business-logic/case-lessons/vi-wallet-admin-takeover.md` | `domains/business-logic/case-reports/vi-wallet-admin-takeover/` |
+| `kylin-worldpay-ucard` | Kylin/麒麟黑卡 /ucard：未授权发码→会员票全站 IDOR→超管 user=pass+TOTP | `domains/business-logic/case-lessons/kylin-worldpay-ucard.md` | — |
 
 ## `cloud-security`（1）
 
@@ -86,7 +89,7 @@
 |------|--------|----|------|
 | `hushchat-s3` | - Source report: HushChat-S3渗透测试报告.md | `domains/cloud-security/case-lessons/hushchat-s3.md` | `domains/cloud-security/case-reports/hushchat-s3/` |
 
-## `gambling-pentest`（6）
+## `gambling-pentest`（7）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -96,6 +99,7 @@
 | `macau-live-6app` | - Source report: 高危漏洞.md | `domains/gambling-pentest/case-lessons/macau-live-6app.md` | `domains/gambling-pentest/case-reports/macau-live-6app/` |
 | `tongbao-game-audit` | - Source report: AUDIT_REPORT.md | `domains/gambling-pentest/case-lessons/tongbao-game-audit.md` | `domains/gambling-pentest/case-reports/tongbao-game-audit/` |
 | `vvgzrvtt-kaiyun28` | - Source report: FULL_REPORT.md | `domains/gambling-pentest/case-lessons/vvgzrvtt-kaiyun28.md` | `domains/gambling-pentest/case-reports/vvgzrvtt-kaiyun28/` |
+| `82vip-ll-center` | 82vip/LL.VIP：Nacos Host 绕 CF Access → /ll/center AES 未授权调账（XFF） | `domains/gambling-pentest/case-lessons/82vip-ll-center.md` | — |
 
 ## `llm-ai-security`（1）
 
@@ -128,7 +132,7 @@
 | `jjpc28-frontend-malware` | - Source report: jjpc28-static-malware-analysis.md | `domains/reverse-engineering/case-lessons/jjpc28-frontend-malware.md` | `domains/reverse-engineering/case-reports/jjpc28-frontend-malware/` |
 | `qingmeng-fake-detector-botnet` | - Source report: 情梦后门 rar | `domains/reverse-engineering/case-lessons/qingmeng-fake-detector-botnet.md` | `domains/reverse-engineering/case-reports/qingmeng-fake-detector-botnet/` |
 
-## `web-attack`（9）
+## `web-attack`（11）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -141,6 +145,8 @@
 | `peiioh-leshi-meeting` | - Source report: peiioh_20260819_完整报告.md | `domains/web-attack/case-lessons/peiioh-leshi-meeting.md` | `domains/web-attack/case-reports/peiioh-leshi-meeting/` |
 | `tgt-a-example-redacted` | - Source report: report.md | `domains/web-attack/case-lessons/tgt-a-example-redacted.md` | `domains/web-attack/case-reports/tgt-a-example-redacted/` |
 | `werkzeug-rce-proof` | - Source report: 漏洞利用完整证明报告.md | `domains/web-attack/case-lessons/werkzeug-rce-proof.md` | `domains/web-attack/case-reports/werkzeug-rce-proof/` |
+| `aqlm-999db-cluster` | aqlm/999db：TP 上传 RCE + TGBot webhook SQLi + PPay notifyUrl SSRF | `domains/web-attack/case-lessons/aqlm-999db-cluster.md` | — |
+| `waf-glob-rce-bypass` | Linux glob `?` 绕 Sucuri/CRS PL1–3 拦 RCE（theMiddle） | `domains/web-attack/case-lessons/waf-glob-rce-bypass.md` | — |
 
 ## 纪律
 

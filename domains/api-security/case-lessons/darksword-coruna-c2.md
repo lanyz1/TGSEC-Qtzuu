@@ -26,6 +26,7 @@ Coruna /openapi.json → GET /api/payload/entry/..%2f..%2f..%2f...
 - Coruna：`%2f` 穿越；段数必须命中「跳过清单」分支
 - DarkSword：默认口常见；HTML `#token`
 - 刷单：`X-Requested-With` 影响登录 oracle
+- **JackApple / `we.*` 投递面板**（xpjkk 族）：操作端 `/adminjack` 可极硬（无用户名 oracle）。真洞在 **设备数据面**——前端 `rce_loader.js`/`beacon.js` 硬编码 `DS_SHARED_SECRET`，Bearer 打 `/beacon` `/cmd/poll` `/exfil`；`/api/plugins/list` 常无鉴权。同机旁路（APK 统计、厂商 Lab `:8080` requireAuth:false）比喷面板更值钱。FOFA `body="rce_loader.js"` 挖同族。
 
 ### 修复
 

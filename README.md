@@ -307,6 +307,21 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ## 十、融合批次
 
+### 2026-09-23
+
+完整说明：[`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md) · 0day 账本：`INGEST-20260923{,-B,-C,-D,-E,-F-CVEBIRD,-G-CVEBIRD}-INDEX.md` · src-6k：[`domains/INGEST-20260923-SRC6K.md`](domains/INGEST-20260923-SRC6K.md)
+
+- **0day 最优差分（不整仓吸聚合仓）**：V8 85046/87491 可跑 harness；PaperCut/Cisco SEG/Win 只写 KEV 分析卡。独立仓 23b–e：WP Core 87902、Zabbix、SGLang、Cisco FMC、PeopleSoft、RustyTux、Forminator 92229、macOS DesktopServicesHelper 43783、copyfail-rs PAM、sergiointel 建超管。USBPrint 32223 从 `ghost-cms/` 搬到 `windows-usbprint/`。SecureWithUmer INDEX 142 条抽样 stub → **整仓 SKIP**
+- **@cvebird**：Telethon 15178 条 / 13491 仓对照后只融 9 harness（Solr 22444 · Netlogon 41089 · ActiveMQ 42588 · vBulletin 61511 · cPanel 65643 · Next-Win 75604 · OpenClaw 28466 · Docker 9074 · XWiki 24893）。exe / 电商整站 / 空 submodule / 404 **不进**
+- **src-6k 锁面** → `pentest-execution` §0（点名 URL = 同 IP 才算同机）
+- **微信 / 报告.zip**：2FA+glob 补旧卡；82vip/Kylin 私有 Skill + 课。loot 全文不入库。CASE-INDEX **62**
+
+### 2026-09-22
+
+完整说明：[`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)
+
+- 报告吸收硬门：未覆盖栈开 Skill；UU / iM / DarkSword / BMS / ChatNet / RuoYi-Plus 课
+
 ### 2026-09-20
 
 完整说明：[`domains/FUSION-20260920-absorb.md`](domains/FUSION-20260920-absorb.md) · 调用闭环：[`domains/FUSION-20260920-callpath-optimize.md`](domains/FUSION-20260920-callpath-optimize.md)
@@ -372,7 +387,7 @@ cd ~/security-suite && git pull
 bash scripts/bootstrap.sh --force    # 或 sync-agent-skills / sync-hermes-skills
 ```
 
-**更新说明文件：** 根目录 `UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-09-20.md`](UPDATE-2026-09-20.md)）。自述首页「〇、本轮更新了什么」同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
+**更新说明文件：** 根目录 `UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)）。自述首页「〇、本轮更新了什么」+ 第十节融合批次同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
 
 ---
 

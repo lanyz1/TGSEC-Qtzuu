@@ -6,6 +6,8 @@ description: "Use for attack-surface domain knowledge matrix."
 # 安全知识库 · TGSEC 一体化导航
 
 > 小白入口：[`START.md`](START.md) · 全 AI 路径表：[`ROUTING.md`](ROUTING.md)
+>
+> **本轮（2026-09-23）：** CVE 独立仓 + @cvebird 最优 9 harness + src-6k 锁面。说明 [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md) · 融合批次 [`README.md`](README.md) 第十节。
 
 > **全 AI 先读 [`ROUTING.md`](ROUTING.md)**（关键词→路径，不绑 Hermes）。再本表定域。
 

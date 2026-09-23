@@ -17,14 +17,15 @@
 `dig-scope-workflow` 锁面写在 suite `src-rules/`，**活靶入口 `pentest-execution` 没当开局硬门**。
 冲突条款仍是「hard blocker → pivot NEW TARGET」+「主站铁桶 → 兄弟 IP」。
 
-2026-09-23 实证：用户锁死 `https://pc28zd.com/customer/login`，执行层把 FOCUS 切到邻段 `thjcoin.cc`。
+2026-09-23 实证：用户锁死 `https://pc28zd.com/customer/login`（A=`185.34.147.21`），执行层把 FOCUS 切到同 /24 另一 IP `thjcoin.cc`（`.16`）。用户纠正：**同网段 ≠ 同机，禁止自动渗透不相干站。**
 
 ## 本轮动作
 
-1. `pentest-execution` 文首加 **§0 开局先判锁面**（7 条硬门；锁面赢过邻机 pivot）
+1. `pentest-execution` 文首加 **§0 开局先判锁面**（硬门；锁面赢过邻机 pivot）
 2. 删「hit hard blocker → NEW TARGET immediately」；改成锁面不换站
-3. `hardened-front-sibling-pivot.md` 已有锁死提示，保持
+3. **同机 = 同一个 A 记录 IP**；同 /24 另一 IP 只 recon
 4. 套件镜像 `hermes-skills/pentest-execution/` 已 `cp` 对齐
 5. 方法卡不重融、GitHub 链接不还原
+6. **自述**：README 〇节整改表 + 第十节；START「锁面」条写清「禁止自动打同网段」
 
-用户点名 URL = 锁面。邻机只 recon。
+用户点名 URL = 锁面。邻机只 recon。禁止自己切不相干站。

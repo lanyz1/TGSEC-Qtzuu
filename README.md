@@ -25,6 +25,7 @@
 | 微信译文当「无新栈」掠过 | 对照 playbook：2FA 缺 5 条、glob 例子写错、GitLab ANALYSIS 仍写未在野 → **补进会加载的卡** |
 | 报告全文/账密包进 git | `case-reports` loot **不入库**；课 + CASE-INDEX 指针即可 |
 | 聚合仓/Cisco 假靶盲吞 | 0day 批次只融真缺口；ISE/SEG Flask lab、nomi-sec/trickest 整仓 SKIP |
+| **自动打同网段不相干站** | `pentest-execution` **§0 锁面硬门**：点名 URL 的 **A 记录 IP** 才是同机；**同 /24 另一 IP 禁止当主线**（实证 `pc28zd.com=.21` 去打 `thjcoin.cc=.16`）。旁端口同 IP 可打。删「hard blocker → NEW TARGET」。用户明文「打邻机 / 横向」才能离开 |
 
 ### 更新（知识增量）
 
@@ -36,13 +37,13 @@
 | 82vip `/ll/center` · Kylin `/ucard` | 本机私有 Skill + 入库课 | Nacos Host→XFF 调账；会员票 IDOR→超管 |
 | DarkSword JackApple | 旧卡补指纹 | 面板未破 ≠ 失败；洞在 `DS_SHARED_SECRET` 数据面 |
 | 2FA 13 条 / glob `?` | `logic-flaw-patterns` §2.7 · cmdi Wildcard · SecAtlas yaml | 开 2FA 不踢旧会话；CRS PL 表；长整型 IP |
-|| aqlm/999db · xmnyme forget | 课（混栈/已有面） | 不新开 Skill |
-|| src-6k-skill.zip 锁面 | `pentest-execution` §0 | 点名 URL 禁切邻机；方法卡已在库不重融 |
-|| CVE-2026 独立仓 09-23b | 6 POC_FUSED + 1 ANALYSIS | WP Core 87902 / nginx-ignition / Zabbix / SGLang / Cisco FMC / PeopleSoft；isomorphic-git GHSA。SecureWithUmer stub 整仓 SKIP |
-|| CVE-2026 独立仓 09-23c | RustyTux + 纠错 + 第二 harness | USBPrint 搬出 ghost-cms；K8s Copy-Fail Go；Cisco Workload checker；Tomcat lab sh；4xura C；Icex0/vulpecuna |
-|| CVE-2026 独立仓 09-23d | Forminator 92229 · macOS 43783 | 未授权 quiz shortcode；DesktopServicesHelper 任意 fchown→PAM LPE |
-|| CVE-2026 独立仓 09-23e | copyfail-rs · sergiointel · 59309 | PAM 4-byte killshot；SQLi 建超管不喷密；vCenter checker。SecureWithUmer 再抽 8 份仍 stub |
-|| @cvebird 09-23g | 9 POC_FUSED | Solr 22444 · Netlogon 41089 · ActiveMQ 42588 · vB 61511 · cPanel 65643 · Next-Win 75604 · OpenClaw 28466 · Docker 9074 · XWiki 24893。exe/整站 SKIP |
+| aqlm/999db · xmnyme forget | 课（混栈/已有面） | 不新开 Skill |
+| src-6k-skill.zip 锁面 | `pentest-execution` §0 + `hardened-front-sibling-pivot.md` | **禁止自动渗透同网段不相干站**。同机=同 IP；邻 IP 只 recon。方法卡已在库不重融 |
+| CVE-2026 独立仓 09-23b | 6 POC_FUSED + 1 ANALYSIS | WP Core 87902 / nginx-ignition / Zabbix / SGLang / Cisco FMC / PeopleSoft；isomorphic-git GHSA。SecureWithUmer stub 整仓 SKIP |
+| CVE-2026 独立仓 09-23c | RustyTux + 纠错 + 第二 harness | USBPrint 搬出 ghost-cms；K8s Copy-Fail Go；Cisco Workload checker；Tomcat lab sh；4xura C；Icex0/vulpecuna |
+| CVE-2026 独立仓 09-23d | Forminator 92229 · macOS 43783 | 未授权 quiz shortcode；DesktopServicesHelper 任意 fchown→PAM LPE |
+| CVE-2026 独立仓 09-23e | copyfail-rs · sergiointel · 59309 | PAM 4-byte killshot；SQLi 建超管不喷密；vCenter checker。SecureWithUmer 再抽 8 份仍 stub |
+| @cvebird 09-23g | 9 POC_FUSED | Solr 22444 · Netlogon 41089 · ActiveMQ 42588 · vB 61511 · cPanel 65643 · Next-Win 75604 · OpenClaw 28466 · Docker 9074 · XWiki 24893。exe/整站 SKIP |
 
 CASE-INDEX 课 **62**。私有 Skill（`82vip-ll-center-pentest` / `kylin-worldpay-ucard-pentest`）在本机 Hermes，不强制进 git。
 
@@ -313,7 +314,7 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 - **0day 最优差分（不整仓吸聚合仓）**：V8 85046/87491 可跑 harness；PaperCut/Cisco SEG/Win 只写 KEV 分析卡。独立仓 23b–e：WP Core 87902、Zabbix、SGLang、Cisco FMC、PeopleSoft、RustyTux、Forminator 92229、macOS DesktopServicesHelper 43783、copyfail-rs PAM、sergiointel 建超管。USBPrint 32223 从 `ghost-cms/` 搬到 `windows-usbprint/`。SecureWithUmer INDEX 142 条抽样 stub → **整仓 SKIP**
 - **@cvebird**：Telethon 15178 条 / 13491 仓对照后只融 9 harness（Solr 22444 · Netlogon 41089 · ActiveMQ 42588 · vBulletin 61511 · cPanel 65643 · Next-Win 75604 · OpenClaw 28466 · Docker 9074 · XWiki 24893）。exe / 电商整站 / 空 submodule / 404 **不进**
-- **src-6k 锁面** → `pentest-execution` §0（点名 URL = 同 IP 才算同机）
+- **src-6k 锁面（禁止自动打同网段）** → `pentest-execution` §0。点名 URL = 该 host 的 **A 记录 IP**。**同机 = 同一个 IP**（该 IP 全端口/旁车可打）。**同 /24 另一个 IP 不是同机**，禁止当主线（例：`pc28zd.com`=`185.34.147.21` vs `thjcoin.cc`=`185.34.147.16`）。删「hard blocker → 立刻 NEW TARGET」。只有用户明文「打邻机 / 横向 / 换目标」才能离开
 - **微信 / 报告.zip**：2FA+glob 补旧卡；82vip/Kylin 私有 Skill + 课。loot 全文不入库。CASE-INDEX **62**
 
 ### 2026-09-22

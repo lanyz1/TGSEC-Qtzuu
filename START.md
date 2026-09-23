@@ -11,7 +11,7 @@
 
 **本轮更新（2026-09-23，commit `1d12151c` 起）：**  
 **0day** — V8 可跑 harness；独立仓 23b–e（WP Core / Zabbix / RustyTux / Forminator / macOS LPE / copyfail-rs PAM…）；**@cvebird 对照 1.3 万仓后只融 9 条真缺口**（Solr / Netlogon / ActiveMQ / vBulletin / cPanel parking / Next-Win / OpenClaw / Docker 2375 / XWiki）。SecureWithUmer stub **整仓不吸**。  
-**锁面** — `pentest-execution` §0：点名 URL 的 A 记录 IP 才算同机。  
+**锁面（禁止自动打同网段不相干站）** — 点名 URL 的 **A 记录 IP** 才算同机；同 /24 另一 IP **不是同机**，不能当主线。旁端口同 IP 可以打。用户没说「打邻机 / 横向」禁止自己切站。写在 `pentest-execution` §0。  
 **微信 / 报告.zip** — 2FA+glob 补旧卡；82vip / Kylin 课。loot 不入库。  
 完整说明 → [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md) · 融合批次见 README **第十节**。
 

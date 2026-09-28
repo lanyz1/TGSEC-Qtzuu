@@ -1,6 +1,6 @@
 # 小白从这里开始（3 步）
 
-- 2026-09-23：82vip/Kylin · 微信 · src-6k 锁面 · **CVE 23b–23g（cvebird：Solr/Netlogon/ActiveMQ/vB/cPanel/Next-Win）**
+- 2026-09-28：**G 批 @ThreatWire_ CVE 差分** — Citrix NetScaler **88771** 预认证RCE在野 · Roundcube **48842** · AcyMailing **56292** · WAC **56197** · OpenAM **18新CVE**。A~F 批见下方
 
 仓库：https://github.com/lanyz1/TGSEC-Qtzuu
 

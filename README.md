@@ -1,6 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
-- 2026-09-28：**A~F 六批融合** — murrez 7CVE · 60URL→17目标（网络设备/容器逃逸/MikroTrick在野）· xishou 908 skill（技能库→1028）· fastjson2 RCE · AI-Infra-Guard 腾讯朱雀（151指纹+132漏洞规则）· GPU猎杀包+SD WebUI RCE。**0day库 258产品/264CVE**
+- 2026-09-28：**A~G 七批融合** — murrez 7CVE · 60URL→17目标（网络设备/容器逃逸/MikroTrick在野）· xishou 908 skill（技能库→1028）· fastjson2 RCE · AI-Infra-Guard 腾讯朱雀 · GPU猎杀包+SD WebUI RCE · **G 批 @ThreatWire_ CVE 差分（Citrix 88771 预认证RCE在野 · Roundcube 48842 · AcyMailing 56292 · WAC 56197 · OpenAM 18新CVE）**。**0day库 137产品/289CVE**
 - 2026-09-23：CVE 差分 · 报告.zip · 微信 · src-6k 锁面 · **cvebird 最优 9 harness（Solr/Netlogon/ActiveMQ/vBulletin/cPanel/Next-Win/OpenClaw/Docker/XWiki）**
 
 > **@TGSEC社区 · @TGSEC-Qtzuu 整理**  
@@ -27,8 +27,9 @@
 | **D** | fastjson2 ≤2.0.62 RCE（FNV-1a 碰撞绕 AutoType → 远程类加载） | exploit + 27 检测规则 |
 | **E** | AI-Infra-Guard 腾讯朱雀（151 指纹 + 132 漏洞规则 + 15 MCP + 17 eval） | 4971 文件 |
 | **F** | GPU 猎杀包 5 skill + SD WebUI RCE skill + 思路文档 | 6 个新 skill |
+| **G** | @ThreatWire_ CVE 差分（Citrix 88771 预认证RCE在野 · Roundcube 48842 · AcyMailing 56292 · WAC 56197 · OpenAM 18新CVE） | 5 CVE目录 + nuclei模板 |
 
-**库规模：0day 258 产品 / 264 CVE · 技能 1028 · INGEST 索引 15**
+**库规模：0day 137 产品 / 289 CVE · 技能 1028 · INGEST 索引 16**
 
 | 块 | 落点 | 本轮增量 |
 |----|------|----------|
@@ -311,7 +312,10 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ### 2026-09-28
 
-完整说明：`domains/0day-exploits/INGEST-20260928-INDEX.md`（A 批）· `INGEST-20260928B-INDEX.md`（B 批）
+完整说明：`domains/0day-exploits/INGEST-20260928-INDEX.md`（A 批）· `INGEST-20260928B-INDEX.md`（B 批）· `INGEST-20260928D-INDEX.md`（G 批）
+
+- **G 批 — @ThreatWire_ CVE 差分（13 仓库 triage → 5 新融 + 1 nuclei 补充）**：Citrix NetScaler **88771**（预认证命令注入→RCE，日志投毒→pitboss 命令执行，**CTX697096 在野利用**，watchTowr PoC）· Roundcube **48842**（virtuser_query 预认证 SQLi，反斜杠绕过 PDO quote→UNION 盲注）· AcyMailing Joomla **56292**（未认证 SQLi，columns 参数直拼 SELECT，含批量扫描器+Google Dork）· Windows Admin Center **56197**（CVSS 8.8，invokeCommand 命令注入→RCE，含 WAC RSA-OAEP 自动登录链+反弹 shell）· OpenAM **2026 批次**（预认证 RCE via jato.clientSession 反序列化+17 个新 CVE：LDAP 注入/SSRF/会话劫持/Groovy 沙箱逃逸 RCE/OAuth 伪造等）。imbas007 CVE-2026-60004 nuclei YAML 模板补进已有目录
+- **SKIP**：`domaup/coldcard-poc`（仓库 404/已删）· MLflow `GHSA-7gwp-5pfp-969j`（= CVE-2026-64849，已有 `mlflow-ssrf-webhook` skill 覆盖）· `EQSTLab/CVE-2026-85706`（GitLab LFI 第三变体，已有两变体全覆盖）· 已融 5 个（60004/63077/27912/39868/12940）
 
 - **C 批 — xishou 全量技能蒸馏（908 个新 skill → `.hermes/skills/security/`，技能库 113→1022）**：三波融合 — Wave1 乱码测绘引擎 skills(673) + Wave2 PSM 差量(235) + Wave3 72stack-sec(3192 文件/45MB/2836 H1 报告)。新增 `hunt-*`(70+)、`offensive-*`(60+)、专项渗透(200+)、基础能力(150+)、侦察报告(40+) 系列。skill-store 索引存入 `domains/skill-catalog/`。详见 `INGEST-20260928C-INDEX.md`
 - **A 批 — murrez 独立仓（7 CVE，本地全 MISS → 全数 POC_FUSED）**：Citrix NetScaler **88772**（DTLS 内存溢出，9.5，**CTX697096 已在野利用**）· Joomla UP **97163**（未授权 GitHub 远程代码安装，TLS 校验关闭，**10.0**）/ **97160**（`{up php=}` 短代码 eval）/ **97161**（未授权路径遍历读 `configuration.php`）· AcyMailing **94132**（POP3 邮件附件落盘 → RCE）· WP Ultra Addons CF7 **82901** · WP Bookly **93399**。**Joomla 产品线全新入库**；Citrix 补 DTLS/UDP 面

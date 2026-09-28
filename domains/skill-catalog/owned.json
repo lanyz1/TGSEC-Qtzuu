@@ -1,0 +1,510 @@
+{
+  "owned": true,
+  "copied": 0,
+  "skipped_business": 0,
+  "already_owned": 102,
+  "count": 100,
+  "skills": [
+    {
+      "name": "address-sanitizer",
+      "source": "trailofbits/skills",
+      "id": "address-sanitizer"
+    },
+    {
+      "name": "aflpp",
+      "source": "trailofbits/skills",
+      "id": "aflpp"
+    },
+    {
+      "name": "agentic-actions-auditor",
+      "source": "trailofbits/skills",
+      "id": "agentic-actions-auditor"
+    },
+    {
+      "name": "algorand-vulnerability-scanner",
+      "source": "trailofbits/skills",
+      "id": "algorand-vulnerability-scanner"
+    },
+    {
+      "name": "antinet-doc-parse",
+      "source": "anbeime/skill-local",
+      "id": "antinet-doc-parse"
+    },
+    {
+      "name": "antinet-provenance",
+      "source": "anbeime/skill-local",
+      "id": "antinet-provenance"
+    },
+    {
+      "name": "antinet-security-scan",
+      "source": "anbeime/skill-local",
+      "id": "antinet-security-scan"
+    },
+    {
+      "name": "api-security-patterns",
+      "source": "LambdaTest/agent-skills",
+      "id": "api-security-patterns"
+    },
+    {
+      "name": "atheris",
+      "source": "trailofbits/skills",
+      "id": "atheris"
+    },
+    {
+      "name": "audit-augmentation",
+      "source": "trailofbits/skills",
+      "id": "audit-augmentation"
+    },
+    {
+      "name": "audit-context-building",
+      "source": "trailofbits/skills",
+      "id": "audit-context-building"
+    },
+    {
+      "name": "audit-prep-assistant",
+      "source": "trailofbits/skills",
+      "id": "audit-prep-assistant"
+    },
+    {
+      "name": "burpsuite-project-parser",
+      "source": "trailofbits/skills",
+      "id": "burpsuite-project-parser"
+    },
+    {
+      "name": "c-review",
+      "source": "trailofbits/skills",
+      "id": "c-review"
+    },
+    {
+      "name": "cairo-vulnerability-scanner",
+      "source": "trailofbits/skills",
+      "id": "cairo-vulnerability-scanner"
+    },
+    {
+      "name": "cargo-fuzz",
+      "source": "trailofbits/skills",
+      "id": "cargo-fuzz"
+    },
+    {
+      "name": "chrome-automation",
+      "source": "anbeime/skill-local",
+      "id": "chrome-automation"
+    },
+    {
+      "name": "chrome-mcp-troubleshooting",
+      "source": "trailofbits/skills",
+      "id": "chrome-mcp-troubleshooting"
+    },
+    {
+      "name": "code-maturity-assessor",
+      "source": "trailofbits/skills",
+      "id": "code-maturity-assessor"
+    },
+    {
+      "name": "codeql",
+      "source": "trailofbits/skills",
+      "id": "codeql"
+    },
+    {
+      "name": "constant-time-analysis",
+      "source": "trailofbits/skills",
+      "id": "constant-time-analysis"
+    },
+    {
+      "name": "constant-time-testing",
+      "source": "trailofbits/skills",
+      "id": "constant-time-testing"
+    },
+    {
+      "name": "contract-review",
+      "source": "anbeime/skill-local",
+      "id": "contract-review"
+    },
+    {
+      "name": "cosmos-vulnerability-scanner",
+      "source": "trailofbits/skills",
+      "id": "cosmos-vulnerability-scanner"
+    },
+    {
+      "name": "coverage-analysis",
+      "source": "trailofbits/skills",
+      "id": "coverage-analysis"
+    },
+    {
+      "name": "create-auth",
+      "source": "better-auth/skills",
+      "id": "create-auth"
+    },
+    {
+      "name": "crypto-protocol-diagram",
+      "source": "trailofbits/skills",
+      "id": "crypto-protocol-diagram"
+    },
+    {
+      "name": "devcontainer-setup",
+      "source": "trailofbits/skills",
+      "id": "devcontainer-setup"
+    },
+    {
+      "name": "diagramming-code",
+      "source": "trailofbits/skills",
+      "id": "diagramming-code"
+    },
+    {
+      "name": "differential-review",
+      "source": "trailofbits/skills",
+      "id": "differential-review"
+    },
+    {
+      "name": "dimensional-analysis",
+      "source": "trailofbits/skills",
+      "id": "dimensional-analysis"
+    },
+    {
+      "name": "django-access-review",
+      "source": "getsentry/skills",
+      "id": "django-access-review"
+    },
+    {
+      "name": "doc-coauthoring",
+      "source": "anthropics/skills",
+      "id": "doc-coauthoring"
+    },
+    {
+      "name": "docx",
+      "source": "anthropics/skills",
+      "id": "docx"
+    },
+    {
+      "name": "dwarf-expert",
+      "source": "trailofbits/skills",
+      "id": "dwarf-expert"
+    },
+    {
+      "name": "entry-point-analyzer",
+      "source": "trailofbits/skills",
+      "id": "entry-point-analyzer"
+    },
+    {
+      "name": "find-bugs",
+      "source": "getsentry/skills",
+      "id": "find-bugs"
+    },
+    {
+      "name": "firebase-apk-scanner",
+      "source": "trailofbits/skills",
+      "id": "firebase-apk-scanner"
+    },
+    {
+      "name": "firebase-security-rules-auditor",
+      "source": "firebase/skills",
+      "id": "firebase-security-rules-auditor"
+    },
+    {
+      "name": "fp-check",
+      "source": "trailofbits/skills",
+      "id": "fp-check"
+    },
+    {
+      "name": "fuzzing-dictionary",
+      "source": "trailofbits/skills",
+      "id": "fuzzing-dictionary"
+    },
+    {
+      "name": "fuzzing-obstacles",
+      "source": "trailofbits/skills",
+      "id": "fuzzing-obstacles"
+    },
+    {
+      "name": "genotoxic",
+      "source": "trailofbits/skills",
+      "id": "genotoxic"
+    },
+    {
+      "name": "gh-cli",
+      "source": "trailofbits/skills",
+      "id": "gh-cli"
+    },
+    {
+      "name": "git-cleanup",
+      "source": "trailofbits/skills",
+      "id": "git-cleanup"
+    },
+    {
+      "name": "github-triage",
+      "source": "trailofbits/skills",
+      "id": "github-triage"
+    },
+    {
+      "name": "goal-prompt",
+      "source": "trailofbits/skills",
+      "id": "goal-prompt"
+    },
+    {
+      "name": "graph-evolution",
+      "source": "trailofbits/skills",
+      "id": "graph-evolution"
+    },
+    {
+      "name": "guidelines-advisor",
+      "source": "trailofbits/skills",
+      "id": "guidelines-advisor"
+    },
+    {
+      "name": "harness-writing",
+      "source": "trailofbits/skills",
+      "id": "harness-writing"
+    },
+    {
+      "name": "law-to-markdown",
+      "source": "anbeime/skill-local",
+      "id": "law-to-markdown"
+    },
+    {
+      "name": "libafl",
+      "source": "trailofbits/skills",
+      "id": "libafl"
+    },
+    {
+      "name": "libfuzzer",
+      "source": "trailofbits/skills",
+      "id": "libfuzzer"
+    },
+    {
+      "name": "mcp-builder",
+      "source": "anthropics/skills",
+      "id": "mcp-builder"
+    },
+    {
+      "name": "mermaid-to-proverif",
+      "source": "trailofbits/skills",
+      "id": "mermaid-to-proverif"
+    },
+    {
+      "name": "modern-cpp",
+      "source": "trailofbits/skills",
+      "id": "modern-cpp"
+    },
+    {
+      "name": "modern-python",
+      "source": "trailofbits/skills",
+      "id": "modern-python"
+    },
+    {
+      "name": "mutation-testing",
+      "source": "trailofbits/skills",
+      "id": "mutation-testing"
+    },
+    {
+      "name": "open-sourcing",
+      "source": "trailofbits/skills",
+      "id": "open-sourcing"
+    },
+    {
+      "name": "ossfuzz",
+      "source": "trailofbits/skills",
+      "id": "ossfuzz"
+    },
+    {
+      "name": "paper-analysis-assistant",
+      "source": "anbeime/skill-local",
+      "id": "paper-analysis-assistant"
+    },
+    {
+      "name": "pdf",
+      "source": "anthropics/skills",
+      "id": "pdf"
+    },
+    {
+      "name": "pdf-processing-pro",
+      "source": "anbeime/skill-local",
+      "id": "pdf-processing-pro"
+    },
+    {
+      "name": "pptx",
+      "source": "anthropics/skills",
+      "id": "pptx"
+    },
+    {
+      "name": "property-based-testing",
+      "source": "trailofbits/skills",
+      "id": "property-based-testing"
+    },
+    {
+      "name": "rust-review",
+      "source": "trailofbits/skills",
+      "id": "rust-review"
+    },
+    {
+      "name": "ruzzy",
+      "source": "trailofbits/skills",
+      "id": "ruzzy"
+    },
+    {
+      "name": "sarif-parsing",
+      "source": "trailofbits/skills",
+      "id": "sarif-parsing"
+    },
+    {
+      "name": "second-opinion",
+      "source": "trailofbits/skills",
+      "id": "second-opinion"
+    },
+    {
+      "name": "secure-workflow-guide",
+      "source": "trailofbits/skills",
+      "id": "secure-workflow-guide"
+    },
+    {
+      "name": "semgrep",
+      "source": "trailofbits/skills",
+      "id": "semgrep"
+    },
+    {
+      "name": "semgrep-rule-creator",
+      "source": "trailofbits/skills",
+      "id": "semgrep-rule-creator"
+    },
+    {
+      "name": "semgrep-rule-variant-creator",
+      "source": "trailofbits/skills",
+      "id": "semgrep-rule-variant-creator"
+    },
+    {
+      "name": "sharp-edges",
+      "source": "trailofbits/skills",
+      "id": "sharp-edges"
+    },
+    {
+      "name": "skill-creator",
+      "source": "anthropics/skills",
+      "id": "skill-creator"
+    },
+    {
+      "name": "skill-improver",
+      "source": "trailofbits/skills",
+      "id": "skill-improver"
+    },
+    {
+      "name": "slicing-code-context",
+      "source": "trailofbits/skills",
+      "id": "slicing-code-context"
+    },
+    {
+      "name": "solana-vulnerability-scanner",
+      "source": "trailofbits/skills",
+      "id": "solana-vulnerability-scanner"
+    },
+    {
+      "name": "spec-to-code-compliance",
+      "source": "trailofbits/skills",
+      "id": "spec-to-code-compliance"
+    },
+    {
+      "name": "stock-analysis",
+      "source": "anbeime/skill-local",
+      "id": "stock-analysis"
+    },
+    {
+      "name": "substrate-vulnerability-scanner",
+      "source": "trailofbits/skills",
+      "id": "substrate-vulnerability-scanner"
+    },
+    {
+      "name": "supply-chain-risk-auditor",
+      "source": "trailofbits/skills",
+      "id": "supply-chain-risk-auditor"
+    },
+    {
+      "name": "testing-handbook-generator",
+      "source": "trailofbits/skills",
+      "id": "testing-handbook-generator"
+    },
+    {
+      "name": "token-integration-analyzer",
+      "source": "trailofbits/skills",
+      "id": "token-integration-analyzer"
+    },
+    {
+      "name": "ton-vulnerability-scanner",
+      "source": "trailofbits/skills",
+      "id": "ton-vulnerability-scanner"
+    },
+    {
+      "name": "trailmark",
+      "source": "trailofbits/skills",
+      "id": "trailmark"
+    },
+    {
+      "name": "trailmark-finding-triage",
+      "source": "trailofbits/skills",
+      "id": "trailmark-finding-triage"
+    },
+    {
+      "name": "trailmark-review-gate",
+      "source": "trailofbits/skills",
+      "id": "trailmark-review-gate"
+    },
+    {
+      "name": "trailmark-structural",
+      "source": "trailofbits/skills",
+      "id": "trailmark-structural"
+    },
+    {
+      "name": "trailmark-summary",
+      "source": "trailofbits/skills",
+      "id": "trailmark-summary"
+    },
+    {
+      "name": "trailmark-variant-neighborhood",
+      "source": "trailofbits/skills",
+      "id": "trailmark-variant-neighborhood"
+    },
+    {
+      "name": "variant-analysis",
+      "source": "trailofbits/skills",
+      "id": "variant-analysis"
+    },
+    {
+      "name": "vector-forge",
+      "source": "trailofbits/skills",
+      "id": "vector-forge"
+    },
+    {
+      "name": "vulnerability-triage-brocards",
+      "source": "trailofbits/skills",
+      "id": "vulnerability-triage-brocards"
+    },
+    {
+      "name": "webapp-testing",
+      "source": "anthropics/skills",
+      "id": "webapp-testing"
+    },
+    {
+      "name": "writing-lean-proofs",
+      "source": "trailofbits/skills",
+      "id": "writing-lean-proofs"
+    },
+    {
+      "name": "wycheproof",
+      "source": "trailofbits/skills",
+      "id": "wycheproof"
+    },
+    {
+      "name": "xlsx",
+      "source": "anthropics/skills",
+      "id": "xlsx"
+    },
+    {
+      "name": "yara-rule-authoring",
+      "source": "trailofbits/skills",
+      "id": "yara-rule-authoring"
+    },
+    {
+      "name": "zeroize-audit",
+      "source": "trailofbits/skills",
+      "id": "zeroize-audit"
+    }
+  ],
+  "adopted": true
+}

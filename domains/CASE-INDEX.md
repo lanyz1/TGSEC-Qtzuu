@@ -3,7 +3,7 @@
 > **渗透中途必查。** 命中资产类型后：先本表 → `case-lessons/<slug>.md`（课）→ `case-reports/<slug>/`（全文）。
 > 不要只读通用 playbook 就开打；同面有 case 时必须至少打开 1 篇相关课。
 
-- 课（case-lessons）：**62**
+- 课（case-lessons）：**63**
 - 域覆盖：api-security, auth-security, business-logic, cloud-security, gambling-pentest, llm-ai-security, recon, redteam-framework, reverse-engineering, web-attack
 - 生成：2026-09-20（闭环优化后）
 
@@ -24,6 +24,10 @@
 |------|----------|
 | 实战报告 / 同类案 / Evidence | 本文件 + `recon/case-lessons/README.md` |
 | 发卡 / 卡密 / 独角 / ACG / FBDWJ / 卡商 | `card-merchant-platform-pentest` + business-logic 课 |
+| 自研单入口 JSON 路由（`?action=` 分发）/ 未知操作 / 参数错误 | api-security 课 `zhangduozhe-api-router-and-weakadmin` |
+| 付费产品安装包泄露在 `/uploads/`（备份文件猎捕胜过硬爆）/ 后台目录中文业务词枚举 / 上传强制扩展名 / 易语言客户端逆向 | web-security 课 `zd-leaked-product-package-and-cn-wordlist` |
+| **若依(RuoYi)框架识别 / 默认账号 ry|admin123 / /dev-api 前缀坑 / BFLA 漏注解脱库 / 验证码打码 / bcrypt 快破** | web-security 课 `ruoyi-default-creds-and-bfla-mass-dump` |
+| **自建静态服务器上的盗U站: `/server.js` 源码直读 + `?soladmin=1` 前端参数即管理员入口 + 管理API未鉴权** | web-security 课 `drainer-static-server-three-killshots` |
 | 钱包 / 收款 / TRC20 / 支付回调 | business-logic payment/vi-wallet/haiwaipay/fllqb |
 | TG云控 / export / 库存 BOLA | api-security 711tock/715tg/tg-filter/tg-ops |
 | TG Mini App 钱包 | `tg-miniapp-wallet-pentest` |

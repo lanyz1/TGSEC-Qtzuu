@@ -308,6 +308,16 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ## 十、融合批次
 
+### 2026-09-28
+
+完整说明：`domains/0day-exploits/INGEST-20260928-INDEX.md`（A 批）· `INGEST-20260928B-INDEX.md`（B 批）
+
+- **C 批 — xishou 全量技能蒸馏（908 个新 skill → `.hermes/skills/security/`，技能库 113→1022）**：三波融合 — Wave1 乱码测绘引擎 skills(673) + Wave2 PSM 差量(235) + Wave3 72stack-sec(3192 文件/45MB/2836 H1 报告)。新增 `hunt-*`(70+)、`offensive-*`(60+)、专项渗透(200+)、基础能力(150+)、侦察报告(40+) 系列。skill-store 索引存入 `domains/skill-catalog/`。详见 `INGEST-20260928C-INDEX.md`
+- **A 批 — murrez 独立仓（7 CVE，本地全 MISS → 全数 POC_FUSED）**：Citrix NetScaler **88772**（DTLS 内存溢出，9.5，**CTX697096 已在野利用**）· Joomla UP **97163**（未授权 GitHub 远程代码安装，TLS 校验关闭，**10.0**）/ **97160**（`{up php=}` 短代码 eval）/ **97161**（未授权路径遍历读 `configuration.php`）· AcyMailing **94132**（POP3 邮件附件落盘 → RCE）· WP Ultra Addons CF7 **82901** · WP Bookly **93399**。**Joomla 产品线全新入库**；Citrix 补 DTLS/UDP 面
+- **B 批 — 最优吸收（60 条 URL → 17 目标，全 17 MISS）**：**网络设备线全新**（`f5-bigip/` 94127 · `citrix-netscaler/` 8452+8451+19490 · `checkpoint/` 50751 · `splunk/` 20253 · `ivanti-sentry/` 10520+10523 · `progress-sharefile/` 2699+2701）· **容器/VM 逃逸线**（`container-escape/` 52910+80521 · `kvm/` 补 arm64 **46316 ITScape**，三部曲齐全）· **MikroTrick 86060+67279+67277**（RouterOS 未授权完全接管，**2026-09-02 起在野**，IoC `login failure for user -2`）· `cisco-ios-xe/` 20272 · `artifactory/` 82329（phantom join key）· `wordpress-give-tributes/` 19658 · `macos-smb/` 84543 · `zoneminder/` 76060 · `jwt/` 5430
+- **错放修正**：CVE-2026-10520（Ivanti Sentry）从 `sharepoint/` 搬入 `ivanti-sentry/`，旧路留 `MOVED.md`
+- **SKIP**：`Nebula 93616` **404 死链** · `rapid7/metasploit-framework` 框架 · `0xMarcio/pocindex` 439MB 搜索引擎 · `SecureWithUmer` stub 农场整仓 · `XZ1r0`/`zulloper` 已融 · `fankh` 128MB 只取点名子树 · **januscape 完全重复**（poc.c 字节一致）· **CyberMeowfia 完全覆盖**（差量 0）
+
 ### 2026-09-23
 
 完整说明：[`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md) · 0day 账本：`INGEST-20260923{,-B,-C,-D,-E,-F-CVEBIRD,-G-CVEBIRD}-INDEX.md` · src-6k：[`domains/INGEST-20260923-SRC6K.md`](domains/INGEST-20260923-SRC6K.md)

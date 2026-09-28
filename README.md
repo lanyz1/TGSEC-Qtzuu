@@ -1,5 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
+- 2026-09-28：**A~F 六批融合** — murrez 7CVE · 60URL→17目标（网络设备/容器逃逸/MikroTrick在野）· xishou 908 skill（技能库→1028）· fastjson2 RCE · AI-Infra-Guard 腾讯朱雀（151指纹+132漏洞规则）· GPU猎杀包+SD WebUI RCE。**0day库 258产品/264CVE**
 - 2026-09-23：CVE 差分 · 报告.zip · 微信 · src-6k 锁面 · **cvebird 最优 9 harness（Solr/Netlogon/ActiveMQ/vBulletin/cPanel/Next-Win/OpenClaw/Docker/XWiki）**
 
 > **@TGSEC社区 · @TGSEC-Qtzuu 整理**  
@@ -10,24 +11,24 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：[`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)（2026-09-23）· 上轮 [`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)
+**👉 本轮更新说明：见下方 §十 融合批次（2026-09-28 A~F 批）· 上轮 [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)
 
 ---
 
-## 〇、本轮更新了什么（2026-09-23）
+## 〇、本轮更新了什么（2026-09-28）
 
-详情见 [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)。摘要：
+**A~F 六批融合，详见下方 §十。摘要：**
 
-### 整改
+| 批次 | 内容 | 增量 |
+|------|------|------|
+| **A** | murrez 独立仓 7 CVE（NetScaler DTLS 在野 · Joomla UP · AcyMailing · WP Ultra Addons · WP Bookly） | 7 CVE，Joomla 产品线全新 |
+| **B** | 最优吸收 60 URL → 17 目标（网络设备线全新 · 容器逃逸 · MikroTrick 在野 · KVM 三部曲齐） | 17 目标，6 个新产品目录 |
+| **C** | xishou 全量技能蒸馏（908 个新 skill → `.hermes/skills/security/`） | 技能库 113→1028 |
+| **D** | fastjson2 ≤2.0.62 RCE（FNV-1a 碰撞绕 AutoType → 远程类加载） | exploit + 27 检测规则 |
+| **E** | AI-Infra-Guard 腾讯朱雀（151 指纹 + 132 漏洞规则 + 15 MCP + 17 eval） | 4971 文件 |
+| **F** | GPU 猎杀包 5 skill + SD WebUI RCE skill + 思路文档 | 6 个新 skill |
 
-| 整改项 | 结果 |
-|--------|------|
-| 微信译文当「无新栈」掠过 | 对照 playbook：2FA 缺 5 条、glob 例子写错、GitLab ANALYSIS 仍写未在野 → **补进会加载的卡** |
-| 报告全文/账密包进 git | `case-reports` loot **不入库**；课 + CASE-INDEX 指针即可 |
-| 聚合仓/Cisco 假靶盲吞 | 0day 批次只融真缺口；ISE/SEG Flask lab、nomi-sec/trickest 整仓 SKIP |
-| **自动打同网段不相干站** | `pentest-execution` **§0 锁面硬门**：点名 URL 的 **A 记录 IP** 才是同机；**同 /24 另一 IP 禁止当主线**（实证 `pc28zd.com=.21` 去打 `thjcoin.cc=.16`）。旁端口同 IP 可打。删「hard blocker → NEW TARGET」。用户明文「打邻机 / 横向」才能离开 |
-
-### 更新（知识增量）
+**库规模：0day 258 产品 / 264 CVE · 技能 1028 · INGEST 索引 15**
 
 | 块 | 落点 | 本轮增量 |
 |----|------|----------|

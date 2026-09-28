@@ -1,0 +1,55 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: zm-db
+    environment:
+      MYSQL_ROOT_PASSWORD: zmroot
+      MYSQL_DATABASE: zm
+      MYSQL_USER: zmuser
+      MYSQL_PASSWORD: zmpass
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+  zoneminder:
+    image: ghcr.io/zoneminder-containers/zoneminder-base:1.38.1
+    container_name: docker-zoneminder-1
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8082:80"
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DBNAME: zm
+      MYSQL_USER: zmuser
+      MYSQL_PASSWORD: zmpass
+      TZ: Europe/London
+      ZM_OPT_USE_AUTH: 1
+      OPT_USE_AUTH: 1
+    volumes:
+      - zm_data:/data
+    shm_size: "512m"
+    privileged: true
+  db-init:
+      image: mariadb:latest
+      depends_on:
+        db:
+          condition: service_healthy
+      volumes:
+        - ./init.sql:/init.sql
+      entrypoint: >
+        bash -c "
+        until mariadb -h db -u zmuser -pzmpass zm -e 'SELECT 1 FROM Users LIMIT 1' 2>/dev/null; do
+          sleep 5;
+        done;
+        mariadb -h db -u zmuser -pzmpass zm < /init.sql
+        "
+      restart: "no"
+volumes:
+  db_data:
+  zm_data:

@@ -122,7 +122,7 @@ bash /root/reverse-skill/skills/scripts/refresh-tool-index.sh
 
 ## rev-skills 原子技能包（2026-09-17）
 
-`/root/security-suite/domains/reverse-engineering/rev-skills-pack/`
+`domains/reverse-engineering/rev-skills-pack/`
 
 | 需求 | 打开 |
 |------|------|
@@ -140,5 +140,4 @@ bash /root/reverse-skill/skills/scripts/refresh-tool-index.sh
 索引：`rev-skills-pack/README.md`（122 技能全表）
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
-
 

@@ -15,6 +15,10 @@
 **0day B 批（最优吸收，60 URL → 17 目标，全 MISS）** — **网络设备线全新**：F5 BIG-IP **94127** · Citrix NetScaler **8452 + 8451 + 19490**（19490 未授权 SAML 会话伪造，**厂商无 workaround**）· Check Point **50751** · Splunk **20253** · Ivanti Sentry **10520+10523** · Progress ShareFile **2699+2701**。**容器/VM 逃逸线**：`container-escape/` **52910+80521** · `kvm/` 补 arm64 **46316 ITScape**（三部曲齐全）。**MikroTrick 86060+67279+67277**（RouterOS 未授权完全接管，**2026-09-02 起在野**，IoC `login failure for user -2`）。另：Cisco IOS XE 20272 · Artifactory 82329 · WP Give-Tributes 19658 · macOS SMBFS 84543 · ZoneMinder 76060 · JWT 5430。错放修正：Ivanti 10520 从 `sharepoint/` 搬入 `ivanti-sentry/`。  
 完整说明 → [`INGEST-20260928-INDEX.md`](domains/0day-exploits/INGEST-20260928-INDEX.md) · [`INGEST-20260928B-INDEX.md`](domains/0day-exploits/INGEST-20260928B-INDEX.md) · [`INGEST-20260928C-INDEX.md`](domains/0day-exploits/INGEST-20260928C-INDEX.md)
 
+**D 批（fastjson2 ≤2.0.62 RCE）** — FNV-1a 哈希碰撞绕 AutoType 白名单 → `jar:http://` 远程类加载 → RCE。默认配置可利用，全 JDK。修复 2.0.63。exploit.py + collision_finder(C/Python) + Docker lab + 27 条多层检测规则。落位 `fastjson2/CVE-2026-fastjson2-PR7695/`。  
+**E 批（AI-Infra-Guard 腾讯朱雀实验室）** — 151 AI 产品指纹 + 132 产品漏洞规则库 + 15 MCP 安全规则 + 17 Prompt 安全评测集 + Research（SkillJack/RogueHandoff20/forge_bench）。27MB/4971 文件。落位 `domains/ai-infra-security/AI-Infra-Guard-Tencent/`。  
+**F 批（GPU 猎杀包 + SD WebUI RCE）** — 5 GPU 猎杀 skill（gpu-hunter/venom-root/venom-hydra/immortal-pact/undying-persist）+ stable-diffusion-webui-rce skill → `.hermes/skills/security/`。思路文档 → `domains/gpu-ai-security/`。**技能库最终 1028**。  
+
 **上一轮（2026-09-23，commit `1d12151c` 起）：**  
 **0day** — V8 可跑 harness；独立仓 23b–e（WP Core / Zabbix / RustyTux / Forminator / macOS LPE / copyfail-rs PAM…）；**@cvebird 对照 1.3 万仓后只融 9 条真缺口**（Solr / Netlogon / ActiveMQ / vBulletin / cPanel parking / Next-Win / OpenClaw / Docker 2375 / XWiki）。SecureWithUmer stub **整仓不吸**。  
 **锁面（禁止自动打同网段不相干站）** — 点名 URL 的 **A 记录 IP** 才算同机；同 /24 另一 IP **不是同机**，不能当主线。旁端口同 IP 可以打。用户没说「打邻机 / 横向」禁止自己切站。写在 `pentest-execution` §0。  
@@ -148,7 +152,7 @@ bash scripts/sync-hermes-skills.sh
 
 ### 最近融了啥
 
-**2026-09-28：** A 批 murrez 7 CVE（NetScaler DTLS 88772 · Joomla UP 97163/97160/97161 · AcyMailing 94132 · WP Ultra Addons 82901 · WP Bookly 93399）— **Joomla 产品线全新**。B 批最优吸收 17 目标（网络设备线 94127/8452/8451/19490/50751/20253/10520/2699 · 容器逃逸 52910+80521 + ITScape 46316 · MikroTrick 86060+67279+67277 · Cisco IOS XE 20272 · Artifactory 82329 · WP Give-Tributes 19658 · macOS SMBFS 84543 · ZoneMinder 76060 · JWT 5430）。**C 批 xishou 全量技能蒸馏（908 个新 skill → 技能库 113→1022，security 类 958）**：hunt-*(70+) · offensive-*(60+) · 专项渗透(200+) · 基础能力(150+) · 72stack-sec(45MB/2836 H1/88636 WooYun)。  
+**2026-09-28：** A 批 murrez 7 CVE — **Joomla 产品线全新**。B 批 60 URL → 17 目标（网络设备线/容器逃逸/MikroTrick 在野）。C 批 xishou 908 skill（技能库 113→1022）。D 批 fastjson2 ≤2.0.62 RCE（FNV-1a 碰撞绕 AutoType）。E 批 AI-Infra-Guard 腾讯朱雀（151 指纹+132 漏洞规则+15 MCP+17 eval）。F 批 GPU 猎杀包 5 skill + SD WebUI RCE skill。**技能库最终 1028，0day 库 258 产品/264 CVE**。  
 **2026-09-23：** CVE 独立仓 23b–g + @cvebird 最优 9 harness + src-6k 锁面 + 微信/报告.zip 课。USBPrint 搬出 ghost-cms。聚合仓 stub 不吸。  
 **2026-09-22：** 报告吸收硬门 · UU/DarkSword/BMS/ChatNet 课。  
 **2026-09-20：** CASE-INDEX 闸门 · sinian 114 迁 `_vendor` · 712win3 课。  

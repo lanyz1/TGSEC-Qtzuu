@@ -1,5 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
+- 2026-09-30：**H 批 EQSTLab PoC 蒸馏** — 46仓库 triage → 22新PoC → **13个新技能卡**：Metabase 未授权盲注 CVSS10 · Keycloak ATO · HTTP/2 Cookie Bomb · Math.js/Handlebars/simple-git RCE · Ghost CMS SQLi · GiveWP 反序列化 · pfSense XSS→RCE · ORM JSON键注入族 · n8n 文件读→RCE · Gitea Docker 认证绕过 · LobeChat SSRF。**技能库 1028→1041**
 - 2026-09-28：**A~G 七批融合** — murrez 7CVE · 60URL→17目标（网络设备/容器逃逸/MikroTrick在野）· xishou 908 skill（技能库→1028）· fastjson2 RCE · AI-Infra-Guard 腾讯朱雀 · GPU猎杀包+SD WebUI RCE · **G 批 @ThreatWire_ CVE 差分（Citrix 88771 预认证RCE在野 · Roundcube 48842 · AcyMailing 56292 · WAC 56197 · OpenAM 18新CVE）**。**0day库 137产品/289CVE**
 - 2026-09-23：CVE 差分 · 报告.zip · 微信 · src-6k 锁面 · **cvebird 最优 9 harness（Solr/Netlogon/ActiveMQ/vBulletin/cPanel/Next-Win/OpenClaw/Docker/XWiki）**
 
@@ -15,9 +16,33 @@
 
 ---
 
-## 〇、本轮更新了什么（2026-09-28）
+## 〇、本轮更新了什么（2026-09-30）
 
-**A~F 六批融合，详见下方 §十。摘要：**
+### H 批 — EQSTLab PoC 蒸馏（2026-09-30）
+
+46仓库 triage → 15已覆盖跳过 → 22新PoC → **13个新技能卡**写入 `hermes-skills/`：
+
+| 技能卡 | CVE | 打法 |
+|--------|-----|------|
+| `metabase-preauth-sqli` | CVE-2026-72898 | Metabase `user-id` HoneySQL 盲注 CVSS 10 |
+| `keycloak-reset-flow-bypass` | CVE-2026-18963 | Keycloak stale session note 复用→ATO |
+| `http2-cookie-bomb-dos` | CVE-2026-49975 | Apache mod_http2 HPACK 4000:1 放大 DoS |
+| `mathjs-sandbox-escape-rce` | CVE-2026-40897 | Math.js toJSON→Function.constructor |
+| `simple-git-config-rce` | CVE-2026-6951 | simple-git `--config` ext:: 协议 RCE |
+| `handlebars-ast-injection-rce` | CVE-2026-33937 | Handlebars AST 注入→RCE |
+| `ghost-cms-content-api-sqli` | CVE-2026-26980 | Ghost CMS Content API 盲注 |
+| `givewp-php-object-injection-rce` | CVE-2024-5932/8353 | GiveWP PHP 反序列化→RCE |
+| `pfsense-xss-to-rce` | CVE-2024-46538 | pfSense XSS→diag_command root RCE |
+| `orm-json-key-sqli` | CVE-2026-30951/34220 | Sequelize/MikroORM JSON 键注入族 |
+| `n8n-form-trigger-rce` | CVE-2026-21858 | n8n 文件读+JWT 伪造→RCE |
+| `gitea-docker-webauth-bypass` | CVE-2026-20896 | X-WEBAUTH-USER 头冒充 admin |
+| `lobechat-ssrf-redirect` | CVE-2024-47066 | LobeChat 重定向绕过 SSRF |
+
+**技能库 1028→1041。** 来源：https://github.com/EQSTLab
+
+跳过的5仓库：Claude-Red（已全量吸收）· SecSkills（简化版已覆盖）· StrikeAgent（产品非知识）· netscaler-checker（蓝队窄场景）· EQSTLab 15个已有CVE。
+
+### A~F 六批融合（2026-09-28），详见下方 §十。摘要：
 
 | 批次 | 内容 | 增量 |
 |------|------|------|

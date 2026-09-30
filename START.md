@@ -1,5 +1,6 @@
 # 小白从这里开始（3 步）
 
+- 2026-09-30：**H 批 EQSTLab PoC 蒸馏** — 13个新技能卡（Metabase CVSS10盲注 · Keycloak ATO · HTTP/2 Bomb · Math.js/Handlebars/simple-git RCE · Ghost SQLi · GiveWP反序列化 · pfSense XSS→RCE · ORM注入族 · n8n RCE · Gitea绕过 · LobeChat SSRF）+ LFI emoji/多阶段编码/截断绕过补强。**技能库→1041**
 - 2026-09-28：**G 批 @ThreatWire_ CVE 差分** — Citrix NetScaler **88771** 预认证RCE在野 · Roundcube **48842** · AcyMailing **56292** · WAC **56197** · OpenAM **18新CVE**。A~F 批见下方
 
 仓库：https://github.com/lanyz1/TGSEC-Qtzuu

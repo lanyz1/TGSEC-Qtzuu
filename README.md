@@ -16,7 +16,21 @@
 
 ---
 
-## 〇、本轮更新了什么（2026-09-30）
+## 〇、本轮更新了什么（2026-10-02）
+
+### I 批 — @Zerodaylabowner (Zer0DAY Lab) 吸收（2026-10-02）
+
+X 账号 + TG 频道 triage，10 条内容评估 → **3 个新手法卡 + 1 个 payload 补强**：
+
+| 落点 | 内容 | 来源推文 |
+|------|------|---------|
+| `web-injection/case-lessons/sqli-minimal-probe-to-ato.md` | SQLi 三步探型（200→500→200）→ ATO，审计面最小的字符串型注入判定法 | SQL Injection to ATO |
+| `api-security/case-lessons/double-content-type-parser-disparity.md` | 双 Content-Type 头 WAF/后端解析分歧（form vs JSON），提权 payload 免疫拦截 | Bypass by Doubling |
+| `file-vulns/torch-wiki/payloads/lfi-path-traversal.md` | 追加 4 个 traversal 绕过变体：`%2%35%32F` 双重编码劈开、`e../tc..` 段内插点、`/./` 规范化差异、尾部自引用 | Path Traversal WAF Bypass |
+
+未吸收：Zurp（Meta bounty 工具，情报雷达）；LFI→RCE 转发帖（无细节原文在他号）；DevCop95/bugbounty-lab101（合规众测框架，只待挖 T3MP3ST + CVE watchlist 两个子件）。
+
+详情：`/root/cases/zerodaylab/DIGEST.md`（抓取对抗记录：syndication 间歇 429，SSR 仅露最新 5 条，70 条未拿，TG 频道需 session）。
 
 ### H 批 — EQSTLab PoC 蒸馏（2026-09-30）
 

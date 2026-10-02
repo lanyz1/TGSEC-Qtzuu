@@ -10,7 +10,8 @@
 
 **规模体感：** 24 个主题域 · `domains/` 约 **14000+** 文件 · 14 个伞形技能 · **62** 实战课 · 80+ 工具清单。
 
-**本轮更新（2026-09-28）：**  
+**本轮更新（2026-10-02）：**  
+**I 批（@Zerodaylabowner X+TG 吸收）** — 3 新手法卡 + 1 payload 补强：SQLi 三步探型（200→500→200）→ATO（`web-injection/case-lessons/`）· 双 Content-Type 解析分歧（`api-security/case-lessons/`）· traversal 4 变体（`%2%35%32F` 双编码劈开 / `e../tc..` 段内插点 / `/./` 规范化差异 / 尾部自引用，补 `torch-wiki/payloads/lfi-path-traversal.md`）。抓取留痕 `cases/zerodaylab/DIGEST.md`（syndication 429，70 条未拿）。  
 **0day C 批（xishou 全量技能蒸馏，908 个新 skill）** — 三波融合：Wave1 乱码测绘引擎 skills(673) + Wave2 Pentest-Skills-Merged 差量(235) + Wave3 72stack-sec(3192 文件/45MB/2836 H1 报告/88636 WooYun/19 playbook/305+176 payload)。**技能库 113→1022（security 类 958）**。新增 `hunt-*`(70+)·`offensive-*`(60+)·专项渗透(200+)·基础能力(150+)·侦察报告(40+)。  
 **0day A 批（murrez 独立仓）** — 7 CVE 全 MISS 全融：Citrix NetScaler **88772**（DTLS 内存溢出，**已在野利用**）· Joomla UP **97163/97160/97161** · AcyMailing **94132** · WP Ultra Addons CF7 **82901** · WP Bookly **93399**。**Joomla 产品线全新**。  
 **0day B 批（最优吸收，60 URL → 17 目标，全 MISS）** — **网络设备线全新**：F5 BIG-IP **94127** · Citrix NetScaler **8452 + 8451 + 19490**（19490 未授权 SAML 会话伪造，**厂商无 workaround**）· Check Point **50751** · Splunk **20253** · Ivanti Sentry **10520+10523** · Progress ShareFile **2699+2701**。**容器/VM 逃逸线**：`container-escape/` **52910+80521** · `kvm/` 补 arm64 **46316 ITScape**（三部曲齐全）。**MikroTrick 86060+67279+67277**（RouterOS 未授权完全接管，**2026-09-02 起在野**，IoC `login failure for user -2`）。另：Cisco IOS XE 20272 · Artifactory 82329 · WP Give-Tributes 19658 · macOS SMBFS 84543 · ZoneMinder 76060 · JWT 5430。错放修正：Ivanti 10520 从 `sharepoint/` 搬入 `ivanti-sentry/`。  
@@ -153,6 +154,7 @@ bash scripts/sync-hermes-skills.sh
 
 ### 最近融了啥
 
+**2026-10-02：** I 批 @Zerodaylabowner（X+TG）— SQLi 三步探型→ATO / 双 Content-Type 解析分歧 / traversal 4 变体（%2%35%32F 双编码劈开、段内插点）。3 新卡 + 1 payload 补强。  
 **2026-09-28：** A 批 murrez 7 CVE — **Joomla 产品线全新**。B 批 60 URL → 17 目标（网络设备线/容器逃逸/MikroTrick 在野）。C 批 xishou 908 skill（技能库 113→1022）。D 批 fastjson2 ≤2.0.62 RCE（FNV-1a 碰撞绕 AutoType）。E 批 AI-Infra-Guard 腾讯朱雀（151 指纹+132 漏洞规则+15 MCP+17 eval）。F 批 GPU 猎杀包 5 skill + SD WebUI RCE skill。**技能库最终 1028，0day 库 258 产品/264 CVE**。  
 **2026-09-23：** CVE 独立仓 23b–g + @cvebird 最优 9 harness + src-6k 锁面 + 微信/报告.zip 课。USBPrint 搬出 ghost-cms。聚合仓 stub 不吸。  
 **2026-09-22：** 报告吸收硬门 · UU/DarkSword/BMS/ChatNet 课。  

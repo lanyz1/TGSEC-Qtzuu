@@ -1,41 +1,47 @@
+# ===== TGSEC-Qtzuu 大文件防复发黑名单（2026-10-02 瘦身后追加） =====
+# 本仓 2026-10-02 经 git filter-repo 重写历史 + 强推：.git 297M→57M / pack 291→52MiB
+# 删除清单与审计报告见 /root/cases/（本地），仓库内为本文档与本黑名单。
 
-.tgsec-bootstrapped
+# --- vuln-wiki PDF 快照（正文都在同名 .md，PDF 属渲染快照；3 个无源 PDF 白名单例外） ---
+**/vuln-wiki/**/*.pdf
 
-.tgsec-bootstrapped.*
+# --- 字典/技能镜像（上游可重下 / sync 脚本可再生成） ---
+**/AboutSecurity-Dic/
+.agents/
+.codex/
+.cursor/
+.gemini/
+hermes-skills/
 
-*.bak.*
-
-# secrets / local
-.env
-**/.env
-**/.env.*
-!.env.example
-*.pem
-*.key
-id_rsa*
-.DS_Store
-__pycache__/
-*.pyc
-work/
-session/
-targets/
-
-# ingest staging / audit scratch (not published knowledge)
-_ingest_*/
-**/_ingest_*/
-_probe_*/
-**/_probe_*/
-*.bak
-backup_local_*/
-
-# large lab binaries / media (keep analysis, not blobs)
-**/qemu-system-*
-**/vmlinuz*
+# --- 媒体二进制（渗透过程用不到；PoC 演示动图/截图不进 git） ---
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.webp
+**/*.bmp
+**/*.mp4
 **/*.mov
-**/weights1.bin
-**/demo.gif
-**/demo.mp4
-**/VID_*.mp4
+**/*.avi
 
-# absorb scratch diffs (not published)
-**/README.md.upstream-new
+# --- 预编译 / 下载件（可重新构建或重新下载） ---
+**/*.ipa
+**/*.apk
+**/*.dll
+**/*.pdb
+**/*.exe
+**/*.zip
+**/*.tar
+**/*.tar.gz
+**/*.img
+
+# --- 情报快照类（每日更新，进 git 必过期） ---
+**/files_exploits.csv
+**/files_shellcodes.csv
+**/KEV*.json
+**/pocs*.json
+
+# --- 历史/临时 ---
+knowledge/
+**/*.log
+**/*.out

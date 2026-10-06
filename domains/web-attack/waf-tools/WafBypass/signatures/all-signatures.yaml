@@ -1,0 +1,2642 @@
+# =========================================================================
+# WafBypass v4.0.0 声明式 WAF 检测签名 — 合并档 (源: hnytgl/WafBypass signatures/)
+# 原目录 112 个文件 (111 个 WAF 产品签名 YAML + _schema.json)，
+# 因知识卡单卡文件数限制合并为单文件保存；每段以 "# ===== <文件名> =====" 分隔。
+# 使用/校验时按分隔线拆回独立文件，或直接用 --update-signatures 拉取官方签名包。
+# =========================================================================
+
+# ===== signatures/_schema.json =====
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hnytgl/WafBypass/signatures/_schema.json",
+  "title": "WAFBypass Signature Schema v1",
+  "description": "Declarative WAF detection signature format. Replaces Python plugin files with auditable YAML rules.",
+  "type": "object",
+  "required": ["schema_version", "product", "detection"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version. Must be 1."
+    },
+    "product": {
+      "type": "string",
+      "minLength": 1,
+      "description": "WAF product name (equivalent to __product__ in Python plugins)"
+    },
+    "vendor": {
+      "type": "string",
+      "description": "Vendor/company name"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d{4}\\.\\d{2}$",
+      "description": "Signature version in YYYY.MM format"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Classification tags (cdn, cloud, hardware, opensource, chinese, etc.)"
+    },
+    "detection": {
+      "type": "object",
+      "description": "Detection rules. At least one sub-key must be present.",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "header_presence": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Header names that trigger detection when non-empty (e.g. CF-RAY)"
+        },
+        "patterns": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pattern" },
+          "description": "Regex patterns matched against specified fields"
+        },
+        "contains": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/contains" },
+          "description": "Simple substring checks"
+        },
+        "status_rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/status_rule" },
+          "description": "Conditional rules that only apply for specific HTTP status codes"
+        },
+        "match_all_headers": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, match patterns against ALL header keys and values"
+        },
+        "conditional": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/conditional" },
+          "description": "Multi-step rules: only check patterns if a prerequisite header is present"
+        }
+      }
+    },
+    "tamper_hints": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Recommended bypass technique families for AdaptiveRanker"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "default": "medium",
+      "description": "Detection confidence level"
+    },
+    "false_positive_risk": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "default": "low",
+      "description": "Risk of false positive detections"
+    },
+    "last_verified": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this signature was last verified against a live target"
+    }
+  },
+  "$defs": {
+    "pattern": {
+      "type": "object",
+      "required": ["regex", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "regex": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Regular expression pattern"
+        },
+        "fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Fields to match against: body, server, set-cookie, cookie, x-powered-by, via, x-cache, location, expect-ct, all_headers, or any custom header name (lowercase)"
+        },
+        "flags": {
+          "type": "string",
+          "default": "i",
+          "description": "Regex flags: i=ignorecase, m=multiline, s=dotall. Combined as string."
+        },
+        "negate": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, pattern must NOT match for detection to trigger"
+        }
+      }
+    },
+    "contains": {
+      "type": "object",
+      "required": ["value", "field"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Substring to search for"
+        },
+        "field": {
+          "type": "string",
+          "description": "Field to search in (same as pattern fields, singular)"
+        },
+        "case_sensitive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the contains check is case-sensitive"
+        }
+      }
+    },
+    "status_rule": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 100, "maximum": 599 },
+          "minItems": 1,
+          "description": "HTTP status codes that trigger this rule"
+        },
+        "patterns": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pattern" },
+          "description": "Patterns to check only when status matches"
+        },
+        "contains": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/contains" },
+          "description": "Contains checks only when status matches"
+        }
+      }
+    },
+    "conditional": {
+      "type": "object",
+      "required": ["if_header", "patterns"],
+      "additionalProperties": false,
+      "properties": {
+        "if_header": {
+          "type": "string",
+          "description": "Header name that must be non-empty for patterns to be checked"
+        },
+        "patterns": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pattern" },
+          "description": "Patterns to check only when if_header is present"
+        }
+      }
+    }
+  }
+}
+
+# ===== signatures/360.yaml =====
+schema_version: 1
+product: 360 Web Application Firewall (360)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  patterns:
+  - regex: .wzws.waf.cgi.
+    fields: &id001
+    - body
+    - server
+    - x-powered-by-360wzb
+  - regex: wangzhan\.360\.cn
+    fields: *id001
+  - regex: qianxin.waf
+    fields: *id001
+  - regex: 360wzws
+    fields: *id001
+  - regex: transfer.is.blocked
+    fields: *id001
+  status_rules:
+  - status:
+    - 493
+    patterns:
+    - regex: .wzws.waf.cgi.
+      fields:
+      - server
+      - x-powered-by-360wzb
+    - regex: wangzhan\.360\.cn
+      fields:
+      - server
+      - x-powered-by-360wzb
+    - regex: qianxin.waf
+      fields:
+      - server
+      - x-powered-by-360wzb
+tamper_hints:
+- keyword
+- whitespace
+confidence: medium
+
+# ===== signatures/aesecure.yaml =====
+schema_version: 1
+product: aeSecure (WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: aesecure.denied.png
+    fields:
+    - aesecure-code
+    - body
+confidence: high
+
+# ===== signatures/airlock.yaml =====
+schema_version: 1
+product: Airlock (Phion/Ergon)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \Aal[.-]?(sess|lb)(=)?(.)?
+    fields:
+    - body
+    - set-cookie
+confidence: high
+
+# ===== signatures/akamai.yaml =====
+schema_version: 1
+product: AkamaiGHost Website Protection (Akamai Global Host)
+version: '2026.09'
+tags:
+- cdn
+- cloud
+detection:
+  patterns:
+  - regex: akamaighost
+    fields: &id001
+    - body
+    - server
+    - set-cookie
+  - regex: you.don.t.have.permission.to.access
+    fields: *id001
+  - regex: <.+>access.denied<.+.>
+    fields: *id001
+  - regex: akamaighost
+    fields: *id001
+  - regex: ak.bmsc.
+    fields: *id001
+tamper_hints:
+- whitespace
+- encoding
+confidence: high
+
+# ===== signatures/alertlogic.yaml =====
+schema_version: 1
+product: Alert Logic (SIEMless Threat Management)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <.+>requested.url.cannot.be.found<.+.>
+    fields: &id001
+    - body
+  - regex: proceed.to.homepage
+    fields: *id001
+  - regex: back.to.previous.page
+    fields: *id001
+  - regex: we('re|.are)?sorry(.)?.but.the.page.you.are.looking.for.cannot
+    fields: *id001
+  - regex: reference.id(.)?
+    fields: *id001
+  - regex: page.has.either.been.removed(.)?.renamed
+    fields: *id001
+confidence: high
+
+# ===== signatures/aliyundun.yaml =====
+schema_version: 1
+product: AliYunDun (WAF)
+version: '2026.09'
+tags:
+- chinese
+- cloud
+detection:
+  patterns:
+  - regex: error(s)?.aliyun(dun)?.(com|net)
+    fields: &id001
+    - body
+  - regex: http(s)?://(www.)?aliyun.(com|net)
+    fields: *id001
+  status_rules:
+  - status:
+    - 405
+    patterns:
+    - regex: error(s)?.aliyun(dun)?.(com|net)
+      fields:
+      - body
+    - regex: http(s)?://(www.)?aliyun.(com|net)
+      fields:
+      - body
+tamper_hints:
+- encoding
+- literal
+- whitespace
+confidence: medium
+
+# ===== signatures/anquanbao.yaml =====
+schema_version: 1
+product: Anquanbao Web Application Firewall (Anquanbao)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  patterns:
+  - regex: .aqb_cc.error.
+    fields:
+    - body
+confidence: high
+
+# ===== signatures/anyu.yaml =====
+schema_version: 1
+product: AnYu Web Application Firewall (Anyu Technologies)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: sorry(.)?.your.access.has.been.intercept(ed)?.by.anyu
+    fields: &id001
+    - body
+  - regex: anyu
+    fields: *id001
+  - regex: anyu(-)?.the.green.channel
+    fields: *id001
+confidence: high
+
+# ===== signatures/apachegeneric.yaml =====
+schema_version: 1
+product: Apache Generic
+version: '2026.09'
+detection:
+  # Only match on error pages (403/404), not normal content
+  status_rules:
+    - status: [403, 404, 500]
+      patterns:
+        - regex: "apache"
+          fields: [server]
+        - regex: "you.don.t.have.permission.to.access."
+          fields: [body]
+        - regex: "was.not.found.on.this.server"
+          fields: [body]
+        - regex: "<address>apache/([\\d+{1,2}](.[\\d+]{1,2}(.[\\d+]{1,3})?)?)?"
+          fields: [body]
+  patterns:
+    # Only match specific Apache error page markers in body (not generic "apache")
+    - regex: "<title>403 Forbidden</title>.*apache"
+      fields: [body]
+    - regex: "<address>Apache/\\d"
+      fields: [body]
+confidence: low
+false_positive_risk: high
+
+# ===== signatures/armor.yaml =====
+schema_version: 1
+product: Armor Protection (Armor Defense)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \barmor\b
+    fields: &id001
+    - body
+  - regex: blocked.by.website.protection.from.armour
+    fields: *id001
+confidence: high
+
+# ===== signatures/asm.yaml =====
+schema_version: 1
+product: Application Security Manager (F5 Networks)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: the.requested.url.was.rejected..please.consult.with.your.administrator.
+    fields:
+    - body
+tamper_hints:
+- case
+- comment
+confidence: high
+
+# ===== signatures/aspgeneric.yaml =====
+schema_version: 1
+product: ASP.NET Generic Website Protection (MS)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: this.generic.403.error.means.that.the.authenticated
+    fields: &id001
+    - asp-id
+    - body
+    - set-cookie
+    - x-aspnet-version
+    - x-powered-by
+  - regex: request.could.not.be.understood
+    fields: *id001
+  - regex: potentially.dangerous.request
+    fields: *id001
+  - regex: runtime.error
+    fields: *id001
+  - regex: asp.net(.+)?
+    fields: *id001
+  - regex: a.potentially.dangerous.request.path.value.was.detected.from.the.client
+    fields: *id001
+  - regex: asp.net.sessionid
+    fields: *id001
+  - regex: errordocument.to.handle.the.request
+    fields: *id001
+  - regex: an.application.error.occurred.on.the.server
+    fields: *id001
+  - regex: error.log.record.number
+    fields: *id001
+  - regex: error.page.might.contain.sensitive.information
+    fields: *id001
+confidence: high
+
+# ===== signatures/ats.yaml =====
+schema_version: 1
+product: Apache Traffic Server (ATS web proxy)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: (\()?apachetrafficserver((\/)?\d+(.\d+(.\d+)?)?)
+    fields: &id001
+    - body
+    - server
+    - via
+  - regex: ats((\/)?(\d+(.\d+(.\d+)?)?))?
+    fields: *id001
+  - regex: ats
+    fields: *id001
+confidence: high
+
+# ===== signatures/aws.yaml =====
+schema_version: 1
+product: Amazon Web Services Web Application Firewall (Amazon)
+version: '2026.09'
+tags:
+- cloud
+detection:
+  patterns:
+  - regex: <RequestId>[0-9a-zA-Z]{16,25}<.RequestId>
+    fields: &id001
+    - body
+    - server
+    - set-cookie
+    - x-powered-by
+  - regex: <Error><Code>AccessDenied<.Code>
+    fields: *id001
+  - regex: \baws(alb)?.
+    fields: *id001
+  - regex: x.amz.id.\d+
+    fields: *id001
+  - regex: x.amz.request.id
+    fields: *id001
+  - regex: amazon.\d+
+    fields: *id001
+confidence: high
+
+# ===== signatures/awsv2.yaml =====
+schema_version: 1
+product: AWS WAF v2 (Amazon Web Services)
+version: '2026.09'
+tags:
+- cloud
+detection:
+  patterns:
+  - regex: awselb/.+
+    fields: &id001
+    - body
+    - server
+    - via
+    - x-amzn-requestid
+    - x-cache
+  - regex: x-amzn-requestid
+    fields: *id001
+  - regex: x-amz-id-\d+
+    fields: *id001
+  - regex: x-amz-request-id
+    fields: *id001
+  - regex: request has been blocked
+    fields: *id001
+  - regex: aws.waf
+    fields: *id001
+  contains:
+  - value: 403 forbidden
+    field: body
+  - value: error from gateway
+    field: body
+  conditional:
+  - if_header: x-amzn-requestid
+    patterns:
+    - regex: awselb/.+
+      fields:
+      - body
+      - server
+    - regex: x-amzn-requestid
+      fields:
+      - body
+      - server
+    - regex: x-amz-id-\d+
+      fields:
+      - body
+      - server
+confidence: medium
+
+# ===== signatures/azurewaf.yaml =====
+schema_version: 1
+product: Azure Application Gateway WAF (Microsoft)
+version: '2026.09'
+tags:
+- cloud
+detection:
+  patterns:
+  - regex: request has been blocked by the application gateway
+    fields: &id001
+    - body
+    - server
+    - set-cookie
+    - x-ms-request-id
+    - x-powered-by
+  - regex: microsoft-azure-application-gateway
+    fields: *id001
+  - regex: x-ms-request-id
+    fields: *id001
+  - regex: azure web application firewall
+    fields: *id001
+  - regex: x-azure-ref
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 502
+    patterns:
+    - regex: request has been blocked by the application gateway
+      fields:
+      - server
+      - set-cookie
+      - x-ms-request-id
+      - x-powered-by
+    - regex: microsoft-azure-application-gateway
+      fields:
+      - server
+      - set-cookie
+      - x-ms-request-id
+      - x-powered-by
+    - regex: x-ms-request-id
+      fields:
+      - server
+      - set-cookie
+      - x-ms-request-id
+      - x-powered-by
+  conditional:
+  - if_header: x-ms-request-id
+    patterns:
+    - regex: request has been blocked by the application gateway
+      fields:
+      - body
+      - server
+    - regex: microsoft-azure-application-gateway
+      fields:
+      - body
+      - server
+    - regex: x-ms-request-id
+      fields:
+      - body
+      - server
+confidence: medium
+
+# ===== signatures/baidu.yaml =====
+schema_version: 1
+product: Yunjiasu Web Application Firewall (Baidu)
+version: '2026.09'
+tags:
+- cdn
+- chinese
+detection:
+  patterns:
+  - regex: fh(l)?
+    fields: &id001
+    - body
+    - server
+    - x-server
+  - regex: yunjiasu.nginx
+    fields: *id001
+confidence: high
+
+# ===== signatures/barikode.yaml =====
+schema_version: 1
+product: Barikode Web Application Firewall
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <\w+>barikode<.\w+>
+    fields: &id001
+    - body
+  - regex: <h\d{1}>forbidden.access<.h\d{1}>
+    fields: *id001
+confidence: high
+
+# ===== signatures/barracuda.yaml =====
+schema_version: 1
+product: Barracuda Web Application Firewall (Barracuda Networks)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \Abarra.counter.session(=)?
+    fields: &id001
+    - body
+    - set-cookie
+  - regex: (\A|\b)?barracuda.
+    fields: *id001
+  - regex: barracuda.networks(.)?.inc
+    fields: *id001
+tamper_hints:
+- whitespace
+- encoding
+confidence: high
+
+# ===== signatures/bekchy.yaml =====
+schema_version: 1
+product: Bekchy (WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: bekchy.(-.)?access.denied
+    fields: &id001
+    - body
+  - regex: (http(s)?://)(www.)?bekchy.com(/report)?
+    fields: *id001
+confidence: high
+
+# ===== signatures/bigip.yaml =====
+schema_version: 1
+product: BIG-IP (F5 Networks)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \ATS\w{4,}=
+    fields: &id001
+    - body
+    - cookie
+    - server
+    - set-cookie
+  - regex: bigipserver(.i)?|bigipserverinternal
+    fields: *id001
+  - regex: \AF5\Z
+    fields: *id001
+  - regex: ^TS[a-zA-Z0-9]{3,8}=
+    fields: *id001
+  - regex: BigIP|BIG-IP|BIGIP
+    fields: *id001
+  - regex: bigipserver
+    fields: *id001
+tamper_hints:
+- case
+- comment
+confidence: high
+
+# ===== signatures/binarysec.yaml =====
+schema_version: 1
+product: BinarySEC Web Application Firewall (BinarySEC)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: x.binarysec.via
+    fields: &id001
+    - body
+    - server
+  - regex: x.binarysec.nocache
+    fields: *id001
+  - regex: binarysec
+    fields: *id001
+  - regex: \bbinarysec\b
+    fields: *id001
+confidence: high
+
+# ===== signatures/bitninja.yaml =====
+schema_version: 1
+product: Bitninja (WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: bitninja
+    fields: &id001
+    - body
+  - regex: security.check.by.bitninja
+    fields: *id001
+  - regex: <.+>visitor.anti(\S)?robot.validation<.+.>
+    fields: *id001
+confidence: high
+
+# ===== signatures/blockdos.yaml =====
+schema_version: 1
+product: BlockDos DDoS protection (BlockDos)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: blockdos\.net
+    fields:
+    - body
+    - server
+confidence: high
+
+# ===== signatures/checkpoint.yaml =====
+schema_version: 1
+product: Check Point WAF (Check Point Software)
+version: '2026.09'
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: check.point
+    fields: &id001
+    - body
+    - server
+  - regex: checkpoint
+    fields: *id001
+  - regex: cp_waf
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: check.point
+      fields:
+      - server
+    - regex: checkpoint
+      fields:
+      - server
+    - regex: cp_waf
+      fields:
+      - server
+confidence: medium
+
+# ===== signatures/chinacache.yaml =====
+schema_version: 1
+product: ChinaCache CDN WAF (ChinaCache)
+version: '2026.09'
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: chinacache
+    fields: &id001
+    - body
+    - server
+    - via
+    - x-powered-by
+  - regex: ccwaf
+    fields: *id001
+  - regex: cc-cache
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: chinacache
+      fields:
+      - server
+      - via
+      - x-powered-by
+    - regex: ccwaf
+      fields:
+      - server
+      - via
+      - x-powered-by
+    - regex: cc-cache
+      fields:
+      - server
+      - via
+      - x-powered-by
+confidence: medium
+
+# ===== signatures/chuangyu.yaml =====
+schema_version: 1
+product: Chuangyu top government cloud defense platform (WAF)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  patterns:
+  - regex: (http(s)?.//(www.)?)?365cyd.(com|net)
+    fields:
+    - body
+confidence: high
+
+# ===== signatures/ciscoacexml.yaml =====
+schema_version: 1
+product: Cisco ACE XML Firewall (Cisco)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: ace.xml.gateway
+    fields:
+    - body
+    - server
+confidence: high
+
+# ===== signatures/cloudbric.yaml =====
+schema_version: 1
+product: Cloudbric Web Application Firewall (Cloudbric)
+version: '2026.09'
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: cloudbric
+    fields: &id001
+    - body
+  - regex: x-cloudbric
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: cloudbric
+      fields:
+      - body
+    - regex: x-cloudbric
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/cloudflare.yaml =====
+schema_version: 1
+product: CloudFlare Web Application Firewall (CloudFlare)
+version: '2026.09'
+tags:
+- cdn
+- challenge
+- cloud
+detection:
+  header_presence:
+  - cf-ray
+  patterns:
+  - regex: cloudflare.ray.id.|var.cloudflare.
+    fields: &id001
+    - body
+    - cf-ray
+    - cookie
+    - expect-ct
+    - server
+    - set-cookie
+  - regex: cloudflare.nginx
+    fields: *id001
+  - regex: ..cfduid=([a-z0-9]{43})?
+    fields: *id001
+  - regex: cf[-|_]ray(..)?([0-9a-f]{16})?[-|_]?(dfw|iad)?
+    fields: *id001
+  - regex: <title>attention.required.(...)?cloudflare</title>
+    fields: *id001
+  - regex: http(s)?.//report.(uri.)?cloudflare.com(/cdn.cgi(.beacon/expect.ct)?)?
+    fields: *id001
+  - regex: ray.id
+    fields: *id001
+  contains:
+  - value: __cfuid
+    field: set-cookie
+tamper_hints:
+- encoding
+- keyword
+- whitespace
+confidence: high
+
+# ===== signatures/cloudfront.yaml =====
+schema_version: 1
+product: CloudFront Firewall (Amazon)
+version: '2026.09'
+tags:
+- cdn
+detection:
+  patterns:
+  - regex: '[a-zA-Z0-9]{,60}.cloudfront.net'
+    fields: &id001
+    - body
+  - regex: cloudfront
+    fields: *id001
+  - regex: x.amz.cf.id|nguardx
+    fields: *id001
+confidence: high
+
+# ===== signatures/codeigniter.yaml =====
+schema_version: 1
+product: XSS/CSRF Filtering Protection (CodeIgniter)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: the.uri.you.submitted.has.disallowed.characters
+    fields:
+    - body
+  status_rules:
+  - status:
+    - 400
+    patterns:
+    - regex: the.uri.you.submitted.has.disallowed.characters
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/comodo.yaml =====
+schema_version: 1
+product: Comodo Web Application Firewall (Comodo)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: protected.by.comodo.waf
+    fields:
+    - body
+    - server
+confidence: high
+
+# ===== signatures/datapower.yaml =====
+schema_version: 1
+product: IBM Websphere DataPower Firewall (IBM)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \A(ok|fail)
+    fields:
+    - body
+    - x-backside-transport
+confidence: high
+
+# ===== signatures/dbsapp.yaml =====
+schema_version: 1
+product: DBAPP Security WAF (安恒信息)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: dbappsecurity
+    fields: &id001
+    - body
+    - server
+  - regex: dbapp
+    fields: *id001
+  - regex: 安恒
+    fields: *id001
+  - regex: 明御
+    fields: *id001
+  - regex: mingyu
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 405
+    patterns:
+    - regex: dbappsecurity
+      fields:
+      - server
+    - regex: dbapp
+      fields:
+      - server
+    - regex: 安恒
+      fields:
+      - server
+confidence: medium
+
+# ===== signatures/denyall.yaml =====
+schema_version: 1
+product: Deny All Web Application Firewall (DenyAll)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \Acondition.intercepted
+    fields: &id001
+    - body
+    - set-cookie
+  - regex: \Asessioncookie=
+    fields: *id001
+confidence: high
+
+# ===== signatures/didiyun.yaml =====
+schema_version: 1
+product: DiDiYun WAF (DiDi)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: (http(s)?://)(sec-waf.|www.)?didi(static|yun)?.com(/static/cloudwafstatic)?
+    fields: &id001
+    - body
+    - server
+  - regex: didiyun
+    fields: *id001
+confidence: high
+
+# ===== signatures/dodenterpriseprotection.yaml =====
+schema_version: 1
+product: DoD Enterprise-Level Protection System (Department of Defense)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: dod.enterprise.level.protection.system
+    fields:
+    - body
+confidence: high
+
+# ===== signatures/dosarrest.yaml =====
+schema_version: 1
+product: DOSarrest (DOSarrest Internet Security)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: dosarrest
+    fields: &id001
+    - body
+    - server
+  - regex: x.dis.request.id
+    fields: *id001
+confidence: high
+
+# ===== signatures/dotdefender.yaml =====
+schema_version: 1
+product: dotDefender (Applicure Technologies)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: dotdefender.blocked.your.request
+    fields:
+    - body
+    - x-dotdefender-denied
+confidence: high
+
+# ===== signatures/dw.yaml =====
+schema_version: 1
+product: DynamicWeb Injection Check (DynamicWeb)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: dw.inj.check
+    fields:
+    - body
+    - x-403-status-by
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: dw.inj.check
+      fields:
+      - x-403-status-by
+confidence: medium
+
+# ===== signatures/edgecast.yaml =====
+schema_version: 1
+product: EdgeCast Web Application Firewall (Verizon)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \Aecdf
+    fields:
+    - body
+    - server
+confidence: high
+
+# ===== signatures/expressionengine.yaml =====
+schema_version: 1
+product: ExpressionEngine (Ellislab WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <.+>error.-.expressionengine<.+.>
+    fields: &id001
+    - body
+  - regex: <.+><.+>error<.+.>:.the.uri.you.submitted.has.disallowed.characters.<.+.>
+    fields: *id001
+  - regex: invalid.get.data
+    fields: *id001
+confidence: high
+
+# ===== signatures/fastlywaf.yaml =====
+schema_version: 1
+product: Fastly WAF (Fastly)
+version: '2026.09'
+tags:
+- cdn
+detection:
+  patterns:
+  - regex: fastly
+    fields: &id001
+    - body
+    - server
+    - via
+    - x-cache
+    - x-served-by
+  - regex: x-served-by
+    fields: *id001
+  - regex: x-cache-hits
+    fields: *id001
+  - regex: x-timer
+    fields: *id001
+  contains:
+  - value: blocked
+    field: body
+  status_rules:
+  - status:
+    - 403
+    - 406
+    patterns:
+    - regex: fastly
+      fields:
+      - server
+      - via
+      - x-cache
+      - x-served-by
+    - regex: x-served-by
+      fields:
+      - server
+      - via
+      - x-cache
+      - x-served-by
+    - regex: x-cache-hits
+      fields:
+      - server
+      - via
+      - x-cache
+      - x-served-by
+confidence: medium
+
+# ===== signatures/fortigate.yaml =====
+schema_version: 1
+product: FortiWeb Web Application Firewall (Fortinet)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <.+>powered.by.fortinet<.+.>
+    fields: &id001
+    - body
+    - set-cookie
+  - regex: <.+>fortigate.ips.sensor<.+.>
+    fields: *id001
+  - regex: fortigate
+    fields: *id001
+  - regex: .fgd_icon
+    fields: *id001
+  - regex: \AFORTIWAFSID=
+    fields: *id001
+  - regex: application.blocked.
+    fields: *id001
+  - regex: .fortiGate.application.control
+    fields: *id001
+  - regex: (http(s)?)?://\w+.fortinet(.\w+:)?
+    fields: *id001
+  - regex: fortigate.hostname
+    fields: *id001
+confidence: high
+
+# ===== signatures/gcpcloudarmor.yaml =====
+schema_version: 1
+product: GCP Cloud Armor (Google Cloud Platform)
+version: '2026.09'
+tags:
+- cloud
+detection:
+  patterns:
+  - regex: x-cloud-trace-context
+    fields: &id001
+    - body
+    - server
+    - via
+  - regex: cloud armor
+    fields: *id001
+  - regex: google frontend
+    fields: *id001
+  contains:
+  - value: blocked
+    field: body
+  status_rules:
+  - status:
+    - 403
+    - 429
+    - 502
+    patterns:
+    - regex: x-cloud-trace-context
+      fields:
+      - server
+      - via
+    - regex: cloud armor
+      fields:
+      - server
+      - via
+    - regex: google frontend
+      fields:
+      - server
+      - via
+confidence: medium
+
+# ===== signatures/googlewebservices.yaml =====
+schema_version: 1
+product: Google Web Services
+version: '2026.09'
+detection:
+  patterns:
+  - regex: your.client.has.issued.a.malformed.or.illegal.request
+    fields: &id001
+    - body
+  - regex: our.systems.have.detected.unusual.traffic
+    fields: *id001
+  status_rules:
+  - status:
+    - 400
+    - 429
+    patterns:
+    - regex: your.client.has.issued.a.malformed.or.illegal.request
+      fields:
+      - body
+    - regex: our.systems.have.detected.unusual.traffic
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/greywizard.yaml =====
+schema_version: 1
+product: Grey Wizard Protection
+version: '2026.09'
+detection:
+  patterns:
+  - regex: greywizard(.\d.\d(.\d)?)?
+    fields: &id001
+    - body
+    - gw-server
+    - server
+  - regex: grey.wizard.block
+    fields: *id001
+  - regex: (http(s)?.//)?(\w+.)?greywizard.com
+    fields: *id001
+  - regex: grey.wizard
+    fields: *id001
+confidence: high
+
+# ===== signatures/hillstone.yaml =====
+schema_version: 1
+product: Hillstone WAF (Hillstone Networks/山石网科)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: hillstone
+    fields: &id001
+    - body
+    - server
+  - regex: stonewaf
+    fields: *id001
+  - regex: 山石
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: hillstone
+      fields:
+      - server
+    - regex: stonewaf
+      fields:
+      - server
+    - regex: 山石
+      fields:
+      - server
+confidence: medium
+
+# ===== signatures/huaweiwaf.yaml =====
+schema_version: 1
+product: Huawei Cloud WAF (Huawei)
+version: '2026.09'
+tags:
+- chinese
+- cloud
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: huawei
+    fields: &id001
+    - body
+    - server
+  - regex: hwwaf
+    fields: *id001
+  - regex: huaweicloud waf
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 418
+    patterns:
+    - regex: huawei
+      fields:
+      - server
+    - regex: hwwaf
+      fields:
+      - server
+    - regex: huaweicloud waf
+      fields:
+      - server
+tamper_hints:
+- encoding
+- whitespace
+confidence: medium
+
+# ===== signatures/incapsula.yaml =====
+schema_version: 1
+product: Incapsula Web Application Firewall (Incapsula/Imperva)
+version: '2026.09'
+tags:
+- cdn
+- cloud
+detection:
+  patterns:
+  - regex: incap_ses|visid_incap
+    fields: &id001
+    - body
+    - set-cookie
+    - x-cdn
+  - regex: incapsula
+    fields: *id001
+  - regex: incapsula.incident.id
+    fields: *id001
+tamper_hints:
+- encoding
+- keyword
+confidence: high
+
+# ===== signatures/infosafe.yaml =====
+schema_version: 1
+product: INFOSAFE by http://7i24.com
+version: '2026.09'
+detection:
+  patterns:
+  - regex: infosafe
+    fields: &id001
+    - body
+    - server
+  - regex: by.(http(s)?(.//)?)?7i24.(com|net)
+    fields: *id001
+  - regex: infosafe.\d.\d
+    fields: *id001
+  - regex: var.infosafekey=
+    fields: *id001
+confidence: high
+
+# ===== signatures/instart.yaml =====
+schema_version: 1
+product: Instart Logic (Palo Alto)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: instartrequestid
+    fields:
+    - body
+    - x-instart-cachekeymod
+    - x-instart-request-id
+confidence: high
+
+# ===== signatures/janusec.yaml =====
+schema_version: 1
+product: Janusec Application Gateway (WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: janusec
+    fields: &id001
+    - body
+  - regex: (http(s)?\W+(www.)?)?janusec.(com|net|org)
+    fields: *id001
+confidence: high
+
+# ===== signatures/jiasule.yaml =====
+schema_version: 1
+product: Jiasule (WAF)
+version: '2026.09'
+tags:
+- cdn
+- chinese
+detection:
+  patterns:
+  - regex: ^jsl(_)?tracking
+    fields: &id001
+    - body
+    - server
+    - set-cookie
+  - regex: (__)?jsluid(=)?
+    fields: *id001
+  - regex: notice.jiasule
+    fields: *id001
+  - regex: (static|www|dynamic).jiasule.(com|net)
+    fields: *id001
+confidence: high
+
+# ===== signatures/knownsec.yaml =====
+schema_version: 1
+product: KnownSec WAF (KnownSec)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: knownsec
+    fields: &id001
+    - body
+  - regex: ks-waf
+    fields: *id001
+  - regex: knowsec
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: knownsec
+      fields:
+      - body
+    - regex: ks-waf
+      fields:
+      - body
+    - regex: knowsec
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/litespeed.yaml =====
+schema_version: 1
+product: Litespeed webserver Generic Protection
+version: '2026.09'
+detection:
+  patterns:
+  - regex: litespeed.web.server
+    fields:
+    - body
+confidence: high
+
+# ===== signatures/malcare.yaml =====
+schema_version: 1
+product: Malcare (MalCare Security WAF)
+version: '2026.09'
+tags:
+- wordpress
+detection:
+  patterns:
+  - regex: malcare
+    fields: &id001
+    - body
+  - regex: <.+>login.protection<.+.><.+>powered.by<.+.>(<.+.>)?((.)?malcare.-.pro|blogvault)?
+    fields: *id001
+  - regex: <.+>firewall<.+.><.+>powered.by<.+.>(<.+.>)?((.)?malcare.-.pro|blogvault)?
+    fields: *id001
+confidence: high
+
+# ===== signatures/modsecurity.yaml =====
+schema_version: 1
+product: Open Source Web Application Firewall (Modsecurity)
+version: '2026.09'
+tags:
+- opensource
+detection:
+  patterns:
+  - regex: ModSecurity|NYOB
+    fields: &id001
+    - body
+  - regex: mod_security
+    fields: *id001
+  - regex: This.error.was.generated.by.mod.security
+    fields: *id001
+  - regex: web.server at
+    fields: *id001
+  - regex: page.you.are.(accessing|trying)?.(to|is)?.(access)?.(is|to)?.(restricted)?
+    fields: *id001
+tamper_hints:
+- comment
+- case
+- keyword
+confidence: high
+
+# ===== signatures/modsecurityowasp.yaml =====
+schema_version: 1
+product: Mod Security (OWASP CSR)
+version: '2026.09'
+tags:
+- opensource
+detection:
+  patterns:
+  - regex: not.acceptable
+    fields: &id001
+    - body
+  - regex: additionally\S.a.406.not.acceptable
+    fields: *id001
+  status_rules:
+  - status:
+    - 406
+    patterns:
+    - regex: not.acceptable
+      fields:
+      - body
+    - regex: additionally\S.a.406.not.acceptable
+      fields:
+      - body
+tamper_hints:
+- comment
+- case
+- keyword
+confidence: medium
+
+# ===== signatures/naxsi.yaml =====
+schema_version: 1
+product: NAXSI Web Application Firewall (NBS System)
+version: '2026.09'
+tags:
+- opensource
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: naxsi
+    fields: &id001
+    - body
+    - server
+  - regex: blocked by naxsi
+    fields: *id001
+  - regex: x-nbs
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 418
+    patterns:
+    - regex: naxsi
+      fields:
+      - server
+    - regex: blocked by naxsi
+      fields:
+      - server
+    - regex: x-nbs
+      fields:
+      - server
+tamper_hints:
+- case
+- comment
+confidence: medium
+
+# ===== signatures/netscaler.yaml =====
+schema_version: 1
+product: NetScaler AppFirewall (Citrix)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: netscaler
+    fields: &id001
+    - body
+    - server
+    - set-cookie
+  - regex: ns_af
+    fields: *id001
+  - regex: citrix
+    fields: *id001
+  - regex: x-requested-with
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 406
+    patterns:
+    - regex: netscaler
+      fields:
+      - server
+      - set-cookie
+    - regex: ns_af
+      fields:
+      - server
+      - set-cookie
+    - regex: citrix
+      fields:
+      - server
+      - set-cookie
+confidence: medium
+
+# ===== signatures/nexusguard.yaml =====
+schema_version: 1
+product: NexusGuard Security (WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: nexus(.)?guard
+    fields: &id001
+    - body
+  - regex: ((http(s)?://)?speresources.)?nexusguard.com.wafpage
+    fields: *id001
+confidence: high
+
+# ===== signatures/nginxgeneric.yaml =====
+schema_version: 1
+product: Nginx Generic Protection
+version: '2026.09'
+detection:
+  # Only match on error pages, not normal content mentioning "nginx"
+  status_rules:
+    - status: [403, 404, 500, 502]
+      patterns:
+        - regex: "nginx"
+          fields: [server]
+        - regex: "you.do(not|n.t)?.have.permission.to.access.this.document"
+          fields: [body]
+        - regex: "<title>403 Forbidden</title>.*nginx"
+          fields: [body]
+        - regex: "<hr><center>nginx</center>"
+          fields: [body]
+  patterns:
+    # Specific nginx error page markers (not generic "nginx" in body)
+    - regex: "<hr><center>nginx</center>"
+      fields: [body]
+    - regex: "you.do(not|n.t)?.have.permission.to.access.this.document"
+      fields: [body]
+confidence: low
+false_positive_risk: high
+
+# ===== signatures/nsfocus.yaml =====
+schema_version: 1
+product: NSFOCUS Web Application Firewall (NSFOCUS)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: nsfocus
+    fields: &id001
+    - body
+  - regex: nsf\.?waf
+    fields: *id001
+  - regex: x-nsf
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: nsfocus
+      fields:
+      - body
+    - regex: nsf\.?waf
+      fields:
+      - body
+    - regex: x-nsf
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/openresty.yaml =====
+schema_version: 1
+product: OpenResty WAF (OpenResty/LuaNginx)
+version: '2026.09'
+tags:
+- opensource
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: openresty
+    fields: &id001
+    - body
+    - server
+    - x-powered-by
+  - regex: lua-resty
+    fields: *id001
+  - regex: ngx_waf
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 405
+    - 406
+    patterns:
+    - regex: openresty
+      fields:
+      - server
+      - x-powered-by
+    - regex: lua-resty
+      fields:
+      - server
+      - x-powered-by
+    - regex: ngx_waf
+      fields:
+      - server
+      - x-powered-by
+confidence: medium
+
+# ===== signatures/paloalto.yaml =====
+schema_version: 1
+product: Palo Alto Firewall (Palo Alto Networks)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: has.been.blocked.in.accordance.with.company.policy
+    fields: &id001
+    - body
+  - regex: <.+>Virus.Spyware.Download.Blocked<.+.>
+    fields: *id001
+confidence: high
+
+# ===== signatures/perimx.yaml =====
+schema_version: 1
+product: Anti Bot Protection (PerimeterX)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: access.to.this.page.has.been.denied.because.we.believe.you.are.using.automation.tool
+    fields: &id001
+    - body
+  - regex: http(s)?://(www.)?perimeterx.\w+.whywasiblocked
+    fields: *id001
+  - regex: perimeterx
+    fields: *id001
+  - regex: (..)?client.perimeterx.*/[a-zA-Z]{8,15}/*.*.js
+    fields: *id001
+confidence: high
+
+# ===== signatures/pk.yaml =====
+schema_version: 1
+product: pkSecurityModule (IDS)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <.+>pkSecurityModule\W..\WSecurity.Alert<.+.>
+    fields: &id001
+    - body
+  - regex: <.+http(s)?.//([w]{3})?.kitnetwork.\w+.+>
+    fields: *id001
+  - regex: <.+>A.safety.critical.request.was.discovered.and.blocked.<.+.>
+    fields: *id001
+confidence: high
+
+# ===== signatures/powerful.yaml =====
+schema_version: 1
+product: Powerful Firewall (MyBB plugin)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: Powerful Firewall
+    fields: &id001
+    - body
+  - regex: http(s)?...tiny.cc.powerful.firewall
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: Powerful Firewall
+      fields:
+      - body
+    - regex: http(s)?...tiny.cc.powerful.firewall
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/qianxin.yaml =====
+schema_version: 1
+product: Qianxin WAF (QiAnXin/奇安信)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: qianxin
+    fields: &id001
+    - body
+  - regex: qax
+    fields: *id001
+  - regex: qianxin-waf
+    fields: *id001
+  - regex: 奇安信
+    fields: *id001
+  - regex: 天守
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 405
+    - 501
+    patterns:
+    - regex: qianxin
+      fields:
+      - body
+    - regex: qax
+      fields:
+      - body
+    - regex: qianxin-waf
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/radware.yaml =====
+schema_version: 1
+product: Radware (AppWall WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: .\bcloudwebsec.radware.com\b.
+    fields: &id001
+    - body
+  - regex: <.+>unauthorized.activity.has.been.detected<.+.>
+    fields: *id001
+  - regex: with.the.following.case.number.in.its.subject:.\d+.
+    fields: *id001
+confidence: high
+
+# ===== signatures/reblaze.yaml =====
+schema_version: 1
+product: Reblaze Web Application Firewall (Reblaze)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: reblaze
+    fields: &id001
+    - body
+    - cookie
+    - server
+    - set-cookie
+  - regex: rbzid
+    fields: *id001
+  - regex: rbz-sess
+    fields: *id001
+  contains:
+  - value: rbzid
+    field: cookie
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: reblaze
+      fields:
+      - cookie
+      - server
+      - set-cookie
+    - regex: rbzid
+      fields:
+      - cookie
+      - server
+      - set-cookie
+    - regex: rbz-sess
+      fields:
+      - cookie
+      - server
+      - set-cookie
+confidence: medium
+
+# ===== signatures/rsfirewall.yaml =====
+schema_version: 1
+product: RSFirewall (Joomla WAF)
+version: '2026.09'
+tags:
+- joomla
+detection:
+  patterns:
+  - regex: com.rsfirewall.403.forbidden
+    fields: &id001
+    - body
+  - regex: com.rsfirewall.event
+    fields: *id001
+  - regex: "(\b)?rsfirewall(\b)?"
+    fields: *id001
+  - regex: rsfirewall
+    fields: *id001
+confidence: high
+
+# ===== signatures/sabre.yaml =====
+schema_version: 1
+product: Sabre Firewall (WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: dxsupport@sabre.com
+    fields:
+    - body
+confidence: high
+
+# ===== signatures/safedog.yaml =====
+schema_version: 1
+product: SafeDog WAF (SafeDog)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  patterns:
+  - regex: (http(s)?)?(://)?(www|404|bbs|\w+)?.safedog.\w+
+    fields: &id001
+    - body
+    - x-powered-by
+  - regex: waf(.?\d+(.)?\d+)
+    fields: *id001
+tamper_hints:
+- unicode
+- keyword
+- whitespace
+confidence: high
+
+# ===== signatures/sangfor.yaml =====
+schema_version: 1
+product: Sangfor Web Application Firewall (Sangfor Technologies)
+version: '2026.09'
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: sangfor
+    fields: &id001
+    - body
+    - server
+  - regex: x-sangfor
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 405
+    patterns:
+    - regex: sangfor
+      fields:
+      - server
+    - regex: x-sangfor
+      fields:
+      - server
+confidence: medium
+
+# ===== signatures/secupress.yaml =====
+schema_version: 1
+product: SecuPress (Wordpress WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <h(\d+)?>secupress<.+.>
+    fields: &id001
+    - body
+  - regex: block.id(.)?.bad.url.contents.<.+.>
+    fields: *id001
+confidence: high
+
+# ===== signatures/securesphere.yaml =====
+schema_version: 1
+product: Imperva SecureSphere (Imperva)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <h2>error<.h2>
+    fields: &id001
+    - body
+  - regex: <title>error<.title>
+    fields: *id001
+  - regex: <b>error<.b>
+    fields: *id001
+  - regex: <td.class="(errormessage|error)".height="[0-9]{1,3}".width="[0-9]{1,3}">
+    fields: *id001
+  - regex: the.incident.id.(is|number.is).
+    fields: *id001
+  - regex: page.cannot.be.displayed
+    fields: *id001
+  - regex: contact.support.for.additional.information
+    fields: *id001
+tamper_hints:
+- encoding
+- keyword
+confidence: high
+
+# ===== signatures/shadowd.yaml =====
+schema_version: 1
+product: Shadow Daemon Opensource (WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <h\d{1}>\d{3}.forbidden<.h\d{1}>
+    fields: &id001
+    - body
+  - regex: request.forbidden.by.administrative.rules.
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: <h\d{1}>\d{3}.forbidden<.h\d{1}>
+      fields:
+      - body
+    - regex: request.forbidden.by.administrative.rules.
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/shieldsecurity.yaml =====
+schema_version: 1
+product: Shield Security
+version: '2026.09'
+detection:
+  patterns:
+  - regex: blocked.by.the.shield
+    fields: &id001
+    - body
+  - regex: transgression(\(s\))?.against.this
+    fields: *id001
+  - regex: url(.)?.form.or.cookie.data.wasn.t.appropriate
+    fields: *id001
+confidence: high
+
+# ===== signatures/signalsciences.yaml =====
+schema_version: 1
+product: Signal Sciences WAF (Fastly/Signal Sciences)
+version: '2026.09'
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: sigsci
+    fields: &id001
+    - body
+  - regex: signal sciences
+    fields: *id001
+  - regex: x-sigsci-
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 406
+    patterns:
+    - regex: sigsci
+      fields:
+      - body
+    - regex: signal sciences
+      fields:
+      - body
+    - regex: x-sigsci-
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/siteguard.yaml =====
+schema_version: 1
+product: Website Security SiteGuard (Lite)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: '>Powered.by.SiteGuard.Lite<'
+    fields: &id001
+    - body
+  - regex: refuse.to.browse
+    fields: *id001
+confidence: high
+
+# ===== signatures/sonicwall.yaml =====
+schema_version: 1
+product: SonicWALL Firewall (Dell)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: This.request.is.blocked.by.the.SonicWALL
+    fields: &id001
+    - body
+    - server
+  - regex: Dell.SonicWALL
+    fields: *id001
+  - regex: \bDell\b
+    fields: *id001
+  - regex: Web.Site.Blocked.+\bnsa.banner
+    fields: *id001
+  - regex: SonicWALL
+    fields: *id001
+  - regex: <.+>policy.this.site.is.blocked<.+.>
+    fields: *id001
+confidence: high
+
+# ===== signatures/squid.yaml =====
+schema_version: 1
+product: Squid Proxy (IDS)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: squid
+    fields: &id001
+    - body
+    - eventsquid-id
+    - server
+  - regex: Access control configuration prevents
+    fields: *id001
+  - regex: X.Squid.Error
+    fields: *id001
+confidence: high
+
+# ===== signatures/stackpath.yaml =====
+schema_version: 1
+product: Stackpath WAF (StackPath)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: action.that.triggered.the.service.and.blocked
+    fields: &id001
+    - body
+  - regex: <h2>sorry,.you.have.been.blocked(.)?<.h2>
+    fields: *id001
+confidence: high
+
+# ===== signatures/stingray.yaml =====
+schema_version: 1
+product: Stingray Application Firewall (Riverbed/Brocade)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \AX-Mapping-
+    fields:
+    - body
+    - set-cookie
+confidence: high
+
+# ===== signatures/stricthttp.yaml =====
+schema_version: 1
+product: StrictHttpFirewall (WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: the.request.was.rejected.because.the.url.contained.a.potentially.malicious.string
+    fields:
+    - body
+  status_rules:
+  - status:
+    - 500
+    patterns:
+    - regex: the.request.was.rejected.because.the.url.contained.a.potentially.malicious.string
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/sucuri.yaml =====
+schema_version: 1
+product: Sucuri Firewall (Sucuri Cloudproxy)
+version: '2026.09'
+tags:
+- cdn
+- cloud
+detection:
+  patterns:
+  - regex: access.denied.-.sucuri.website.firewall
+    fields: &id001
+    - body
+    - server
+    - x-sucuri-block
+  - regex: sucuri.webSite.firewall.-.cloudProxy.-.access.denied
+    fields: *id001
+  - regex: questions\?.+cloudproxy@sucuri\.net
+    fields: *id001
+  - regex: http(s)?.\/\/(cdn|supportx.)?sucuri(.net|com)?
+    fields: *id001
+tamper_hints:
+- encoding
+- case
+confidence: high
+
+# ===== signatures/symantecwaf.yaml =====
+schema_version: 1
+product: Symantec WAF (Symantec/Blue Coat)
+version: '2026.09'
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: symantec
+    fields: &id001
+    - body
+    - server
+  - regex: blue.coat
+    fields: *id001
+  - regex: bluecoat
+    fields: *id001
+  - regex: x-bluecoat
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: symantec
+      fields:
+      - server
+    - regex: blue.coat
+      fields:
+      - server
+    - regex: bluecoat
+      fields:
+      - server
+confidence: medium
+
+# ===== signatures/tencentwaf.yaml =====
+schema_version: 1
+product: Tencent Cloud WAF (Tencent)
+version: '2026.09'
+tags:
+- chinese
+- cloud
+detection:
+  patterns:
+  - regex: tencent
+    fields: &id001
+    - body
+    - server
+  - regex: qcloud
+    fields: *id001
+  - regex: waf\.tencent
+    fields: *id001
+  - regex: cloud\.tencent\.com
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: tencent
+      fields:
+      - server
+    - regex: qcloud
+      fields:
+      - server
+    - regex: waf\.tencent
+      fields:
+      - server
+tamper_hints:
+- encoding
+- whitespace
+confidence: medium
+
+# ===== signatures/teros.yaml =====
+schema_version: 1
+product: Teros Web Application Firewall (Citrix)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: st8(id|.wa|.wf)?(.)?(\d+|\w+)?
+    fields:
+    - body
+confidence: high
+
+# ===== signatures/tops.yaml =====
+schema_version: 1
+product: TopSec WAF (TopSec/天融信)
+version: '2026.09'
+detection:
+  match_all_headers: true
+  patterns:
+    - regex: "\\btopsec\\b"
+      fields: [body, server]
+    - regex: "\\btops\\b"
+      fields: [server]
+    - regex: "天融信"
+      fields: [body, server]
+  status_rules:
+    - status: [403, 405]
+      patterns:
+        - regex: "\\btopsec\\b"
+          fields: [server]
+        - regex: "\\btops\\b"
+          fields: [server]
+        - regex: "天融信"
+          fields: [server]
+confidence: medium
+
+# ===== signatures/uewaf.yaml =====
+schema_version: 1
+product: UEWaf (UCloud)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: http(s)?.//ucloud
+    fields: &id001
+    - body
+  - regex: uewaf(.deny.pages)
+    fields: *id001
+confidence: high
+
+# ===== signatures/unknown.yaml =====
+schema_version: 1
+product: Unknown Firewall
+version: '2026.09'
+detection:
+  # Unknown Firewall should ONLY trigger on actual block pages (4xx/5xx),
+  # never on normal 200 responses. The original plugin was designed for
+  # unidentified block pages, not generic keyword matching.
+  status_rules:
+    - status: [403, 406, 501, 999]
+      patterns:
+        - regex: "\\bblocked\\b"
+          fields: [body]
+        - regex: "\\billegal\\b"
+          fields: [body]
+        - regex: "ip.address.logged"
+          fields: [body]
+        - regex: "not.acceptable"
+          fields: [body]
+        - regex: "\\bunauthorized\\b"
+          fields: [body]
+        - regex: "request.*rejected"
+          fields: [body]
+        - regex: "\\bwaf\\b"
+          fields: [body]
+        - regex: "access.denied"
+          fields: [body]
+confidence: low
+false_positive_risk: high
+
+# ===== signatures/urlscan.yaml =====
+schema_version: 1
+product: UrlScan (Microsoft)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: rejected.by.url.scan
+    fields: &id001
+    - body
+    - location
+  - regex: /rejected.by.url.scan
+    fields: *id001
+confidence: high
+
+# ===== signatures/varnish.yaml =====
+schema_version: 1
+product: Varnish/CacheWall WAF
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \bxid. \d+
+    fields: &id001
+    - body
+    - server
+    - via
+    - x-varnish
+  - regex: varnish\Z
+    fields: *id001
+  - regex: varnish
+    fields: *id001
+  - regex: <.+>(.)?security.by.cachewall(.)?<.+.>
+    fields: *id001
+  - regex: cachewall
+    fields: *id001
+confidence: high
+
+# ===== signatures/venustech.yaml =====
+schema_version: 1
+product: Venustech WAF (Venustech/启明星辰)
+version: '2026.09'
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: venustech
+    fields: &id001
+    - body
+    - server
+  - regex: venus
+    fields: *id001
+  - regex: 启明星辰
+    fields: *id001
+  - regex: 天清
+    fields: *id001
+  - regex: tianqing
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: venustech
+      fields:
+      - server
+    - regex: venus
+      fields:
+      - server
+    - regex: 启明星辰
+      fields:
+      - server
+confidence: medium
+
+# ===== signatures/viettel.yaml =====
+schema_version: 1
+product: Viettel WAF (Cloudrity)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <title>access.denied(...)?viettel.waf</title>
+    fields: &id001
+    - body
+  - regex: viettel.waf.system
+    fields: *id001
+  - regex: (http(s).//)?cloudrity.com(.vn)?
+    fields: *id001
+confidence: high
+
+# ===== signatures/volcengine.yaml =====
+schema_version: 1
+product: Volcengine WAF (ByteDance/火山引擎)
+version: '2026.09'
+detection:
+  match_all_headers: true
+  patterns:
+  - regex: volcengine
+    fields: &id001
+    - body
+    - server
+  - regex: bytedance
+    fields: *id001
+  - regex: 火山引擎
+    fields: *id001
+  - regex: vewaf
+    fields: *id001
+  status_rules:
+  - status:
+    - 403
+    - 405
+    patterns:
+    - regex: volcengine
+      fields:
+      - server
+    - regex: bytedance
+      fields:
+      - server
+    - regex: 火山引擎
+      fields:
+      - server
+confidence: medium
+
+# ===== signatures/wallarm.yaml =====
+schema_version: 1
+product: Wallarm WAF
+version: '2026.09'
+detection:
+  patterns:
+  - regex: nginix.wallarm
+    fields:
+    - body
+    - server
+confidence: high
+
+# ===== signatures/watchguard.yaml =====
+schema_version: 1
+product: WatchGuard WAF
+version: '2026.09'
+detection:
+  patterns:
+  - regex: (request.denied.by.)?watchguard.firewall
+    fields: &id001
+    - body
+    - server
+  - regex: watchguard(.technologies(.inc)?)?
+    fields: *id001
+  contains:
+  - value: watchguard
+    field: server
+confidence: high
+
+# ===== signatures/webknight.yaml =====
+schema_version: 1
+product: WebKnight Application Firewall (AQTRONIX)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: \bwebknight
+    fields: &id001
+    - body
+    - server
+  - regex: webknight
+    fields: *id001
+  status_rules:
+  - status:
+    - 999
+    patterns:
+    - regex: \bwebknight
+      fields:
+      - server
+    - regex: webknight
+      fields:
+      - server
+confidence: medium
+
+# ===== signatures/webseal.yaml =====
+schema_version: 1
+product: IBM Security Access Manager (WebSEAL)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: webseal.error.message.template
+    fields: &id001
+    - body
+    - server
+  - regex: webseal.server.received.an.invalid.http.request
+    fields: *id001
+confidence: high
+
+# ===== signatures/west263.yaml =====
+schema_version: 1
+product: West236 Firewall
+version: '2026.09'
+detection:
+  patterns:
+  - regex: (.)?wt(\d+)?cdn(.)?
+    fields:
+    - body
+    - x-cache
+confidence: high
+
+# ===== signatures/wordfence.yaml =====
+schema_version: 1
+product: Wordfence (Feedjit)
+version: '2026.09'
+tags:
+- wordpress
+detection:
+  patterns:
+  - regex: generated.by.wordfence
+    fields: &id001
+    - body
+  - regex: your.access.to.this.site.has.been.limited
+    fields: *id001
+  - regex: <.+>wordfence<.+.>
+    fields: *id001
+tamper_hints:
+- case
+- keyword
+confidence: high
+
+# ===== signatures/wts.yaml =====
+schema_version: 1
+product: WTS-WAF (Web Application Firewall)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: (<title>)?wts.wa(f)?(\w+(\w+(\w+)?)?)?
+    fields:
+    - body
+confidence: high
+
+# ===== signatures/xuanwudun.yaml =====
+schema_version: 1
+product: Xuanwudun WAF
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <.+.class=.(db)?waf(.)?(-row.)?>
+    fields:
+    - body
+  status_rules:
+  - status:
+    - 403
+    patterns:
+    - regex: <.+.class=.(db)?waf(.)?(-row.)?>
+      fields:
+      - body
+confidence: medium
+
+# ===== signatures/yundun.yaml =====
+schema_version: 1
+product: Yundun Web Application Firewall (Yundun)
+version: '2026.09'
+tags:
+- chinese
+detection:
+  patterns:
+  - regex: YUNDUN
+    fields: &id001
+    - body
+    - server
+    - set-cookie
+    - x-cache
+  - regex: ^yd.cookie=(\w+)?
+    fields: *id001
+  - regex: http(s)?.//(www)?.(\w+)?(.)?yundun(.com)?
+    fields: *id001
+  - regex: <title>.403.forbidden:.access.is.denied(.)?.<.(.)?title>
+    fields: *id001
+  status_rules:
+  - status:
+    - 461
+    patterns:
+    - regex: YUNDUN
+      fields:
+      - server
+      - set-cookie
+      - x-cache
+    - regex: ^yd.cookie=(\w+)?
+      fields:
+      - server
+      - set-cookie
+      - x-cache
+    - regex: http(s)?.//(www)?.(\w+)?(.)?yundun(.com)?
+      fields:
+      - server
+      - set-cookie
+      - x-cache
+confidence: medium
+
+# ===== signatures/yunsuo.yaml =====
+schema_version: 1
+product: Yunsuo Web Application Firewall (Yunsuo)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: <img.class=.yunsuologo.
+    fields: &id001
+    - body
+  - regex: yunsuo.session
+    fields: *id001
+confidence: high
+
+# ===== signatures/zscaler.yaml =====
+schema_version: 1
+product: Zscaler Cloud Firewall (WAF)
+version: '2026.09'
+detection:
+  patterns:
+  - regex: zscaler(.\d+(.\d+)?)?
+    fields: &id001
+    - body
+    - server
+  - regex: zscaler
+    fields: *id001
+confidence: high
+

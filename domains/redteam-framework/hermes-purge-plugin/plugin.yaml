@@ -1,0 +1,37 @@
+name: purge
+version: 1.0.0
+manifest_version: 2
+api_version: 1
+description: 红队能力层 —— 台账（资产/漏洞/凭据/隧道/WebShell/攻击链）· 目标 preflight · 目标卡 · 报告回放 · 自检
+author: hermes-redteam
+tags: [redteam, pentest, ledger, guard]
+provides_tools:
+  - purge_status
+  - purge_roles
+  - purge_role_prompt
+  - purge_preflight
+  - purge_objective
+  - purge_report
+  - purge_scan
+  - purge_record
+provides_hooks:
+  - pre_tool_call
+  - pre_llm_call
+  - on_session_start
+config_schema:
+  guard_enabled:
+    type: bool
+    default: true
+    description: 是否启用红线闸（仅在 redteam 模式动手；normal 模式只观察）
+  block_target_in_repo:
+    type: bool
+    default: true
+    description: 是否拦截把靶名/域名/凭证写进仓库或推送
+  layer_marker:
+    type: str
+    default: ""
+    description: 加强层版本串（doctor 用它判断层有没有真的进系统提示）
+  scope_file:
+    type: str
+    default: ""
+    description: 额外目标清单文件（一行一个），可选

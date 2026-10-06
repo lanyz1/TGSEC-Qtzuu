@@ -1,0 +1,54 @@
+# This profile targets examples/vuln-ws-server.py, a deliberately injectable
+# local WebSocket login service.
+#
+#   python3 examples/vuln-ws-server.py &
+#   crackws bridge --profile examples/vuln-sqli.yaml --listen 127.0.0.1:8899
+#   sqlmap -u "http://127.0.0.1:8899/msg/login?username=admin&password=1" -p password --batch
+name: vuln-sqli-demo
+description: Deliberately injectable local WebSocket login (SQLite backend), used to demonstrate the HTTP bridge carrying sqlmap payloads
+
+target:
+  url: ws://127.0.0.1:9100/
+  timeout_ms: 10000
+
+requests:
+  - name: login
+    description: Login whose SQL is built by string concatenation
+    template: '{"type":"login","username":"{{username}}","password":"{{password}}"}'
+    params:
+      username:
+        default: admin
+        inject: true
+      password:
+        default: x
+        inject: true
+    response:
+      idle_ms: 200
+      select: first
+      accept_types: [system, error, login_success]
+
+  - name: chat
+    description: Echo endpoint
+    template: '{"type":"chat","content":"{{content}}"}'
+    params:
+      content:
+        default: hello
+        inject: true
+    response:
+      idle_ms: 200
+      select: first
+
+detect:
+  request: login
+  params: [username, password]
+
+fuzz:
+  request: chat
+  param: content
+  concurrency: 1
+  max_payloads: 120
+
+bridge:
+  default_request: login
+  raw_param: data
+  idle_ms: 200

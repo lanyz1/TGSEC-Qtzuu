@@ -1,0 +1,5 @@
+colorama>=0.4.6
+requests>=2.31.0
+urllib3>=2.0.0
+# Optional: TLS fingerprint impersonation (pip install curl_cffi)
+# curl_cffi>=0.7.0

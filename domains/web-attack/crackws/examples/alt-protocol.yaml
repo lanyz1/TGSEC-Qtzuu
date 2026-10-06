@@ -1,0 +1,67 @@
+# A profile for examples/alt-ws-server.py: a plain-text, positional-argument
+# WebSocket protocol with no JSON envelope and no type discriminator.
+#
+# Nothing here is specific to crackws internals - a profile is just a
+# description of the target, which is how the same binary drives any service.
+#
+#   python3 examples/alt-ws-server.py &
+#   crackws bridge --profile examples/alt-protocol.yaml --listen 127.0.0.1:8896 --fresh-session
+#   sqlmap -u "http://127.0.0.1:8896/msg/login?user=root&pass=1" -p pass --batch
+
+name: alt-text-protocol
+description: Plain-text positional protocol (LOGIN <user> <pass>) with no JSON envelope; demonstrates that the bridge is protocol-agnostic
+
+target:
+  url: ws://127.0.0.1:9200/
+  timeout_ms: 10000
+  # This service sends a banner line the moment the socket opens. Draining it
+  # keeps that greeting out of the first request's response.
+  settle_ms: 200
+
+requests:
+  - name: login
+    description: Space separated LOGIN command; the password keeps its spaces
+    template: 'LOGIN {{user}} {{pass}}'
+    params:
+      user:
+        default: root
+        inject: true
+      pass:
+        default: x
+        inject: true
+    response:
+      idle_ms: 150
+      select: all
+
+  - name: echo
+    description: Text echo endpoint
+    template: 'ECHO {{text}}'
+    params:
+      text:
+        default: hello
+        inject: true
+    response:
+      idle_ms: 150
+      select: all
+
+  - name: ping
+    description: Liveness probe
+    template: 'PING'
+    response:
+      idle_ms: 150
+      select: all
+
+detect:
+  request: login
+  params: [user, pass]
+
+fuzz:
+  request: echo
+  param: text
+  concurrency: 1
+  max_payloads: 100
+
+bridge:
+  default_request: login
+  raw_param: data
+  idle_ms: 150

@@ -1,5 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
+- 2026-10-06：**J 批 @cvebird 全量复核 + 最优吸收** — 1.55 万仓复核 → **30 卡入库**：WP 核心双链 **Comment2Shell(93485) / Click2Shell**（均修于 7.1.1）+ 12 CVE harness（RuoYi · sudo · 深信服 · Oracle IAM · Tomcat · 7-Zip · ColorOS · rtty · NeacSafe64 · 安卓内核 …）+ 16 工具卡（S-inject · 免杀技巧集 · 密探 · 若依扫描 · WAF 双器 · SSLKit · Fridare · 卡密靶场 …）+ Netlogon 41089 补强
 - 2026-09-30：**H 批 EQSTLab PoC 蒸馏** — 46仓库 triage → 22新PoC → **13个新技能卡**：Metabase 未授权盲注 CVSS10 · Keycloak ATO · HTTP/2 Cookie Bomb · Math.js/Handlebars/simple-git RCE · Ghost CMS SQLi · GiveWP 反序列化 · pfSense XSS→RCE · ORM JSON键注入族 · n8n 文件读→RCE · Gitea Docker 认证绕过 · LobeChat SSRF。**技能库 1028→1041**
 - 2026-09-28：**A~G 七批融合** — murrez 7CVE · 60URL→17目标（网络设备/容器逃逸/MikroTrick在野）· xishou 908 skill（技能库→1028）· fastjson2 RCE · AI-Infra-Guard 腾讯朱雀 · GPU猎杀包+SD WebUI RCE · **G 批 @ThreatWire_ CVE 差分（Citrix 88771 预认证RCE在野 · Roundcube 48842 · AcyMailing 56292 · WAC 56197 · OpenAM 18新CVE）**。**0day库 137产品/289CVE**
 - 2026-09-23：CVE 差分 · 报告.zip · 微信 · src-6k 锁面 · **cvebird 最优 9 harness（Solr/Netlogon/ActiveMQ/vBulletin/cPanel/Next-Win/OpenClaw/Docker/XWiki）**
@@ -12,11 +13,28 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：见下方 §十 融合批次（2026-09-28 A~F 批）· 上轮 [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)
+**👉 本轮更新说明：见下方 §十 融合批次（2026-10-06 J 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
 
 ---
 
-## 〇、本轮更新了什么（2026-10-02）
+## 〇、本轮更新了什么（2026-10-06）
+
+### J 批 — @cvebird 全量复核 + 最优吸收（2026-10-06）
+
+@cvebird 频道 15496 仓全量复核（全量管线 + 15 类攻击面雷达；增量 376 条逐条过目）→ **30 卡入库 + 1 补强**：
+
+**WP 核心双链（本命面缺口）**
+
+| 卡 | 内容 |
+|----|------|
+| `wordpress/CVE-2026-93485/` | **Comment2Shell**：wpautop() 预认证存储 XSS → 管理会话零点击 → 插件上传 RCE；4.7.0–7.1.0，修 7.1.1 |
+| `wordpress/CLICK2SHELL/` | **Click2Shell**（CVE pending）：theme-install 选择器注入 → 自动装主题 → 链预激活缺陷 PHP 执行；<7.1.1 |
+
+**12 CVE harness**：RuoYi 57521 · NeacSafe64 45737 · sudo 32463 · 深信服 12916 · Oracle IAM 61757 · Tomcat 55752 · 7-Zip 0411 · ColorOS 10184 · rtty 56708/9 · 酒店SQLi 14762 · ROS# 41551 · 安卓内核 43499（KernelSU）
+**16 工具卡**：S-inject · av-evasion-skills V5.2 · dotnet-memshell · Ruoyi-Scan · jsowl · 密探MCP · ai_bobao · llm-armor-tester · crackws · WAF双器 · FirmAudit2 · SSLKit · Fridare · PatchDLL · 卡密靶场 · Hermes红队插件
+**补强**：Netlogon 41089 +0xABCD01 harness。**已确认在库**：wp2shell(63030/60137) · XSS2Shell(64638) · 87902。
+
+完整清单 → [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
 
 ### I 批 — @Zerodaylabowner (Zer0DAY Lab) 吸收（2026-10-02）
 
@@ -349,6 +367,12 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ## 十、融合批次
 
+### 2026-10-06
+
+完整说明：`domains/0day-exploits/INGEST-20261006B-CVEBIRD.md`（J 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
+
+- **J 批 — @cvebird 全量复核 + 最优吸收**：775 页 / 15498 条 / 15496 仓全量重扫（增量 376 条逐条 + 15 类攻击面雷达）。**30 卡**：WP 双链（Comment2Shell/Click2Shell）+ 12 CVE harness + 16 工具卡；Netlogon 41089 补第二 harness。SKIP：ZapcoMan 工具族 · Nacos 工具 ×3 · 重复 87902 toolkit · 0xsha wp2shell · 尾部 400+ slop。
+
 ### 2026-09-28
 
 完整说明：`domains/0day-exploits/INGEST-20260928-INDEX.md`（A 批）· `INGEST-20260928B-INDEX.md`（B 批）· `INGEST-20260928D-INDEX.md`（G 批）
@@ -445,7 +469,7 @@ cd ~/security-suite && git pull
 bash scripts/bootstrap.sh --force    # 或 sync-agent-skills / sync-hermes-skills
 ```
 
-**更新说明文件：** 根目录 `UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md)）。自述首页「〇、本轮更新了什么」+ 第十节融合批次同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
+**更新说明文件：** 根目录 `UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)）。自述首页「〇、本轮更新了什么」+ 第十节融合批次同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
 
 ---
 

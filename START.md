@@ -1,5 +1,6 @@
 # 小白从这里开始（3 步）
 
+- 2026-10-06：**K 批 X 博主四账号吸收** — OOBdump FR30（objdump 零泄漏单发链）+ Mozilla VPN RCE($6k) + GraphQL→ES Painless($7k) + App Insights 连接串链 + CodeIgniter 空 where 绕过 + 盲 RCE sleep 预言机（6 卡+2 补强）。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
 - 2026-10-06：**J 批 @cvebird 全量复核+最优吸收** — 30 卡入库：WP 核心双链（Comment2Shell / Click2Shell，修于 7.1.1）+ 12 CVE harness + 16 工具卡。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
 - 2026-09-30：**H 批 EQSTLab PoC 蒸馏** — 13个新技能卡（Metabase CVSS10盲注 · Keycloak ATO · HTTP/2 Bomb · Math.js/Handlebars/simple-git RCE · Ghost SQLi · GiveWP反序列化 · pfSense XSS→RCE · ORM注入族 · n8n RCE · Gitea绕过 · LobeChat SSRF）+ LFI emoji/多阶段编码/截断绕过补强。**技能库→1041**
 - 2026-09-28：**G 批 @ThreatWire_ CVE 差分** — Citrix NetScaler **88771** 预认证RCE在野 · Roundcube **48842** · AcyMailing **56292** · WAC **56197** · OpenAM **18新CVE**。A~F 批见下方
@@ -9,10 +10,11 @@
 这是 **TGSEC 安全知识聚合库**：按攻击面整理的授权渗透 / 挖洞资料 + 伞形技能路由 + 工具/PoC/字典入口。  
 给 **AI 和人**一起用（Grok / Claude / Cursor / Hermes / Codex…）。
 
-**规模体感：** 24 个主题域 · `domains/` 约 **14000+** 文件 · 14 个伞形技能 · **62** 实战课 · 80+ 工具清单。
+**规模体感：** 24 个主题域 · `domains/` 约 **23000+** 文件 · 14 个伞形技能 · **62** 实战课 · 80+ 工具清单。
 
 **本轮更新（2026-10-06）：**  
 **J 批（@cvebird 全量复核 + 最优吸收）** — 1.55 万仓复核；30 张卡：WP 核心双链 **Comment2Shell(93485)** / **Click2Shell**（修于 7.1.1）+ 12 CVE harness（RuoYi 57521 · sudo 32463 · 深信服 12916 · Oracle IAM 61757 · Tomcat 55752 · NeacSafe64 45737 · ColorOS 10184 · rtty 56708/9 · 安卓内核 43499 …）+ 16 工具卡（S-inject · av-evasion · Ruoyi-Scan · jsowl · 密探 · WAF双器 · crackws · SSLKit · Fridare · FirmAudit2 · PatchDLL · 卡密靶场 …）。Netlogon 41089 补第二 harness；wp2shell/XSS2Shell/87902 已在库。  
+**K 批（X 博主四账号吸收）** — @luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（objdump 零泄漏单发穿 ASLR/PIE/堆硬化，官方 PoC 收录）· Mozilla VPN RCE（$6k）· GraphQL→ES Painless（$7k）· App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；补强：文件名绕过 V2（14 变体）/ Cuneiform payload。  
 **I 批（@Zerodaylabowner X+TG 吸收）** — 3 新手法卡 + 1 payload 补强：SQLi 三步探型（200→500→200）→ATO（`web-injection/case-lessons/`）· 双 Content-Type 解析分歧（`api-security/case-lessons/`）· traversal 4 变体（`%2%35%32F` 双编码劈开 / `e../tc..` 段内插点 / `/./` 规范化差异 / 尾部自引用，补 `torch-wiki/payloads/lfi-path-traversal.md`）。抓取留痕 `cases/zerodaylab/DIGEST.md`（syndication 429，70 条未拿）。  
 **0day C 批（xishou 全量技能蒸馏，908 个新 skill）** — 三波融合：Wave1 乱码测绘引擎 skills(673) + Wave2 Pentest-Skills-Merged 差量(235) + Wave3 72stack-sec(3192 文件/45MB/2836 H1 报告/88636 WooYun/19 playbook/305+176 payload)。**技能库 113→1022（security 类 958）**。新增 `hunt-*`(70+)·`offensive-*`(60+)·专项渗透(200+)·基础能力(150+)·侦察报告(40+)。  
 **0day A 批（murrez 独立仓）** — 7 CVE 全 MISS 全融：Citrix NetScaler **88772**（DTLS 内存溢出，**已在野利用**）· Joomla UP **97163/97160/97161** · AcyMailing **94132** · WP Ultra Addons CF7 **82901** · WP Bookly **93399**。**Joomla 产品线全新**。  
@@ -156,6 +158,7 @@ bash scripts/sync-hermes-skills.sh
 
 ### 最近融了啥
 
+**2026-10-06（K 批）：** X 博主四账号吸收 — OOBdump FR30 · Mozilla VPN RCE($6k) · GraphQL→ES Painless($7k) · App Insights · CodeIgniter · 盲 RCE 预言机（6 卡 + 2 补强）。  
 **2026-10-06：** J 批 @cvebird 全量复核+最优吸收 — WP Comment2Shell/Click2Shell 双王卡 + 12 CVE harness + 16 工具卡（30 卡入库，+225 文件）。  
 **2026-10-02：** I 批 @Zerodaylabowner（X+TG）— SQLi 三步探型→ATO / 双 Content-Type 解析分歧 / traversal 4 变体（%2%35%32F 双编码劈开、段内插点）。3 新卡 + 1 payload 补强。  
 **2026-09-28：** A 批 murrez 7 CVE — **Joomla 产品线全新**。B 批 60 URL → 17 目标（网络设备线/容器逃逸/MikroTrick 在野）。C 批 xishou 908 skill（技能库 113→1022）。D 批 fastjson2 ≤2.0.62 RCE（FNV-1a 碰撞绕 AutoType）。E 批 AI-Infra-Guard 腾讯朱雀（151 指纹+132 漏洞规则+15 MCP+17 eval）。F 批 GPU 猎杀包 5 skill + SD WebUI RCE skill。**技能库最终 1028，0day 库 258 产品/264 CVE**。  
@@ -193,7 +196,7 @@ cd ~/security-suite && git pull && bash scripts/sync-agent-skills.sh
 
 ## 还是懵？只记四件事
 
-1. **资料都在 `domains/`**（按攻击类型分好了，约 5500+ 文件）  
+1. **资料都在 `domains/`**（按攻击类型分好了，约 23000+ 文件）  
 2. **地图是 `MASTER.md` 和 `ROUTING.md`**  
 3. **先让 AI 读这几个 md，再按技能矩阵 load，再动手**  
 4. **要跑工具：`scripts/check-tools.sh`；要 PoC：`0day-exploits/`**

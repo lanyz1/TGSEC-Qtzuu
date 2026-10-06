@@ -1,5 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
+- 2026-10-06：**K 批 X 博主吸收** — @luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（零泄漏单发穿 ASLR/PIE/堆硬化）· Mozilla VPN RCE（$6k）· GraphQL→ES Painless（$7k）· App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；文件名绕过 V2 / Cuneiform payload。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
 - 2026-10-06：**J 批 @cvebird 全量复核 + 最优吸收** — 1.55 万仓复核 → **30 卡入库**：WP 核心双链 **Comment2Shell(93485) / Click2Shell**（均修于 7.1.1）+ 12 CVE harness（RuoYi · sudo · 深信服 · Oracle IAM · Tomcat · 7-Zip · ColorOS · rtty · NeacSafe64 · 安卓内核 …）+ 16 工具卡（S-inject · 免杀技巧集 · 密探 · 若依扫描 · WAF 双器 · SSLKit · Fridare · 卡密靶场 …）+ Netlogon 41089 补强
 - 2026-09-30：**H 批 EQSTLab PoC 蒸馏** — 46仓库 triage → 22新PoC → **13个新技能卡**：Metabase 未授权盲注 CVSS10 · Keycloak ATO · HTTP/2 Cookie Bomb · Math.js/Handlebars/simple-git RCE · Ghost CMS SQLi · GiveWP 反序列化 · pfSense XSS→RCE · ORM JSON键注入族 · n8n 文件读→RCE · Gitea Docker 认证绕过 · LobeChat SSRF。**技能库 1028→1041**
 - 2026-09-28：**A~G 七批融合** — murrez 7CVE · 60URL→17目标（网络设备/容器逃逸/MikroTrick在野）· xishou 908 skill（技能库→1028）· fastjson2 RCE · AI-Infra-Guard 腾讯朱雀 · GPU猎杀包+SD WebUI RCE · **G 批 @ThreatWire_ CVE 差分（Citrix 88771 预认证RCE在野 · Roundcube 48842 · AcyMailing 56292 · WAC 56197 · OpenAM 18新CVE）**。**0day库 137产品/289CVE**
@@ -13,11 +14,28 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：见下方 §十 融合批次（2026-10-06 J 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
+**👉 本轮更新说明：见下方 §十 融合批次（2026-10-06 J+K 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
 
 ---
 
 ## 〇、本轮更新了什么（2026-10-06）
+
+### K 批 — X 博主四账号吸收（2026-10-06）
+
+**@luckyhacker43 · @Zerodaylabowner · @ethical_h4ck3r_ · @n0aziXss** 近期帖全量评估 → **6 卡 + 2 补强**：
+
+| 卡 | 内容 |
+|----|------|
+| `0day-exploits/binutils-objdump/exploitarium/oobdump-fr30/` | **OOBdump**：objdump -g FR30 重定位缺检查 → 零泄漏单发链 → `system()`（Calif；官方 PoC 收录） |
+| `0day-exploits/mozilla-vpn/H1-2995025/` | Mozilla VPN Clients RCE：`live_reload` 路径穿越 → 任意文件写（$6,000；已修复） |
+| `api-security/case-lessons/graphql-sort-to-es-painless.md` | GraphQL `sort_query` → ES Painless 注入（H1 #3694007 · $7,000） |
+| `recon/case-lessons/appinsights-js-connection-string.md` | Azure App Insights 连接串 JS 泄漏 → 遥测测绘/投毒 |
+| `web-injection/case-lessons/codeigniter-empty-where-bypass.md` | CodeIgniter 空 where 认证绕过 + JSON 键名 SQLi |
+| `web-injection/case-lessons/blind-rce-char-oracle.md` | 盲 RCE 自适应 sleep 字符预言机 |
+
+**补强**：文件上传扩展名绕过 V2（14 变体）· Cuneiform（楔形文字）XSS 绕过。**SKIP**：CVE-2026-23111（已在库）· 开放重定向（已覆盖）· @n0aziXss（学习号）。
+
+完整清单 → [`domains/0day-exploits/INGEST-20261006C-XBLOGGERS.md`](domains/0day-exploits/INGEST-20261006C-XBLOGGERS.md)
 
 ### J 批 — @cvebird 全量复核 + 最优吸收（2026-10-06）
 
@@ -126,7 +144,7 @@ CASE-INDEX 课 **62**。私有 Skill（`82vip-ll-center-pentest` / `kylin-worldp
 **规模（以本机 `domains/` 实计，2026-09-10 融合后）：**
 
 - **24** 个主题域
-- **约 14000+** 文件（`domains/` 正文；含 poc-catalog 全量；以 `find domains -type f | wc -l` 为准）
+- **约 23000+** 文件（`domains/` 正文；含 poc-catalog 全量；以 `find domains -type f | wc -l` 为准）
 - **14** 个伞形技能入口（`hermes-skills/` → 可 sync 到 Claude/Cursor/Hermes/…）
 - **80+** 工具清单（`scripts/tools-manifest.json` + `check-tools.sh` / `install-tools.sh`）
 
@@ -369,7 +387,9 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ### 2026-10-06
 
-完整说明：`domains/0day-exploits/INGEST-20261006B-CVEBIRD.md`（J 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
+- **K 批 — X 博主四账号吸收**：@luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（objdump 零泄漏单发链 + 官方 PoC）· Mozilla VPN RCE($6k) · GraphQL→ES Painless($7k) · App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；文件名绕过 V2（14 变体）/ Cuneiform payload。SKIP：23111（已在库）· 开放重定向（已覆盖）· @n0aziXss（学习号）。
+
+完整说明：`domains/0day-exploits/INGEST-20261006B-CVEBIRD.md`（J 批） · [`INGEST-20261006C-XBLOGGERS.md`](domains/0day-exploits/INGEST-20261006C-XBLOGGERS.md)（K 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
 
 - **J 批 — @cvebird 全量复核 + 最优吸收**：775 页 / 15498 条 / 15496 仓全量重扫（增量 376 条逐条 + 15 类攻击面雷达）。**30 卡**：WP 双链（Comment2Shell/Click2Shell）+ 12 CVE harness + 16 工具卡；Netlogon 41089 补第二 harness。SKIP：ZapcoMan 工具族 · Nacos 工具 ×3 · 重复 87902 toolkit · 0xsha wp2shell · 尾部 400+ slop。
 

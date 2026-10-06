@@ -1,8 +1,8 @@
 # 小白从这里开始（3 步）
 
-- 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → 14 案：r4z.lol 帝国 ROOT · GVA→AWS 账号级 · SUNNIC 杀猪盘 · kachiho 密码预言机 · PrimeTools · Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 报告目录）。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
-- 2026-10-06：**K 批 X 博主四账号吸收** — OOBdump FR30（objdump 零泄漏单发链）+ Mozilla VPN RCE($6k) + GraphQL→ES Painless($7k) + App Insights 连接串链 + CodeIgniter 空 where 绕过 + 盲 RCE sleep 预言机（6 卡+2 补强）。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
-- 2026-10-06：**J 批 @cvebird 全量复核+最优吸收** — 30 卡入库：WP 核心双链（Comment2Shell / Click2Shell，修于 7.1.1）+ 12 CVE harness + 16 工具卡。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
+- 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → 14 案：r4z.lol 帝国 ROOT · GVA→AWS 账号级 · SUNNIC 杀猪盘 · kachiho 密码预言机 · PrimeTools · Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 报告目录）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
+- 2026-10-06：**K 批 X 博主四账号吸收** — OOBdump FR30（objdump 零泄漏单发链）+ Mozilla VPN RCE($6k) + GraphQL→ES Painless($7k) + App Insights 连接串链 + CodeIgniter 空 where 绕过 + 盲 RCE sleep 预言机（6 卡+2 补强）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
+- 2026-10-06：**J 批 @cvebird 全量复核+最优吸收** — 30 卡入库：WP 核心双链（Comment2Shell / Click2Shell，修于 7.1.1）+ 12 CVE harness + 16 工具卡。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
 - 2026-09-30：**H 批 EQSTLab PoC 蒸馏** — 13个新技能卡（Metabase CVSS10盲注 · Keycloak ATO · HTTP/2 Bomb · Math.js/Handlebars/simple-git RCE · Ghost SQLi · GiveWP反序列化 · pfSense XSS→RCE · ORM注入族 · n8n RCE · Gitea绕过 · LobeChat SSRF）+ LFI emoji/多阶段编码/截断绕过补强。**技能库→1041**
 - 2026-09-28：**G 批 @ThreatWire_ CVE 差分** — Citrix NetScaler **88771** 预认证RCE在野 · Roundcube **48842** · AcyMailing **56292** · WAC **56197** · OpenAM **18新CVE**。A~F 批见下方
 
@@ -31,7 +31,7 @@
 **0day** — V8 可跑 harness；独立仓 23b–e（WP Core / Zabbix / RustyTux / Forminator / macOS LPE / copyfail-rs PAM…）；**@cvebird 对照 1.3 万仓后只融 9 条真缺口**（Solr / Netlogon / ActiveMQ / vBulletin / cPanel parking / Next-Win / OpenClaw / Docker 2375 / XWiki）。SecureWithUmer stub **整仓不吸**。  
 **锁面（禁止自动打同网段不相干站）** — 点名 URL 的 **A 记录 IP** 才算同机；同 /24 另一 IP **不是同机**，不能当主线。旁端口同 IP 可以打。用户没说「打邻机 / 横向」禁止自己切站。写在 `pentest-execution` §0。  
 **微信 / 报告.zip** — 2FA+glob 补旧卡；82vip / Kylin 课。loot 不入库。  
-完整说明 → [`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md) · 融合批次见 README **第十节**。
+完整说明 → [`UPDATE-2026-09-23.md`](docs/updates/UPDATE-2026-09-23.md) · 融合批次见 README **第十节**。
 
 ---
 
@@ -170,7 +170,7 @@ bash scripts/sync-hermes-skills.sh
 **2026-09-20：** CASE-INDEX 闸门 · sinian 114 迁 `_vendor` · 712win3 课。  
 **2026-09-11：** 专项技能（不设限/钓鱼/OPSEC）· Claude Code=`pentest-redteam` 开打。  
 **2026-09-10：** 运行时闸门 · n8n/AD/K8s/Copy-Fail · **POC 全量目录**。  
-详见 `README.md` **第十节（融合批次）** · [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)。
+详见 `README.md` **第十节（融合批次）** · [`UPDATE-2026-10-06.md`](docs/updates/UPDATE-2026-10-06.md)。
 
 ### 工具不够？
 
@@ -193,7 +193,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\sync-agent-skills.ps1
 cd ~/security-suite && git pull && bash scripts/sync-agent-skills.sh
 ```
 
-看「这次更新了啥」：打开根目录最新的 `UPDATE-*.md`（现在是 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)）。
+看「这次更新了啥」：打开 `docs/updates/` 里最新的 `UPDATE-*.md`（现在是 [`UPDATE-2026-10-06.md`](docs/updates/UPDATE-2026-10-06.md)）。
 
 ---
 

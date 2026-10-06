@@ -1,7 +1,7 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
-- 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → **14 案**：r4z.lol 帝国 ROOT（BillionMail→iptables→chroot host_root）· 包网 GVA→AWS 账号级（EC2 Instance Connect ×28）· SUNNIC 杀猪盘（审核流 CSRF）· kachiho 密码预言机 · PrimeTools（EIP-7702 Vault）· Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 案卷）。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
-- 2026-10-06：**K 批 X 博主吸收** — @luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（零泄漏单发穿 ASLR/PIE/堆硬化）· Mozilla VPN RCE（$6k）· GraphQL→ES Painless（$7k）· App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；文件名绕过 V2 / Cuneiform payload。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
+- 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → **14 案**：r4z.lol 帝国 ROOT（BillionMail→iptables→chroot host_root）· 包网 GVA→AWS 账号级（EC2 Instance Connect ×28）· SUNNIC 杀猪盘（审核流 CSRF）· kachiho 密码预言机 · PrimeTools（EIP-7702 Vault）· Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 案卷）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
+- 2026-10-06：**K 批 X 博主吸收** — @luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（零泄漏单发穿 ASLR/PIE/堆硬化）· Mozilla VPN RCE（$6k）· GraphQL→ES Painless（$7k）· App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；文件名绕过 V2 / Cuneiform payload。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
 - 2026-10-06：**J 批 @cvebird 全量复核 + 最优吸收** — 1.55 万仓复核 → **30 卡入库**：WP 核心双链 **Comment2Shell(93485) / Click2Shell**（均修于 7.1.1）+ 12 CVE harness（RuoYi · sudo · 深信服 · Oracle IAM · Tomcat · 7-Zip · ColorOS · rtty · NeacSafe64 · 安卓内核 …）+ 16 工具卡（S-inject · 免杀技巧集 · 密探 · 若依扫描 · WAF 双器 · SSLKit · Fridare · 卡密靶场 …）+ Netlogon 41089 补强
 - 2026-09-30：**H 批 EQSTLab PoC 蒸馏** — 46仓库 triage → 22新PoC → **13个新技能卡**：Metabase 未授权盲注 CVSS10 · Keycloak ATO · HTTP/2 Cookie Bomb · Math.js/Handlebars/simple-git RCE · Ghost CMS SQLi · GiveWP 反序列化 · pfSense XSS→RCE · ORM JSON键注入族 · n8n 文件读→RCE · Gitea Docker 认证绕过 · LobeChat SSRF。**技能库 1028→1041**
 - 2026-09-28：**A~G 七批融合** — murrez 7CVE · 60URL→17目标（网络设备/容器逃逸/MikroTrick在野）· xishou 908 skill（技能库→1028）· fastjson2 RCE · AI-Infra-Guard 腾讯朱雀 · GPU猎杀包+SD WebUI RCE · **G 批 @ThreatWire_ CVE 差分（Citrix 88771 预认证RCE在野 · Roundcube 48842 · AcyMailing 56292 · WAC 56197 · OpenAM 18新CVE）**。**0day库 137产品/289CVE**
@@ -15,7 +15,7 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：见下方 §十 融合批次（2026-10-06 J+K+L 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
+**👉 本轮更新说明：见下方 §十 融合批次（2026-10-06 J+K+L 批）· 详情 [`UPDATE-2026-10-06.md`](docs/updates/UPDATE-2026-10-06.md)
 
 ---
 
@@ -71,7 +71,7 @@
 **16 工具卡**：S-inject · av-evasion-skills V5.2 · dotnet-memshell · Ruoyi-Scan · jsowl · 密探MCP · ai_bobao · llm-armor-tester · crackws · WAF双器 · FirmAudit2 · SSLKit · Fridare · PatchDLL · 卡密靶场 · Hermes红队插件
 **补强**：Netlogon 41089 +0xABCD01 harness。**已确认在库**：wp2shell(63030/60137) · XSS2Shell(64638) · 87902。
 
-完整清单 → [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
+完整清单 → [`UPDATE-2026-10-06.md`](docs/updates/UPDATE-2026-10-06.md)
 
 ### I 批 — @Zerodaylabowner (Zer0DAY Lab) 吸收（2026-10-02）
 
@@ -143,7 +143,7 @@ X 账号 + TG 频道 triage，10 条内容评估 → **3 个新手法卡 + 1 个
 
 CASE-INDEX 课 **62**。私有 Skill（`82vip-ll-center-pentest` / `kylin-worldpay-ucard-pentest`）在本机 Hermes，不强制进 git。
 
-上一轮（2026-09-22）报告吸收硬门 / UU·DarkSword·BMS·ChatNet 见 [`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)。
+上一轮（2026-09-22）报告吸收硬门 / UU·DarkSword·BMS·ChatNet 见 [`UPDATE-2026-09-22.md`](docs/updates/UPDATE-2026-09-22.md)。
 
 `git pull` 后记得再跑 `bash scripts/bootstrap.sh --force`（或 `sync-agent-skills.sh`），技能目录才会跟上。
 
@@ -410,7 +410,7 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 - **K 批 — X 博主四账号吸收**：@luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（objdump 零泄漏单发链 + 官方 PoC）· Mozilla VPN RCE($6k) · GraphQL→ES Painless($7k) · App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；文件名绕过 V2（14 变体）/ Cuneiform payload。SKIP：23111（已在库）· 开放重定向（已覆盖）· @n0aziXss（学习号）。
 
-完整说明：`domains/0day-exploits/INGEST-20261006B-CVEBIRD.md`（J 批） · [`INGEST-20261006C-XBLOGGERS.md`](domains/0day-exploits/INGEST-20261006C-XBLOGGERS.md)（K 批）· [`INGEST-20261006D-REPORTZIP.md`](domains/0day-exploits/INGEST-20261006D-REPORTZIP.md)（L 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
+完整说明：`domains/0day-exploits/INGEST-20261006B-CVEBIRD.md`（J 批） · [`INGEST-20261006C-XBLOGGERS.md`](domains/0day-exploits/INGEST-20261006C-XBLOGGERS.md)（K 批）· [`INGEST-20261006D-REPORTZIP.md`](domains/0day-exploits/INGEST-20261006D-REPORTZIP.md)（L 批）· 详情 [`UPDATE-2026-10-06.md`](docs/updates/UPDATE-2026-10-06.md)
 
 - **J 批 — @cvebird 全量复核 + 最优吸收**：775 页 / 15498 条 / 15496 仓全量重扫（增量 376 条逐条 + 15 类攻击面雷达）。**30 卡**：WP 双链（Comment2Shell/Click2Shell）+ 12 CVE harness + 16 工具卡；Netlogon 41089 补第二 harness。SKIP：ZapcoMan 工具族 · Nacos 工具 ×3 · 重复 87902 toolkit · 0xsha wp2shell · 尾部 400+ slop。
 
@@ -432,7 +432,7 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ### 2026-09-23
 
-完整说明：[`UPDATE-2026-09-23.md`](UPDATE-2026-09-23.md) · 0day 账本：`INGEST-20260923{,-B,-C,-D,-E,-F-CVEBIRD,-G-CVEBIRD}-INDEX.md` · src-6k：[`domains/INGEST-20260923-SRC6K.md`](domains/INGEST-20260923-SRC6K.md)
+完整说明：[`UPDATE-2026-09-23.md`](docs/updates/UPDATE-2026-09-23.md) · 0day 账本：`INGEST-20260923{,-B,-C,-D,-E,-F-CVEBIRD,-G-CVEBIRD}-INDEX.md` · src-6k：[`domains/INGEST-20260923-SRC6K.md`](domains/INGEST-20260923-SRC6K.md)
 
 - **0day 最优差分（不整仓吸聚合仓）**：V8 85046/87491 可跑 harness；PaperCut/Cisco SEG/Win 只写 KEV 分析卡。独立仓 23b–e：WP Core 87902、Zabbix、SGLang、Cisco FMC、PeopleSoft、RustyTux、Forminator 92229、macOS DesktopServicesHelper 43783、copyfail-rs PAM、sergiointel 建超管。USBPrint 32223 从 `ghost-cms/` 搬到 `windows-usbprint/`。SecureWithUmer INDEX 142 条抽样 stub → **整仓 SKIP**
 - **@cvebird**：Telethon 15178 条 / 13491 仓对照后只融 9 harness（Solr 22444 · Netlogon 41089 · ActiveMQ 42588 · vBulletin 61511 · cPanel 65643 · Next-Win 75604 · OpenClaw 28466 · Docker 9074 · XWiki 24893）。exe / 电商整站 / 空 submodule / 404 **不进**
@@ -441,7 +441,7 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ### 2026-09-22
 
-完整说明：[`UPDATE-2026-09-22.md`](UPDATE-2026-09-22.md)
+完整说明：[`UPDATE-2026-09-22.md`](docs/updates/UPDATE-2026-09-22.md)
 
 - 报告吸收硬门：未覆盖栈开 Skill；UU / iM / DarkSword / BMS / ChatNet / RuoYi-Plus 课
 
@@ -460,7 +460,7 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ### 2026-09-17
 
-完整说明：[`UPDATE-2026-09-17.md`](UPDATE-2026-09-17.md)
+完整说明：[`UPDATE-2026-09-17.md`](docs/updates/UPDATE-2026-09-17.md)
 
 - **CVE/PoC 批次 A–D** → `domains/0day-exploits/`：批次 D 差分吸收 SecureWithUmer（69）+ XZ1r0（64）+ zulloper（25）；库内 `CVE-*` 目录约 **200+**；HARD 投毒跳过、SOFT 标注后仍融
 - **方法论**：Qtzuu-pentest-toolbox → `pentest-redteam` technique **7→22**（多 AI 技能目录同步）；web-security-skills（猎洞十二技）散入各域 `src-methods/hunter12-*`
@@ -510,7 +510,7 @@ cd ~/security-suite && git pull
 bash scripts/bootstrap.sh --force    # 或 sync-agent-skills / sync-hermes-skills
 ```
 
-**更新说明文件：** 根目录 `UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)）。自述首页「〇、本轮更新了什么」+ 第十节融合批次同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
+**更新说明文件：** `docs/updates/UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-10-06.md`](docs/updates/UPDATE-2026-10-06.md)）。自述首页「〇、本轮更新了什么」+ 第十节融合批次同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
 
 ---
 

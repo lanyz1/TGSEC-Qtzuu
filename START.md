@@ -1,5 +1,6 @@
 # 小白从这里开始（3 步）
 
+- 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → 14 案：r4z.lol 帝国 ROOT · GVA→AWS 账号级 · SUNNIC 杀猪盘 · kachiho 密码预言机 · PrimeTools · Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 报告目录）。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
 - 2026-10-06：**K 批 X 博主四账号吸收** — OOBdump FR30（objdump 零泄漏单发链）+ Mozilla VPN RCE($6k) + GraphQL→ES Painless($7k) + App Insights 连接串链 + CodeIgniter 空 where 绕过 + 盲 RCE sleep 预言机（6 卡+2 补强）。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
 - 2026-10-06：**J 批 @cvebird 全量复核+最优吸收** — 30 卡入库：WP 核心双链（Comment2Shell / Click2Shell，修于 7.1.1）+ 12 CVE harness + 16 工具卡。详见 [UPDATE-2026-10-06.md](UPDATE-2026-10-06.md)
 - 2026-09-30：**H 批 EQSTLab PoC 蒸馏** — 13个新技能卡（Metabase CVSS10盲注 · Keycloak ATO · HTTP/2 Bomb · Math.js/Handlebars/simple-git RCE · Ghost SQLi · GiveWP反序列化 · pfSense XSS→RCE · ORM注入族 · n8n RCE · Gitea绕过 · LobeChat SSRF）+ LFI emoji/多阶段编码/截断绕过补强。**技能库→1041**
@@ -10,9 +11,10 @@
 这是 **TGSEC 安全知识聚合库**：按攻击面整理的授权渗透 / 挖洞资料 + 伞形技能路由 + 工具/PoC/字典入口。  
 给 **AI 和人**一起用（Grok / Claude / Cursor / Hermes / Codex…）。
 
-**规模体感：** 24 个主题域 · `domains/` 约 **23000+** 文件 · 14 个伞形技能 · **62** 实战课 · 80+ 工具清单。
+**规模体感：** 24 个主题域 · `domains/` 约 **23000+** 文件 · 14 个伞形技能 · **95** 实战课 · 80+ 工具清单。
 
 **本轮更新（2026-10-06）：**  
+**L 批（报告包吸收 · `报告.zip`）** — 舰队 19 报告 → **14 案 + 22 课**：r4z.lol 犯罪帝国 ROOT（BillionMail Docker API→iptables→chroot host_root）· 包网 GVA→AWS 账号级接管（EC2 Instance Connect ×28 台）· SUNNIC 杀猪盘 SaaS（审核流 CSRF）· kachiho 密码预言机批量 ATO · PrimeTools（EIP-7702 Vault + 私钥 12 面搜查）· Coruna-Lab WAF 重放语义测穿 · 143 TG 农场（36-40 套）· skyscrm/TGAI/ty28/onechat/独角数卡/盗U链 … · GPU 对手 MINER-HUNTER 解剖。凭据文件/loot 原始数据不入库。  
 **J 批（@cvebird 全量复核 + 最优吸收）** — 1.55 万仓复核；30 张卡：WP 核心双链 **Comment2Shell(93485)** / **Click2Shell**（修于 7.1.1）+ 12 CVE harness（RuoYi 57521 · sudo 32463 · 深信服 12916 · Oracle IAM 61757 · Tomcat 55752 · NeacSafe64 45737 · ColorOS 10184 · rtty 56708/9 · 安卓内核 43499 …）+ 16 工具卡（S-inject · av-evasion · Ruoyi-Scan · jsowl · 密探 · WAF双器 · crackws · SSLKit · Fridare · FirmAudit2 · PatchDLL · 卡密靶场 …）。Netlogon 41089 补第二 harness；wp2shell/XSS2Shell/87902 已在库。  
 **K 批（X 博主四账号吸收）** — @luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（objdump 零泄漏单发穿 ASLR/PIE/堆硬化，官方 PoC 收录）· Mozilla VPN RCE（$6k）· GraphQL→ES Painless（$7k）· App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；补强：文件名绕过 V2（14 变体）/ Cuneiform payload。  
 **I 批（@Zerodaylabowner X+TG 吸收）** — 3 新手法卡 + 1 payload 补强：SQLi 三步探型（200→500→200）→ATO（`web-injection/case-lessons/`）· 双 Content-Type 解析分歧（`api-security/case-lessons/`）· traversal 4 变体（`%2%35%32F` 双编码劈开 / `e../tc..` 段内插点 / `/./` 规范化差异 / 尾部自引用，补 `torch-wiki/payloads/lfi-path-traversal.md`）。抓取留痕 `cases/zerodaylab/DIGEST.md`（syndication 429，70 条未拿）。  
@@ -158,6 +160,7 @@ bash scripts/sync-hermes-skills.sh
 
 ### 最近融了啥
 
+**2026-10-06（L 批）：** 报告包（报告.zip）舰队报告吸收 — 14 案：r4z.lol 帝国 · GVA→AWS · SUNNIC · kachiho 预言机 · PrimeTools · Coruna-Lab · 143 农场 · MINER-HUNTER（22 课 + 18 目录）。  
 **2026-10-06（K 批）：** X 博主四账号吸收 — OOBdump FR30 · Mozilla VPN RCE($6k) · GraphQL→ES Painless($7k) · App Insights · CodeIgniter · 盲 RCE 预言机（6 卡 + 2 补强）。  
 **2026-10-06：** J 批 @cvebird 全量复核+最优吸收 — WP Comment2Shell/Click2Shell 双王卡 + 12 CVE harness + 16 工具卡（30 卡入库，+225 文件）。  
 **2026-10-02：** I 批 @Zerodaylabowner（X+TG）— SQLi 三步探型→ATO / 双 Content-Type 解析分歧 / traversal 4 变体（%2%35%32F 双编码劈开、段内插点）。3 新卡 + 1 payload 补强。  

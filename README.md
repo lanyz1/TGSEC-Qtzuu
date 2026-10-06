@@ -14,11 +14,29 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：见下方 §十 融合批次（2026-10-06 J+K 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
+**👉 本轮更新说明：见下方 §十 融合批次（2026-10-06 J+K+L 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
 
 ---
 
 ## 〇、本轮更新了什么（2026-10-06）
+
+### L 批 — 报告包吸收（`报告.zip` · 舰队 14 案）（2026-10-06）
+
+19 份实战报告 + 3 归档全量 triage（sha256 查重 · 提示注入扫描 · 凭据硬闸门）→ **14 案入库 / 22 节新课 + 1 节增补 / 18 个报告目录**。
+
+| 案 | 核心手法 |
+|----|----------|
+| **r4z.lol 犯罪帝国**（ROOT 接管） | BillionMail Docker API 未鉴权 → `outbound_ip` SQLi → `$()` → iptables shell → 特权容器 → `chroot /host_root` 逃逸；126 webshell + systemd 45min 自愈持久化 |
+| **包网 GVA → AWS 账号级** | getSystemConfig 未脱敏 → S3 AK/SK=AdministratorAccess → **EC2 Instance Connect 推公钥 ×28 台** → Rancher Secret → GitLab 17 仓库全源码 |
+| **SUNNIC 杀猪盘 SaaS** | agent 弱口令 123456 + BFLA 造超管 + **审核流 CSRF/SSRF**（paymentProofUrl 进审核队列）+ 万能密码后门指纹 + SafeLine 对抗 |
+| **kachiho / FXGZ 假交易所** | **密码预言机**：easyGenerateCode→OCR→updateUserLoginPwd 批量 ATO（655 UID→62 弱密）；MySQL PAD SPACE 锁窗绕过 |
+| **PrimeTools 犯罪商店** | CF 绕过→WP REST→CyberPanel→SSH；**EIP-7702/ERC-4337 Vault 识别 + 私钥穷尽搜查 12 面** |
+| **Coruna-Lab farm（增补）** | WAF 重放防护**语义测穿**（只拦可解 JSON 的 lab-session 组合；旧 cookie 名致盲）+ CSRF 值链证明法 + Tor 电路破 per-(user,IP) 锁 |
+| **143 TG 农场** | 单 IP 36-40 套系统；TG 监听三件套（8088/8091/8099）+ E 策略平台（客户 Gate.io 密钥面）；2048 文件/78MB 取证 |
+| **其余 7 案** | skyscrm（WS 免鉴权订阅）· TGAI/KT8899（SVG 验证码明文 + roleIdList 绕过）· 国强利民（/install 重入 + FCGI sendmail 绕 disable_functions）· tingyu28（群控三件套 86万条）· onechat（Gitea diffpatch **打两次**）· 独角数卡 0 元购 · mtdgs52 盗U链 · Majanito · okbot · fina.icu |
+| **GPU 对手情报** | `gpu-ai-security/04-对手MINER-HUNTER解剖-20260929.md` — haishare/snt 团伙反矿猎杀系统 + 4 项加固 |
+
+**未入库（硬闸门/敏感）**：凭据文件 ×2（XPG / duo）· MEGA 身份流水 · sunnic loot 363 文件 · 聚合战报。账本：`domains/0day-exploits/INGEST-20261006D-REPORTZIP.md`。
 
 ### K 批 — X 博主四账号吸收（2026-10-06）
 
@@ -387,9 +405,11 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ### 2026-10-06
 
+- **L 批 — 报告包吸收（`报告.zip` 舰队 14 案）**：19 报告 + 3 归档全量 triage → **14 案 / 22 课 + 1 增补 / 18 报告目录**。r4z.lol 帝国 ROOT（BillionMail→iptables→chroot host_root）· 包网 GVA→AWS 账号级（EC2 Instance Connect ×28）· SUNNIC 杀猪盘 SaaS（审核流 CSRF）· kachiho 密码预言机 ATO · PrimeTools（EIP-7702 Vault）· Coruna-Lab WAF 语义测穿 · 143 TG 农场（36-40 套）· MINER-HUNTER 对手情报。SKIP：凭据文件 ×2 · MEGA 流水 · loot 原始数据。
+
 - **K 批 — X 博主四账号吸收**：@luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（objdump 零泄漏单发链 + 官方 PoC）· Mozilla VPN RCE($6k) · GraphQL→ES Painless($7k) · App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；文件名绕过 V2（14 变体）/ Cuneiform payload。SKIP：23111（已在库）· 开放重定向（已覆盖）· @n0aziXss（学习号）。
 
-完整说明：`domains/0day-exploits/INGEST-20261006B-CVEBIRD.md`（J 批） · [`INGEST-20261006C-XBLOGGERS.md`](domains/0day-exploits/INGEST-20261006C-XBLOGGERS.md)（K 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
+完整说明：`domains/0day-exploits/INGEST-20261006B-CVEBIRD.md`（J 批） · [`INGEST-20261006C-XBLOGGERS.md`](domains/0day-exploits/INGEST-20261006C-XBLOGGERS.md)（K 批）· [`INGEST-20261006D-REPORTZIP.md`](domains/0day-exploits/INGEST-20261006D-REPORTZIP.md)（L 批）· 详情 [`UPDATE-2026-10-06.md`](UPDATE-2026-10-06.md)
 
 - **J 批 — @cvebird 全量复核 + 最优吸收**：775 页 / 15498 条 / 15496 仓全量重扫（增量 376 条逐条 + 15 类攻击面雷达）。**30 卡**：WP 双链（Comment2Shell/Click2Shell）+ 12 CVE harness + 16 工具卡；Netlogon 41089 补第二 harness。SKIP：ZapcoMan 工具族 · Nacos 工具 ×3 · 重复 87902 toolkit · 0xsha wp2shell · 尾部 400+ slop。
 

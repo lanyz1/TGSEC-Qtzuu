@@ -3,8 +3,8 @@
 > **渗透中途必查。** 命中资产类型后：先本表 → `case-lessons/<slug>.md`（课）→ `case-reports/<slug>/`（全文）。
 > 不要只读通用 playbook 就开打；同面有 case 时必须至少打开 1 篇相关课。
 
-- 课（case-lessons）：**63**
-- 域覆盖：api-security, auth-security, business-logic, cloud-security, gambling-pentest, llm-ai-security, recon, redteam-framework, reverse-engineering, web-attack
+- 课（case-lessons）：**95**（全量实计；含 web-security / web-injection / crypto-attacks 域）
+- 域覆盖：api-security, auth-security, business-logic, cloud-security, gambling-pentest, llm-ai-security, recon, redteam-framework, reverse-engineering, web-attack, web-security, web-injection, crypto-attacks
 - 生成：2026-09-20（闭环优化后）
 
 ## 怎么用（Hermes / 任意 AI）
@@ -35,12 +35,16 @@
 | 白标大厅 WSS / 712 / 777club | `white-label-hall-wss-pentest` + `712win3-partial-users` |
 | 空投盗U / drainer | `crypto-drainer-farm-pentest` |
 | 假交易所 / 杀猪盘 | `scam-exchange-platform-pentest` |
+| **杀猪盘 SaaS / 代理面板 / 审核流 CSRF / 密码预言机** | gambling 课 `sunnic-agent-portal-csrf` · `kachiho-password-oracle-ato` |
+| **Docker API / 容器逃逸 / host_root / 持久化矩阵** | web-attack 课 `r4z-billionmail-root-escape` |
+| **云账号接管 / GVA / EC2 Instance Connect / Rancher** | cloud 课 `gva-to-aws-account-takeover` |
+| **单 IP 多系统农场 / TG 监听 / 端口→应用矩阵** | recon 课 `143-tg-farm-takeover` |
 | WAF / EdgeOne / 开放注册上传 | `waf-fronted-login-attack` / web-attack 课 |
 | RuoYi / DataScope / 列表越权 | auth-security ruoyi-datascope |
 | MCP / DCR / OAuth 客户端 | auth-security cloudflare-mcp / okx-mcp |
 | LLM / LiteLLM 网关 | `llm-gateway-pentest` + badhost-litellm |
 
-## `api-security`（11）
+## `api-security`（15）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -52,9 +56,13 @@
 | `tg-filter-platform` | - Source report: TG筛号平台-渗透测试报告.md | `domains/api-security/case-lessons/tg-filter-platform.md` | `domains/api-security/case-reports/tg-filter-platform/` |
 | `tg-ops-cluster-alanyhq` | - Source report: TG运营集群-综合渗透报告.md | `domains/api-security/case-lessons/tg-ops-cluster-alanyhq.md` | `domains/api-security/case-reports/tg-ops-cluster-alanyhq/` |
 | `uu-im-8089-multiface` | UU钱包/iM/8089注单：未授权upload+download/resource XSS；WebWS设备表；accounts SSRF；群管OpenAPI | `domains/api-security/case-lessons/uu-im-8089-multiface.md` | — |
-| `darksword-coruna-c2` | 同机 ThinkPHP刷单+DarkSword+Coruna：phar/FPM/PwnKit 或 payload %2f LFI；JackApple 数据面密钥 | `domains/api-security/case-lessons/darksword-coruna-c2.md` | — |
+| `darksword-coruna-c2` | 同机 ThinkPHP刷单+DarkSword+Coruna：phar/FPM/PwnKit 或 payload %2f LFI；JackApple 数据面密钥；+2026-10 farm 深挖（WAF 重放语义测穿） | `domains/api-security/case-lessons/darksword-coruna-c2.md` | `domains/api-security/case-reports/darksword-coruna-c2/` |
 | `bms-pc28-console` | BMS/PC28：算法.py沙箱逃逸→root；占位session伪造；OKPAY回调 | `domains/api-security/case-lessons/bms-pc28-console.md` | — |
 | `chatnet-lsky-cloudreve-ugc` | Lsky is_admin + ChatNet未授权建管 + OSS根AK→云助手root | `domains/api-security/case-lessons/chatnet-lsky-cloudreve-ugc.md` | — |
+| `okbot-quant-cluster` | 量化集群：14+27 API 免鉴权 + RabbitMQ admin/123456 + dddocr | `domains/api-security/case-lessons/quant-trading-unauth-surface.md` | `domains/api-security/case-reports/okbot-quant-cluster/` |
+| `kt8899-tg-cloud` | TG群控：SVG 验证码明文 + roleIdList:[] 绕过后门账号 + TG session 收割 | `domains/api-security/case-lessons/kt8899-tg-cloud-multisurface.md` | `domains/api-security/case-reports/kt8899-tg-cloud/` |
+| `fina-icu-audit` | fina.icu 非破坏审计：_app.config.js RSA 私钥内联 + 测试面板暴露 | `domains/api-security/case-lessons/fina-ruoyi-nondestructive-audit.md` | `domains/api-security/case-reports/fina-icu-audit/` |
+| `openim-default-jwt-and-intel` | OpenIM 默认密钥 openIM123 伪造 imAdmin；「星环」指挥平台裸奔情报 | `domains/api-security/case-lessons/openim-default-jwt-and-intel.md` | — |
 
 ## `auth-security`（6）
 
@@ -67,7 +75,7 @@
 | `xmnyme-forget-unauth-code` | 未授权 send_email type=2 + forget_password 改密接管邮箱号；后台 429 禁喷 | `domains/auth-security/case-lessons/xmnyme-forget-unauth-code.md` | — |
 | `2fa-logic-bypass-13` | 2FA 逻辑绕过 13 条（响应篡改/码复用/关 2FA CSRF/不踢旧会话） | `domains/auth-security/case-lessons/2fa-logic-bypass-13.md` | — |
 
-## `business-logic`（15）
+## `business-logic`（17）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -86,14 +94,17 @@
 | `sundapp-status-continued` | - Source report: STATUS (2).md | `domains/business-logic/case-lessons/sundapp-status-continued.md` | `domains/business-logic/case-reports/sundapp-status-continued/` |
 | `vi-wallet-admin-takeover` | - Source report: 2026-07-23_VI钱包后台-完整控制报告.md | `domains/business-logic/case-lessons/vi-wallet-admin-takeover.md` | `domains/business-logic/case-reports/vi-wallet-admin-takeover/` |
 | `kylin-worldpay-ucard` | Kylin/麒麟黑卡 /ucard：未授权发码→会员票全站 IDOR→超管 user=pass+TOTP | `domains/business-logic/case-lessons/kylin-worldpay-ucard.md` | — |
+| `apple-giftcards-dujiaoka` | 独角数卡 0 元购（通道归属不校验）+ epusdt 密钥进 URL + 回调伪造发货 | `domains/business-logic/case-lessons/dujiaoka-channel-ownership-0yuan.md` | `domains/business-logic/case-reports/apple-giftcards-dujiaoka/` |
+| `kuaipao-merchant-api` | hou.kuaipao.us 商户 API 文档（HMAC-SHA256 签名规范） | `domains/business-logic/case-lessons/kuaipao-merchant-signing-notes.md` | `domains/business-logic/case-reports/kuaipao-merchant-api/` |
 
-## `cloud-security`（1）
+## `cloud-security`（2）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
 | `hushchat-s3` | - Source report: HushChat-S3渗透测试报告.md | `domains/cloud-security/case-lessons/hushchat-s3.md` | `domains/cloud-security/case-reports/hushchat-s3/` |
+| `gva-aws-takeover` | GVA 配置泄露→AWS AdministratorAccess→EC2 Instance Connect ×28→Rancher→GitLab 全源码 | `domains/cloud-security/case-lessons/gva-to-aws-account-takeover.md` | `domains/cloud-security/case-reports/gva-aws-takeover/` |
 
-## `gambling-pentest`（7）
+## `gambling-pentest`（9）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -104,6 +115,8 @@
 | `tongbao-game-audit` | - Source report: AUDIT_REPORT.md | `domains/gambling-pentest/case-lessons/tongbao-game-audit.md` | `domains/gambling-pentest/case-reports/tongbao-game-audit/` |
 | `vvgzrvtt-kaiyun28` | - Source report: FULL_REPORT.md | `domains/gambling-pentest/case-lessons/vvgzrvtt-kaiyun28.md` | `domains/gambling-pentest/case-reports/vvgzrvtt-kaiyun28/` |
 | `82vip-ll-center` | 82vip/LL.VIP：Nacos Host 绕 CF Access → /ll/center AES 未授权调账（XFF） | `domains/gambling-pentest/case-lessons/82vip-ll-center.md` | — |
+| `sunnic-agent-saas` | 杀猪盘 SaaS：agent 弱口令 + 审核流 CSRF/SSRF + 万能密码后门 | `domains/gambling-pentest/case-lessons/sunnic-agent-portal-csrf.md` | `domains/gambling-pentest/case-reports/sunnic-agent-saas/` |
+| `kachiho-fxgz` | 密码预言机批量 ATO（655→62）+ PAD SPACE 锁窗绕过 + 40+ RCE 排除矩阵 | `domains/gambling-pentest/case-lessons/kachiho-password-oracle-ato.md` | `domains/gambling-pentest/case-reports/kachiho-fxgz/` |
 
 ## `llm-ai-security`（1）
 
@@ -111,7 +124,7 @@
 |------|--------|----|------|
 | `badhost-litellm` | - Source report: BadHost_LiteLLM_报告.md | `domains/llm-ai-security/case-lessons/badhost-litellm.md` | `domains/llm-ai-security/case-reports/badhost-litellm/` |
 
-## `recon`（7）
+## `recon`（8）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -122,21 +135,24 @@
 | `report-evidence-finding-path` | 1. 目标画像：栈、CDN、角色、API 前缀 | `domains/recon/case-lessons/report-evidence-finding-path.md` | — |
 | `unauth-settings-bot-token-download` | - Bot Token 有效 + webhook 空 → 可劫持推送/假客服（报告只写风险，不教诈骗话术） | `domains/recon/case-lessons/unauth-settings-bot-token-download.md` | — |
 | `vuln-batch-export-20260901` | - Source report: vulnerability-report-conversation-20260901-013932.md | `domains/recon/case-lessons/vuln-batch-export-20260901.md` | `domains/recon/case-reports/vuln-batch-export-20260901/` |
+| `143-tg-farm` | 单 IP 36-40 套系统：TG 监听三件套 + 策略平台 + 假投注；端口→应用矩阵 | `domains/recon/case-lessons/143-tg-farm-takeover.md` | `domains/recon/case-reports/143-tg-farm/` |
 
-## `redteam-framework`（1）
+## `redteam-framework`（2）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
 | `redteam-chain-reasoning-matrix` | - Source report: CLAUDE.md | `domains/redteam-framework/case-lessons/redteam-chain-reasoning-matrix.md` | `domains/redteam-framework/case-reports/redteam-chain-reasoning-matrix/` |
+| `fleet-master-20261002` | 舰队 50+ 目标聚合战报（以单报告为准） | — | `domains/redteam-framework/case-reports/fleet-master-20261002/` |
 
-## `reverse-engineering`（2）
+## `reverse-engineering`（3）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
 | `jjpc28-frontend-malware` | - Source report: jjpc28-static-malware-analysis.md | `domains/reverse-engineering/case-lessons/jjpc28-frontend-malware.md` | `domains/reverse-engineering/case-reports/jjpc28-frontend-malware/` |
 | `qingmeng-fake-detector-botnet` | - Source report: 情梦后门 rar | `domains/reverse-engineering/case-lessons/qingmeng-fake-detector-botnet.md` | `domains/reverse-engineering/case-reports/qingmeng-fake-detector-botnet/` |
+| `electron-jsc-signature-oracle` | Electron jsc 字节码 → V8 签名 Oracle 重建 | `domains/reverse-engineering/case-lessons/electron-jsc-signature-oracle.md` | — |
 
-## `web-attack`（11）
+## `web-attack`（17）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -151,6 +167,37 @@
 | `werkzeug-rce-proof` | - Source report: 漏洞利用完整证明报告.md | `domains/web-attack/case-lessons/werkzeug-rce-proof.md` | `domains/web-attack/case-reports/werkzeug-rce-proof/` |
 | `aqlm-999db-cluster` | aqlm/999db：TP 上传 RCE + TGBot webhook SQLi + PPay notifyUrl SSRF | `domains/web-attack/case-lessons/aqlm-999db-cluster.md` | — |
 | `waf-glob-rce-bypass` | Linux glob `?` 绕 Sucuri/CRS PL1–3 拦 RCE（theMiddle） | `domains/web-attack/case-lessons/waf-glob-rce-bypass.md` | — |
+| `r4z-crime-empire` | BillionMail Docker API→iptables 注入→chroot host_root 逃逸→宿主机 ROOT（126 webshell 持久化） | `domains/web-attack/case-lessons/r4z-billionmail-root-escape.md` | `domains/web-attack/case-reports/r4z-crime-empire/` |
+| `primetools-takedown` | CF 绕过→WP REST→CyberPanel→SSH；EIP-7702 Vault（见 crypto 课） | `domains/web-attack/case-lessons/cyberpanel-source-ssh-chain.md` | `domains/web-attack/case-reports/primetools-takedown/` |
+| `skyscrm-afbpay` | WS 登录免鉴权订阅（全量订单）+ 订单号即凭证 IDOR + jsc 签名 Oracle | `domains/web-attack/case-lessons/ws-login-unauth-subscribe.md` | `domains/web-attack/case-reports/skyscrm-afbpay/` |
+| `onechat-chat` | Gitea diffpatch **apply 两次**暗门 + 容器逃逸失败条件清单 | `domains/web-attack/case-lessons/gitea-diffpatch-apply-twice.md` | `domains/web-attack/case-reports/onechat-chat/` |
+| `tingyu28-qunkong` | 群控三件套：开放注册→workspace IDOR→导出 API（86.7万条） | `domains/web-attack/case-lessons/qunkong-console-trio.md` | `domains/web-attack/case-reports/tingyu28-qunkong/` |
+| `guoqiang-jinpan` | /install 重入 + rogue MySQL 写配置；FCGI sock 0666 + sendmail 绕 disable_functions | `domains/web-attack/case-lessons/install-reentry-rogue-mysql.md` | `domains/web-attack/case-reports/guoqiang-jinpan/` |
+
+## `web-security`（5）
+
+| slug | 一句话 | 课 | 全文 |
+|------|--------|----|------|
+| `drainer-static-server-three-killshots` | 自建静态服务器盗U站：/server.js 源码直读 + ?soladmin=1 + 管理API未鉴权 | `domains/web-security/case-lessons/drainer-static-server-three-killshots.md` | — |
+| `ruoyi-default-creds-and-bfla-mass-dump` | 若依默认口令 ry|admin123 + /dev-api 前缀坑 + BFLA 脱库 | `domains/web-security/case-lessons/ruoyi-default-creds-and-bfla-mass-dump.md` | — |
+| `zd-leaked-product-package-and-cn-wordlist` | 付费安装包泄露 /uploads/ + 后台中文业务词枚举 | `domains/web-security/case-lessons/zd-leaked-product-package-and-cn-wordlist.md` | — |
+| `mtdgs52-drainer-chain` | 盗U站群：INSERT 多行闭合 + extractvalue；授权钓鱼 + 链上追踪 | `domains/web-security/case-lessons/mtdgs52-drainer-chain.md` | `domains/web-security/case-reports/mtdgs52-drainer-farm/` |
+| `majanito-drainer-audit` | Drainer 集群审计：`....//` 遍历 + 引擎五段式 + SELFDESTRUCT 证据固化 | `domains/web-security/case-lessons/majanito-drainer-audit.md` | — |
+
+## `web-injection`（4）
+
+| slug | 一句话 | 课 | 全文 |
+|------|--------|----|------|
+| `sqli-minimal-probe-to-ato` | SQLi 三步探型（200→500→200）→ ATO | `domains/web-injection/case-lessons/sqli-minimal-probe-to-ato.md` | — |
+| `codeigniter-empty-where-bypass` | CodeIgniter 空 where `{}` 认证绕过 + JSON 键名 SQLi | `domains/web-injection/case-lessons/codeigniter-empty-where-bypass.md` | — |
+| `blind-rce-char-oracle` | 盲 RCE 自适应 sleep 字符预言机 | `domains/web-injection/case-lessons/blind-rce-char-oracle.md` | — |
+| `passive-xss-audit-zero-write` | 零写入被动审计（等效路径验证 + CSRF AB 对比） | `domains/web-injection/case-lessons/passive-xss-audit-zero-write.md` | `domains/web-injection/case-reports/luankao-xss-audit/` |
+
+## `crypto-attacks`（1）
+
+| slug | 一句话 | 课 | 全文 |
+|------|--------|----|------|
+| `eip7702-vault-key-search` | EIP-7702/ERC-4337 Vault 识别 + 私钥穷尽搜查 12 面 | `domains/crypto-attacks/case-lessons/eip7702-vault-key-search.md` | — |
 
 ## 纪律
 

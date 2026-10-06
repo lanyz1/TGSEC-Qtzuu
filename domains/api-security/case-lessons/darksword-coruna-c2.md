@@ -34,3 +34,12 @@ Coruna /openapi.json → GET /api/payload/entry/..%2f..%2f..%2f...
 
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+
+## 增补 2026-10-02 — Coruna-Lab farm 方法论 (L批吸收)
+- **WAF 重放防护语义测穿**: 只拦"可解码 JSON"的 lab-session + x-xsrf-token 组合 (伪404); 垃圾值全穿透; cookie 名 `lab-session` 是开关 → 旧名 `coruna-lab-session` 致盲 WAF
+- **CSRF 值链证明法**: 原样 cookie + unquote(XSRF) 头 → 过 CSRF 后 401 = 卡点在登录态; (419/401 二分器, logout 当零副作用 oracle)
+- **锁定反制**: per-(username,IP) 速率型 → Tor IsolateSOCKSAuth 每请求换电路; /user/login 无锁; aiohttp 必须 allow_redirects=False
+- **喷射负证据**: 5000万次零命中 → 勿再烧字典
+- **分型**: Style-A(双面板)/Style-B; cookie 名分代; darksword chain; rce_worker 18.4→18.7
+- 详见 case-reports/darksword-coruna-c2/CORUNA-LAB-DEEP-20261002.md

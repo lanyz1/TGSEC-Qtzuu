@@ -84,7 +84,7 @@ InvitationCode / inviteCode 大写驼峰 → required 校验失败（绑定不�
 | 坑 | 正解 |
 |----|------|
 | 未知 app HMAC「软件不存在」当签过 | 仅 `demo-app` 验签；未知 app 跳过 HMAC |
-| `secret=undefined` + 毫秒时间戳「时间戳过期」 | 假阳：先校验时间戳形态；秒级+真 secret 才算 |
+| `secret=[REDACTED]` + 毫秒时间戳「时间戳过期」 | 假阳：先校验时间戳形态；秒级+真 secret 才算 |
 | make 表「手机号」 | 多为雪flake ID 子串；CMS 新闻内容 |
 | 8089 Tor `socks5://127.0.0.1:9050` | 绑在 .86 本机，不是攻击机 |
 | password_sha12=2efb… | = sha256(b'\*\*\*\*\*\*')[:12] |

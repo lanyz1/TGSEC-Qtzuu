@@ -1,7 +1,7 @@
 # 伪造检测脚本投放 DDoS 僵尸网络 + XMRig
 
 - Source report: `情梦后门 rar`
-- Full report: `domains/reverse-engineering/case-reports/qingmeng-fake-detector-botnet`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: malware, telegram
 - Fused: 2026-09-17
 

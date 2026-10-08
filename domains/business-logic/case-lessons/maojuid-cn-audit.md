@@ -1,7 +1,7 @@
 # maojuid-cn 发卡/支付审计
 
 - Source report: `AUDIT-REPORT.md`
-- Full report: `domains/business-logic/case-reports/maojuid-cn-audit/AUDIT-REPORT.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: payment, cred, waf
 - Fused: 2026-09-17
 

@@ -37,10 +37,9 @@ vm-and-bytecode-reverse
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
 
-<!-- fused:case-reports-20260917 -->
-## case-reports / case-lessons（实战报告 2026-09-17）
+<!-- fused:case-lessons-20260917 -->
+## case-lessons（实战报告 2026-09-17 · 全文卷已撤库）
 
-- `jjpc28-frontend-malware` — see `case-reports/jjpc28-frontend-malware/` + `case-lessons/jjpc28-frontend-malware.md`
-- `qingmeng-fake-detector-botnet` — see `case-reports/qingmeng-fake-detector-botnet/` + `case-lessons/qingmeng-fake-detector-botnet.md`
-
+- `jjpc28-frontend-malware` — `case-lessons/jjpc28-frontend-malware.md`（全文已撤库）
+- `qingmeng-fake-detector-botnet` — `case-lessons/qingmeng-fake-detector-botnet.md`（全文已撤库）
 @TGSEC社区 · @TGSEC-Qtzuu 整理

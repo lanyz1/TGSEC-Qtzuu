@@ -64,3 +64,5 @@
 - `REPORT-gx3xx-20260913.md`
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+> 注（2026-10-08）：`case-reports` 全文卷层已全量撤出仓库（原文存本机案卷）；本页为历史记录，吸收请按新硬门（只落 `case-lessons/` + 脱敏）。

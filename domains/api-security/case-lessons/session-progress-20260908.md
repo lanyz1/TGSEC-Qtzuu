@@ -1,7 +1,7 @@
 # TG/会话进度备忘 2026-09-08
 
 - Source report: `session-progress-2026-09-08.md`
-- Full report: `domains/api-security/case-reports/session-progress-20260908/session-progress-2026-09-08.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: telegram, auth
 - Fused: 2026-09-17
 

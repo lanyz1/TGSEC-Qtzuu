@@ -42,4 +42,4 @@ Coruna /openapi.json → GET /api/payload/entry/..%2f..%2f..%2f...
 - **锁定反制**: per-(username,IP) 速率型 → Tor IsolateSOCKSAuth 每请求换电路; /user/login 无锁; aiohttp 必须 allow_redirects=False
 - **喷射负证据**: 5000万次零命中 → 勿再烧字典
 - **分型**: Style-A(双面板)/Style-B; cookie 名分代; darksword chain; rce_worker 18.4→18.7
-- 详见 case-reports/darksword-coruna-c2/CORUNA-LAB-DEEP-20261002.md
+- 全文: 已撤出仓库（原文留本机案卷）

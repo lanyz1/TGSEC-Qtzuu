@@ -1,7 +1,7 @@
 # FB 账号发卡站 fbdwj 评估
 
 - Source report: `FBDWJ_安全评估报告.md`
-- Full report: `domains/business-logic/case-reports/fbdwj-faka-audit/FBDWJ_安全评估报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: payment, cred, auth
 - Fused: 2026-09-17
 

@@ -1,7 +1,7 @@
 # 萝卜快测/灵动空号检测
 
 - Source report: `萝卜快测平台渗透测试报告.md`
-- Full report: `domains/api-security/case-reports/luobo-lingdong-konghao/萝卜快测平台渗透测试报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: idor, upload
 - Fused: 2026-09-17
 

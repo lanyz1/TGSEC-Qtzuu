@@ -1,7 +1,7 @@
 # 365jz 配资站群 RCE/上传
 
 - Source report: `REPORT_365jz_final_2026-09-15.md`
-- Full report: `domains/web-attack/case-reports/365jz-peizi-cluster/REPORT_365jz_final_2026-09-15.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: rce, upload, cred
 - Fused: 2026-09-17
 

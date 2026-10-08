@@ -37,10 +37,9 @@ src-methods
 
 见 `src-methods/hunter12-*`（五步猎洞法手册，来自 web-security-skills 差分融合）。
 
-<!-- fused:case-reports-20260917 -->
-## case-reports / case-lessons（实战报告 2026-09-17）
+<!-- fused:case-lessons-20260917 -->
+## case-lessons（实战报告 2026-09-17 · 全文卷已撤库）
 
-- `cloudflare-mcp-dcr` — see `case-reports/cloudflare-mcp-dcr/` + `case-lessons/cloudflare-mcp-dcr.md`
-- `okx-mcp-dcr` — see `case-reports/okx-mcp-dcr/` + `case-lessons/okx-mcp-dcr.md`
-
+- `cloudflare-mcp-dcr` — `case-lessons/cloudflare-mcp-dcr.md`（全文已撤库）
+- `okx-mcp-dcr` — `case-lessons/okx-mcp-dcr.md`（全文已撤库）
 @TGSEC社区 · @TGSEC-Qtzuu 整理

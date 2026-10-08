@@ -1,7 +1,7 @@
 # 711出海 TG 云控 XSS/JWT/IDOR
 
 - Source report: `711tock_审计报告.md`
-- Full report: `domains/api-security/case-reports/711tock-tg-cloud/711tock_审计报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: telegram, auth, xss, idor
 - Fused: 2026-09-17
 

@@ -1,7 +1,7 @@
 # TG运营集群综合（Alanyhq）
 
 - Source report: `TG运营集群-综合渗透报告.md`
-- Full report: `domains/api-security/case-reports/tg-ops-cluster-alanyhq/TG运营集群-综合渗透报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: telegram, ssrf, idor
 - Fused: 2026-09-17
 

@@ -1,7 +1,7 @@
 # snddapp/sundapp 钱包管理端审计
 
 - Source report: `AUDIT_REPORT_admin_snddapp_2026-09-11.md`
-- Full report: `domains/business-logic/case-reports/snddapp-admin-audit/AUDIT_REPORT_admin_snddapp_2026-09-11.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: wallet, payment, auth
 - Fused: 2026-09-17
 

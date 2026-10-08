@@ -404,6 +404,10 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ## 十、融合批次
 
+### 2026-10-08
+
+- **安全加固**：`case-reports` 全文卷层**全量撤出仓库**（原文存本机案卷）＋ git 历史净化（filter-repo：全文卷/凭据从全部历史移除）＋ 入库硬门「**原文全文不入库**，吸收只落 `case-lessons/` 提炼层 + 强制脱敏」。详见 [UPDATE-2026-10-08.md](docs/updates/UPDATE-2026-10-08.md)
+
 ### 2026-10-06
 
 - **L 批 — 报告包吸收（`报告.zip` 舰队 14 案）**：19 报告 + 3 归档全量 triage → **14 案 / 22 课 + 1 增补 / 18 报告目录**。r4z.lol 帝国 ROOT（BillionMail→iptables→chroot host_root）· 包网 GVA→AWS 账号级（EC2 Instance Connect ×28）· SUNNIC 杀猪盘 SaaS（审核流 CSRF）· kachiho 密码预言机 ATO · PrimeTools（EIP-7702 Vault）· Coruna-Lab WAF 语义测穿 · 143 TG 农场（36-40 套）· MINER-HUNTER 对手情报。SKIP：凭据文件 ×2 · MEGA 流水 · loot 原始数据。
@@ -451,7 +455,7 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 - **CASE-INDEX**：`domains/CASE-INDEX.md`（现 **51** 课）— 渗透中途强制入口；`MASTER`/`ROUTING`/`pentest-execution`/`tgsec-suite` 已挂闸门
 - **调用闭环优化**：清掉树内 `security.bak.*` 歧义；`sync-hermes-skills.sh` 备份改到 `~/.hermes/skill-backups/`（只留 3 份）；私有专项技能进强制矩阵；sinian **114** 迁入各域 `src-methods/_vendor/sinian/`（默认不遍历）
-- **712win3 实战课**：`gambling-pentest/case-lessons/712win3-partial-users.md` + 脱敏 case-reports 指针（明文 loot 不进仓）
+- **712win3 实战课**：`gambling-pentest/case-lessons/712win3-partial-users.md` + 全文卷已撤库（2026-10-08；明文 loot 不进仓）
 - **增量融合**：Telegram Desktop / 攻防技能卡与 payload 工具面 → 各域 `aimy-tools` / `claude-red` / `src-methods` / `wireless` 等（见 absorb 账本）
 
 - **Cloudflare security-audit-skill 轻量提炼** → `domains/file-vulns/code-audit/cloudflare-security-audit/`（coverage-ledger + findings schema/validators + 缺面攻击类；非整仓、不新建伞形技能）
@@ -465,7 +469,7 @@ bash scripts/install-tools.sh        # 按清单补工具
 - **CVE/PoC 批次 A–D** → `domains/0day-exploits/`：批次 D 差分吸收 SecureWithUmer（69）+ XZ1r0（64）+ zulloper（25）；库内 `CVE-*` 目录约 **200+**；HARD 投毒跳过、SOFT 标注后仍融
 - **方法论**：Qtzuu-pentest-toolbox → `pentest-redteam` technique **7→22**（多 AI 技能目录同步）；web-security-skills（猎洞十二技）散入各域 `src-methods/hunter12-*`
 - **逆向原子包**：`dslsdzc/rev-skills` → `domains/reverse-engineering/rev-skills-pack/`（**122** 技能独立包，不覆盖本机 reverse-skill；伞形技能加指针）
-- **实战报告.zip**：去重后融 **44** → 各域 `case-reports/` + `case-lessons/`；情梦后门只吸分析文本/IOC；云厂商 AccessKey（`LTAI*`/`AKID*`）入库前脱敏为 `[REDACTED]`
+- **实战报告.zip**：去重后融 **44** → 各域 `case-lessons/` 提炼层（全文卷**已于 2026-10-08 全量撤出仓库**；原文存放本机案卷）；情梦后门只吸分析文本/IOC；云厂商 AccessKey（`LTAI*`/`AKID*`）入库前脱敏为 `[REDACTED]`
 - 索引：`INGEST-20260917*.md` · `REPORTS-INGEST-20260917-INDEX.md` · `rev-skills-pack/README.md`
 - `.gitignore`：忽略 `_ingest_*/`、`_probe_*/` 等暂存审计目录
 

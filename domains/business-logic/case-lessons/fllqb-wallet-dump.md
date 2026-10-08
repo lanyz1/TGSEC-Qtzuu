@@ -1,7 +1,7 @@
 # 福利来钱包完整数据包
 
 - Source report: `fllqb_福利来钱包_完整数据.md`
-- Full report: `domains/business-logic/case-reports/fllqb-wallet-dump/fllqb_福利来钱包_完整数据.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: wallet, telegram, idor
 - Fused: 2026-09-17
 

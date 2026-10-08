@@ -1,7 +1,7 @@
 # VI 钱包后台接管 / 资金面
 
 - Source report: `2026-07-23_VI钱包后台-完整控制报告.md`
-- Full report: `domains/business-logic/case-reports/vi-wallet-admin-takeover/2026-07-23_VI钱包后台-完整控制报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: wallet, auth, payment
 - Fused: 2026-09-17
 

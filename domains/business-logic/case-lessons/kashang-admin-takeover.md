@@ -1,7 +1,7 @@
 # 卡商后台接管战报
 
 - Source report: `kashang_takeover.md`
-- Full report: `domains/business-logic/case-reports/kashang-admin-takeover/kashang_takeover.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: auth, payment
 - Fused: 2026-09-17
 

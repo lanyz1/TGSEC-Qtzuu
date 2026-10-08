@@ -1,7 +1,7 @@
 # farmtg 农场游戏越级购买
 
 - Source report: `农场游戏越级购买.md`
-- Full report: `domains/business-logic/case-reports/farmtg-tier-bypass/农场游戏越级购买.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: idor, telegram, rce
 - Fused: 2026-09-17
 

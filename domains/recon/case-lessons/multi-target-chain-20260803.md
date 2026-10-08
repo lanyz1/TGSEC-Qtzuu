@@ -1,7 +1,7 @@
 # 多目标攻击链综合（08-03~04）
 
 - Source report: `综合渗透测试报告-全目标.md`
-- Full report: `domains/recon/case-reports/multi-target-chain-20260803/综合渗透测试报告-全目标.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: ssrf, upload, payment
 - Fused: 2026-09-17
 

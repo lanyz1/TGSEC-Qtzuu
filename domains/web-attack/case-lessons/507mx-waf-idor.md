@@ -1,7 +1,7 @@
 # 507mx WAF 后 IDOR
 
 - Source report: `507mx_vulnerability_report.md`
-- Full report: `domains/web-attack/case-reports/507mx-waf-idor/507mx_vulnerability_report.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: idor, waf
 - Fused: 2026-09-17
 

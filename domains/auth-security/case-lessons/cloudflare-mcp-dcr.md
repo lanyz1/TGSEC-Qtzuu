@@ -1,7 +1,7 @@
 # Cloudflare MCP OAuth DCR 未授权注册
 
 - Source report: `Cloudflare_DCR_漏洞报告.md`
-- Full report: `domains/auth-security/case-reports/cloudflare-mcp-dcr/Cloudflare_DCR_漏洞报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: auth, waf
 - Fused: 2026-09-17
 

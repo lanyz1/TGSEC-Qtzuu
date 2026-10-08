@@ -1,7 +1,7 @@
 # TG筛号平台 SQLi/认证
 
 - Source report: `TG筛号平台-渗透测试报告.md`
-- Full report: `domains/api-security/case-reports/tg-filter-platform/TG筛号平台-渗透测试报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: telegram, sqli, auth
 - Fused: 2026-09-17
 

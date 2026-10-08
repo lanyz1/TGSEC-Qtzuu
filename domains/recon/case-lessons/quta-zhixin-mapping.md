@@ -1,7 +1,7 @@
 # 趣她&智信选伴完整测绘
 
 - Source report: `完整测绘报告.md`
-- Full report: `domains/recon/case-reports/quta-zhixin-mapping/完整测绘报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: recon, idor, waf
 - Fused: 2026-09-17
 

@@ -1,7 +1,7 @@
 # max77.plus 中间报告
 
 - Source report: `max77.plus-渗透测试报告.md`
-- Full report: `domains/web-attack/case-reports/max77-plus/max77.plus-渗透测试报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: idor, upload, wallet
 - Fused: 2026-09-17
 

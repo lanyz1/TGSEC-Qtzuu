@@ -1,7 +1,7 @@
 # ACG 发卡站系批量攻陷
 
 - Source report: `acg_mass_hunt_report.md`
-- Full report: `domains/business-logic/case-reports/acg-faka-mass-hunt/acg_mass_hunt_report.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: payment
 - Fused: 2026-09-17
 

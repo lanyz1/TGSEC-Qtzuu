@@ -1,7 +1,7 @@
 # OKX MCP OAuth DCR 未授权注册
 
 - Source report: `OKX_DCR_漏洞报告.md`
-- Full report: `domains/auth-security/case-reports/okx-mcp-dcr/OKX_DCR_漏洞报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: auth, payment, wallet
 - Fused: 2026-09-17
 

@@ -1,7 +1,7 @@
 # sundapp 继续深挖战报
 
 - Source report: `STATUS (2).md`
-- Full report: `domains/business-logic/case-reports/sundapp-status-continued/sundapp-status-continued.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: wallet, payment
 - Fused: 2026-09-17
 

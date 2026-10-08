@@ -1,7 +1,7 @@
 # 85amz RCE/上传/支付
 
 - Source report: `85amz_渗透测试报告.md`
-- Full report: `domains/web-attack/case-reports/85amz-rce-upload/85amz_渗透测试报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: rce, upload, payment
 - Fused: 2026-09-17
 

@@ -1,7 +1,7 @@
 # HushChat/KingKong S3 桶渗透
 
 - Source report: `HushChat-S3渗透测试报告.md`
-- Full report: `domains/cloud-security/case-reports/hushchat-s3/HushChat-S3渗透测试报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: upload, auth, wallet
 - Fused: 2026-09-17
 

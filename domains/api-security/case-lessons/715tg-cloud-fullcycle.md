@@ -1,7 +1,7 @@
 # 715TG 云控全周期（SQLi/上传/TG）
 
 - Source report: `715TG云控_全周期审计报告.md`
-- Full report: `domains/api-security/case-reports/715tg-cloud-fullcycle/715TG云控_全周期审计报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: telegram, sqli, upload
 - Fused: 2026-09-17
 

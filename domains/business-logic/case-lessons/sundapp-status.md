@@ -1,7 +1,7 @@
 # sundapp/usdc 渗透战报
 
 - Source report: `STATUS.md`
-- Full report: `domains/business-logic/case-reports/sundapp-status/sundapp-status.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: wallet, payment, cred
 - Fused: 2026-09-17
 

@@ -1,7 +1,7 @@
 # 独角 Next 1元购/打折支付 PoC
 
 - Source report: `Dujiao_Next_支付模块_1_元购_打折支付漏洞_—_完整漏洞报告与_PoC_.md`
-- Full report: `domains/business-logic/case-reports/dujiao-next-1yuan-pay/Dujiao_Next_支付模块_1_元购_打折支付漏洞_—_完整漏洞报告与_PoC_.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: payment, idor
 - Fused: 2026-09-17
 

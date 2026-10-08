@@ -1,7 +1,7 @@
 # peiioh/乐视会议分发链
 
 - Source report: `peiioh_20260819_完整报告.md`
-- Full report: `domains/web-attack/case-reports/peiioh-leshi-meeting/peiioh_20260819_完整报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: rce, auth, waf
 - Fused: 2026-09-17
 

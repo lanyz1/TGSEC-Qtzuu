@@ -1,7 +1,7 @@
 # 独角 BUG 笔记
 
 - Source report: `独角BUG.md`
-- Full report: `domains/business-logic/case-reports/dujiao-bug-notes/独角BUG.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: payment
 - Fused: 2026-09-17
 

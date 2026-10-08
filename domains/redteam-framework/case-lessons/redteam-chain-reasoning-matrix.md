@@ -1,7 +1,7 @@
 # 红队链式推理作战矩阵
 
 - Source report: `CLAUDE.md`
-- Full report: `domains/redteam-framework/case-reports/redteam-chain-reasoning-matrix/CLAUDE.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: recon
 - Fused: 2026-09-17
 

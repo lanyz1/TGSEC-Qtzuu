@@ -1,7 +1,7 @@
 # LiteLLM BadHost / Host 头绕过链
 
 - Source report: `BadHost_LiteLLM_报告.md`
-- Full report: `domains/llm-ai-security/case-reports/badhost-litellm/BadHost_LiteLLM_报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: sqli
 - Fused: 2026-09-17
 

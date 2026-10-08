@@ -28,9 +28,8 @@ src-methods
 ---
 @TGSEC社区 · @TGSEC-Qtzuu 整理
 
-<!-- fused:case-reports-20260917 -->
-## case-reports / case-lessons（实战报告 2026-09-17）
+<!-- fused:case-lessons-20260917 -->
+## case-lessons（实战报告 2026-09-17 · 全文卷已撤库）
 
-- `hushchat-s3` — see `case-reports/hushchat-s3/` + `case-lessons/hushchat-s3.md`
-
+- `hushchat-s3` — `case-lessons/hushchat-s3.md`（全文已撤库）
 @TGSEC社区 · @TGSEC-Qtzuu 整理

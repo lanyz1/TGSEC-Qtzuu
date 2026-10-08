@@ -85,7 +85,7 @@ Clone 后目录一般为 `~/security-suite`（Windows: `%USERPROFILE%\security-s
 | skill1 渗透工作流 | `redteam-framework/pentest-lyan-workflow/` |
 | vuln-hunter | `malware-dfir/vuln-hunter-memory/` |
 | component-vuln-intel | `recon/component-vuln-intel/` |
-| 实战报告样例 | `ctf/case-reports-6000/` |
+| 实战报告样例 | `domains/*/case-lessons/`（提炼；全文卷已撤库） |
 | clown 知识库 | 已有 `src-methods/` 哈希去重 |
 
 ## 技能路由（Hermes）

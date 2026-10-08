@@ -1,7 +1,7 @@
 # 漏洞批量导出对话报告
 
 - Source report: `vulnerability-report-conversation-20260901-013932.md`
-- Full report: `domains/recon/case-reports/vuln-batch-export-20260901/vulnerability-report-conversation-20260901-013932.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: auth
 - Fused: 2026-09-17
 

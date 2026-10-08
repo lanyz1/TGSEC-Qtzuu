@@ -1,7 +1,7 @@
 # Werkzeug RCE 完整利用证明
 
 - Source report: `漏洞利用完整证明报告.md`
-- Full report: `domains/web-attack/case-reports/werkzeug-rce-proof/漏洞利用完整证明报告.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: rce, sqli
 - Fused: 2026-09-17
 

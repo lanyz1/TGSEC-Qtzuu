@@ -1,7 +1,7 @@
 # 综合渗透报告（已脱敏示例靶）
 
 - Source report: `report.md`
-- Full report: `domains/web-attack/case-reports/tgt-a-example-redacted/report.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: sqli, rce, payment
 - Fused: 2026-09-17
 

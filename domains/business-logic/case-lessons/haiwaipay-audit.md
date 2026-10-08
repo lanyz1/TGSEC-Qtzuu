@@ -1,7 +1,7 @@
 # 海外严选 haiwaipay 审计
 
 - Source report: `HAIWAIPAY_SECURITY_AUDIT_REPORT.md`
-- Full report: `domains/business-logic/case-reports/haiwaipay-audit/HAIWAIPAY_SECURITY_AUDIT_REPORT.md`
+- 全文: 已撤出仓库（原文留本机案卷）
 - Techniques: sqli, auth, idor, cred
 - Fused: 2026-09-17
 

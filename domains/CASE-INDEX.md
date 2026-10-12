@@ -3,7 +3,7 @@
 > **渗透中途必查。** 命中资产类型后：先本表 → `case-lessons/<slug>.md`（课）。全文卷已撤库（原文存本机案卷）。
 > 不要只读通用 playbook 就开打；同面有 case 时必须至少打开 1 篇相关课。
 
-- 课（case-lessons）：**112**（全量实计；含 web-security / web-injection / crypto-attacks 域）
+- 课（case-lessons）：**113**（全量实计；含 web-security / web-injection / crypto-attacks 域）
 - 域覆盖：api-security, auth-security, business-logic, cloud-security, gambling-pentest, llm-ai-security, recon, redteam-framework, reverse-engineering, web-attack, web-security, web-injection, crypto-attacks, gpu-ai-security
 - 生成：2026-09-20（闭环优化后） · 2026-10-12 增补（报告包 B 批）
 
@@ -75,7 +75,7 @@
 | `xmnyme-forget-unauth-code` | 未授权 send_email type=2 + forget_password 改密接管邮箱号；后台 429 禁喷 | `domains/auth-security/case-lessons/xmnyme-forget-unauth-code.md` | — |
 | `2fa-logic-bypass-13` | 2FA 逻辑绕过 13 条（响应篡改/码复用/关 2FA CSRF/不踢旧会话） | `domains/auth-security/case-lessons/2fa-logic-bypass-13.md` | — |
 
-## `business-logic`（19）
+## `business-logic`（20）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -98,6 +98,7 @@
 | `kuaipao-merchant-api` | hou.kuaipao.us 商户 API 文档（HMAC-SHA256 签名规范） | `domains/business-logic/case-lessons/kuaipao-merchant-signing-notes.md` | 已撤库 |
 | `zhihuizhongguo-final-205k` | 智慧中国终局：SSRF→Redis MIGRATE COPY 全键谱 → 205,676 全档 + 收网研判 | `domains/business-logic/case-lessons/zhihuizhongguo-final-205k.md` | — |
 | `minzu-gongfu-314k-idor` | 民族共富：equity IDOR 神谕 → 314k 全量（8 桶 242 req/s）+ 残差证明法 | `domains/business-logic/case-lessons/minzu-gongfu-314k-idor.md` | — |
+| `scam-exchange-evidence-and-fundgraph` | 杀猪盘归因/资金图谱四件套：订单溯源/邮件头/钓鱼统计/链上图谱 | `domains/business-logic/case-lessons/scam-exchange-evidence-and-fundgraph.md` | — |
 
 ## `cloud-security`（4）
 

@@ -35,6 +35,6 @@ ghgc.cc = 「SCRA VIP」杀猪盘平台总后台（RuoYi-Vue + Java API + 31.5GB
 
 ## When to reuse
 - RuoYi 接管链 → `ruoyi-fork-admin-pentest` / `ruoyi-framework-pentest`；TP5 入口 → `thinkphp-legacy-pentest`
-- 资金取证/吞没率计算/操作日志证据链 → 本课模板；杀猪盘家族对照 `dygy-bytedream-scam` 课
+- 资金取证/吞没率计算/操作日志证据链 → 本课模板；杀猪盘家族对照 `dygy-bytedream-scam` 课；归因/链上图谱四件套 → `scam-exchange-evidence-and-fundgraph` 课
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理

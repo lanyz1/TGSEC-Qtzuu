@@ -94,4 +94,4 @@ High-hit bypass sub labels: `mail smtp cpanel direct origin backend dev staging 
 - Full 50-method handbook: `references/full-handbook-v5.1.md`
 - Cost-tiered P0–P4 pipeline: `references/p0-p4-priority-playbook.md`
 - Pentest early step: `pentest-execution` § CDN bypass
-- Recon routing: `black-cat-redteam` → `techniques/recon.md`
+- Recon routing: `black-cat-redteam` → `../pentest-redteam/techniques/recon.md`

@@ -22,23 +22,23 @@ description: "Use for hypothesis state-machine redteam flow."
 ## 技术目录路由
 | 信号 | 读取 |
 |------|------|
-| 域名/前端/Web/API/GraphQL | `techniques/web.md` |
-| 信息收集/CDN/DNS/ASN/子域 | `techniques/recon.md` + Hermes `cdn-origin-tracing` |
-| AWS/Azure/GCP/K8s/容器 | `techniques/cloud.md` |
-| 数据库端口/连接串 | `techniques/database.md` |
-| APK/IPA/EXE/固件 | `techniques/reversing.md` |
-| AD/内网/凭据 | `techniques/ad.md` |
-| EDR/免杀/OPSEC | `techniques/evasion.md` |
+| 域名/前端/Web/API/GraphQL | `../pentest-redteam/techniques/web.md` |
+| 信息收集/CDN/DNS/ASN/子域 | `../pentest-redteam/techniques/recon.md` + Hermes `cdn-origin-tracing` |
+| AWS/Azure/GCP/K8s/容器 | `../pentest-redteam/techniques/cloud.md` |
+| 数据库端口/连接串 | `../pentest-redteam/techniques/database.md` |
+| APK/IPA/EXE/固件 | `../pentest-redteam/techniques/reversing.md` |
+| AD/内网/凭据 | `../pentest-redteam/techniques/ad.md` |
+| EDR/免杀/OPSEC | `../pentest-redteam/techniques/evasion.md` |
 
 ## 使用方式
 加载完整SKILL.md:
 ```
-cat /root/Black-cat/skills/pentest-redteam/SKILL.md
+cat ../pentest-redteam/SKILL.md   # 原装安装: /root/Black-cat/skills/pentest-redteam/SKILL.md
 ```
 加载技术目录(按需):
 ```
-cat /root/Black-cat/skills/pentest-redteam/techniques/web.md
-cat /root/Black-cat/skills/pentest-redteam/techniques/recon.md
+cat ../pentest-redteam/techniques/web.md
+cat ../pentest-redteam/techniques/recon.md
 ```
 Ledger工具:
 ```

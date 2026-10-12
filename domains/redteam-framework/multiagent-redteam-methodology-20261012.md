@@ -37,3 +37,10 @@
 - 持久件：`verification-scripts/verify_chain.py`（本域目录）。
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+## 5. AtkMeta 集成点（10-12B 补）
+
+- 命令面：开场回放 `atkmeta lessons/avoid`（避开已败向量）· 胜利蒸馏 `atkmeta save`（证据门槛：无证据发现不计入成功路径）· 败簿 `atkmeta fail`
+- 存储：`winning_chains.json` 按 target_fp 分桶；losing 桶回灌输出「避免: xxx(已失败N次)」
+- 置信公式：`conf = min(0.95, 0.4 + 0.12*wins − 0.05*fails)`
+- 本机适配：机制并入 ops-review 沉淀流程（技能名 atk-meta-library 为来源机器实现）

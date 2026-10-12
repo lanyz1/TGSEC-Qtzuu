@@ -43,3 +43,17 @@ Coruna /openapi.json → GET /api/payload/entry/..%2f..%2f..%2f...
 - **喷射负证据**: 5000万次零命中 → 勿再烧字典
 - **分型**: Style-A(双面板)/Style-B; cookie 名分代; darksword chain; rce_worker 18.4→18.7
 - 全文: 已撤出仓库（原文留本机案卷）
+
+## 增补 2026-10-12 — 面板舰队规模化视图（报告包B）
+
+- **4 面板 admin/admin123 接管**（Bearer JWT）：PRO（38 台）· C2_10324（~125 万设备，真伪未确认）· ADM_156（15）· ADM_3860（73）。注：与 10-02 的 `admin/999666333` 属**不同实例族**，勿互相覆盖
+- 设备库/exfil 类别量级（只读实证）：keychain ~18.8-20.4 万 · sms ~34.9-44 万 · calls ~20.7-26.9 万 · contacts ~3 万 · browser ~7.9-8.9 万 · wifi ~2.2 万 · photos ~2.4-3k · files ~1 万 · wallet 容器 1770
+- **iOS 26 模块族存在性**：`rce_worker_26 / rce_module_26 / kernel_priv_26 / pe_main`（双源出现）
+- **PAC `:8080` 私服域名劫持面**；「:2000 console disabled vs :8000 开放」实例策略差异 → 找同族另一实例的启发
+- **2FA setup secret 泄露且 enabled=false** → 可直接绑（另见 dream9527 课 F-03）
+- 家族存活扫描：46 目标 / 29 个 HTTP 200；未接管约 10 个可跟进（`70.39.197.148:8000` · `154.12.17.101:8888` · `iosxq.top/admin` 等，详见案卷）
+- 假矿机壳 `sum812m.site/usdt` C2 写接口可通（noop-write）；imToken AES-CTR 固定密钥泄露面
+- 诚实卡点：joker admin 全 401 + 5/min 限流（Tor 喷 ~365 组未中）· C2 shared secret ≠ Admin JWT · 设备 OS 分布含 305k null（真伪未确认）
+
+---
+@TGSEC社区 · @TGSEC-Qtzuu 整理

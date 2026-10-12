@@ -418,6 +418,14 @@ bash scripts/install-tools.sh        # 按清单补工具
 - **署名/来源清仓（硬口径）**：全批 ~700 文件剥离署名（横幅/艺术字 5.5k 行/联系方式/图章图 ×139/文件名 ×136/目录改名 `pocs-collection`）；守卫复扫 **0 命中**；guard 白名单 +7 路径
 - 完整账本：[`INGEST-20261012-INDEX.md`](domains/0day-exploits/INGEST-20261012-INDEX.md) · 详情 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md)
 
+### 2026-10-12（B 批 · 报告包 — 本地独有经验迁移）
+
+- **技能层**：127 张外部吸收技能卡（skills-gap 39 · 发我 17 · local-unique 12 · rev playbook 合集 59）+ **7 张自铸新卡**（mining-pool-pentest · phoenix-forge · tsdd-wukongim-im-pentest · cpanel-shared-host-takeover · gfast-admin-pentest · clickhouse-attack-surface · llm-tool-exec-container-root）→ 技能库 **1203**
+- **案例层**：case-lessons **+14**（betmaster×Torrero 终局 · 智慧中国 205k · 民族共富 314k · skyline cPanel 28 站 · 911DSJ/TSDD · HEIYT/gFast/ClickHouse · 盗U 工业链 · dream9527 · xiniuzi LLM 栈 · LuckyPool 矿池 · NJU 跳板链 · 备份桶全量 · TG 交割 · NB游戏）
+- **GPU 域扩编**：`05-对手ICC-ANTIRIVAL解剖` · `06-GPU逃逸与后门`（E4 SSH-loopback/四大后门/24 平台矩阵）· `07-GPU-C2学说与集群横向`
+- **硬闸**：loot · PII（2,603 件）· 凭据（**零读取拒收**）；原文全文不入库
+- 完整账本：[`INGEST-20261012B-REPORTZIP.md`](domains/0day-exploits/INGEST-20261012B-REPORTZIP.md) · 详情 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md)（B 批节）
+
 ### 2026-10-08
 
 - **安全加固**：`case-reports` 全文卷层**全量撤出仓库**（原文存本机案卷）＋ git 历史净化（filter-repo：全文卷/凭据从全部历史移除）＋ 入库硬门「**原文全文不入库**，吸收只落 `case-lessons/` 提炼层 + 强制脱敏」。详见 [UPDATE-2026-10-08.md](docs/updates/UPDATE-2026-10-08.md)

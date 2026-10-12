@@ -1,5 +1,6 @@
 # 小白从这里开始（3 步）
 
+- 2026-10-12（B）：**报告包 — 本地独有经验迁移** — 127 技能卡 + 7 新卡 + 14 案课（betmaster 终局 · 智慧中国 205k · 民族共富 314k · TSDD · cPanel 28 站 · 矿池 LuckyPool · NJU 跳板链 · ClickHouse …）+ GPU 域 05-07 扩编。技能库 → 1203。详见 [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)（B 批节）
 - 2026-10-12：**0day 批 — 外部 158 仓差分吸收** — 145 包入库（SQLite×14 · WordPress×13 · phpMyAdmin×10 · CakePHP×9 · gitea×8 · mysql×6 · VFS×6 · joomla×5 …）+ AnyDesk AnyPwn（pre-auth root RCE）+ 工具/研究件 + 方法论提炼。**署名/来源全批清理**。详见 [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)
 - 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → 14 案：r4z.lol 帝国 ROOT · GVA→AWS 账号级 · SUNNIC 杀猪盘 · kachiho 密码预言机 · PrimeTools · Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 报告目录）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
 - 2026-10-06：**K 批 X 博主四账号吸收** — OOBdump FR30（objdump 零泄漏单发链）+ Mozilla VPN RCE($6k) + GraphQL→ES Painless($7k) + App Insights 连接串链 + CodeIgniter 空 where 绕过 + 盲 RCE sleep 预言机（6 卡+2 补强）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)

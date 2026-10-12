@@ -3,7 +3,7 @@
 > **渗透中途必查。** 命中资产类型后：先本表 → `case-lessons/<slug>.md`（课）。全文卷已撤库（原文存本机案卷）。
 > 不要只读通用 playbook 就开打；同面有 case 时必须至少打开 1 篇相关课。
 
-- 课（case-lessons）：**108**（全量实计；含 web-security / web-injection / crypto-attacks 域）
+- 课（case-lessons）：**112**（全量实计；含 web-security / web-injection / crypto-attacks 域）
 - 域覆盖：api-security, auth-security, business-logic, cloud-security, gambling-pentest, llm-ai-security, recon, redteam-framework, reverse-engineering, web-attack, web-security, web-injection, crypto-attacks, gpu-ai-security
 - 生成：2026-09-20（闭环优化后） · 2026-10-12 增补（报告包 B 批）
 
@@ -99,15 +99,16 @@
 | `zhihuizhongguo-final-205k` | 智慧中国终局：SSRF→Redis MIGRATE COPY 全键谱 → 205,676 全档 + 收网研判 | `domains/business-logic/case-lessons/zhihuizhongguo-final-205k.md` | — |
 | `minzu-gongfu-314k-idor` | 民族共富：equity IDOR 神谕 → 314k 全量（8 桶 242 req/s）+ 残差证明法 | `domains/business-logic/case-lessons/minzu-gongfu-314k-idor.md` | — |
 
-## `cloud-security`（3）
+## `cloud-security`（4）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
 | `hushchat-s3` | - Source report: HushChat-S3渗透测试报告.md | `domains/cloud-security/case-lessons/hushchat-s3.md` | 已撤库 |
 | `gva-aws-takeover` | GVA 配置泄露→AWS AdministratorAccess→EC2 Instance Connect ×28→Rancher→GitLab 全源码 | `domains/cloud-security/case-lessons/gva-to-aws-account-takeover.md` | 已撤库 |
 | `saas-backup-bucket-full-db-offline` | SaaS 整库备份桶一网打尽：19 租户每 30 分钟备份 + 离线破密 + 完整性证明 | `domains/cloud-security/case-lessons/saas-backup-bucket-full-db-offline.md` | — |
+| `ha8-aws-backup-empire-whitelabel` | AWS 74 桶备份帝国：白标家族源码/数据总入口 | `domains/cloud-security/case-lessons/ha8-aws-backup-empire-whitelabel.md` | — |
 
-## `gambling-pentest`（11）
+## `gambling-pentest`（12）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -122,6 +123,7 @@
 | `kachiho-fxgz` | 密码预言机批量 ATO（655→62）+ PAD SPACE 锁窗绕过 + 40+ RCE 排除矩阵 | `domains/gambling-pentest/case-lessons/kachiho-password-oracle-ato.md` | 已撤库 |
 | `nbgame-agent-console-takeover` | NB游戏 Sky System 代理后台：用户名=密码 96/103 + secret 直读 + TOTP 重登 | `domains/gambling-pentest/case-lessons/nbgame-agent-console-takeover.md` | — |
 | `betmaster-fullchain-20261012` | betmaster×Torrero 全域终局：account_id发号 + CRM备份直下 + Snowflake 3GB | `domains/gambling-pentest/case-lessons/betmaster-fullchain-20261012.md` | — |
+| `ha8-hash8-casino-chain` | 哈希8加密赌场：ECDH v2/WS 信道突破/验证码族/风控指纹对抗/加固战 | `domains/gambling-pentest/case-lessons/ha8-hash8-casino-chain.md` | — |
 
 ## `llm-ai-security`（2）
 
@@ -159,7 +161,7 @@
 | `qingmeng-fake-detector-botnet` | - Source report: 情梦后门 rar | `domains/reverse-engineering/case-lessons/qingmeng-fake-detector-botnet.md` | 已撤库 |
 | `electron-jsc-signature-oracle` | Electron jsc 字节码 → V8 签名 Oracle 重建 | `domains/reverse-engineering/case-lessons/electron-jsc-signature-oracle.md` | — |
 
-## `web-attack`（18）
+## `web-attack`（19）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -181,8 +183,9 @@
 | `tingyu28-qunkong` | 群控三件套：开放注册→workspace IDOR→导出 API（86.7万条） | `domains/web-attack/case-lessons/qunkong-console-trio.md` | 已撤库 |
 | `guoqiang-jinpan` | /install 重入 + rogue MySQL 写配置；FCGI sock 0666 + sendmail 绕 disable_functions | `domains/web-attack/case-lessons/install-reentry-rogue-mysql.md` | 已撤库 |
 | `skyline-cpanel-28site-chain` | cPanel 共享主机 28 站链：FoxQR 上传 RCE → .env/27库 → 隐藏 SSH 21098 → SOCKS | `domains/web-attack/case-lessons/skyline-cpanel-28site-chain.md` | — |
+| `ha8-ghgc-sysjob-to-cron-root` | RuoYi sys_job 直写库→JNDI→MUDb→/etc/cron.d root 链 | `domains/web-attack/case-lessons/ha8-ghgc-sysjob-to-cron-root.md` | — |
 
-## `web-security`（9）
+## `web-security`（10）
 
 | slug | 一句话 | 课 | 全文 |
 |------|--------|----|------|
@@ -195,6 +198,7 @@
 | `dream9527-fund-platform-full-audit` | FastAdmin TOTP 预言机 337,631 命中 + OpenIM 万能码 + 2.14M 条只读审计 | `domains/web-security/case-lessons/dream9527-fund-platform-full-audit.md` | — |
 | `911dsj-chain-tsdd-kkww-kkmde` | 911DSJ 产业链：TSDD/WuKongIM 接管 + kkww 商户 + kkmde 客服 | `domains/web-security/case-lessons/911dsj-chain-tsdd-kkww-kkmde.md` | — |
 | `heiyt-gfast-scrm-clickhouse` | HEIYT 三线：gFast 未授权改密 + SCRM 超管 + ClickHouse file()/Executable 墙 | `domains/web-security/case-lessons/heiyt-gfast-scrm-clickhouse.md` | — |
+| `ghgc-scra-vip-pigbutcher` | SCRA VIP 杀猪盘：TP5 入口→RuoYi 接管→资金取证（99% 吞没） | `domains/web-security/case-lessons/ghgc-scra-vip-pigbutcher.md` | — |
 
 ## `web-injection`（4）
 

@@ -7,7 +7,7 @@ description: "Use for attack-surface domain knowledge matrix."
 
 > 小白入口：[`START.md`](START.md) · 全 AI 路径表：[`ROUTING.md`](ROUTING.md)
 >
-> **本轮（2026-10-12）：** 0day 批 — 外部 158 仓差分吸收（145 包 + AnyDesk AnyPwn + 工具/方法论；**署名/来源清仓**）。说明 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md) · 融合批次 [`README.md`](README.md) 第十节。
+> **本轮（2026-10-12）：** ① 0day 批 — 外部 158 仓差分吸收（145 包 + AnyDesk AnyPwn；**署名清仓**）；② **报告包 B 批 — 本地独有经验迁移**（127+7 技能卡 · case-lessons +14 · GPU 域 05-07 扩编 · loot/PII 硬闸拒收）。说明 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md) · 融合批次 [`README.md`](README.md) 第十节。
 
 > **全 AI 先读 [`ROUTING.md`](ROUTING.md)**（关键词→路径，不绑 Hermes）。再本表定域。
 

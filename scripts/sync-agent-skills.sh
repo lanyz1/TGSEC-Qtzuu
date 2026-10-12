@@ -6,12 +6,22 @@
 #   bash scripts/sync-agent-skills.sh --user-only
 #   bash scripts/sync-agent-skills.sh --dest /custom/skills/dir
 #
+# 技能源: 优先 hermes-skills/；不存在时自动回退到 .claude/skills/（2026-10-02 瘦身后已统一）
+# 覆盖: 环境变量 TGSEC_SKILLS_SRC=/path/to/skills
+#
 # @TGSEC社区 · @TGSEC-Qtzuu 整理
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SRC="$ROOT/hermes-skills"
+if [ -n "${TGSEC_SKILLS_SRC:-}" ]; then
+  SRC="$TGSEC_SKILLS_SRC"
+elif [ ! -d "$SRC" ] && [ -d "$ROOT/.claude/skills" ]; then
+  # 2026-10-02 瘦身后 hermes-skills/ 已不入仓（.gitignore L14）；技能源统一到 .claude/skills/
+  SRC="$ROOT/.claude/skills"
+  echo "[i] hermes-skills/ 不在仓内（瘦身后已 gitignore）→ 源回退 .claude/skills/"
+fi
 
 PROJECT_ONLY=0
 USER_ONLY=0
@@ -41,7 +51,7 @@ H
 done
 
 if [ ! -d "$SRC" ]; then
-  echo "[!] missing $SRC"
+  echo "[!] missing skills source — need hermes-skills/ or .claude/skills/: $SRC"
   exit 1
 fi
 
@@ -134,6 +144,10 @@ for d in "${DESTS[@]}"; do
     *"|$d|"*) continue ;;
   esac
   SEEN="${SEEN}${d}|"
+  if [ "$d" = "$SRC" ]; then
+    echo "[i] skip $d (== src, 已是技能源)"
+    continue
+  fi
   copy_tree "$d"
 done
 

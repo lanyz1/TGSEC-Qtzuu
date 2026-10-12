@@ -9,6 +9,9 @@
 # Default is OVERLAY without --delete so private local skills (e.g. defi-authorize-drain)
 # are not wiped.
 #
+# 技能源: 优先 hermes-skills/；不存在时自动回退到 .claude/skills/（2026-10-02 瘦身后已统一）
+# 覆盖: 环境变量 TGSEC_SKILLS_SRC=/path/to/skills
+#
 # @TGSEC社区 · @TGSEC-Qtzuu 整理
 
 set -euo pipefail
@@ -16,6 +19,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SUITE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SRC="$SUITE_DIR/hermes-skills"
+if [ -n "${TGSEC_SKILLS_SRC:-}" ]; then
+  SRC="$TGSEC_SKILLS_SRC"
+elif [ ! -d "$SRC" ] && [ -d "$SUITE_DIR/.claude/skills" ]; then
+  # 2026-10-02 瘦身后 hermes-skills/ 已不入仓（.gitignore L14）；技能源统一到 .claude/skills/
+  SRC="$SUITE_DIR/.claude/skills"
+  echo "[i] hermes-skills/ 不在仓内（瘦身后已 gitignore）→ 源回退 .claude/skills/"
+fi
 HERMES_DIR="${HERMES_DIR:-$HOME/.hermes}"
 DEST="$HERMES_DIR/skills/security"
 DRY=0
@@ -28,7 +38,7 @@ for arg in "$@"; do
     --pull) PULL=1 ;;
     --prune) PRUNE=1 ;;
     -h|--help)
-      sed -n '2,14p' "$0"; exit 0 ;;
+      sed -n '2,15p' "$0"; exit 0 ;;
   esac
 done
 
@@ -40,7 +50,7 @@ echo "  mode: $([ "$PRUNE" = 1 ] && echo 'PRUNE (delete extras)' || echo 'OVERLA
 echo "================================================"
 
 if [ ! -d "$SRC" ]; then
-  echo "[!] missing $SRC — repo incomplete. git pull latest TGSEC-Qtzuu first."
+  echo "[!] missing skills source — need hermes-skills/ or .claude/skills/. git pull latest TGSEC-Qtzuu first."
   exit 1
 fi
 
@@ -87,7 +97,7 @@ if [ "$DRY" = 0 ]; then
 fi
 
 COUNT=$(find "$SRC" -name SKILL.md | wc -l | tr -d ' ')
-echo "[*] will install $COUNT skills from hermes-skills/"
+echo "[*] will install $COUNT skills from $(basename "$SRC")/"
 
 if [ "$DRY" = 1 ]; then
   if [ "$PRUNE" = 1 ]; then
@@ -114,7 +124,7 @@ else
   cp -a "$SRC"/. "$DEST"/
 fi
 
-echo "[✓] installed/updated from hermes-skills/:"
+echo "[✓] installed/updated from $(basename "$SRC")/:"
 find "$SRC" -name SKILL.md | sed "s|$SRC/||" | sort | while read -r p; do
   d=$(dirname "$p")
   desc=$(grep -m1 '^description:' "$DEST/$p" 2>/dev/null | sed 's/description:[[:space:]]*//; s/^"//; s/"$//')
@@ -122,7 +132,7 @@ find "$SRC" -name SKILL.md | sed "s|$SRC/||" | sort | while read -r p; do
 done
 
 echo ""
-echo "[i] private extras left in place (dirs in dest not in public hermes-skills/):"
+echo "[i] private extras left in place (dirs in dest not in repo skills source):"
 comm -23 \
   <(find "$DEST" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort) \
   <(find "$SRC"  -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort) \

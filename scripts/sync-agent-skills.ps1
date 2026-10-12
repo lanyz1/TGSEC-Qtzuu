@@ -23,7 +23,7 @@ foreach ($c in @(
 }
 
 if (-not $bash) {
-  Write-Host "[!] 需要 Git Bash。或手动把 hermes-skills\* 复制到 .claude\skills\"
+  Write-Host "[!] 需要 Git Bash。或手动把 .claude\skills\* 复制到 $env:USERPROFILE\.claude\skills 等目标 AI 目录"
   exit 1
 }
 

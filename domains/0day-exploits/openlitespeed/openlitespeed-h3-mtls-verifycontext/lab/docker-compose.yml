@@ -1,0 +1,13 @@
+name: openlitespeed-h3-mtls-verifycontext
+
+services:
+  gadget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19200:19200"
+    labels:
+      lab: openlitespeed-h3-mtls-verifycontext

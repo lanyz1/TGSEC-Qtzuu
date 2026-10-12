@@ -1,0 +1,8 @@
+src/.git
+src/test
+src/po
+src/doc
+poc-last-run.txt
+__pycache__
+*.pyc
+.git

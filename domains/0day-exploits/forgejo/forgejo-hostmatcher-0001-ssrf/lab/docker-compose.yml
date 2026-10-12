@@ -1,0 +1,39 @@
+name: forgejo-hostmatcher-0001-ssrf
+
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:16.0.5
+    ports:
+      - "127.0.0.1:19320:3000"
+    cap_add:
+      - NET_ADMIN
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      FORGEJO__database__DB_TYPE: sqlite3
+      FORGEJO__database__PATH: /data/gitea/gitea.db
+      FORGEJO__security__INSTALL_LOCK: "true"
+      FORGEJO__security__SECRET_KEY: lab-secret-key-not-for-prod
+      FORGEJO__server__DOMAIN: 127.0.0.1
+      FORGEJO__server__HTTP_PORT: "3000"
+      FORGEJO__server__ROOT_URL: http://127.0.0.1:19320/
+      FORGEJO__server__DISABLE_SSH: "true"
+      FORGEJO__service__DISABLE_REGISTRATION: "false"
+      FORGEJO__service__REQUIRE_SIGNIN_VIEW: "false"
+    volumes:
+      - forgejo_data:/data
+
+  oracle:
+    build: .
+    network_mode: service:forgejo
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      - forgejo
+    environment:
+      BIND_HOST: "0.0.0.0"
+      BIND_PORT: "8080"
+      WITNESS: "FORGEJO-HOSTMATCHER-0001-WITNESS"
+
+volumes:
+  forgejo_data:

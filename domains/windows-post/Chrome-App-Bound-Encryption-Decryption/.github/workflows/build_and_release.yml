@@ -1,0 +1,118 @@
+name: Build and Release Chrome App-Bound Encryption Decryption
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build-tool:
+    name: Build Utility
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Add MSVC to PATH for x64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Build the x64 Encryptor Utility
+        shell: cmd
+        run: |
+          call make.bat build_encryptor_only
+      - name: Upload Encryptor Utility Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-tool-encryptor
+          path: build/encryptor.exe
+
+  build:
+    name: Build for ${{ matrix.architecture }}
+    runs-on: windows-latest
+    needs: build-tool
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x64
+            msvc_arch: x64
+            final_name: chromelevator_x64.exe
+          - architecture: arm64
+            msvc_arch: x64_arm64 
+            final_name: chromelevator_arm64.exe
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Add MSVC to PATH for ${{ matrix.architecture }}
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
+      - name: Download the x64 Encryptor Utility
+        uses: actions/download-artifact@v4
+        with:
+          name: build-tool-encryptor
+          path: build
+      - name: Run Build Script for Target
+        shell: cmd
+        run: |
+          call make.bat build_target_only
+      - name: Rename Final Executable for Artifact Upload
+        shell: cmd
+        run: |
+          rename chromelevator.exe ${{ matrix.final_name }}
+      - name: Upload Final Executable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: injector-binary-${{ matrix.architecture }}
+          path: ${{ matrix.final_name }}
+
+  create_release:
+    name: Create GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all injector binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: release_assets
+          merge-multiple: true
+
+      - name: Create Consolidated ZIP Archive
+        id: zip_package
+        shell: bash
+        run: |
+          # Sanity check to see the files that are about to be zipped.
+          echo "Verifying contents of release directory:"
+          ls -lR release_assets
+
+          VERSION_TAG=${{ github.ref_name }}
+          ZIP_NAME="chrome-injector-${VERSION_TAG}.zip"
+          
+          # This command now works correctly because the directory is flat.
+          (cd release_assets && zip "../${ZIP_NAME}" *)
+          
+          echo "zip_path=${ZIP_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            Automated release for version **${{ github.ref_name }}**.
+
+            The attached `.zip` file contains the final injector executable for all supported architectures.
+
+            **Contents:**
+            - `chromelevator_x64.exe`
+            - `chromelevator_arm64.exe`
+          draft: false
+          prerelease: false
+          files: ${{ steps.zip_package.outputs.zip_path }}
+          fail_on_unmatched_files: true

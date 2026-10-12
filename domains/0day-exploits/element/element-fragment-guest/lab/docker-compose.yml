@@ -1,0 +1,13 @@
+name: element-fragment-guest
+
+services:
+  gadget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19600:19600"
+    labels:
+      lab: element-fragment-guest

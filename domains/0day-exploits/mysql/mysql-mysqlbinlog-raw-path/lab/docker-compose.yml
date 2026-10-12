@@ -1,0 +1,35 @@
+name: mysql-mysqlbinlog-raw-path
+
+services:
+  stub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    pull_policy: never
+    init: true
+    environment:
+      PYTHONUNBUFFERED: "1"
+      BIND_HOST: "0.0.0.0"
+      CONTROL_PORT: "3306"
+      TRAVERSAL_PORT: "3307"
+      WITNESS: "MYSQL-BINLOG-RAW-WITNESS"
+      CONTROL_IDENT: "mysql-bin.000001"
+      TRAVERSAL_IDENT: "/work/oracle/MYSQL-BINLOG-RAW-WITNESS"
+    ports:
+      - "127.0.0.1:18620:3306"
+      - "127.0.0.1:18621:3307"
+    command: ["python3", "/lab/stub.py"]
+
+  dump:
+    image: mysql:26.7.0
+    pull_policy: never
+    init: true
+    user: "0:0"
+    depends_on:
+      - stub
+    entrypoint: ["sleep", "infinity"]
+    working_dir: /work
+    volumes:
+      - ./work:/work
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"

@@ -1,0 +1,35 @@
+name: gitea-hostmatcher-0000-ssrf
+
+services:
+  gitea:
+    build: .
+    image: gitea-hostmatcher-0000-ssrf:lab
+    ports:
+      - "127.0.0.1:18131:3000"
+    cap_add:
+      - NET_ADMIN
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      GITEA__database__DB_TYPE: sqlite3
+      GITEA__database__PATH: /data/gitea/gitea.db
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__server__DOMAIN: 127.0.0.1
+      GITEA__server__HTTP_PORT: "3000"
+      GITEA__server__ROOT_URL: http://127.0.0.1:18131/
+      GITEA__service__DISABLE_REGISTRATION: "false"
+      GITEA__service__REQUIRE_SIGNIN_VIEW: "false"
+    volumes:
+      - gitea_data:/data
+
+  oracle:
+    image: python:3.12-alpine
+    network_mode: service:gitea
+    depends_on:
+      - gitea
+    volumes:
+      - ./oracle/server.py:/server.py:ro
+    command: ["python3", "/server.py"]
+
+volumes:
+  gitea_data:

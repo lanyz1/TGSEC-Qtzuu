@@ -1,0 +1,11 @@
+name: cakephp-window-sqli
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19440:80"

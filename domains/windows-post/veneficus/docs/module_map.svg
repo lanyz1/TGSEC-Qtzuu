@@ -1,0 +1,250 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1280" viewBox="0 0 1000 1280">
+
+  <defs>
+    <linearGradient id="hdr" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3dff9a"/>
+      <stop offset="0.55" stop-color="#7ee7ff"/>
+      <stop offset="1" stop-color="#5b8cff"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="50%" cy="16%" r="80%">
+      <stop offset="0" stop-color="#101820" stop-opacity="1"/>
+      <stop offset="1" stop-color="#07090d" stop-opacity="1"/>
+    </radialGradient>
+    <pattern id="scan" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="1" fill="#3dff9a" opacity="0.035"/>
+    </pattern>
+    <pattern id="iso" width="56" height="32" patternUnits="userSpaceOnUse">
+      <path d="M0 16 L28 0 L56 16 L28 32 Z" fill="none" stroke="#14301f" stroke-width="0.7" opacity="0.35"/>
+    </pattern>
+    <filter id="shadow" x="-25%" y="-25%" width="160%" height="170%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+      <feOffset dx="4" dy="10" result="off"/>
+      <feFlood flood-color="#000" flood-opacity="0.55"/>
+      <feComposite in2="off" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    
+    <linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12301f"/>
+      <stop offset="1" stop-color="#0b1412"/>
+    </linearGradient>
+    <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12301f"/>
+      <stop offset="1" stop-color="#0b1412"/>
+    </linearGradient>
+    <linearGradient id="cg4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12301f"/>
+      <stop offset="1" stop-color="#0b1412"/>
+    </linearGradient>
+    <linearGradient id="cg5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg6" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+    <linearGradient id="cg7" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+    <linearGradient id="cg8" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+    <linearGradient id="cg9" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+    <linearGradient id="cg10" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="1280" fill="url(#vignette)"/>
+  <rect width="1000" height="1280" fill="url(#iso)" opacity="0.55"/>
+  <rect width="1000" height="1280" fill="url(#scan)"/>
+  <rect x="0" y="0" width="1000" height="4" fill="url(#hdr)"/>
+  <rect x="0" y="4" width="1000" height="78" fill="#0a0e14" opacity="0.72"/>
+  <g filter="url(#shadow)">
+    <path d="M480,145 L502,134 L502,1204 L480,1215 Z" fill="#0a1016" stroke="#1c2533" stroke-width="1"/>
+    <path d="M40,145 L62,134 L502,134 L480,145 Z" fill="#101820" stroke="#1c2533" stroke-width="1"/>
+    <path d="M40,145 L62,134" stroke="#3dff9a" stroke-width="1.4" opacity="0.7"/>
+    <rect x="40" y="145" width="440" height="1070" rx="10" ry="10" fill="#0b1118" stroke="#1c2533" stroke-width="1.2" opacity="0.96"/>
+    <rect x="40" y="145" width="6" height="1070" rx="2" fill="#3dff9a" opacity="0.95"/>
+    <text x="62" y="167" fill="#3dff9a" font-size="11" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="2.2">IMPLEMENTED ENOUGH TO READ</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M960,145 L982,134 L982,1204 L960,1215 Z" fill="#0a1016" stroke="#1c2533" stroke-width="1"/>
+    <path d="M520,145 L542,134 L982,134 L960,145 Z" fill="#101820" stroke="#1c2533" stroke-width="1"/>
+    <path d="M520,145 L542,134" stroke="#ff5d6c" stroke-width="1.4" opacity="0.7"/>
+    <rect x="520" y="145" width="440" height="1070" rx="10" ry="10" fill="#0b1118" stroke="#1c2533" stroke-width="1.2" opacity="0.96"/>
+    <rect x="520" y="145" width="6" height="1070" rx="2" fill="#ff5d6c" opacity="0.95"/>
+    <text x="542" y="167" fill="#ff5d6c" font-size="11" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="2.2">STUB / UNUSED / EMPTY</text>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="M452,185 L468,177 L468,347 L452,355 Z" fill="#0b2418" stroke="#3dff9a" stroke-width="0.85" opacity="0.95"/>
+    <path d="M68,185 L84,177 L468,177 L452,185 Z" fill="#145c3a" stroke="#3dff9a" stroke-width="0.95" opacity="0.95"/>
+    <path d="M68,185 L84,177" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="68" y="185" width="384" height="170" rx="12" ry="12" fill="url(#cg1)" stroke="#3dff9a" stroke-width="1.4"  opacity="1"/>
+    <rect x="68" y="185" width="5" height="170" rx="2" fill="#3dff9a"/>
+    <circle cx="90" cy="207" r="4.2" fill="#3dff9a" filter="url(#glow)"/>
+    <text x="102" y="211" fill="#3dff9a" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">CORE</text>
+    <rect x="390.4" y="198" rx="9" ry="9" width="47.6" height="18" fill="#05070a" stroke="#3dff9a" stroke-width="1"/>
+    <text x="414.2" y="211" text-anchor="middle" fill="#3dff9a" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">LIVE</text>
+    <text x="88" y="237" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">main · c2 · crypto · utils</text>
+    <text x="88" y="261"><tspan x="88" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Boot, AES-GCM, HTTPS client,</tspan><tspan x="88" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">sandbox score, DPAPI helpers</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M452,385 L468,377 L468,547 L452,555 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M68,385 L84,377 L468,377 L452,385 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M68,385 L84,377" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="68" y="385" width="384" height="170" rx="12" ry="12" fill="url(#cg2)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="68" y="385" width="5" height="170" rx="2" fill="#f5c542"/>
+    <circle cx="90" cy="407" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="102" y="411" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">THEFT</text>
+    <rect x="368.2" y="398" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="403.1" y="411" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="88" y="437" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">steal · clipper · lsass attempt</text>
+    <text x="88" y="461"><tspan x="88" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Passwords DPAPI-only.</tspan><tspan x="88" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">LSASS fallbacks mostly skip.</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M452,585 L468,577 L468,747 L452,755 Z" fill="#0b2418" stroke="#3dff9a" stroke-width="0.85" opacity="0.95"/>
+    <path d="M68,585 L84,577 L468,577 L452,585 Z" fill="#145c3a" stroke="#3dff9a" stroke-width="0.95" opacity="0.95"/>
+    <path d="M68,585 L84,577" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="68" y="585" width="384" height="170" rx="12" ry="12" fill="url(#cg3)" stroke="#3dff9a" stroke-width="1.4"  opacity="1"/>
+    <rect x="68" y="585" width="5" height="170" rx="2" fill="#3dff9a"/>
+    <circle cx="90" cy="607" r="4.2" fill="#3dff9a" filter="url(#glow)"/>
+    <text x="102" y="611" fill="#3dff9a" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">HOST</text>
+    <rect x="390.4" y="598" rx="9" ry="9" width="47.6" height="18" fill="#05070a" stroke="#3dff9a" stroke-width="1"/>
+    <text x="414.2" y="611" text-anchor="middle" fill="#3dff9a" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">LIVE</text>
+    <text x="88" y="637" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">persistence · proxy · self_destruct</text>
+    <text x="88" y="661"><tspan x="88" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">WMI / schtask / Run key.</tspan><tspan x="88" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">SOCKS5 CONNECT, localhost.</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M452,785 L468,777 L468,947 L452,955 Z" fill="#0b2418" stroke="#3dff9a" stroke-width="0.85" opacity="0.95"/>
+    <path d="M68,785 L84,777 L468,777 L452,785 Z" fill="#145c3a" stroke="#3dff9a" stroke-width="0.95" opacity="0.95"/>
+    <path d="M68,785 L84,777" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="68" y="785" width="384" height="170" rx="12" ry="12" fill="url(#cg4)" stroke="#3dff9a" stroke-width="1.4"  opacity="1"/>
+    <rect x="68" y="785" width="5" height="170" rx="2" fill="#3dff9a"/>
+    <circle cx="90" cy="807" r="4.2" fill="#3dff9a" filter="url(#glow)"/>
+    <text x="102" y="811" fill="#3dff9a" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">STEALTH</text>
+    <rect x="390.4" y="798" rx="9" ry="9" width="47.6" height="18" fill="#05070a" stroke="#3dff9a" stroke-width="1"/>
+    <text x="414.2" y="811" text-anchor="middle" fill="#3dff9a" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">LIVE</text>
+    <text x="88" y="837" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">stomp AMSI/ETW (real bytes)</text>
+    <text x="88" y="861"><tspan x="88" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">AmsiScanBuffer + EtwEventWrite</tspan><tspan x="88" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">patches. amsi.dll often unloaded.</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M452,985 L468,977 L468,1147 L452,1155 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M68,985 L84,977 L468,977 L452,985 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M68,985 L84,977" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="68" y="985" width="384" height="170" rx="12" ry="12" fill="url(#cg5)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="68" y="985" width="5" height="170" rx="2" fill="#f5c542"/>
+    <circle cx="90" cy="1007" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="102" y="1011" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">RELAY</text>
+    <rect x="368.2" y="998" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="403.1" y="1011" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="88" y="1037" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">worker.js route shapes</text>
+    <text x="88" y="1061"><tspan x="88" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Routes exist. env.* likely</tspan><tspan x="88" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">crashes the isolate on load.</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M932,185 L948,177 L948,347 L932,355 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M548,185 L564,177 L948,177 L932,185 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M548,185 L564,177" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="548" y="185" width="384" height="170" rx="12" ry="12" fill="url(#cg6)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="548" y="185" width="5" height="170" rx="2" fill="#ff5d6c"/>
+    <circle cx="570" cy="207" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="582" y="211" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">SYSCALLS</text>
+    <rect x="855.6" y="198" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="886.8" y="211" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="568" y="237" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Tartarus / Halo TODO</text>
+    <text x="568" y="261"><tspan x="568" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">All inits return true.</tspan><tspan x="568" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Allocators return null.</tspan></text>
+    <path d="M832.16,195 L801.44,263.2 L839.84,280.2 L809.12,343" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M932,385 L948,377 L948,547 L932,555 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M548,385 L564,377 L948,377 L932,385 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M548,385 L564,377" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="548" y="385" width="384" height="170" rx="12" ry="12" fill="url(#cg7)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="548" y="385" width="5" height="170" rx="2" fill="#ff5d6c"/>
+    <circle cx="570" cy="407" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="582" y="411" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">DKOM</text>
+    <rect x="855.6" y="398" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="886.8" y="411" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="568" y="437" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">All methods return false</text>
+    <text x="568" y="461"><tspan x="568" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Needs kernel R/W this</tspan><tspan x="568" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">BYOVD path does not export.</tspan></text>
+    <path d="M832.16,395 L801.44,463.2 L839.84,480.2 L809.12,543" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M932,585 L948,577 L948,747 L932,755 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M548,585 L564,577 L948,577 L932,585 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M548,585 L564,577" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="548" y="585" width="384" height="170" rx="12" ry="12" fill="url(#cg8)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="548" y="585" width="5" height="170" rx="2" fill="#ff5d6c"/>
+    <circle cx="570" cy="607" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="582" y="611" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">HVNC</text>
+    <rect x="855.6" y="598" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="886.8" y="611" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="568" y="637" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">RFB handshake, no desktop</text>
+    <text x="568" y="661"><tspan x="568" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Listens. Never paints a</tspan><tspan x="568" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">hidden framebuffer.</tspan></text>
+    <path d="M832.16,595 L801.44,663.2 L839.84,680.2 L809.12,743" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M932,785 L948,777 L948,947 L932,955 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M548,785 L564,777 L948,777 L932,785 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M548,785 L564,777" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="548" y="785" width="384" height="170" rx="12" ry="12" fill="url(#cg9)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="548" y="785" width="5" height="170" rx="2" fill="#ff5d6c"/>
+    <circle cx="570" cy="807" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="582" y="811" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">NTLM</text>
+    <rect x="855.6" y="798" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="886.8" y="811" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="568" y="837" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Never called from main</text>
+    <text x="568" y="861"><tspan x="568" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">CVE-2025-33073 mislabeled</tspan><tspan x="568" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">as EFS. python3 on Windows.</tspan></text>
+    <path d="M832.16,795 L801.44,863.2 L839.84,880.2 L809.12,943" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M932,985 L948,977 L948,1147 L932,1155 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M548,985 L564,977 L948,977 L932,985 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M548,985 L564,977" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="548" y="985" width="384" height="170" rx="12" ry="12" fill="url(#cg10)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="548" y="985" width="5" height="170" rx="2" fill="#ff5d6c"/>
+    <circle cx="570" cy="1007" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="582" y="1011" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">PAYLOADS</text>
+    <rect x="855.6" y="998" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="886.8" y="1011" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="568" y="1037" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">drivers/ and tools/ empty</text>
+    <text x="568" y="1061"><tspan x="568" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">BYOVD and LSASS fallbacks</tspan><tspan x="568" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">have nothing to load.</tspan></text>
+    <path d="M832.16,995 L801.44,1063.2 L839.84,1080.2 L809.12,1143" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g><g transform="translate(36,96)"><rect x="0" y="0" rx="9" ry="9" width="46.8" height="18" fill="#0c1218" stroke="#3dff9a" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#3dff9a"/><text x="18" y="12.5" fill="#3dff9a" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">LIVE</text></g><g transform="translate(100.8,96)"><rect x="0" y="0" rx="9" ry="9" width="68.4" height="18" fill="#0c1218" stroke="#f5c542" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#f5c542"/><text x="18" y="12.5" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text></g><g transform="translate(187.2,96)"><rect x="0" y="0" rx="9" ry="9" width="46.8" height="18" fill="#0c1218" stroke="#ff5d6c" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#ff5d6c"/><text x="18" y="12.5" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">STUB</text></g>
+  <text x="36" y="26" fill="#3dff9a" font-size="11" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="2.4">FIG 07  ·  MODULES</text>
+  <text x="964" y="26" fill="#7d8796" font-size="11" font-weight="600" font-family="Menlo, SF Mono, ui-monospace, monospace" text-anchor="end" letter-spacing="1.6">TLP:CLEAR · EDUCATIONAL</text>
+  <text x="36" y="58" fill="#f2f6fb" font-size="28" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Module map</text>
+  <text x="36" y="80" fill="#7d8796" font-size="13" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">What is real code versus a stub in this drop</text>
+</svg>

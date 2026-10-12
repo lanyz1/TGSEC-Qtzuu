@@ -1,0 +1,40 @@
+name: forgejo-openid-discovery-ssrf
+
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:16.0.5
+    pull_policy: missing
+    restart: "no"
+    ports:
+      - "127.0.0.1:19330:3000"
+    environment:
+      SECRET_KEY: "lab-forgejo-openid-discovery-ssrf"
+      INSTALL_LOCK: "true"
+      FORGEJO__security__INSTALL_LOCK: "true"
+      FORGEJO__security__SECRET_KEY: "lab-forgejo-openid-discovery-ssrf"
+      FORGEJO__openid__ENABLE_OPENID_SIGNIN: "true"
+      FORGEJO__server__DOMAIN: "127.0.0.1"
+      FORGEJO__server__HTTP_PORT: "3000"
+      FORGEJO__server__ROOT_URL: "http://127.0.0.1:19330/"
+      FORGEJO__server__DISABLE_SSH: "true"
+      FORGEJO__log__LEVEL: "info"
+      FORGEJO__service__DISABLE_REGISTRATION: "true"
+    volumes:
+      - forgejo-data:/data
+
+  oracle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: "service:forgejo"
+    depends_on:
+      - forgejo
+    restart: "no"
+    environment:
+      BIND_HOST: "127.0.0.1"
+      BIND_PORT: "18080"
+      HITS_PATH: "/tmp/forgejo-openid-discovery-hits.jsonl"
+      WITNESS: "FORGEJO-OPENID-DISCOVERY-WITNESS"
+
+volumes:
+  forgejo-data:

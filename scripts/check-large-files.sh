@@ -9,6 +9,8 @@ POT_RE='\.(png|jpg|jpeg|gif|webp|bmp|mp4|mov|avi)$'
 BIN_RE='\.(apk|ipa|exe|dll|pdb|img|zip|pyz)$'
 # PoC 白名单路径：0day-exploits 与 lpe-toolkit 下的武器件不算违规
 WL='domains/0day-exploits/|domains/linux-post/lpe-toolkit/|domains/mobile-security/panda-rev/'
+# 2026-10-12 批：武器/研究包目录（含媒体与大件，白名单放行）
+WL="$WL|domains/windows-post/veneficus|domains/windows-post/ShieldCrash|domains/windows-post/Chrome-App-Bound-Encryption-Decryption|domains/windows-post/GregsBestFriend|domains/ad-attack/Atlas|domains/reverse-engineering/GateX|domains/recon/tools/GoFileX"
 
 echo "[1/3] 单文件 > ${LIMIT_KB}KB 检查…"
 while IFS='|' read -r size path; do

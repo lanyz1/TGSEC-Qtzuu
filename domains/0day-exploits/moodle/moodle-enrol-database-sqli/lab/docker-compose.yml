@@ -1,0 +1,42 @@
+name: moodle-enrol-database-sqli
+
+services:
+  enrol-db:
+    image: mysql:8.0
+    pull_policy: missing
+    environment:
+      MYSQL_ROOT_PASSWORD: labroot
+      MYSQL_DATABASE: enrol_ext
+      MYSQL_USER: enrolu
+      MYSQL_PASSWORD: enrolpass
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+      - --general-log=1
+      - --log-output=TABLE
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/01-lab.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-plabroot"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+    restart: "no"
+
+  gadget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      ENROL_DB_HOST: enrol-db
+      ENROL_DB_USER: enrolu
+      ENROL_DB_PASS: enrolpass
+      ENROL_DB_NAME: enrol_ext
+      WITNESS: MOODLE-ENROL-DATABASE-SQLI-WITNESS
+    ports:
+      - "127.0.0.1:19570:80"
+    depends_on:
+      enrol-db:
+        condition: service_healthy

@@ -1,0 +1,27 @@
+{
+  "identities": {
+    "owner": {
+      "headers": {
+        "Authorization": "Bearer ${OWNER_TOKEN}"
+      }
+    },
+    "other-user": {
+      "headers": {
+        "Authorization": "Bearer ${OTHER_USER_TOKEN}"
+      }
+    }
+  },
+  "denied_statuses": [401, 403, 404],
+  "requests": [
+    {
+      "name": "read-profile",
+      "method": "GET",
+      "url": "https://authorized.example.test/api/users/{object_id}",
+      "object_ids": ["1001", "1002"],
+      "object_owners": {
+        "1001": "owner",
+        "1002": "other-user"
+      }
+    }
+  ]
+}

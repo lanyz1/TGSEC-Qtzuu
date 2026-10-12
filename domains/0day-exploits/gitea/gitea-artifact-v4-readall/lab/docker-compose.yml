@@ -1,0 +1,56 @@
+name: gitea-artifact-v4-readall
+
+services:
+  gitea:
+    build: .
+    image: gitea-artifact-v4-readall:1.27.3
+    ports:
+      - "127.0.0.1:18135:3000"
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      GITEA__database__DB_TYPE: sqlite3
+      GITEA__database__PATH: /data/gitea/gitea.db
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__server__DOMAIN: gitea
+      GITEA__server__HTTP_PORT: "3000"
+      GITEA__server__ROOT_URL: http://gitea:3000/
+      GITEA__server__DISABLE_SSH: "true"
+      GITEA__service__DISABLE_REGISTRATION: "false"
+      GITEA__service__REQUIRE_SIGNIN_VIEW: "false"
+      GITEA__repository__DEFAULT_BRANCH: main
+      GITEA__actions__ENABLED: "true"
+      GITEA__actions__ZOMBIE_TASK_TIMEOUT: 60m
+      GITEA__actions__ENDLESS_TASK_TIMEOUT: 3h
+      GITEA__oauth2__JWT_SECRET: Z2l0ZWEtYXJ0LXY0LXJlYWRhbGwtbGFiLXNlY3JldCE
+      GITEA_RUNNER_REGISTRATION_TOKEN: gitea-art-v4-readall-runner-token
+    volumes:
+      - gitea_data:/data
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/v1/version >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+
+  runner:
+    image: docker.io/gitea/act_runner:0.2.13
+    depends_on:
+      gitea:
+        condition: service_healthy
+    environment:
+      CONFIG_FILE: /config.yaml
+      GITEA_INSTANCE_URL: http://gitea:3000
+      GITEA_RUNNER_REGISTRATION_TOKEN: gitea-art-v4-readall-runner-token
+      GITEA_RUNNER_NAME: lab-runner
+      GITEA_RUNNER_LABELS: ubuntu-latest:host
+    volumes:
+      - runner_data:/data
+      - ./runner-config.yaml:/config.yaml:ro
+    mem_limit: 512m
+    restart: on-failure
+
+volumes:
+  gitea_data:
+  runner_data:

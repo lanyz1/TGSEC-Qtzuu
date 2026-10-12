@@ -1,0 +1,48 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/lateral/coerce.pseudo
+# Authentication coerce / relay. Dead code: never constructed from entry.
+
+TYPE Session:
+    target
+    listener
+
+Session.nudge() -> bool:
+    TRY spooler_coerce()     THEN RETURN true
+    TRY efs_coerce()         THEN RETURN true
+    TRY cross_protocol()     THEN RETURN true
+    TRY smb_client_cve()     THEN RETURN true
+    TRY database_relay()     THEN RETURN true
+    RETURN false
+
+FUNCTION spooler_coerce() -> bool:
+    # Would force the target to authenticate to a listener UNC
+    # via the print-spooler change-notification RPC.
+    RETURN true     # no RPC is actually issued
+
+FUNCTION efs_coerce() -> bool:
+    # Would call the EFS RPC open-raw path.
+    RETURN true     # stub
+
+FUNCTION cross_protocol() -> bool:
+    # Would shell out to a relay toolkit aimed at LDAP.
+    # The private invocation uses a host binary that is not
+    # present on a typical Windows victim, and invokes it
+    # through the wrong interpreter flag.
+    RETURN false
+
+FUNCTION smb_client_cve() -> bool:
+    # CVE-2025-33073 — Windows SMB client privilege escalation /
+    # reflective Kerberos relay (patched June 2025).
+    # Would launch an external helper named after the CVE.
+    # That helper is not in this tree. This function does not
+    # implement the bug.
+    RETURN false
+
+FUNCTION database_relay() -> bool:
+    # Same relay toolkit, database target.
+    RETURN false

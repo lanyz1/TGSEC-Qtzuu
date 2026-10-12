@@ -7,7 +7,7 @@ description: "Use for attack-surface domain knowledge matrix."
 
 > 小白入口：[`START.md`](START.md) · 全 AI 路径表：[`ROUTING.md`](ROUTING.md)
 >
-> **本轮（2026-09-23）：** CVE 独立仓 + @cvebird 最优 9 harness + **锁面：禁止自动打同网段不相干站**。说明 [`UPDATE-2026-09-23.md`](docs/updates/UPDATE-2026-09-23.md) · 融合批次 [`README.md`](README.md) 第十节。
+> **本轮（2026-10-12）：** 0day 批 — 外部 158 仓差分吸收（145 包 + AnyDesk AnyPwn + 工具/方法论；**署名/来源清仓**）。说明 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md) · 融合批次 [`README.md`](README.md) 第十节。
 
 > **全 AI 先读 [`ROUTING.md`](ROUTING.md)**（关键词→路径，不绑 Hermes）。再本表定域。
 

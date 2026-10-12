@@ -1,0 +1,43 @@
+name: joomla-articles-catid
+
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MYSQL_DATABASE: joomla
+      MYSQL_USER: joomla
+      MYSQL_PASSWORD: LabDbPassw0rd!
+      MYSQL_ROOT_PASSWORD: LabRootPassw0rd!
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+    restart: "no"
+
+  joomla:
+    image: joomla:6.1.3-php8.3-apache
+    ports:
+      - "127.0.0.1:19550:80"
+    environment:
+      JOOMLA_DB_HOST: db
+      JOOMLA_DB_USER: joomla
+      JOOMLA_DB_PASSWORD: LabDbPassw0rd!
+      JOOMLA_DB_NAME: joomla
+      JOOMLA_DB_PREFIX: jos_
+      JOOMLA_DB_TYPE: mysqli
+      JOOMLA_SITE_NAME: Joomla Articles Catid Lab
+      JOOMLA_ADMIN_USER: Lab Admin
+      JOOMLA_ADMIN_USERNAME: labadmin
+      JOOMLA_ADMIN_PASSWORD: LabAdminPassw0rd!
+      JOOMLA_ADMIN_EMAIL: labadmin@example.com
+      JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      lab: JOOMLA-ARTICLES-CATID
+    restart: "no"

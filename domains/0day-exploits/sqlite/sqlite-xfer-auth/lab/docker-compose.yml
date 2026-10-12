@@ -1,0 +1,13 @@
+name: sqlite-xfer-auth
+
+services:
+  sqlite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      PORT: "18850"
+    ports:
+      - "127.0.0.1:18850:18850"

@@ -1,0 +1,13 @@
+name: mysql-jdv-definer-sqli
+
+services:
+  mysql:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    pull_policy: never
+    init: true
+    ports:
+      - "127.0.0.1:18640:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: labroot

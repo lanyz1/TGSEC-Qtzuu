@@ -1,0 +1,113 @@
+diff --git a/src/tools/sample/sample.c b/src/tools/sample/sample.c
+--- a/src/tools/sample/sample.c
++++ b/src/tools/sample/sample.c
+@@ -52,6 +52,10 @@
+ #include "msquic.h"
+ #include <stdio.h>
+ #include <stdlib.h>
++#ifndef _WIN32
++#include <signal.h>
++#include <unistd.h>
++#endif
+ 
+ #ifndef UNREFERENCED_PARAMETER
+ #define UNREFERENCED_PARAMETER(P) (void)(P)
+@@ -72,7 +76,7 @@
+ //
+ // The UDP port used by the server side of the protocol.
+ //
+-const uint16_t UdpPort = 4567;
++uint16_t UdpPort = 4567;
+ 
+ //
+ // The default idle timeout period (1 second) used for the protocol.
+@@ -131,6 +135,7 @@
+ #endif
+         "  quicsample.exe -server -cert_hash:<...>\n"
+         "  quicsample.exe -server -cert_file:<...> -key_file:<...> [-password:<...>]\n"
++        "  Optional: -port:N (server listen and client ConnectionStart)\n"
+         );
+ }
+ 
+@@ -171,6 +176,34 @@
+     }
+     return NULL;
+ }
++
++void
++ApplyPortArg(
++    _In_ int argc,
++    _In_reads_(argc) _Null_terminated_ char* argv[]
++    )
++{
++    const char* PortStr = GetValue(argc, argv, "port");
++    if (PortStr != NULL) {
++        unsigned long Parsed = strtoul(PortStr, NULL, 10);
++        if (Parsed > 0 && Parsed <= 65535) {
++            UdpPort = (uint16_t)Parsed;
++        }
++    }
++}
++
++#ifndef _WIN32
++static volatile sig_atomic_t SampleKeepRunning = 1;
++
++static void
++SampleStopHandler(
++    int Sig
++    )
++{
++    UNREFERENCED_PARAMETER(Sig);
++    SampleKeepRunning = 0;
++}
++#endif
+ 
+ //
+ // Helper function to convert a hex character to its decimal value.
+@@ -639,7 +672,8 @@
+     // addresses and the given UDP port.
+     //
+     QUIC_ADDR Address = {0};
+-    QuicAddrSetFamily(&Address, QUIC_ADDRESS_FAMILY_UNSPEC);
++    QuicAddrSetFamily(&Address, QUIC_ADDRESS_FAMILY_INET);
++    QuicAddrSetToLoopback(&Address);
+     QuicAddrSetPort(&Address, UdpPort);
+ 
+     //
+@@ -666,10 +700,25 @@
+     }
+ 
+     //
+-    // Continue listening for connections until the Enter key is pressed.
+-    //
++    // Continue listening until SIGTERM/SIGINT (headless) or Enter (Windows).
++    //
++#ifndef _WIN32
++    {
++        struct sigaction Sa;
++        memset(&Sa, 0, sizeof(Sa));
++        Sa.sa_handler = SampleStopHandler;
++        sigaction(SIGTERM, &Sa, NULL);
++        sigaction(SIGINT, &Sa, NULL);
++    }
++    printf("Server listening on port %u (headless).\n\n", (unsigned)UdpPort);
++    fflush(stdout);
++    while (SampleKeepRunning) {
++        sleep(1);
++    }
++#else
+     printf("Press Enter to exit.\n\n");
+     (void)getchar();
++#endif
+ 
+ Error:
+ 
+@@ -1101,6 +1150,8 @@
+     _In_reads_(argc) _Null_terminated_ char* argv[]
+     )
+ {
++    setvbuf(stdout, NULL, _IONBF, 0);
++    ApplyPortArg(argc, argv);
+     QUIC_STATUS Status = QUIC_STATUS_SUCCESS;
+ 
+     //

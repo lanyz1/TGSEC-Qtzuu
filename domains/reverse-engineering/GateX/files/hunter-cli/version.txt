@@ -1,0 +1,10 @@
+argv=['--version'] rc=0 dur=3.66
+--- stdout ---
+fortinet-hunter 2026.08
+
+--- stderr ---
+pyserial not installed. UART support limited.
+xgboost not installed. EPSS local predictor limited.
+tensorflow not available. Anomaly detection limited to statistical methods.
+sklearn not available. Vulnerability classification limited.
+

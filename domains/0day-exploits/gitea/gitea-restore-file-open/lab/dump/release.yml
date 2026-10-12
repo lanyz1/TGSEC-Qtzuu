@@ -1,0 +1,16 @@
+- tag_name: v1.0
+  target_commitish: main
+  name: lab-release
+  body: lab restore asset
+  draft: false
+  prerelease: false
+  publisher_id: 1
+  publisher_name: labadmin
+  publisher_email: labadmin@localhost.invalid
+  created: 2026-01-01T00:00:00Z
+  published: 2026-01-01T00:00:00Z
+  assets:
+    - name: witness.txt
+      size: 64
+      download_count: 0
+      download_url: /tmp/GITEA-FILE-WITNESS.txt

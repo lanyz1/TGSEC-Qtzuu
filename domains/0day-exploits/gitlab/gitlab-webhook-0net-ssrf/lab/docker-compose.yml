@@ -1,0 +1,67 @@
+name: gitlab-webhook-0net-ssrf
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:19.4.1-ce.0
+    hostname: gitlab.lab.invalid
+    shm_size: "256m"
+    ports:
+      - "127.0.0.1:18420:80"
+    environment:
+      GITLAB_ROOT_PASSWORD: "X9m#Qp2$$vL7nK4!w"
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://127.0.0.1:18420'
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['redirect_http_to_https'] = false
+        letsencrypt['enable'] = false
+        gitlab_rails['initial_root_password'] = 'X9m#Qp2$$vL7nK4!w'
+        gitlab_rails['gitlab_signup_enabled'] = false
+        gitlab_rails['usage_ping_enabled'] = false
+        gitlab_rails['gitlab_default_projects_features_container_registry'] = false
+        gitlab_rails['monitoring_whitelist'] = ['127.0.0.0/8']
+        gitlab_rails['allow_local_requests_from_web_hooks_and_services'] = false
+        gitlab_rails['allow_local_requests_from_system_hooks'] = false
+        puma['worker_processes'] = 2
+        sidekiq['concurrency'] = 8
+        prometheus_monitoring['enable'] = false
+        prometheus['enable'] = false
+        alertmanager['enable'] = false
+        node_exporter['enable'] = false
+        redis_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        gitlab_exporter['enable'] = false
+        registry['enable'] = false
+        gitlab_pages['enable'] = false
+        gitlab_kas['enable'] = false
+        mattermost['enable'] = false
+    volumes:
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+    healthcheck:
+      test: ["CMD", "/opt/gitlab/bin/gitlab-healthcheck", "--fail"]
+      interval: 30s
+      timeout: 10s
+      retries: 40
+      start_period: 420s
+
+  catcher:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: "service:gitlab"
+    cap_add:
+      - NET_ADMIN
+    depends_on:
+      - gitlab
+    environment:
+      BIND_HOST: "0.0.0.1"
+      BIND_PORT: "18080"
+      WITNESS: "GITLAB-WEBHOOK-0NET-SSRF-WITNESS"
+    restart: unless-stopped
+
+volumes:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:

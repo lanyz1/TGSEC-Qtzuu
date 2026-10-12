@@ -1,0 +1,24 @@
+name: forgejo-restore-file-open
+
+services:
+  forgejo:
+    build: .
+    image: codeberg.org/forgejo/forgejo:16.0.5
+    ports:
+      - "127.0.0.1:19340:3000"
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      FORGEJO__database__DB_TYPE: sqlite3
+      FORGEJO__database__PATH: /data/gitea/gitea.db
+      FORGEJO__security__INSTALL_LOCK: "true"
+      FORGEJO__server__DOMAIN: 127.0.0.1
+      FORGEJO__server__HTTP_PORT: "3000"
+      FORGEJO__server__ROOT_URL: http://127.0.0.1:19340/
+      FORGEJO__service__DISABLE_REGISTRATION: "false"
+      FORGEJO__service__REQUIRE_SIGNIN_VIEW: "false"
+    volumes:
+      - forgejo_data:/data
+
+volumes:
+  forgejo_data:

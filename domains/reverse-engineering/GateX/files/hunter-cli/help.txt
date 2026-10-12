@@ -1,0 +1,43 @@
+argv=['--help'] rc=0 dur=3.71
+--- stdout ---
+usage: fortinet-hunter [-h] [--version] [-v]
+                       {scan,exploit,chain,agent,path,list,score,report,dashboard,beacon,doh-server,evade,darkweb,sniff,crack,brute,megalodon,fuzz,persist,fgfm,osint,extract} ...
+
+Fortinet Hunter — multi-product offensive framework for the Fortinet estate
+
+positional arguments:
+  {scan,exploit,chain,agent,path,list,score,report,dashboard,beacon,doh-server,evade,darkweb,sniff,crack,brute,megalodon,fuzz,persist,fgfm,osint,extract}
+    scan                fingerprint + detect + fuzz + post (v5.4 engine)
+    exploit             run a weaponized exploit [P3-3/P3-5]
+    chain               run a weaponized chain [P3-7]
+    agent               run the agentic orchestrator loop [P5-1+]
+    path                attack-path graph planning [P5-4+]
+    list                enumerate registry plugins + CVE database [P3-2+]
+    score               rank CVE database by EPSS/KEV [P3-2+]
+    report              convert a JSON run report
+    dashboard           launch the web dashboard
+    beacon              run the C2 beacon (Tor SOCKS5 or DoH) [P3-8+]
+    doh-server          run the RFC 8484 DoH operator listener [P3-8+]
+    evade               run an evasion primitive [P3-9+]
+    darkweb             dark-web credential/threat monitoring [P5-5+]
+    sniff               FortiBleed-style passive auth sniffer [P6-2+]
+    crack               crack FortiOS SH2/AK1 hashes [P6-3+]
+    brute               brute-force Fortinet logins from .txt files [EXTRA-3+]
+    megalodon           MEGALODON CI/CD worm IOC scan [MEGALADON+]
+    fuzz                dedicated fuzzer entry (SSL-VPN/WS/protocol)
+    persist             deploy/cleanup persistence mechanisms
+    fgfm                dedicated FGFM protocol probe
+    osint               Shodan/Censys/FOFA/GitHub/dork discovery
+    extract             firmware/hardware/memory extraction suite
+
+options:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  -v, --verbose         debug logging
+
+--- stderr ---
+pyserial not installed. UART support limited.
+xgboost not installed. EPSS local predictor limited.
+tensorflow not available. Anomaly detection limited to statistical methods.
+sklearn not available. Vulnerability classification limited.
+

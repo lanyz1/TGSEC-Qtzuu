@@ -1,5 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
+- 2026-10-12：**0day 批 — 外部 158 仓差分吸收** — 全量对账 0day 库后 **145 包入库**：SQLite×14（rsync 命令注入 8.8）· WordPress×13（JetFormBuilder 提权 9.8）· phpMyAdmin×10 · CakePHP×9 · gitea×8 · mysql×6 · VFS for Git×6 · joomla×5 · Drupal/Moodle/Forgejo/Nextcloud 各×4 … + **AnyDesk AnyPwn**（pre-auth 堆溢出 → root RCE，TCP/7070）+ 工具/研究件（veneficus 植入物审计 · ShieldCrash · Chrome ABE 解密器 · Atlas · GateX · mithril · Fortigate kit）+ 方法论提炼（闭环验证打分器 / 确定性 DAG 台账）。**署名/来源标识全批剥离归零**。详见 [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)
 - 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → **14 案**：r4z.lol 帝国 ROOT（BillionMail→iptables→chroot host_root）· 包网 GVA→AWS 账号级（EC2 Instance Connect ×28）· SUNNIC 杀猪盘（审核流 CSRF）· kachiho 密码预言机 · PrimeTools（EIP-7702 Vault）· Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 案卷）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
 - 2026-10-06：**K 批 X 博主吸收** — @luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（零泄漏单发穿 ASLR/PIE/堆硬化）· Mozilla VPN RCE（$6k）· GraphQL→ES Painless（$7k）· App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；文件名绕过 V2 / Cuneiform payload。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
 - 2026-10-06：**J 批 @cvebird 全量复核 + 最优吸收** — 1.55 万仓复核 → **30 卡入库**：WP 核心双链 **Comment2Shell(93485) / Click2Shell**（均修于 7.1.1）+ 12 CVE harness（RuoYi · sudo · 深信服 · Oracle IAM · Tomcat · 7-Zip · ColorOS · rtty · NeacSafe64 · 安卓内核 …）+ 16 工具卡（S-inject · 免杀技巧集 · 密探 · 若依扫描 · WAF 双器 · SSLKit · Fridare · 卡密靶场 …）+ Netlogon 41089 补强
@@ -15,11 +16,15 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：见下方 §十 融合批次（2026-10-06 J+K+L 批）· 详情 [`UPDATE-2026-10-06.md`](docs/updates/UPDATE-2026-10-06.md)
+**👉 本轮更新说明：见下方 §十 融合批次（2026-10-12 0day 批）· 详情 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md)
 
 ---
 
-## 〇、本轮更新了什么（2026-10-06）
+## 〇、本轮更新了什么（2026-10-12）
+
+### 0day 批 — 外部 158 仓差分吸收（2026-10-12）
+
+145 包全量入库（SQLite×14 · WordPress×13 · phpMyAdmin×10 · CakePHP×9 · gitea×8 · mysql×6 · VFS for Git×6 · joomla×5 · Drupal/Moodle/Forgejo/Nextcloud 各×4 · 单包线 ×24）+ **AnyDesk AnyPwn**（pre-auth 堆溢出 → root RCE）+ 工具/研究件（veneficus · ShieldCrash · Chrome ABE · Atlas · GateX · mithril · Fortigate kit）+ 方法论提炼（闭环验证打分器 / DAG 台账）。**署名/来源标识全批剥离归零**。详见 [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)
 
 ### L 批 — 报告包吸收（`报告.zip` · 舰队 14 案）（2026-10-06）
 
@@ -404,6 +409,15 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ## 十、融合批次
 
+### 2026-10-12
+
+- **0day 批 — 外部 158 仓差分吸收**：全量对账后 **145 包全量入库**（0day-exploits 136 · windows-post 5 · ad-attack 1 · reverse-engineering 2 · recon/tools 1）：**SQLite×14**（sqlite3_rsync 命令注入 RCE CVSS 8.8 · FTS5/rtree/CTE 系）· **WordPress×13**（JetFormBuilder 提权 9.8 · SMS-OTP · Tickera · Gravity Forms · Elementor …）· **phpMyAdmin×10** · **CakePHP×9** · **gitea×8** · **mysql×6 / VFS for Git×6** · **joomla×5** · Drupal / Moodle / Forgejo / Nextcloud 各×4 · 单包线 sudo **96512** · tomcat **86350** · strapi **22599** · openproject **52782** · linux-kernel **38502**（BPF LPE）· magento **48356** …
+- **AnyDesk AnyPwn**（pre-auth 堆溢出 → root RCE，TCP/7070；fix 8.0.3）→ `0day-exploits/pocs-collection/collection/anydesk/`
+- **工具 / 研究件**：veneficus + veneficus-implant-public（植入物审计批）· ShieldCrash（Defender 绕过）· Chrome ABE 解密器 · GregsBestFriend · Atlas（C# AD 套件）· GateX（Nuitka 门禁重置）· mithril（固件扫描）· GoFileX · Fortigate SSL-VPN kit（79×53）
+- **方法论提炼**：多智能体红队框架 → 闭环验证打分器（timing 抖动扣除 + 0-100 置信度）+ 确定性 DAG 调度/resolved 台账 → `redteam-framework/` + `verification-scripts/verify_chain.py`
+- **署名/来源清仓（硬口径）**：全批 ~700 文件剥离署名（横幅/艺术字 5.5k 行/联系方式/图章图 ×139/文件名 ×136/目录改名 `pocs-collection`）；守卫复扫 **0 命中**；guard 白名单 +7 路径
+- 完整账本：[`INGEST-20261012-INDEX.md`](domains/0day-exploits/INGEST-20261012-INDEX.md) · 详情 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md)
+
 ### 2026-10-08
 
 - **安全加固**：`case-reports` 全文卷层**全量撤出仓库**（原文存本机案卷）＋ git 历史净化（filter-repo：全文卷/凭据从全部历史移除）＋ 入库硬门「**原文全文不入库**，吸收只落 `case-lessons/` 提炼层 + 强制脱敏」。详见 [UPDATE-2026-10-08.md](docs/updates/UPDATE-2026-10-08.md)
@@ -514,7 +528,7 @@ cd ~/security-suite && git pull
 bash scripts/bootstrap.sh --force    # 或 sync-agent-skills / sync-hermes-skills
 ```
 
-**更新说明文件：** `docs/updates/UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-10-06.md`](docs/updates/UPDATE-2026-10-06.md)）。自述首页「〇、本轮更新了什么」+ 第十节融合批次同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
+**更新说明文件：** `docs/updates/UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md)）。自述首页「〇、本轮更新了什么」+ 第十节融合批次同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
 
 ---
 

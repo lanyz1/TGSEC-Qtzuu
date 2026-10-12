@@ -1,0 +1,51 @@
+name: bitwarden-cipher-create-acl
+
+services:
+  bitwarden:
+    image: ghcr.io/bitwarden/lite:2026.9.2
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      BW_DOMAIN: "127.0.0.1"
+      BW_DB_PROVIDER: mysql
+      BW_DB_SERVER: db
+      BW_DB_DATABASE: bitwarden_vault
+      BW_DB_USERNAME: bitwarden
+      BW_DB_PASSWORD: super_strong_password
+      BW_INSTALLATION_ID: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      BW_INSTALLATION_KEY: "0123456789abcdef0123456789abcdef"
+      BW_ENABLE_ADMIN: "true"
+      BW_ENABLE_SSL: "false"
+    ports:
+      - "127.0.0.1:18160:8080"
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=768m
+    volumes:
+      - bitwarden:/etc/bitwarden
+      - logs:/var/log/bitwarden
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10
+    environment:
+      MARIADB_USER: bitwarden
+      MARIADB_PASSWORD: super_strong_password
+      MARIADB_DATABASE: bitwarden_vault
+      MARIADB_ROOT_PASSWORD: lab_root_password
+    ports:
+      - "127.0.0.1:18161:3306"
+    volumes:
+      - data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  bitwarden:
+  logs:
+  data:

@@ -1,0 +1,37 @@
+name: signal-server-dropwizard-admin
+
+services:
+  vuln:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    command: ["java", "-jar", "/app/app.jar", "server", "/app/config/config.yml"]
+    ports:
+      - "127.0.0.1:19010:8081"
+    labels:
+      lab: signal-server-dropwizard-admin
+
+  patched:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    command: ["java", "-jar", "/app/app.jar", "server", "/app/config/patched.yml"]
+    ports:
+      - "127.0.0.1:19011:8081"
+    labels:
+      lab: signal-server-dropwizard-admin
+
+  attacker:
+    image: python:3.13-slim
+    init: true
+    restart: "no"
+    command: ["sleep", "infinity"]
+    depends_on:
+      - vuln
+      - patched
+    labels:
+      lab: signal-server-dropwizard-admin

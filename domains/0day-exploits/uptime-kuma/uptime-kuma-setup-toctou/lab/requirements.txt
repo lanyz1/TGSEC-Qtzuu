@@ -1,0 +1,2 @@
+python-socketio[client]>=5.11
+websocket-client

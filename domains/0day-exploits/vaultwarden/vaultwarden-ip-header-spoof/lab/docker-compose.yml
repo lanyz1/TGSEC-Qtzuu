@@ -1,0 +1,39 @@
+name: vaultwarden-ip-header-spoof
+
+services:
+  vw:
+    image: vaultwarden/server:1.37.3
+    ports:
+      - "127.0.0.1:18170:80"
+    environment:
+      SIGNUPS_ALLOWED: "true"
+      SIGNUPS_VERIFY: "false"
+      LOGIN_RATELIMIT_SECONDS: "60"
+      LOGIN_RATELIMIT_MAX_BURST: "10"
+      LOG_LEVEL: "info"
+    volumes:
+      - vw-data:/data
+    labels:
+      lab: VAULTWARDEN-IP-HEADER-SPOOF
+    restart: "no"
+
+  vw-none:
+    image: vaultwarden/server:1.37.3
+    ports:
+      - "127.0.0.1:18171:80"
+    environment:
+      SIGNUPS_ALLOWED: "true"
+      SIGNUPS_VERIFY: "false"
+      LOGIN_RATELIMIT_SECONDS: "60"
+      LOGIN_RATELIMIT_MAX_BURST: "10"
+      IP_HEADER: "none"
+      LOG_LEVEL: "info"
+    volumes:
+      - vw-none-data:/data
+    labels:
+      lab: VAULTWARDEN-IP-HEADER-SPOOF
+    restart: "no"
+
+volumes:
+  vw-data:
+  vw-none-data:

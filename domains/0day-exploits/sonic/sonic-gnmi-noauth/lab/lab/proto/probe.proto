@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package probe;
+
+option go_package = "github.com/sonic-net/sonic-gnmi/probe";
+
+service Probe {
+  rpc Check(CheckRequest) returns (CheckReply);
+}
+
+message CheckRequest {
+  bool require_password_auth = 1;
+}
+
+message CheckReply {
+  string witness = 1;
+  bool auth_enabled = 2;
+  bool enable_native_write = 3;
+  bool enable_translib_write = 4;
+  bool user_auth_any = 5;
+  string mode = 6;
+}

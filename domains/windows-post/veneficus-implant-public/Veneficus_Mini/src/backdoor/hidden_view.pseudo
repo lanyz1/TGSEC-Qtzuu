@@ -1,0 +1,36 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/backdoor/hidden_view.pseudo
+# Remote-framebuffer listener. Skeleton only.
+
+TYPE Server:
+    port
+    running: atomic bool
+
+Server.serve():
+    running = true
+    bind TCP on loopback:port
+    WHILE running:
+        accept
+        spawn session(conn)
+
+FUNCTION session(conn):
+    send RFB version greeting
+    read client version
+    offer "no auth"
+    send dummy ServerInit (fixed width/height, short name)
+    LOOP:
+        read message type
+        framebuffer-request -> send an EMPTY update
+            # no capture, no hidden desktop, no input injection
+        key / pointer / cut-text -> read and discard
+        other -> close
+
+NOTES:
+    Comments in the private tree mention creating an isolated desktop.
+    That API is never called. An operator who connects sees a blank
+    session on loopback only.

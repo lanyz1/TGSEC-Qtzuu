@@ -1,0 +1,253 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1320" viewBox="0 0 1000 1320">
+
+  <defs>
+    <linearGradient id="hdr" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3dff9a"/>
+      <stop offset="0.55" stop-color="#7ee7ff"/>
+      <stop offset="1" stop-color="#5b8cff"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="50%" cy="16%" r="80%">
+      <stop offset="0" stop-color="#101820" stop-opacity="1"/>
+      <stop offset="1" stop-color="#07090d" stop-opacity="1"/>
+    </radialGradient>
+    <pattern id="scan" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="1" fill="#3dff9a" opacity="0.035"/>
+    </pattern>
+    <pattern id="iso" width="56" height="32" patternUnits="userSpaceOnUse">
+      <path d="M0 16 L28 0 L56 16 L28 32 Z" fill="none" stroke="#14301f" stroke-width="0.7" opacity="0.35"/>
+    </pattern>
+    <filter id="shadow" x="-25%" y="-25%" width="160%" height="170%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+      <feOffset dx="4" dy="10" result="off"/>
+      <feFlood flood-color="#000" flood-opacity="0.55"/>
+      <feComposite in2="off" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    
+    <linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg6" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+    <linearGradient id="cg7" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg8" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+    <linearGradient id="cg9" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+    <linearGradient id="cg10" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1e26"/>
+      <stop offset="1" stop-color="#0c0e12"/>
+    </linearGradient>
+    <linearGradient id="cg11" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="1320" fill="url(#vignette)"/>
+  <rect width="1000" height="1320" fill="url(#iso)" opacity="0.55"/>
+  <rect width="1000" height="1320" fill="url(#scan)"/>
+  <rect x="0" y="0" width="1000" height="4" fill="url(#hdr)"/>
+  <rect x="0" y="4" width="1000" height="78" fill="#0a0e14" opacity="0.72"/>
+  <g filter="url(#shadow)">
+    <path d="M920,145 L938,136 L938,261 L920,270 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M80,145 L98,136 L938,136 L920,145 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M80,145 L98,136" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="80" y="145" width="840" height="125" rx="12" ry="12" fill="url(#cg1)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="80" y="145" width="5" height="125" rx="2" fill="#f5c542"/>
+    <circle cx="102" cy="167" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="114" y="171" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">INPUT</text>
+    <rect x="836.2" y="158" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="871.1" y="171" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="100" y="197" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">get_pids_by_name(EDR list)</text>
+    <text x="100" y="221"><tspan x="100" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Exact image-name match. CrowdStrike.exe is often wrong.</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M320,300 L338,291 L338,496 L320,505 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M40,300 L58,291 L338,291 L320,300 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M40,300 L58,291" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="40" y="300" width="280" height="205" rx="12" ry="12" fill="url(#cg2)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="40" y="300" width="5" height="205" rx="2" fill="#f5c542"/>
+    <circle cx="62" cy="322" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="74" y="326" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">1  K7</text>
+    <rect x="236.2" y="313" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="271.1" y="326" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="60" y="352" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">K7RKScan.sys</text>
+    <text x="60" y="376"><tspan x="60" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">CVE-2025-1055 / 52915</tspan><tspan x="60" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">IOCTL 0x830020C4</tspan><tspan x="60" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">PoCs often use 0x222018</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M640,300 L658,291 L658,496 L640,505 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M360,300 L378,291 L658,291 L640,300 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M360,300 L378,291" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="360" y="300" width="280" height="205" rx="12" ry="12" fill="url(#cg3)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="360" y="300" width="5" height="205" rx="2" fill="#f5c542"/>
+    <circle cx="382" cy="322" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="394" y="326" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">2  BD</text>
+    <rect x="556.2" y="313" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="591.1" y="326" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="380" y="352" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">BdApiUtil64.sys</text>
+    <text x="380" y="376"><tspan x="380" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Bitdefender-family helper</tspan><tspan x="380" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">IOCTL 0x9C402440</tspan><tspan x="380" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">File not in drivers/</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M960,300 L978,291 L978,496 L960,505 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M680,300 L698,291 L978,291 L960,300 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M680,300 L698,291" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="680" y="300" width="280" height="205" rx="12" ry="12" fill="url(#cg4)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="680" y="300" width="5" height="205" rx="2" fill="#f5c542"/>
+    <circle cx="702" cy="322" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="714" y="326" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">3  TS</text>
+    <rect x="876.2" y="313" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="911.1" y="326" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="700" y="352" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">truesight.sys</text>
+    <text x="700" y="376"><tspan x="700" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">TrueSight process-kill</tspan><tspan x="700" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">IOCTL 0x22E084</tspan><tspan x="700" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Copy-pasted onto 3 drivers</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M320,540 L338,531 L338,736 L320,745 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M40,540 L58,531 L338,531 L320,540 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M40,540 L58,531" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="40" y="540" width="280" height="205" rx="12" ry="12" fill="url(#cg5)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="40" y="540" width="5" height="205" rx="2" fill="#f5c542"/>
+    <circle cx="62" cy="562" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="74" y="566" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">4  TB</text>
+    <rect x="236.2" y="553" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="271.1" y="566" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="60" y="592" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">ThrottleBlood.sys</text>
+    <text x="60" y="616"><tspan x="60" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">CVE-2025-7771 ThrottleStop</tspan><tspan x="60" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">PID-only body</tspan><tspan x="60" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Physmem R/W not implemented</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M640,540 L658,531 L658,736 L640,745 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M360,540 L378,531 L658,531 L640,540 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M360,540 L378,531" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="360" y="540" width="280" height="205" rx="12" ry="12" fill="url(#cg6)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="360" y="540" width="5" height="205" rx="2" fill="#ff5d6c"/>
+    <circle cx="382" cy="562" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="394" y="566" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">5  ST</text>
+    <rect x="563.6" y="553" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="594.8" y="566" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="380" y="592" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">STProcessMonitor.sys</text>
+    <text x="380" y="616"><tspan x="380" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">CVE-2025-70795 Safetica</tspan><tspan x="380" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Kit 0x22E084</tspan><tspan x="380" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Public 0xB822200C</tspan></text>
+    <path d="M567.2,550 L544.8,634.3 L572.8,654.8 L550.4,733" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M960,540 L978,531 L978,736 L960,745 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M680,540 L698,531 L978,531 L960,540 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M680,540 L698,531" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="680" y="540" width="280" height="205" rx="12" ry="12" fill="url(#cg7)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="680" y="540" width="5" height="205" rx="2" fill="#f5c542"/>
+    <circle cx="702" cy="562" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="714" y="566" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">6  WS</text>
+    <rect x="876.2" y="553" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="911.1" y="566" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="700" y="592" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">wsftprm.sys</text>
+    <text x="700" y="616"><tspan x="700" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Monitor helper</tspan><tspan x="700" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Same IOCTL as TrueSight</tspan><tspan x="700" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">File missing</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M320,780 L338,771 L338,976 L320,985 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M40,780 L58,771 L338,771 L320,780 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M40,780 L58,771" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="40" y="780" width="280" height="205" rx="12" ry="12" fill="url(#cg8)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="40" y="780" width="5" height="205" rx="2" fill="#ff5d6c"/>
+    <circle cx="62" cy="802" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="74" y="806" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">7  RT</text>
+    <rect x="243.60000000000002" y="793" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="274.8" y="806" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="60" y="832" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">RTCore64</text>
+    <text x="60" y="856"><tspan x="60" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">LOLDrivers classic</tspan><tspan x="60" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">GenericDriver String temps</tspan><tspan x="60" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Likely compile error</tspan></text>
+    <path d="M247.2,790 L224.8,874.3 L252.8,894.8 L230.4,973" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M640,780 L658,771 L658,976 L640,985 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M360,780 L378,771 L658,771 L640,780 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M360,780 L378,771" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="360" y="780" width="280" height="205" rx="12" ry="12" fill="url(#cg9)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="360" y="780" width="5" height="205" rx="2" fill="#ff5d6c"/>
+    <circle cx="382" cy="802" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="394" y="806" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">8  CC</text>
+    <rect x="563.6" y="793" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="594.8" y="806" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="380" y="832" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">capcom.sys</text>
+    <text x="380" y="856"><tspan x="380" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Execute user fn in kernel</tspan><tspan x="380" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Not a PID-kill interface</tspan><tspan x="380" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Same IOCTL as RTCore64</tspan></text>
+    <path d="M567.2,790 L544.8,874.3 L572.8,894.8 L550.4,973" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M960,780 L978,771 L978,976 L960,985 Z" fill="#161a22" stroke="#6b7380" stroke-width="0.85" opacity="0.95"/>
+    <path d="M680,780 L698,771 L978,771 L960,780 Z" fill="#12161c" stroke="#6b7380" stroke-width="0.95" opacity="0.95"/>
+    <path d="M680,780 L698,771" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="680" y="780" width="280" height="205" rx="12" ry="12" fill="url(#cg10)" stroke="#6b7380" stroke-width="1.4" stroke-dasharray="6 4" opacity="0.45"/>
+    <rect x="680" y="780" width="5" height="205" rx="2" fill="#6b7380"/>
+    <circle cx="702" cy="802" r="4.2" fill="#6b7380" filter="url(#glow)"/>
+    <text x="714" y="806" fill="#6b7380" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">9  —</text>
+    <rect x="898.4" y="793" rx="9" ry="9" width="47.6" height="18" fill="#05070a" stroke="#6b7380" stroke-width="1"/>
+    <text x="922.2" y="806" text-anchor="middle" fill="#6b7380" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">DEAD</text>
+    <text x="700" y="832" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">empty slot</text>
+    <text x="700" y="856"><tspan x="700" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">No ninth driver</tspan><tspan x="700" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">in the pool</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M920,1045 L938,1036 L938,1236 L920,1245 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M80,1045 L98,1036 L938,1036 L920,1045 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M80,1045 L98,1036" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="80" y="1045" width="840" height="200" rx="12" ry="12" fill="url(#cg11)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="80" y="1045" width="5" height="200" rx="2" fill="#ff5d6c"/>
+    <circle cx="102" cy="1067" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="114" y="1071" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">TREE</text>
+    <rect x="843.6" y="1058" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="874.8" y="1071" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="100" y="1097" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">drivers/ is empty</text>
+    <text x="100" y="1121"><tspan x="100" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">load_driver_bytes always returns None in this drop.</tspan><tspan x="100" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Every terminator above is unreachable without a packed .sys.</tspan></text>
+    <path d="M701.6,1055 L634.4,1137.0 L718.4,1157.0 L651.2,1233" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g><g transform="translate(36,96)"><rect x="0" y="0" rx="9" ry="9" width="46.8" height="18" fill="#0c1218" stroke="#3dff9a" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#3dff9a"/><text x="18" y="12.5" fill="#3dff9a" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">LIVE</text></g><g transform="translate(100.8,96)"><rect x="0" y="0" rx="9" ry="9" width="68.4" height="18" fill="#0c1218" stroke="#f5c542" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#f5c542"/><text x="18" y="12.5" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text></g><g transform="translate(187.2,96)"><rect x="0" y="0" rx="9" ry="9" width="61.2" height="18" fill="#0c1218" stroke="#ff5d6c" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#ff5d6c"/><text x="18" y="12.5" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text></g><g transform="translate(266.4,96)"><rect x="0" y="0" rx="9" ry="9" width="68.4" height="18" fill="#0c1218" stroke="#5b8cff" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#5b8cff"/><text x="18" y="12.5" fill="#5b8cff" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">CONTROL</text></g>
+<text x="80" y="1030" fill="#7d8796" font-size="11" font-weight="600" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.1">FALLBACK ORDER IS TOP → BOTTOM, LEFT → RIGHT</text>
+  <text x="36" y="26" fill="#3dff9a" font-size="11" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="2.4">FIG 04  ·  BYOVD</text>
+  <text x="964" y="26" fill="#7d8796" font-size="11" font-weight="600" font-family="Menlo, SF Mono, ui-monospace, monospace" text-anchor="end" letter-spacing="1.6">TLP:CLEAR · EDUCATIONAL</text>
+  <text x="36" y="58" fill="#f2f6fb" font-size="28" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">BYOVD driver pool</text>
+  <text x="36" y="80" fill="#7d8796" font-size="13" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Named n-days vs what this tree actually ships</text>
+</svg>

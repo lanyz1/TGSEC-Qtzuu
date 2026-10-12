@@ -1,0 +1,35 @@
+name: phpmyadmin-pmadb-central-sqli
+
+services:
+  db:
+    image: mysql:8.0
+    pull_policy: missing
+    environment:
+      MYSQL_ROOT_PASSWORD: labroot
+    command:
+      - --general-log=1
+      - --log-output=TABLE
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/01-lab.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-plabroot"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
+  pma:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    pull_policy: missing
+    ports:
+      - "127.0.0.1:19210:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: "3306"
+      PMA_CONTROLUSER: pma
+      PMA_CONTROLPASS: pmapass
+      PMA_PMADB: phpmyadmin
+    depends_on:
+      db:
+        condition: service_healthy

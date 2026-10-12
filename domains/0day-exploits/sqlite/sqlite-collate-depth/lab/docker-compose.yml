@@ -1,0 +1,17 @@
+name: sqlite-collate-depth
+
+services:
+  sqlite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:halt_on_error=1
+    ports:
+      - "127.0.0.1:18800:18800"
+    volumes:
+      - ./work:/work
+    ulimits:
+      stack: 8388608

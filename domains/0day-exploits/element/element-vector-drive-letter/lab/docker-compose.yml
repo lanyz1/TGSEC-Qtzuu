@@ -1,0 +1,13 @@
+name: element-vector-drive-letter
+
+services:
+  gadget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19610:19610"
+    labels:
+      lab: element-vector-drive-letter

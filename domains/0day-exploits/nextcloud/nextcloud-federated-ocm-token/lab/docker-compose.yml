@@ -1,0 +1,43 @@
+# Loopback-only lab for unpublished Nextcloud #1
+# (federated share secret minted as unscoped PERMANENT_TOKEN).
+# Host publishes 127.0.0.1 only. No bind-mount of host home or client-reviews.
+
+name: nextcloud-federated-ocm-token
+
+services:
+  sender:
+    image: nextcloud:35.0.0-apache
+    hostname: sender
+    ports:
+      - "127.0.0.1:18340:80"
+    environment:
+      SQLITE_DATABASE: nextcloud
+      NEXTCLOUD_ADMIN_USER: alice
+      NEXTCLOUD_ADMIN_PASSWORD: LabAlice35!
+      NEXTCLOUD_TRUSTED_DOMAINS: localhost 127.0.0.1 sender
+    volumes:
+      - sender_html:/var/www/html
+    networks:
+      - lab
+
+  recipient:
+    image: nextcloud:35.0.0-apache
+    hostname: recipient
+    ports:
+      - "127.0.0.1:18341:80"
+    environment:
+      SQLITE_DATABASE: nextcloud
+      NEXTCLOUD_ADMIN_USER: bob
+      NEXTCLOUD_ADMIN_PASSWORD: LabBob35!
+      NEXTCLOUD_TRUSTED_DOMAINS: localhost 127.0.0.1 recipient
+    volumes:
+      - recipient_html:/var/www/html
+    networks:
+      - lab
+
+volumes:
+  sender_html:
+  recipient_html:
+
+networks:
+  lab:

@@ -1,0 +1,20 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# build_id.pseudo
+# Compile-time identity baking. Not a real build script.
+
+ON_BUILD:
+    raw = 16 cryptographically random bytes from the build host
+    agent_id = format as a version-4 UUID string
+    emit compiler env: AGENT_ID = agent_id
+
+NOTE:
+    The private tree greps this string out of the finished binary so the
+    operator can enroll it with the relay. That recovery method is an
+    OPSEC defect: anyone with the binary can derive the channel key
+    (see src/channel_crypto.pseudo). This outline keeps the defect as a
+    warning, not as a recipe with the original env-var name.

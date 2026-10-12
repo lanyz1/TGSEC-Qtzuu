@@ -1,0 +1,13 @@
+name: sqlite-fts5-rowidmerge
+
+services:
+  sqlite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:halt_on_error=1:allocator_may_return_null=1
+    ports:
+      - "127.0.0.1:18870:8080"

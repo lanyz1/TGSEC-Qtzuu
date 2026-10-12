@@ -1,0 +1,8 @@
+# GateX 1.0.0  session bypass-smoke  2026-08-26 18:16:12Z
+$ python -m gatex --session bypass-smoke --target files/7350FH.zip --bypass
+sys  bypass  static unpack → ~/.gatex/cache/7dd94bad0e006a1f/payload  (no exec)
+sys  re-keying gate blobs to FH_PASS='gatex'
+ok   patched 7350FH.bin  replacements=8
+sys  waiting for docker…
+sys  exec patched inner  argv=['list']  (qemu linux/amd64, may take a minute)
+ok   BYPASS OK  FH_PASS='gatex'  rc=0  3.7s

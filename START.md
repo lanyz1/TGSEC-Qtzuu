@@ -1,5 +1,6 @@
 # 小白从这里开始（3 步）
 
+- 2026-10-12：**0day 批 — 外部 158 仓差分吸收** — 145 包入库（SQLite×14 · WordPress×13 · phpMyAdmin×10 · CakePHP×9 · gitea×8 · mysql×6 · VFS×6 · joomla×5 …）+ AnyDesk AnyPwn（pre-auth root RCE）+ 工具/研究件 + 方法论提炼。**署名/来源全批清理**。详见 [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)
 - 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → 14 案：r4z.lol 帝国 ROOT · GVA→AWS 账号级 · SUNNIC 杀猪盘 · kachiho 密码预言机 · PrimeTools · Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 报告目录）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
 - 2026-10-06：**K 批 X 博主四账号吸收** — OOBdump FR30（objdump 零泄漏单发链）+ Mozilla VPN RCE($6k) + GraphQL→ES Painless($7k) + App Insights 连接串链 + CodeIgniter 空 where 绕过 + 盲 RCE sleep 预言机（6 卡+2 补强）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
 - 2026-10-06：**J 批 @cvebird 全量复核+最优吸收** — 30 卡入库：WP 核心双链（Comment2Shell / Click2Shell，修于 7.1.1）+ 12 CVE harness + 16 工具卡。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
@@ -13,7 +14,10 @@
 
 **规模体感：** 24 个主题域 · `domains/` 约 **23000+** 文件 · 14 个伞形技能 · **95** 实战课 · 80+ 工具清单。
 
-**本轮更新（2026-10-06）：**  
+**本轮更新（2026-10-12）：**  
+**0day 批（外部 158 仓差分吸收）** — 全量对账后 **145 包入库**：SQLite×14（`sqlite3_rsync` 命令注入 RCE 8.8 · FTS5/rtree/CTE 系）· WordPress×13（JetFormBuilder 提权 **9.8** · SMS-OTP · Tickera · Gravity Forms · Elementor …）· phpMyAdmin×10 · CakePHP×9 · gitea×8 · mysql×6 · VFS for Git×6 · joomla×5 · Drupal/Moodle/Forgejo/Nextcloud 各×4 · 单包线（sudo 96512 · tomcat 86350 · strapi 22599 · linux-kernel 38502 · magento 48356 …）。另：**AnyDesk AnyPwn**（pre-auth 堆溢出 → root RCE）· 工具/研究件（veneficus 植入物审计 · ShieldCrash · Chrome ABE 解密器 · Atlas · GateX · mithril · Fortigate kit）· **方法论提炼**（闭环验证打分器 / 确定性 DAG 台账）。**署名/来源标识全批剥离归零**。完整说明 → [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)。  
+
+**上一轮（2026-10-06）：**  
 **L 批（报告包吸收 · `报告.zip`）** — 舰队 19 报告 → **14 案 + 22 课**：r4z.lol 犯罪帝国 ROOT（BillionMail Docker API→iptables→chroot host_root）· 包网 GVA→AWS 账号级接管（EC2 Instance Connect ×28 台）· SUNNIC 杀猪盘 SaaS（审核流 CSRF）· kachiho 密码预言机批量 ATO · PrimeTools（EIP-7702 Vault + 私钥 12 面搜查）· Coruna-Lab WAF 重放语义测穿 · 143 TG 农场（36-40 套）· skyscrm/TGAI/ty28/onechat/独角数卡/盗U链 … · GPU 对手 MINER-HUNTER 解剖。凭据文件/loot 原始数据不入库。  
 **J 批（@cvebird 全量复核 + 最优吸收）** — 1.55 万仓复核；30 张卡：WP 核心双链 **Comment2Shell(93485)** / **Click2Shell**（修于 7.1.1）+ 12 CVE harness（RuoYi 57521 · sudo 32463 · 深信服 12916 · Oracle IAM 61757 · Tomcat 55752 · NeacSafe64 45737 · ColorOS 10184 · rtty 56708/9 · 安卓内核 43499 …）+ 16 工具卡（S-inject · av-evasion · Ruoyi-Scan · jsowl · 密探 · WAF双器 · crackws · SSLKit · Fridare · FirmAudit2 · PatchDLL · 卡密靶场 …）。Netlogon 41089 补第二 harness；wp2shell/XSS2Shell/87902 已在库。  
 **K 批（X 博主四账号吸收）** — @luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（objdump 零泄漏单发穿 ASLR/PIE/堆硬化，官方 PoC 收录）· Mozilla VPN RCE（$6k）· GraphQL→ES Painless（$7k）· App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；补强：文件名绕过 V2（14 变体）/ Cuneiform payload。  
@@ -160,6 +164,7 @@ bash scripts/sync-hermes-skills.sh
 
 ### 最近融了啥
 
+**2026-10-12：** 0day 批 145 包（SQLite×14 / WordPress×13 / phpMyAdmin×10 / CakePHP×9 / gitea×8 …）+ AnyDesk AnyPwn + 工具/方法论提炼（署名清仓）— 详见 [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)。  
 **2026-10-06（L 批）：** 报告包（报告.zip）舰队报告吸收 — 14 案：r4z.lol 帝国 · GVA→AWS · SUNNIC · kachiho 预言机 · PrimeTools · Coruna-Lab · 143 农场 · MINER-HUNTER（22 课 + 18 目录）。  
 **2026-10-06（K 批）：** X 博主四账号吸收 — OOBdump FR30 · Mozilla VPN RCE($6k) · GraphQL→ES Painless($7k) · App Insights · CodeIgniter · 盲 RCE 预言机（6 卡 + 2 补强）。  
 **2026-10-06：** J 批 @cvebird 全量复核+最优吸收 — WP Comment2Shell/Click2Shell 双王卡 + 12 CVE harness + 16 工具卡（30 卡入库，+225 文件）。  
@@ -193,7 +198,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\sync-agent-skills.ps1
 cd ~/security-suite && git pull && bash scripts/sync-agent-skills.sh
 ```
 
-看「这次更新了啥」：打开 `docs/updates/` 里最新的 `UPDATE-*.md`（现在是 [`UPDATE-2026-10-06.md`](docs/updates/UPDATE-2026-10-06.md)）。
+看「这次更新了啥」：打开 `docs/updates/` 里最新的 `UPDATE-*.md`（现在是 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md)）。
 
 ---
 

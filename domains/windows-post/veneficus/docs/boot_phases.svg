@@ -1,0 +1,246 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1460" viewBox="0 0 1000 1460">
+
+  <defs>
+    <linearGradient id="hdr" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3dff9a"/>
+      <stop offset="0.55" stop-color="#7ee7ff"/>
+      <stop offset="1" stop-color="#5b8cff"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="50%" cy="16%" r="80%">
+      <stop offset="0" stop-color="#101820" stop-opacity="1"/>
+      <stop offset="1" stop-color="#07090d" stop-opacity="1"/>
+    </radialGradient>
+    <pattern id="scan" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="1" fill="#3dff9a" opacity="0.035"/>
+    </pattern>
+    <pattern id="iso" width="56" height="32" patternUnits="userSpaceOnUse">
+      <path d="M0 16 L28 0 L56 16 L28 32 Z" fill="none" stroke="#14301f" stroke-width="0.7" opacity="0.35"/>
+    </pattern>
+    <filter id="shadow" x="-25%" y="-25%" width="160%" height="170%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+      <feOffset dx="4" dy="10" result="off"/>
+      <feFlood flood-color="#000" flood-opacity="0.55"/>
+      <feComposite in2="off" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    
+    <linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#122238"/>
+      <stop offset="1" stop-color="#0a1018"/>
+    </linearGradient>
+    <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12301f"/>
+      <stop offset="1" stop-color="#0b1412"/>
+    </linearGradient>
+    <linearGradient id="cg3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+    <linearGradient id="cg4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12301f"/>
+      <stop offset="1" stop-color="#0b1412"/>
+    </linearGradient>
+    <linearGradient id="cg6" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c220f"/>
+      <stop offset="1" stop-color="#12100c"/>
+    </linearGradient>
+    <linearGradient id="cg7" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12301f"/>
+      <stop offset="1" stop-color="#0b1412"/>
+    </linearGradient>
+    <linearGradient id="cg8" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#30141c"/>
+      <stop offset="1" stop-color="#14090c"/>
+    </linearGradient>
+    <linearGradient id="cg9" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1e26"/>
+      <stop offset="1" stop-color="#0c0e12"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="1460" fill="url(#vignette)"/>
+  <rect width="1000" height="1460" fill="url(#iso)" opacity="0.55"/>
+  <rect width="1000" height="1460" fill="url(#scan)"/>
+  <rect x="0" y="0" width="1000" height="4" fill="url(#hdr)"/>
+  <rect x="0" y="4" width="1000" height="78" fill="#0a0e14" opacity="0.72"/>
+  <polyline points="500.0,270.0 500.0,301.0" fill="none" stroke="#05070a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="500.0,270.0 500.0,301.0" fill="none" stroke="#3dff9a" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"  opacity="0.95" filter="url(#glow)"/>
+
+  <polyline points="500.0,450.0 500.0,485.0 180.0,485.0 180.0,511.0" fill="none" stroke="#05070a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="500.0,450.0 500.0,485.0 180.0,485.0 180.0,511.0" fill="none" stroke="#ff5d6c" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"  opacity="0.95" filter="url(#glow)"/>
+
+  <polyline points="500.0,485.0 500.0,511.0" fill="none" stroke="#05070a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="500.0,485.0 500.0,511.0" fill="none" stroke="#f5c542" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"  opacity="0.95" filter="url(#glow)"/>
+
+  <polyline points="500.0,485.0 820.0,485.0 820.0,511.0" fill="none" stroke="#05070a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="500.0,485.0 820.0,485.0 820.0,511.0" fill="none" stroke="#3dff9a" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"  opacity="0.95" filter="url(#glow)"/>
+
+  <polyline points="820.0,690.0 820.0,735.0 500.0,735.0 500.0,771.0" fill="none" stroke="#05070a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="820.0,690.0 820.0,735.0 500.0,735.0 500.0,771.0" fill="none" stroke="#3dff9a" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"  opacity="0.95" filter="url(#glow)"/>
+
+  <polyline points="500.0,920.0 500.0,951.0" fill="none" stroke="#05070a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="500.0,920.0 500.0,951.0" fill="none" stroke="#3dff9a" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"  opacity="0.95" filter="url(#glow)"/>
+
+  <polyline points="500.0,1100.0 500.0,1131.0" fill="none" stroke="#05070a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="500.0,1100.0 500.0,1131.0" fill="none" stroke="#ff5d6c" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 6" opacity="0.95" filter="url(#glow)"/>
+
+  <polyline points="500.0,1280.0 500.0,1311.0" fill="none" stroke="#05070a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="500.0,1280.0 500.0,1311.0" fill="none" stroke="#ff5d6c" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 6" opacity="0.95" filter="url(#glow)"/>
+  <g filter="url(#shadow)">
+    <path d="M700,150 L718,141 L718,261 L700,270 Z" fill="#0c1a30" stroke="#5b8cff" stroke-width="0.85" opacity="0.95"/>
+    <path d="M300,150 L318,141 L718,141 L700,150 Z" fill="#16345c" stroke="#5b8cff" stroke-width="0.95" opacity="0.95"/>
+    <path d="M300,150 L318,141" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="300" y="150" width="400" height="120" rx="12" ry="12" fill="url(#cg1)" stroke="#5b8cff" stroke-width="1.4"  opacity="1"/>
+    <rect x="300" y="150" width="5" height="120" rx="2" fill="#5b8cff"/>
+    <circle cx="322" cy="172" r="4.2" fill="#5b8cff" filter="url(#glow)"/>
+    <text x="334" y="176" fill="#5b8cff" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">START</text>
+    <rect x="616.2" y="163" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#5b8cff" stroke-width="1"/>
+    <text x="651.1" y="176" text-anchor="middle" fill="#5b8cff" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">CONTROL</text>
+    <text x="320" y="202" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">main() + IMPLANT_UUID</text>
+    <text x="320" y="226"><tspan x="320" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">UUID baked by build.rs — identity and AES seed</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M740,310 L758,301 L758,441 L740,450 Z" fill="#0b2418" stroke="#3dff9a" stroke-width="0.85" opacity="0.95"/>
+    <path d="M260,310 L278,301 L758,301 L740,310 Z" fill="#145c3a" stroke="#3dff9a" stroke-width="0.95" opacity="0.95"/>
+    <path d="M260,310 L278,301" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="260" y="310" width="480" height="140" rx="12" ry="12" fill="url(#cg2)" stroke="#3dff9a" stroke-width="1.4"  opacity="1"/>
+    <rect x="260" y="310" width="5" height="140" rx="2" fill="#3dff9a"/>
+    <circle cx="282" cy="332" r="4.2" fill="#3dff9a" filter="url(#glow)"/>
+    <text x="294" y="336" fill="#3dff9a" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">SCORE</text>
+    <rect x="678.4" y="323" rx="9" ry="9" width="47.6" height="18" fill="#05070a" stroke="#3dff9a" stroke-width="1"/>
+    <text x="702.2" y="336" text-anchor="middle" fill="#3dff9a" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">LIVE</text>
+    <text x="280" y="362" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">assess_environment()  0–100</text>
+    <text x="280" y="386"><tspan x="280" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Debugger / VM / RAM / idle / CPUID / Google GET</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M320,520 L338,511 L338,681 L320,690 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M40,520 L58,511 L338,511 L320,520 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M40,520 L58,511" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="40" y="520" width="280" height="170" rx="12" ry="12" fill="url(#cg3)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="40" y="520" width="5" height="170" rx="2" fill="#ff5d6c"/>
+    <circle cx="62" cy="542" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="74" y="546" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">&gt; 80</text>
+    <rect x="243.60000000000002" y="533" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="274.8" y="546" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="60" y="572" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Self-destruct</text>
+    <text x="60" y="596"><tspan x="60" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Wipe + wevtutil</tspan><tspan x="60" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">No beacon. Process exits.</tspan></text>
+    <path d="M247.2,530 L224.8,598.2 L252.8,615.2 L230.4,678" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M640,520 L658,511 L658,681 L640,690 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M360,520 L378,511 L658,511 L640,520 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M360,520 L378,511" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="360" y="520" width="280" height="170" rx="12" ry="12" fill="url(#cg4)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="360" y="520" width="5" height="170" rx="2" fill="#f5c542"/>
+    <circle cx="382" cy="542" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="394" y="546" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">&gt; 60</text>
+    <rect x="556.2" y="533" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="591.1" y="546" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="380" y="572" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Safe mode</text>
+    <text x="380" y="596"><tspan x="380" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Fingerprint thread only</tspan><tspan x="380" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">No BYOVD / workers</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M960,520 L978,511 L978,681 L960,690 Z" fill="#0b2418" stroke="#3dff9a" stroke-width="0.85" opacity="0.95"/>
+    <path d="M680,520 L698,511 L978,511 L960,520 Z" fill="#145c3a" stroke="#3dff9a" stroke-width="0.95" opacity="0.95"/>
+    <path d="M680,520 L698,511" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="680" y="520" width="280" height="170" rx="12" ry="12" fill="url(#cg5)" stroke="#3dff9a" stroke-width="1.4"  opacity="1"/>
+    <rect x="680" y="520" width="5" height="170" rx="2" fill="#3dff9a"/>
+    <circle cx="702" cy="542" r="4.2" fill="#3dff9a" filter="url(#glow)"/>
+    <text x="714" y="546" fill="#3dff9a" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">≤ 60</text>
+    <rect x="898.4" y="533" rx="9" ry="9" width="47.6" height="18" fill="#05070a" stroke="#3dff9a" stroke-width="1"/>
+    <text x="922.2" y="546" text-anchor="middle" fill="#3dff9a" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">LIVE</text>
+    <text x="700" y="572" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Full stack</text>
+    <text x="700" y="596"><tspan x="700" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Stealth + BYOVD</tspan><tspan x="700" dy="16" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Then payload workers</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M740,780 L758,771 L758,911 L740,920 Z" fill="#2a1f08" stroke="#f5c542" stroke-width="0.85" opacity="0.95"/>
+    <path d="M260,780 L278,771 L758,771 L740,780 Z" fill="#5a4310" stroke="#f5c542" stroke-width="0.95" opacity="0.95"/>
+    <path d="M260,780 L278,771" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="260" y="780" width="480" height="140" rx="12" ry="12" fill="url(#cg6)" stroke="#f5c542" stroke-width="1.4"  opacity="1"/>
+    <rect x="260" y="780" width="5" height="140" rx="2" fill="#f5c542"/>
+    <circle cx="282" cy="802" r="4.2" fill="#f5c542" filter="url(#glow)"/>
+    <text x="294" y="806" fill="#f5c542" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">STEALTH</text>
+    <rect x="656.2" y="793" rx="9" ry="9" width="69.80000000000001" height="18" fill="#05070a" stroke="#f5c542" stroke-width="1"/>
+    <text x="691.1" y="806" text-anchor="middle" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text>
+    <text x="280" y="832" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">initialize() + EDR name list</text>
+    <text x="280" y="856"><tspan x="280" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Always returns true — DKOM / syscalls are stubs</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M740,960 L758,951 L758,1091 L740,1100 Z" fill="#0b2418" stroke="#3dff9a" stroke-width="0.85" opacity="0.95"/>
+    <path d="M260,960 L278,951 L758,951 L740,960 Z" fill="#145c3a" stroke="#3dff9a" stroke-width="0.95" opacity="0.95"/>
+    <path d="M260,960 L278,951" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="260" y="960" width="480" height="140" rx="12" ry="12" fill="url(#cg7)" stroke="#3dff9a" stroke-width="1.4"  opacity="1"/>
+    <rect x="260" y="960" width="5" height="140" rx="2" fill="#3dff9a"/>
+    <circle cx="282" cy="982" r="4.2" fill="#3dff9a" filter="url(#glow)"/>
+    <text x="294" y="986" fill="#3dff9a" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">WORKERS</text>
+    <rect x="678.4" y="973" rx="9" ry="9" width="47.6" height="18" fill="#05070a" stroke="#3dff9a" stroke-width="1"/>
+    <text x="702.2" y="986" text-anchor="middle" fill="#3dff9a" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">LIVE</text>
+    <text x="280" y="1012" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">payload · persist · SOCKS · HVNC · clipper</text>
+    <text x="280" y="1036"><tspan x="280" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Not started on a safe-mode boot</tspan></text>
+    
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M740,1140 L758,1131 L758,1271 L740,1280 Z" fill="#2a0c12" stroke="#ff5d6c" stroke-width="0.85" opacity="0.95"/>
+    <path d="M260,1140 L278,1131 L758,1131 L740,1140 Z" fill="#5a1822" stroke="#ff5d6c" stroke-width="0.95" opacity="0.95"/>
+    <path d="M260,1140 L278,1131" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="260" y="1140" width="480" height="140" rx="12" ry="12" fill="url(#cg8)" stroke="#ff5d6c" stroke-width="1.4"  opacity="1"/>
+    <rect x="260" y="1140" width="5" height="140" rx="2" fill="#ff5d6c"/>
+    <circle cx="282" cy="1162" r="4.2" fill="#ff5d6c" filter="url(#glow)"/>
+    <text x="294" y="1166" fill="#ff5d6c" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">C2 LOOP</text>
+    <rect x="663.6" y="1153" rx="9" ry="9" width="62.400000000000006" height="18" fill="#05070a" stroke="#ff5d6c" stroke-width="1"/>
+    <text x="694.8" y="1166" text-anchor="middle" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text>
+    <text x="280" y="1192" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">run_command_loop()  →  !</text>
+    <text x="280" y="1216"><tspan x="280" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Never returns. /sleep /status /self_destruct</tspan></text>
+    <path d="M615.2,1150 L576.8,1204.4 L624.8,1218.4 L586.4000000000001,1268" fill="none" stroke="#ff5d6c" stroke-width="1.15" opacity="0.32"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M740,1320 L758,1311 L758,1411 L740,1420 Z" fill="#161a22" stroke="#6b7380" stroke-width="0.85" opacity="0.95"/>
+    <path d="M260,1320 L278,1311 L758,1311 L740,1320 Z" fill="#12161c" stroke="#6b7380" stroke-width="0.95" opacity="0.95"/>
+    <path d="M260,1320 L278,1311" stroke="#ffffff" stroke-width="1.1" opacity="0.18"/>
+    <rect x="260" y="1320" width="480" height="100" rx="12" ry="12" fill="url(#cg9)" stroke="#6b7380" stroke-width="1.4" stroke-dasharray="6 4" opacity="0.45"/>
+    <rect x="260" y="1320" width="5" height="100" rx="2" fill="#6b7380"/>
+    <circle cx="282" cy="1342" r="4.2" fill="#6b7380" filter="url(#glow)"/>
+    <text x="294" y="1346" fill="#6b7380" font-size="10.5" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="1.8">PHASE 5</text>
+    <rect x="626.6" y="1333" rx="9" ry="9" width="99.4" height="18" fill="#05070a" stroke="#6b7380" stroke-width="1"/>
+    <text x="676.3" y="1346" text-anchor="middle" fill="#6b7380" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">UNREACHABLE</text>
+    <text x="280" y="1372" fill="#f2f6fb" font-size="16" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Join threads + wipe</text>
+    <text x="280" y="1396"><tspan x="280" fill="#c5cdd8" font-size="12.5" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Dead code after the diverging C2 loop</tspan></text>
+    
+  </g><g transform="translate(36,96)"><rect x="0" y="0" rx="9" ry="9" width="46.8" height="18" fill="#0c1218" stroke="#3dff9a" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#3dff9a"/><text x="18" y="12.5" fill="#3dff9a" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">LIVE</text></g><g transform="translate(100.8,96)"><rect x="0" y="0" rx="9" ry="9" width="68.4" height="18" fill="#0c1218" stroke="#f5c542" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#f5c542"/><text x="18" y="12.5" fill="#f5c542" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">PARTIAL</text></g><g transform="translate(187.2,96)"><rect x="0" y="0" rx="9" ry="9" width="61.2" height="18" fill="#0c1218" stroke="#ff5d6c" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#ff5d6c"/><text x="18" y="12.5" fill="#ff5d6c" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">BROKEN</text></g><g transform="translate(266.4,96)"><rect x="0" y="0" rx="9" ry="9" width="68.4" height="18" fill="#0c1218" stroke="#5b8cff" stroke-width="1.2"/><circle cx="10" cy="9" r="3.2" fill="#5b8cff"/><text x="18" y="12.5" fill="#5b8cff" font-size="10" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace">CONTROL</text></g>
+<polygon points="500.0,301.0 494.5,292.0 505.5,292.0" fill="#3dff9a"/>
+<polygon points="180.0,511.0 174.5,502.0 185.5,502.0" fill="#ff5d6c"/>
+<polygon points="500.0,511.0 494.5,502.0 505.5,502.0" fill="#f5c542"/>
+<polygon points="820.0,511.0 814.5,502.0 825.5,502.0" fill="#3dff9a"/>
+<rect x="495.0" y="480.0" width="10" height="10" rx="1" transform="rotate(45 500.0 485.0)" fill="#3dff9a" stroke="#05070a" stroke-width="1"/>
+<polygon points="500.0,771.0 494.5,762.0 505.5,762.0" fill="#3dff9a"/>
+<polygon points="500.0,951.0 494.5,942.0 505.5,942.0" fill="#3dff9a"/>
+<polygon points="500.0,1131.0 494.5,1122.0 505.5,1122.0" fill="#ff5d6c"/>
+<polygon points="500.0,1311.0 494.5,1302.0 505.5,1302.0" fill="#ff5d6c"/>
+  <text x="36" y="26" fill="#3dff9a" font-size="11" font-weight="700" font-family="Menlo, SF Mono, ui-monospace, monospace" letter-spacing="2.4">FIG 02  ·  BOOT</text>
+  <text x="964" y="26" fill="#7d8796" font-size="11" font-weight="600" font-family="Menlo, SF Mono, ui-monospace, monospace" text-anchor="end" letter-spacing="1.6">TLP:CLEAR · EDUCATIONAL</text>
+  <text x="36" y="58" fill="#f2f6fb" font-size="28" font-weight="700" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">Boot sequence</text>
+  <text x="36" y="80" fill="#7d8796" font-size="13" font-weight="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">main.rs score gates — Phase 5 is unreachable</text>
+</svg>

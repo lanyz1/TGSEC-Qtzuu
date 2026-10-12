@@ -1,0 +1,16 @@
+name: sqlite-fts5-securedel
+
+services:
+  sqlite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:halt_on_error=1:print_stats=0
+    ports:
+      - "127.0.0.1:18860:18860"
+    volumes:
+      - ./work:/work
+      - ./yeonba-fts5corruptB-4.hexdb:/opt/lab/yeonba-fts5corruptB-4.hexdb:ro

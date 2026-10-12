@@ -1,0 +1,72 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/driver_assist.pseudo
+# Signed-but-vulnerable kernel drivers used as a process-kill helper.
+# No vendor filenames, device paths, or control-code numbers.
+
+INTERFACE Slot:
+    label()          # human name of this pool entry
+    image_name()     # .sys basename expected under DRIVER_POOL_DIR
+    device()         # user-mode device path (alias, not the real one)
+    control_code()   # integer IOCTL, not reproduced here
+    pack_input(pid, process_name) -> bytes
+
+POOL (tried in order; labels are aliases):
+    1. "AV kernel scanner"
+         CVE-2025-1055, CVE-2025-52915
+         Role: process-termination control code
+    2. "third-party AV utility driver"
+         CVE-2024-51324
+         Role: process-termination control code
+    3. "anti-rootkit helper driver"
+         well-known BYOVD helper, often already blocklisted
+    4. "CPU-tuning driver"
+         CVE-2025-7771
+         Real primitive is physical-memory R/W, NOT a pid-kill
+         code. Treating it as a pid-kill is a logic error.
+    5. "DLP process-monitor driver"
+         CVE-2025-70795
+    6. "endpoint banking-protection driver"
+         public BYOVD helper; device name and input layout
+         differ from a naive copy-paste of other slots
+    7. "GPU overlay driver"
+         CVE-2019-16098
+         Real primitive is virtual memory R/W, not the
+         execute-pointer code belonging to slot 8
+    8. "game anti-tamper driver"
+         2016-era execute-pointer primitive; long blocklisted
+
+FUNCTION load_image(basename) -> bytes | none:
+    read DRIVER_POOL_DIR / basename
+    missing file => skip this slot
+
+FUNCTION run_slot(slot, pid, name) -> bool:
+    image = load_image(slot.image_name())
+    IF none: RETURN false
+    drop image to a temp path
+    create a kernel service pointing at that path     # noisy, needs admin
+    start the service
+    open slot.device()
+    send slot.control_code() with pack_input(pid, name)
+    stop and delete the service
+    delete the temp file
+    RETURN whether the control call succeeded
+
+FUNCTION terminate_by_pool(targets: list of (pid, name)) -> bool:
+    any = false
+    FOR each target:
+        FOR slot IN POOL:
+            IF run_slot(slot, pid, name):
+                any = true
+                NEXT target
+        warn: every slot failed for this pid
+    IF not any:
+        try disable_vulnerable_driver_policy()
+        # writes a CI-related registry value; the private tree
+        # targets the wrong value name. Reboot would still be
+        # required even if the value were correct.
+    RETURN any

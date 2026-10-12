@@ -1,0 +1,23 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+Veneficus Mini - Full kill-chain malware 0day: Exploit, LPE, Pivot, C2, Persistence
+==================================================================================
+
+This directory is a documentation clone of that kit. Every module is
+pseudo-code.
+
+It is not a buildable project. It is not a dropper. It does not contain
+real patch bytes, control-code numbers, device paths, host artifacts,
+relay URL encoding, or the identifiers used in any private tree.
+
+The product name "Veneficus" is retained. All other labels in this
+packet are aliases chosen so a copy of these files cannot be turned
+into a detector for the private implementation.
+
+Public CVE identifiers are kept. Vendor product names and local
+exploit nicknames are not.
+

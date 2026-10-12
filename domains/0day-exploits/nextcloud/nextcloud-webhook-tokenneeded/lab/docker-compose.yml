@@ -1,0 +1,45 @@
+# Loopback-only lab for unpublished Nextcloud #2 (webhook update tokenNeeded).
+# Host publishes 127.0.0.1 only. No bind-mount of host home or client-reviews.
+
+name: nextcloud-webhook-tokenneeded
+
+services:
+  hook:
+    build:
+      context: ./hook
+      dockerfile: Dockerfile
+    image: nextcloud-webhook-tokenneeded-hook:lab
+    ports:
+      - "127.0.0.1:18321:8080"
+    volumes:
+      - hook_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  nextcloud:
+    image: nextcloud:35.0.0-apache
+    ports:
+      - "127.0.0.1:18320:80"
+    environment:
+      SQLITE_DATABASE: nextcloud
+      NEXTCLOUD_ADMIN_USER: admin
+      NEXTCLOUD_ADMIN_PASSWORD: LabAdmin35!
+      NEXTCLOUD_TRUSTED_DOMAINS: localhost 127.0.0.1 nextcloud
+    volumes:
+      - nc_html:/var/www/html
+    depends_on:
+      hook:
+        condition: service_healthy
+
+volumes:
+  nc_html:
+  hook_data:

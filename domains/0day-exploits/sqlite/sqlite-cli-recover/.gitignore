@@ -1,0 +1,5 @@
+poc-last-run.txt
+work/
+__pycache__/
+*.pyc
+.DS_Store

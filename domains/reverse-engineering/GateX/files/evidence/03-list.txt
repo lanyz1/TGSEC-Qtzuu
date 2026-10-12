@@ -1,0 +1,177 @@
+# GateX CTF evidence — live cage exec
+# captured 2026-08-26 18:23:26Z
+# container /gatex-cage-bypass-smoke-bp gatex-cage:noble net=none user=65532:65532
+# command: FH_PASS=gatex /opt/fh/7350FH.bin list
+# exit 0  duration 3.68s
+# sandbox: linux/amd64  network=none  cap-drop=ALL  read-only
+
+pyserial not installed. UART support limited.
+xgboost not installed. EPSS local predictor limited.
+tensorflow not available. Anomaly detection limited to statistical methods.
+sklearn not available. Vulnerability classification limited.
+
+╔══════════════════════════════════════════════════════════════╗
+║       FortiOS Attack Surface Mapper & 0-Day Fuzzer           ║
+╚══════════════════════════════════════════════════════════════╝
+
+
+=== plugins ===
+
+[detector]
+  cve_2018_13379               fortigate_hunter.detectors.cve_2018_13379.CVEChecker
+  cve_2025_59718               fortigate_hunter.detectors.cve_2025_59718.SAMLBypassDetector
+  cve_2026_20024               fortigate_hunter.detectors.cve_2026_20024.SSLVPNAuthBypassDetector
+  cve_2026_22153               fortigate_hunter.detectors.cve_2026_22153.LDAPBypassDetector
+  cve_2026_24858               fortigate_hunter.detectors.cve_2026_24858.FortiCloudSSODetector
+  cve_2026_25815               fortigate_hunter.detectors.cve_2026_25815.ConfigDecryptionDetector
+  cve_2026_59840               fortigate_hunter.detectors.cve_2026_59840.BufferOverreadDetector
+  cve_2026_25089               fortigate_hunter.detectors.cve_2026_25089.FortiSandboxRCEDetector
+  symlink_bypass               fortigate_hunter.detectors.symlink_bypass.SymlinkBypassDetector
+  cve_2025_68686               fortigate_hunter.detectors.cve_2025_68686.SSLVPNSymlinkBypassDetector
+  cve_2025_24472               fortigate_hunter.detectors.cve_2025_24472.AuthBypassDetector
+  websocket_rce                fortigate_hunter.detectors.websocket_rce.WebSocketRCEDetector
+  ldap_decrypt                 fortigate_hunter.detectors.ldap_decrypt.LDAPDecryptDetector
+  http_smuggling               fortigate_hunter.detectors.http_smuggling.HTTPSmugglingDetector
+  cve_2024_55591               fortinet_hunter.detectors.cve_2024_55591
+  cve_2025_25257               fortinet_hunter.detectors.cve_2025_25257
+  cve_2025_32756               fortinet_hunter.detectors.cve_2025_32756
+  cve_2025_64446               fortinet_hunter.detectors.cve_2025_64446
+  cve_2026_24018               fortinet_hunter.detectors.cve_2026_24018
+  cve_2026_35616               fortinet_hunter.detectors.cve_2026_35616
+  cve_2026_39808               fortinet_hunter.detectors.cve_2026_39808
+  fortisiem_cmdinject          fortinet_hunter.detectors.fortisiem_cmdinject
+  cve_2025_58034               fortinet_hunter.detectors.cve_2025_58034
+  cve_2026_70465               fortinet_hunter.detectors.cve_2026_70465
+  cve_2026_54121               fortinet_hunter.detectors.cve_2026_54121
+  cve_2025_56399               fortinet_hunter.detectors.cve_2025_56399
+  cve_2026_39801               fortinet_hunter.detectors.cve_2026_39801
+  cve_2026_71407               fortinet_hunter.detectors.cve_2026_71407
+  cve_2026_23573               fortinet_hunter.detectors.cve_2026_23573
+  cve_2026_59839               fortinet_hunter.detectors.cve_2026_59839
+  cve_2025_43892               fortinet_hunter.detectors.cve_2025_43892
+  cve_2026_71408               fortinet_hunter.detectors.cve_2026_71408
+
+[exploit]
+  command_inject               fortinet_hunter.exploits.command_inject
+  forticlient_ems              fortinet_hunter.exploits.forticlient_ems
+  forticlient_lpe              fortinet_hunter.exploits.forticlient_lpe
+  fortisandbox_rce             fortinet_hunter.exploits.fortisandbox_rce
+  fortisiem_cmdinject_exp      fortinet_hunter.exploits.fortisiem_cmdinject
+  fortivoice_hostcheck         fortinet_hunter.exploits.fortivoice_hostcheck
+  fortiweb_fwbcgi              fortinet_hunter.exploits.fortiweb_fwbcgi
+  fortiweb_sqli                fortinet_hunter.exploits.fortiweb_sqli
+  http_auth_bypass             fortinet_hunter.exploits.http_auth_bypass
+  shell_implant                fortinet_hunter.exploits.shell_implant
+  websocket_rce_exp            fortinet_hunter.exploits.websocket_rce
+  cve_2026_70465_exp           fortinet_hunter.exploits.cve_2026_70465_exp
+  certighost_exp               fortinet_hunter.exploits.certighost_exp
+  cve_2025_56399_exp           fortinet_hunter.exploits.cve_2025_56399_exp
+  fortios_sslvpn_rop_exp       fortinet_hunter.exploits.fortios_sslvpn_rop
+  fortijump_exp                fortinet_hunter.exploits.fortijump_exp
+  ems_certforge_exp            fortinet_hunter.exploits.forticlient_ems_certforge
+  fortios_saml_bypass_exp      fortinet_hunter.exploits.fortios_saml_bypass
+  cve_2026_39801_exp           fortinet_hunter.exploits.cve_2026_39801_exp
+
+[exfil]
+  aws_secrets                  fortinet_hunter.exfil.aws_secrets
+  collectjuices                fortinet_hunter.exfil.collectjuices
+  fortios_config               fortinet_hunter.exfil.fortios_config
+  harvest                      fortinet_hunter.exfil.harvest
+  transport_chain              fortinet_hunter.exfil.transport_chain
+
+[persist]
+  github_token_monitor         fortinet_hunter.persist.github_token_monitor
+  ide_hooks                    fortinet_hunter.persist.ide_hooks
+  masquerade_bundle            fortinet_hunter.persist.masquerade_bundle
+
+[recon]
+  ad_takeover                  fortinet_hunter.recon.ad_takeover
+  cert_hunter                  fortinet_hunter.recon.cert_hunter
+  darkweb_monitor              fortinet_hunter.recon.darkweb_monitor
+  ironveil                     fortinet_hunter.recon.ironveil
+  js_deobfuscator              fortinet_hunter.recon.js_deobfuscator
+  smtp_hunter                  fortinet_hunter.recon.smtp_hunter
+  sqli_scanner                 fortinet_hunter.recon.sqli_scanner
+  fortios_recon                fortinet_hunter.recon.fortios_recon
+  fortibleed_corpus            fortinet_hunter.recon.fortibleed
+  megalodon_detector           fortinet_hunter.recon.megalodon
+
+[lateral]
+  adsso_spray                  fortinet_hunter.lateral.adsso_spray
+  docker_escape                fortinet_hunter.lateral.cloud_native.docker_escape
+  etcd_secrets                 fortinet_hunter.lateral.cloud_native.etcd_secrets
+  imds_harvest                 fortinet_hunter.lateral.cloud_native.imds_harvest
+  k8s_enum                     fortinet_hunter.lateral.cloud_native.k8s_enum
+  kubelet_rce                  fortinet_hunter.lateral.cloud_native.kubelet_rce
+  ray_rce                      fortinet_hunter.lateral.cloud_native.ray_rce
+  subdomain                    fortinet_hunter.lateral.subdomain
+  ad_spray                     fortinet_hunter.lateral.ad_spray
+  azure_sso_spray              fortinet_hunter.lateral.azure_sso_spray
+  jwt_attacks                  fortinet_hunter.lateral.jwt_attacks
+  oauth_pivot                  fortinet_hunter.lateral.oauth_pivot
+  oci_pivot                    fortinet_hunter.lateral.oci_pivot
+  pass_the_hash                fortinet_hunter.lateral.pass_the_hash
+  smtp_pivot                   fortinet_hunter.lateral.smtp_pivot
+
+[agent]
+  agent_orchestrator           fortinet_hunter.agent.orchestrator
+
+=== CVE database ===
+  CVE-2023-34992  10.0  pre-auth FORTISIEM      FortiSIEM phMonitor
+  CVE-2018-13379   9.8  pre-auth FORTIGATE      FortiOS
+  CVE-2023-27997   9.8  pre-auth FORTIGATE      FortiOS
+  CVE-2024-23108   9.8  pre-auth FORTISIEM      FortiSIEM phMonitor
+  CVE-2024-23113   9.8  pre-auth FORTIGATE      FortiOS
+  CVE-2024-47574   9.8  pre-auth FORTIMANAGER   FortiManager
+  CVE-2024-47575   9.8  pre-auth FORTIMANAGER   FortiManager
+  CVE-2025-0901   9.8  pre-auth FORTIGATE      FortiOS
+  CVE-2025-24472   9.8  pre-auth FORTIGATE      FortiOS
+  CVE-2025-25256   9.8  pre-auth FORTISIEM      FortiSIEM phMonitor
+  CVE-2025-32756   9.8  pre-auth FORTIVOICE     FortiVoice/FortiMail/FortiNDR/FortiRecorder/FortiCamera
+  CVE-2025-59718   9.8  pre-auth FORTIGATE      FortiOS
+  CVE-2025-59719   9.8  pre-auth FORTIGATE      FortiOS
+  CVE-2025-64155   9.8  pre-auth FORTIGATE      FortiOS
+  CVE-2025-64446   9.8  pre-auth FORTIWEB       FortiWeb
+  CVE-2026-0221   9.8  pre-auth FORTIMANAGER   FortiManager
+  CVE-2026-21643   9.8  pre-auth FORTICLIENT_EMS FortiClientEMS
+  CVE-2026-22153   9.8  pre-auth FORTIGATE      FortiOS
+  CVE-2026-25089   9.8  pre-auth FORTISANDBOX   FortiSandbox
+  CVE-2026-35616   9.8  pre-auth FORTICLIENT_EMS FortiClient EMS
+  CVE-2026-39801   9.8  pre-auth FORTIGATE      FortiOS SSL-VPN
+  CVE-2026-39808   9.8  pre-auth FORTISANDBOX   FortiSandbox
+  CVE-2026-39813   9.8  pre-auth FORTISANDBOX   FortiSandbox
+  CVE-2026-54121   9.8  auth     UNKNOWN        Active Directory Certificate Services (AD CS)
+  CVE-2026-70465   9.8  pre-auth FORTICLIENT    FortiClientWindows
+  CVE-2024-21762   9.6  pre-auth FORTIGATE      FortiOS
+  CVE-2024-55591   9.6  pre-auth FORTIGATE      FortiOS
+  CVE-2024-55591   9.6  pre-auth FORTIGATE      FortiOS/FortiProxy
+  CVE-2025-25257   9.6  pre-auth FORTIWEB       FortiWeb Fabric Connector
+  CVE-2026-20024   9.6  pre-auth FORTIGATE      FortiOS
+  CVE-2026-24858   9.4  pre-auth FORTIGATE      FortiOS
+  CVE-2022-42475   9.3  pre-auth FORTIGATE      FortiOS
+  CVE-2025-25249   9.1  pre-auth FORTIGATE      FortiOS
+  CVE-2026-0147   9.1  pre-auth FORTIMANAGER   FortiManager
+  CVE-2026-26083   9.1  pre-auth FORTISANDBOX   FortiSandbox
+  CVE-2026-44277   9.1  pre-auth FORTISANDBOX   FortiSandbox
+  CVE-2025-53844   8.8  pre-auth FORTIGATE      FortiOS
+  CVE-2025-56399   8.8  auth     UNKNOWN        laravel-file-manager (alexusmai)
+  CVE-2025-1123   8.6  pre-auth FORTIGATE      FortiOS
+  CVE-2026-59840   8.6  pre-auth FORTIGATE      FortiOS
+  CVE-2026-0012   8.2  pre-auth FORTIGATE      FortiOS
+  CVE-2025-68686   8.1  pre-auth FORTIGATE      FortiOS
+  CVE-2026-0333   8.1  pre-auth FORTIGATE      FortiOS
+  CVE-2026-0444   7.8  pre-auth FORTIGATE      FortiOS
+  CVE-2026-59839   7.8  auth     FORTIGATE      FortiOS CLI
+  CVE-2020-12812   7.5  pre-auth FORTIGATE      FortiOS
+  CVE-2026-25815   7.5  pre-auth FORTIGATE      FortiOS
+  CVE-HTTP-SMUGGLING-FG   7.5  pre-auth FORTIGATE      FortiOS
+  LDAP-CRED-LEAK-2026   7.5  pre-auth FORTIGATE      FortiOS
+  CVE-2026-24018   7.4  auth     FORTICLIENT    FortiClient Linux
+  CVE-2026-22828   7.3  pre-auth FORTIMANAGER   FortiManager
+  CVE-2026-0555   6.5  auth     FORTIGATE      FortiOS
+  CVE-2026-23573   6.1  auth     FORTIGATE      FortiOS SSL-VPN
+  CVE-2025-61624   6.0  auth     FORTIGATE      FortiOS
+  CVE-2025-22252   5.9  auth     FORTIGATE      FortiOS
+  CVE-2026-71407   5.6  pre-auth FORTIGATE      FortiOS WAD
+  CVE-2026-71408   5.3  pre-auth FORTIGATE      FortiOS UI
+  CVE-2025-43892   4.1  auth     FORTIGATE      FortiOS authd/wad

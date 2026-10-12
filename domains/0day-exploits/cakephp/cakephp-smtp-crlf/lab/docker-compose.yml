@@ -1,0 +1,26 @@
+name: cakephp-smtp-crlf
+
+services:
+  smtp:
+    image: python:3.12-slim
+    pull_policy: missing
+    init: true
+    restart: "no"
+    command: ["python", "-u", "/sink/smtp_sink.py"]
+    volumes:
+      - ./smtp_sink.py:/sink/smtp_sink.py:ro
+      - ./work:/oracle
+    ports:
+      - "127.0.0.1:19410:2525"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      SMTP_HOST: smtp
+      SMTP_PORT: "2525"
+    depends_on:
+      - smtp

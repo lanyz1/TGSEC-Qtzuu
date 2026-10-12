@@ -45,3 +45,4 @@ hermes-skills/
 knowledge/
 **/*.log
 **/*.out
+__pycache__/

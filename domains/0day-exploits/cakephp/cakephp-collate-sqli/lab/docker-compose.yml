@@ -1,0 +1,33 @@
+name: cakephp-collate-sqli
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lab
+      POSTGRES_PASSWORD: labpass
+      POSTGRES_DB: lab
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lab -d lab"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: "no"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      DB_HOST: db
+      DB_USER: lab
+      DB_PASS: labpass
+      DB_NAME: lab
+      WITNESS: CAKEPHP-COLLATE-SQLI-WITNESS
+    ports:
+      - "127.0.0.1:19450:80"
+    depends_on:
+      db:
+        condition: service_healthy

@@ -1,0 +1,12 @@
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    command: ["sleep", "infinity"]
+    ports:
+      - "127.0.0.1:18150:18150/udp"
+    environment:
+      QUICSAMPLE: /opt/msquic/quicsample
+      PYTHONUNBUFFERED: "1"

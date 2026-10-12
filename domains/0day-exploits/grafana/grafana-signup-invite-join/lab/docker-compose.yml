@@ -1,0 +1,24 @@
+name: grafana-signup-invite-join
+
+services:
+  grafana:
+    image: grafana/grafana:13.2.3
+    ports:
+      - "127.0.0.1:19350:3000"
+    environment:
+      GF_USERS_ALLOW_SIGN_UP: "true"
+      GF_USERS_VERIFY_EMAIL_ENABLED: "false"
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: LabAdminPass1
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_LOG_LEVEL: info
+      GF_SERVER_ROOT_URL: http://127.0.0.1:19350
+    volumes:
+      - grafana-data:/var/lib/grafana
+    labels:
+      lab: GRAFANA-SIGNUP-INVITE-JOIN
+    restart: "no"
+
+volumes:
+  grafana-data:

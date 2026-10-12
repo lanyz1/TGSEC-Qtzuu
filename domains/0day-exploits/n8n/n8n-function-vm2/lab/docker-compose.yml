@@ -1,0 +1,31 @@
+name: n8n-function-vm2
+
+services:
+  n8n:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: n8n-function-vm2:2.42.0
+    ports:
+      - "127.0.0.1:18201:5678"
+    environment:
+      N8N_HOST: "127.0.0.1"
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: "http"
+      N8N_LISTEN_ADDRESS: "0.0.0.0"
+      N8N_SECURE_COOKIE: "false"
+      WEBHOOK_URL: "http://127.0.0.1:18201/"
+      N8N_ENCRYPTION_KEY: "lab-n8n-function-vm2-key"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_HIRING_BANNER_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "false"
+      GENERIC_TIMEZONE: "UTC"
+      TZ: "UTC"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:5678/healthz || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s

@@ -1,0 +1,519 @@
+{
+  "metadata": {
+    "tool": "COMrade ABE Analyzer",
+    "version": "1.1.0",
+    "timestamp": "2026-01-24T16:12:10.075378",
+    "analysis_duration_seconds": 0.02233409881591797,
+    "browser": "googlechromebetaelevationservice",
+    "executable_path": "C:\\Program Files\\Google\\Chrome Beta\\Application\\145.0.7632.18\\elevation_service.exe"
+  },
+  "statistics": {
+    "total_interfaces_scanned": 12,
+    "abe_capable_interfaces_found": 12,
+    "target_methods": [
+      "DecryptData",
+      "EncryptData"
+    ]
+  },
+  "discovered_clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+  "results": [
+    {
+      "interface_name": "IElevator",
+      "interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        },
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevatorChromium",
+      "interface_iid": "{B88C45B9-8825-4629-B83E-77CC67D9CEED}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevatorChromium",
+          "iid": "{B88C45B9-8825-4629-B83E-77CC67D9CEED}",
+          "base_interface": "IElevator",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        },
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevatorChrome",
+      "interface_iid": "{463ABECF-410D-407F-8AF5-0DF35A005CC8}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevatorChrome",
+          "iid": "{463ABECF-410D-407F-8AF5-0DF35A005CC8}",
+          "base_interface": "IElevator",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        },
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevatorChromeBeta",
+      "interface_iid": "{A2721D66-376E-4D2F-9F0F-9070E9A42B5F}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevatorChromeBeta",
+          "iid": "{A2721D66-376E-4D2F-9F0F-9070E9A42B5F}",
+          "base_interface": "IElevator",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        },
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevatorChromeDev",
+      "interface_iid": "{BB2AA26B-343A-4072-8B6F-80557B8CE571}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevatorChromeDev",
+          "iid": "{BB2AA26B-343A-4072-8B6F-80557B8CE571}",
+          "base_interface": "IElevator",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        },
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevatorChromeCanary",
+      "interface_iid": "{4F7CE041-28E9-484F-9DD0-61A8CACEFEE4}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevatorChromeCanary",
+          "iid": "{4F7CE041-28E9-484F-9DD0-61A8CACEFEE4}",
+          "base_interface": "IElevator",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        },
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevator2",
+      "interface_iid": "{8F7B6792-784D-4047-845D-1782EFBEF205}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevator2",
+          "iid": "{8F7B6792-784D-4047-845D-1782EFBEF205}",
+          "base_interface": "IElevator",
+          "methods_count": 2
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        },
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevator2Chromium",
+      "interface_iid": "{BB19A0E5-00C6-4966-94B2-5AFEC6FED93A}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevator2Chromium",
+          "iid": "{BB19A0E5-00C6-4966-94B2-5AFEC6FED93A}",
+          "base_interface": "IElevator2",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator2",
+          "iid": "{8F7B6792-784D-4047-845D-1782EFBEF205}",
+          "base_interface": "IElevator",
+          "methods_count": 2
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevator2Chrome",
+      "interface_iid": "{1BF5208B-295F-4992-B5F4-3A9BB6494838}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevator2Chrome",
+          "iid": "{1BF5208B-295F-4992-B5F4-3A9BB6494838}",
+          "base_interface": "IElevator2",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator2",
+          "iid": "{8F7B6792-784D-4047-845D-1782EFBEF205}",
+          "base_interface": "IElevator",
+          "methods_count": 2
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        },
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevator2ChromeBeta",
+      "interface_iid": "{B96A14B8-D0B0-44D8-BA68-2385B2A03254}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevator2ChromeBeta",
+          "iid": "{B96A14B8-D0B0-44D8-BA68-2385B2A03254}",
+          "base_interface": "IElevator2",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator2",
+          "iid": "{8F7B6792-784D-4047-845D-1782EFBEF205}",
+          "base_interface": "IElevator",
+          "methods_count": 2
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevator2ChromeDev",
+      "interface_iid": "{3FEFA48E-C8BF-461F-AED6-63F658CC850A}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevator2ChromeDev",
+          "iid": "{3FEFA48E-C8BF-461F-AED6-63F658CC850A}",
+          "base_interface": "IElevator2",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator2",
+          "iid": "{8F7B6792-784D-4047-845D-1782EFBEF205}",
+          "base_interface": "IElevator",
+          "methods_count": 2
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        },
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    },
+    {
+      "interface_name": "IElevator2ChromeCanary",
+      "interface_iid": "{FF672E9F-0994-4322-81E5-3A5A9746140A}",
+      "clsid": "{DD2646BA-3707-4BF8-B9A7-038691A68FC2}",
+      "methods": {
+        "EncryptData": {
+          "name": "EncryptData",
+          "vtable_offset": 32,
+          "memid": 1610678273,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        },
+        "DecryptData": {
+          "name": "DecryptData",
+          "vtable_offset": 40,
+          "memid": 1610678274,
+          "defining_interface": "IElevator",
+          "defining_interface_iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IElevator2ChromeCanary",
+          "iid": "{FF672E9F-0994-4322-81E5-3A5A9746140A}",
+          "base_interface": "IElevator2",
+          "methods_count": 0
+        },
+        {
+          "name": "IElevator2",
+          "iid": "{8F7B6792-784D-4047-845D-1782EFBEF205}",
+          "base_interface": "IElevator",
+          "methods_count": 2
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base_interface": "IUnknown",
+          "methods_count": 3
+        }
+      ]
+    }
+  ]
+}

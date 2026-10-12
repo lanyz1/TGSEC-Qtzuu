@@ -1,0 +1,16 @@
+name: proftpd-rewrite-utf8trans
+
+services:
+  proftpd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:halt_on_error=1:log_path=/tmp/asan
+    ports:
+      - "127.0.0.1:18740:21"
+      - "127.0.0.1:18741-18750:18741-18750"
+    volumes:
+      - ./conf/proftpd.conf:/etc/proftpd/proftpd.conf:ro

@@ -1,0 +1,29 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.sessions/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+downloads/
+*.log
+.DS_Store
+
+# Operator wordlists stay local. Bring your own; see wordlists/README.md.
+wordlists/custom/
+wordlists/public/
+wordlists/**/*.txt
+
+# Local session files, tokens, guest emails, found passwords.
+*.json
+!package.json
+
+# Captures that still contain local paths / guest emails / share secrets.
+docs/gofilex-working.png
+docs/gofilex-working.svg
+OneFileX YUI.png

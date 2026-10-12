@@ -1,0 +1,32 @@
+name: drupal-htmx-attr
+
+services:
+  drupal:
+    build: .
+    image: drupal-htmx-attr:11.4.8
+    ports:
+      - "127.0.0.1:19480:80"
+    environment:
+      PHP_MEMORY_LIMIT: 512M
+    depends_on:
+      db:
+        condition: service_healthy
+    init: true
+    restart: "no"
+
+  db:
+    image: mariadb:11
+    pull_policy: missing
+    environment:
+      MARIADB_DATABASE: drupal
+      MARIADB_USER: drupal
+      MARIADB_PASSWORD: drupal
+      MARIADB_ROOT_PASSWORD: drupal
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
+    init: true
+    restart: "no"

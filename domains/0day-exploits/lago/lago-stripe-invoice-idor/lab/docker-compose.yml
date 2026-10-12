@@ -1,0 +1,29 @@
+# Local-only Lago v1.53.0 lab for unpublished #2 (Stripe one-time unscoped invoice).
+# Loopback only. No shells. Oracle is victim invoice payment_status=succeeded.
+
+name: lago-stripe-invoice-idor
+
+services:
+  lago:
+    image: getlago/lago:v1.53.0
+    environment:
+      LAGO_DISABLE_SIGNUP: "false"
+      LAGO_DISABLE_PDF_GENERATION: "true"
+      LAGO_DISABLE_SEGMENT: "true"
+      LAGO_SIDEKIQ_WEB: "false"
+      API_URL: http://127.0.0.1:13001
+      LAGO_API_URL: http://127.0.0.1:13001
+      LAGO_FRONT_URL: http://127.0.0.1:18081
+    ports:
+      - "127.0.0.1:13001:3000"
+    volumes:
+      - lago_stripe_idor_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3000/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 40s
+
+volumes:
+  lago_stripe_idor_data:

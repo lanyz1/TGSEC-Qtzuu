@@ -1,0 +1,40 @@
+name: phpmyadmin-importldi
+
+services:
+  db:
+    image: mysql:8.0
+    pull_policy: missing
+    init: true
+    restart: "no"
+    command:
+      - --local-infile=1
+      - --general-log=1
+      - --general-log-file=/tmp/general.log
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/01-lab.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpass"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
+  pma:
+    image: phpmyadmin:5.2.3
+    pull_policy: missing
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19290:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ABSOLUTE_URI: http://127.0.0.1:19290/
+      UPLOAD_LIMIT: 16M
+    depends_on:
+      db:
+        condition: service_healthy

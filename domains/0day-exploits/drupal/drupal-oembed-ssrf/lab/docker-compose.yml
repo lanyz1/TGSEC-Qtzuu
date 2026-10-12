@@ -1,0 +1,48 @@
+name: drupal-oembed-ssrf
+
+services:
+  gadget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["sleep", "infinity"]
+    init: true
+    restart: "no"
+    environment:
+      PIN_VERSION: "11.4.8"
+      PIN_SHA: "61044508071749629aaf3380aa85971e94df9e84"
+      WITNESS: "DRUPAL-OEMBED-SSRF-WITNESS"
+      FIRST_HOP_URL: "http://firsthop:8080/video.html"
+      SECOND_HOP_URL: "http://127.0.0.1:18080/oembed"
+    depends_on:
+      - firsthop
+
+  firsthop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python3", "/lab/firsthop.py"]
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19510:8080"
+    environment:
+      BIND_HOST: "0.0.0.0"
+      BIND_PORT: "8080"
+      SECOND_HOP_URL: "http://127.0.0.1:18080/oembed"
+      WITNESS: "DRUPAL-OEMBED-SSRF-WITNESS"
+
+  oracle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python3", "/lab/oracle.py"]
+    network_mode: "service:gadget"
+    init: true
+    restart: "no"
+    environment:
+      BIND_HOST: "127.0.0.1"
+      BIND_PORT: "18080"
+      WITNESS: "DRUPAL-OEMBED-SSRF-WITNESS"
+    depends_on:
+      - gadget

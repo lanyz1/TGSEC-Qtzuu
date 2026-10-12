@@ -1,0 +1,22 @@
+<!-- Explicitly imported by Atlas projects; never picked up automatically,
+     so it cannot leak into external/Titanis builds via $(SolutionDir). -->
+<Project>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>Atlas</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimMode>partial</TrimMode>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+		<DebugType>None</DebugType>
+		<DebugSymbols>false</DebugSymbols>
+		<PublishReadyToRun>false</PublishReadyToRun>
+	</PropertyGroup>
+	<ItemGroup>
+		<!-- Reflection-loaded modules reference this only via late-bound code; keep it -->
+		<TrimmerRootAssembly Include="System.Diagnostics.FileVersionInfo" />
+	</ItemGroup>
+</Project>

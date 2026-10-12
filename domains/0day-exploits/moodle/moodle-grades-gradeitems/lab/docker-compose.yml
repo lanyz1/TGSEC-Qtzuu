@@ -1,0 +1,47 @@
+name: moodle-grades-gradeitems
+
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MYSQL_DATABASE: moodle
+      MYSQL_USER: moodle
+      MYSQL_PASSWORD: LabDbPassw0rd!
+      MYSQL_ROOT_PASSWORD: LabRootPassw0rd!
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 36
+    restart: "no"
+
+  moodle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:19590:80"
+    environment:
+      MOODLE_WWWROOT: http://127.0.0.1:19590
+      MOODLE_DATAROOT: /var/www/moodledata
+      MOODLE_DBHOST: db
+      MOODLE_DBNAME: moodle
+      MOODLE_DBUSER: moodle
+      MOODLE_DBPASS: LabDbPassw0rd!
+      MOODLE_ADMINUSER: labadmin
+      MOODLE_ADMINPASS: LabAdminPass1!
+      MOODLE_ADMINEMAIL: labadmin@example.com
+    volumes:
+      - ./src:/var/www/html
+      - moodledata:/var/www/moodledata
+    depends_on:
+      db:
+        condition: service_healthy
+    init: true
+    restart: "no"
+
+volumes:
+  moodledata:

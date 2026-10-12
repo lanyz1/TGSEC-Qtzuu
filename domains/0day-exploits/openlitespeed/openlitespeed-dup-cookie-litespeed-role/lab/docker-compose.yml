@@ -1,0 +1,16 @@
+name: openlitespeed-dup-cookie-litespeed-role
+
+services:
+  ols:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        OLS_IMAGE: ${OLS_IMAGE:-litespeedtech/openlitespeed:1.9.3-lsphp84}
+    pull_policy: missing
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:18750:80"
+    labels:
+      lab: openlitespeed-dup-cookie-litespeed-role

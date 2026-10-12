@@ -1,0 +1,4 @@
+textual>=1.0,<9
+argon2-cffi>=23
+zstandard>=0.22
+cryptography>=42

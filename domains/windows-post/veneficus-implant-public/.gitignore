@@ -1,0 +1,6 @@
+.DS_Store
+REVIEW.html
+REVIEW.pdf
+*.stripped.pdf
+__pycache__/
+.venv/

@@ -1,0 +1,75 @@
+name: prometheus-bearer-redirect
+
+services:
+  hop:
+    image: python:3.13-slim
+    environment:
+      PYTHONUNBUFFERED: "1"
+      LAB_ROLE: hop
+      ORACLE_BACKEND: http://oracle:8080
+      GCP_TOKEN: lab-gcp-PROMETHEUS-BEARER-REDIRECT-WITNESS
+      SCRAPE_TOKEN: lab-scrape-oauth2
+    volumes:
+      - ./poc.py:/lab/poc.py:ro
+    command: ["python3", "/lab/poc.py", "--role", "hop"]
+    expose:
+      - "8080"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 2s
+    restart: "no"
+
+  oracle:
+    image: python:3.13-slim
+    environment:
+      PYTHONUNBUFFERED: "1"
+      LAB_ROLE: oracle
+    volumes:
+      - ./poc.py:/lab/poc.py:ro
+    command: ["python3", "/lab/poc.py", "--role", "oracle"]
+    ports:
+      - "127.0.0.1:19381:8080"
+    expose:
+      - "8080"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 2s
+    restart: "no"
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    depends_on:
+      hop:
+        condition: service_healthy
+      oracle:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:19380:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./gcp-sa.json:/etc/prometheus/gcp-sa.json:ro
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --web.listen-address=0.0.0.0:9090
+    restart: "no"

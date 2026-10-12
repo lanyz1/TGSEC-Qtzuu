@@ -1,0 +1,12 @@
+name: proftpd-sftp-copy-file-write
+
+services:
+  sftp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: proftpd-sftp-copy-file-write:1.3.9d
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:18710:2222"

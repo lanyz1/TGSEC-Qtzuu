@@ -1,0 +1,32 @@
+name: phpmyadmin-auth-plugin-unquoted
+
+services:
+  db:
+    image: mysql:8.0
+    command:
+      - --general-log=1
+      - --log-output=TABLE
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpass"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+    restart: "no"
+
+  pma:
+    image: phpmyadmin:5.2.3
+    ports:
+      - "127.0.0.1:19260:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: "3306"
+      PMA_ABSOLUTE_URI: http://127.0.0.1:19260/
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"

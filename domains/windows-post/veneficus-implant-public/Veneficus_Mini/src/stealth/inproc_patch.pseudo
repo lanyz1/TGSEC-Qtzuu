@@ -1,0 +1,31 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/stealth/inproc_patch.pseudo
+# In-process patches of script-scan and telemetry exports.
+# Patch byte sequences are intentionally omitted.
+
+FUNCTION patch_export(module, patch) -> bool:
+    IF module is the script-scan library:  target = its scan export
+    ELSE IF module is ntdll:               target = its event-write export
+    ELSE RETURN false
+
+    h = already-loaded module handle
+    IF h is null: RETURN false          # library may not be loaded yet
+    p = address of target export
+    make page writable
+    write patch
+    restore protection
+    RETURN success
+
+    # Effect is this process only (and children that inherit the
+    # mapping). Kernel telemetry is unaffected.
+
+FUNCTION patch_script_scan() -> bool:
+    patch_export(script-scan library, "return invalid-arg")
+
+FUNCTION patch_telemetry() -> bool:
+    patch_export(ntdll, "return 0")

@@ -1,0 +1,45 @@
+name: phpmyadmin-vqb-xss
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+      - --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpass"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
+  pma:
+    image: phpmyadmin:5.2.3
+    ports:
+      - "127.0.0.1:19250:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      db:
+        condition: service_healthy
+
+  poc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    shm_size: "1gb"
+    environment:
+      PMA_URL: http://pma:80
+      MYSQL_HOST: db
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - ./poc.py:/lab/poc.py:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      pma:
+        condition: service_started
+    command: ["python3", "/lab/poc.py"]

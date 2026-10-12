@@ -1,0 +1,1500 @@
+{
+  "metadata": {
+    "tool": "COMrade ABE Analyzer",
+    "version": "2.0.0",
+    "timestamp": "2026-01-28T08:55:14.440858",
+    "duration_seconds": 0.014183759689331055,
+    "browser": "edge",
+    "executable": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\144.0.3719.92\\elevation_service.exe"
+  },
+  "statistics": {
+    "interfaces_scanned": 12,
+    "abe_capable_found": 10,
+    "coclasses_found": 0,
+    "target_methods": [
+      "DecryptData",
+      "EncryptData"
+    ]
+  },
+  "discovered_clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+  "pe_info": {
+    "machine": "ARM64",
+    "machine_name": "ARM64",
+    "timestamp": "2026-01-23T09:55:37",
+    "has_typelib": true,
+    "uses_rpc": true,
+    "uses_ole": true,
+    "hardening_apis": [
+      "kernel32.dll!GetModuleFileNameW (Path retrieval (self))",
+      "kernel32.dll!QueryFullProcessImageNameW (Full process image path)"
+    ]
+  },
+  "security_info": {
+    "appid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+    "local_service": "MicrosoftEdgeElevationService",
+    "runas": null,
+    "launch_permission_sddl": null,
+    "access_permission_sddl": null
+  },
+  "service_runtime": {
+    "status": "unknown",
+    "pid": null,
+    "start_type": "unknown",
+    "dependencies": []
+  },
+  "results": [
+    {
+      "interface_name": "IElevator2",
+      "interface_iid": "{8F7B6792-784D-4047-845D-1782EFBEF205}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevator2",
+          "iid": "{8F7B6792-784D-4047-845D-1782EFBEF205}",
+          "base": "IElevator",
+          "methods": [
+            {
+              "name": "RunIsolatedChrome",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] ULONG flags",
+                "[in] LPWSTR command_line",
+                "[out] BSTR* log",
+                "[out] ULONGLONG* proc_handle",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 72,
+              "memid": 1610809344
+            },
+            {
+              "name": "AcceptInvitation",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR server_name"
+              ],
+              "vtable_offset": 80,
+              "memid": 1610809345
+            }
+          ]
+        }
+      ],
+      "proxy_stub": {
+        "type": "oleautomation",
+        "registered": true
+      },
+      "vtable_slots": 11
+    },
+    {
+      "interface_name": "IElevatorUnbranded",
+      "interface_iid": "{1844B907-8C44-45AA-8A17-A48451899E75}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevatorUnbranded",
+          "iid": "{1844B907-8C44-45AA-8A17-A48451899E75}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false
+      },
+      "vtable_slots": 9
+    },
+    {
+      "interface_name": "IElevatorEdge",
+      "interface_iid": "{C9C2B807-7731-4F34-81B7-44FF7779522B}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdge",
+          "iid": "{C9C2B807-7731-4F34-81B7-44FF7779522B}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "oleautomation",
+        "registered": true
+      },
+      "vtable_slots": 9
+    },
+    {
+      "interface_name": "IElevatorEdgeBeta",
+      "interface_iid": "{F84A0FB0-39D9-4B57-AFA1-8D3B777749B6}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBeta",
+          "iid": "{F84A0FB0-39D9-4B57-AFA1-8D3B777749B6}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false
+      },
+      "vtable_slots": 9
+    },
+    {
+      "interface_name": "IElevatorEdgeDev",
+      "interface_iid": "{1592D8FD-D678-4453-B9BA-1E2B2F75532C}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeDev",
+          "iid": "{1592D8FD-D678-4453-B9BA-1E2B2F75532C}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false
+      },
+      "vtable_slots": 9
+    },
+    {
+      "interface_name": "IElevatorEdgeCanary",
+      "interface_iid": "{53FE64DB-11A5-41F0-8239-00818CE77230}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeCanary",
+          "iid": "{53FE64DB-11A5-41F0-8239-00818CE77230}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false
+      },
+      "vtable_slots": 9
+    },
+    {
+      "interface_name": "IElevatorEdgeInternal",
+      "interface_iid": "{F019E0F2-DAB5-423B-B9F2-5025B0B449F4}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeInternal",
+          "iid": "{F019E0F2-DAB5-423B-B9F2-5025B0B449F4}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false
+      },
+      "vtable_slots": 9
+    },
+    {
+      "interface_name": "IElevatorCopilot",
+      "interface_iid": "{17DF149F-BE61-447E-A305-522F55021B36}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevatorCopilot",
+          "iid": "{17DF149F-BE61-447E-A305-522F55021B36}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false
+      },
+      "vtable_slots": 9
+    },
+    {
+      "interface_name": "IElevatorCopilotDev",
+      "interface_iid": "{10658E59-89EF-47F5-BD3A-67AC0F3C239A}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevatorCopilotDev",
+          "iid": "{10658E59-89EF-47F5-BD3A-67AC0F3C239A}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false
+      },
+      "vtable_slots": 9
+    },
+    {
+      "interface_name": "IElevatorCopilotInternal",
+      "interface_iid": "{763D675E-5D94-4F1A-BAAD-6313099606E4}",
+      "clsid": "{1FCBE96C-1697-43AF-9140-2897C7C69767}",
+      "methods": {
+        "EncryptData": {
+          "vtable_offset": 56,
+          "memid": 1610743809,
+          "defining_interface": "IElevator"
+        },
+        "DecryptData": {
+          "vtable_offset": 64,
+          "memid": 1610743810,
+          "defining_interface": "IElevator"
+        }
+      },
+      "inheritance_chain": [
+        {
+          "name": "IUnknown",
+          "iid": "{00000000-0000-0000-C000-000000000046}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "QueryInterface",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] struct GUID { ULONG Data1; USHORT Data2; USHORT Data3; VT_0x1C Data4; }* riid",
+                "[out] void** ppvObj"
+              ],
+              "vtable_offset": 0,
+              "memid": 1610612736
+            },
+            {
+              "name": "AddRef",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 8,
+              "memid": 1610612737
+            },
+            {
+              "name": "Release",
+              "return_type": "ULONG",
+              "params": [],
+              "vtable_offset": 16,
+              "memid": 1610612738
+            }
+          ]
+        },
+        {
+          "name": "IElevatorEdgeBase",
+          "iid": "{E12B779C-CDB8-4F19-95A0-9CA19B31A8F6}",
+          "base": "IUnknown",
+          "methods": [
+            {
+              "name": "ReservedFunction1",
+              "return_type": "HRESULT",
+              "params": [],
+              "vtable_offset": 24,
+              "memid": 1610678272
+            },
+            {
+              "name": "LaunchUpdateCmdElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 32,
+              "memid": 1610678273
+            },
+            {
+              "name": "LaunchUpdateCmdElevatedAndWait",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR cmd_id",
+                "[in] ULONG wait_timeout",
+                "[out] ULONG* exit_code"
+              ],
+              "vtable_offset": 40,
+              "memid": 1610678274
+            }
+          ]
+        },
+        {
+          "name": "IElevator",
+          "iid": "{A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C}",
+          "base": "IElevatorEdgeBase",
+          "methods": [
+            {
+              "name": "RunRecoveryCRXElevated",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] LPWSTR crx_path",
+                "[in] LPWSTR browser_appid",
+                "[in] LPWSTR browser_version",
+                "[in] LPWSTR session_id",
+                "[in] ULONG caller_proc_id",
+                "[out] ULONGLONG* proc_handle"
+              ],
+              "vtable_offset": 48,
+              "memid": 1610743808
+            },
+            {
+              "name": "EncryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] enum ProtectionLevel protection_level",
+                "[in] BSTR plaintext",
+                "[out] BSTR* ciphertext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 56,
+              "memid": 1610743809
+            },
+            {
+              "name": "DecryptData",
+              "return_type": "HRESULT",
+              "params": [
+                "[in] BSTR ciphertext",
+                "[out] BSTR* plaintext",
+                "[out] ULONG* last_error"
+              ],
+              "vtable_offset": 64,
+              "memid": 1610743810
+            }
+          ]
+        },
+        {
+          "name": "IElevatorCopilotInternal",
+          "iid": "{763D675E-5D94-4F1A-BAAD-6313099606E4}",
+          "base": "IElevator",
+          "methods": []
+        }
+      ],
+      "proxy_stub": {
+        "type": "not registered",
+        "registered": false
+      },
+      "vtable_slots": 9
+    }
+  ]
+}

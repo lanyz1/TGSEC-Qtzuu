@@ -1,0 +1,25 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+.DS_Store
+/tmp/
+
+# CTF payload — do not ship zips or native binaries
+*.zip
+*.bin
+*.elf
+*.so
+*.dylib
+*.exe
+*.o
+7350FH
+files/7350FH
+files/**/*.zip
+**/*.orig
+
+# local GateX state
+.gatex/

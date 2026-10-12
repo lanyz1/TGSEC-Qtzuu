@@ -1,0 +1,34 @@
+name: postgres-basebackup-symlink
+
+services:
+  source:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: postgres-basebackup-symlink-source:18.6
+    init: true
+    environment:
+      PYTHONUNBUFFERED: "1"
+      BIND_HOST: "0.0.0.0"
+      BIND_PORT: "5432"
+      WITNESS: "POSTGRES-BASEBACKUP-SYMLINK-WITNESS"
+      ORACLE_DIR: "/work/oracle"
+      SERVER_VERSION: "18.6"
+    ports:
+      - "127.0.0.1:19370:5432"
+
+  client:
+    image: postgres:18.6
+    pull_policy: never
+    init: true
+    user: "0:0"
+    depends_on:
+      - source
+    entrypoint: ["sleep", "infinity"]
+    working_dir: /work
+    volumes:
+      - ./work:/work
+    environment:
+      PGSSLMODE: "disable"
+      PGGSSENCMODE: "disable"
+      PGUSER: "postgres"

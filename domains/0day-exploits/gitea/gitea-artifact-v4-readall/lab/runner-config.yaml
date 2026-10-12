@@ -1,0 +1,16 @@
+# Host executor only. No docker.sock, no job containers.
+log:
+  level: info
+
+runner:
+  file: .runner
+  capacity: 1
+  timeout: 1h
+  labels:
+    - ubuntu-latest:host
+
+cache:
+  enabled: false
+
+container:
+  require_docker: false

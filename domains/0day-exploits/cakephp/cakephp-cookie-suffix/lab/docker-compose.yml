@@ -1,0 +1,16 @@
+name: cakephp-cookie-suffix
+
+services:
+  cake:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19420:8080"
+    environment:
+      LABEL: cakephp-cookie-suffix
+      WITNESS: CAKEPHP-COOKIE-SUFFIX-WITNESS
+    labels:
+      lab: cakephp-cookie-suffix

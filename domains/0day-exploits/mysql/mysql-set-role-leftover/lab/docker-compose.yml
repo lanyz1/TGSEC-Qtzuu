@@ -1,0 +1,18 @@
+name: mysql-set-role-leftover
+
+services:
+  mysql:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    pull_policy: never
+    init: true
+    ports:
+      - "127.0.0.1:18630:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: labroot
+      MYSQL_DATABASE: lab
+    command:
+      - mysqld
+      - --activate-all-roles-on-login=OFF
+      - --secure-file-priv=/var/lib/mysql-files

@@ -1,0 +1,22 @@
+/target/
+**/*.rs.bk
+Cargo.lock.bak
+
+.DS_Store
+.AppleDouble
+._*
+Thumbs.db
+
+.idea/
+.vscode/
+*.swp
+*.swo
+
+.env
+.env.*
+.dev.vars
+*.pem
+*.p12
+
+# zip brace-expansion artefact from the original drop
+/{src*

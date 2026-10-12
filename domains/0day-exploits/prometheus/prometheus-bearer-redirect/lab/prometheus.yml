@@ -1,0 +1,38 @@
+# Config-gated leftover: remote_write google_iam. follow_redirects stays at the
+# DefaultRemoteWriteHTTPClientConfig value (true). Do not set it false.
+global:
+  scrape_interval: 1s
+  scrape_timeout: 1s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["127.0.0.1:9090"]
+
+  # Negative control: prometheus/common v0.71.0 oauth2 must not re-attach
+  # Bearer after a cross-host 3xx (common #901).
+  - job_name: oauth2-cross-host
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["hop:8080"]
+    oauth2:
+      client_id: lab-scrape
+      client_secret: lab-scrape-secret
+      token_url: http://hop:8080/oauth2/token
+
+remote_write:
+  - url: http://hop:8080/write
+    name: lab-google-iam
+    google_iam:
+      credentials_file: /etc/prometheus/gcp-sa.json
+    queue_config:
+      capacity: 100
+      max_shards: 1
+      min_shards: 1
+      max_samples_per_send: 50
+      batch_send_deadline: 1s
+      min_backoff: 100ms
+      max_backoff: 1s
+    metadata_config:
+      send: false

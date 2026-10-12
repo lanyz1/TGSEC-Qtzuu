@@ -1,0 +1,13 @@
+name: moodle-blackboard-img
+
+services:
+  gadget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19560:19560"
+    labels:
+      lab: moodle-blackboard-img

@@ -1,0 +1,15 @@
+name: cakephp-trusted-proxies
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19430:8080"
+    environment:
+      LAB_WITNESS: CAKEPHP-TRUSTED-PROXIES-WITNESS
+    labels:
+      lab: cakephp-trusted-proxies

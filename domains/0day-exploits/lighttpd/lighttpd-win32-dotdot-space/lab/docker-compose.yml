@@ -1,0 +1,13 @@
+name: lighttpd-win32-dotdot-space
+
+services:
+  gadget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19400:19400"
+    labels:
+      lab: lighttpd-win32-dotdot-space

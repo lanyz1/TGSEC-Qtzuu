@@ -1,0 +1,14 @@
+name: uptime-kuma-setup-toctou
+
+services:
+  kuma:
+    image: louislam/uptime-kuma:2.5.5
+    ports:
+      - "127.0.0.1:18141:3001"
+    environment:
+      UPTIME_KUMA_DB_TYPE: sqlite
+    volumes:
+      - kuma_data:/app/data
+
+volumes:
+  kuma_data:

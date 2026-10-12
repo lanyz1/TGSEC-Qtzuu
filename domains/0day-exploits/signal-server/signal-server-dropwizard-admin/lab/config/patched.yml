@@ -1,0 +1,15 @@
+# Negative control: same gadget, admin bound to loopback only.
+
+logging:
+  level: INFO
+  appenders:
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+
+server:
+  adminConnectors:
+    - type: http
+      port: 8081
+      bindHost: 127.0.0.1

@@ -1,0 +1,13 @@
+# same cage, same FH_PASS, original vs re-keyed inner ELF
+
+$ FH_PASS=gatex /opt/fh/7350FH.bin.orig --version
+[!] access denied
+exit 1
+
+$ FH_PASS=gatex /opt/fh/7350FH.bin --version
+fortinet-hunter 2026.08
+exit 0
+
+# container: gatex-cage-bypass-smoke-bp
+# image: gatex-cage:noble  linux/amd64  net=none  cap-drop=ALL
+# captured 2026-08-26 18:24:00Z  live docker exec

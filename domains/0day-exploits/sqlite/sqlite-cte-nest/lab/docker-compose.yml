@@ -1,0 +1,21 @@
+name: sqlite-cte-nest
+
+services:
+  sqlite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: sqlite
+    init: true
+    restart: "no"
+    environment:
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:halt_on_error=1:print_stacktrace=1
+    ports:
+      - "127.0.0.1:18810:8080"
+    volumes:
+      - ./work:/work
+    ulimits:
+      core: 0
+      stack: 8388608
+    labels:
+      lab: sqlite-cte-nest

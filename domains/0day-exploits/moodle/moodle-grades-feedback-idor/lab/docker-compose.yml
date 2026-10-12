@@ -1,0 +1,41 @@
+name: moodle-grades-feedback-idor
+
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MYSQL_DATABASE: moodle
+      MYSQL_USER: moodle
+      MYSQL_PASSWORD: LabDbPassw0rd!
+      MYSQL_ROOT_PASSWORD: LabRootPassw0rd!
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: "no"
+
+  moodle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:19580:80"
+    volumes:
+      - ../../vendors/moodle/src:/opt/moodle-pin:ro
+      - moodle-html:/var/www/html
+      - moodledata:/var/www/moodledata
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      lab: MOODLE-GRADES-FEEDBACK-IDOR
+    init: true
+    restart: "no"
+
+volumes:
+  moodle-html:
+  moodledata:

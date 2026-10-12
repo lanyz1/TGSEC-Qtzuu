@@ -1,0 +1,107 @@
+# Loopback Hyperswitch lab for unpublished #2 (payout confirm unbound client_secret).
+# Config/migrations from ./hyperswitch-src (clone tag 2026.09.21.0).
+
+name: hyperswitch-payout-confirm-secret
+
+networks:
+  router_net:
+
+volumes:
+  pg_data:
+
+services:
+  pg:
+    image: docker.io/postgres:16
+    networks: [router_net]
+    volumes:
+      - pg_data:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_pass
+      POSTGRES_DB: hyperswitch_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d hyperswitch_db -U db_user"]
+      interval: 5s
+      retries: 20
+      start_period: 10s
+      timeout: 5s
+
+  redis-standalone:
+    image: docker.io/redis:7
+    networks: [router_net]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep '^PONG$'"]
+      interval: 5s
+      retries: 10
+      start_period: 5s
+      timeout: 5s
+
+  migration_runner:
+    image: docker.io/debian:trixie-slim
+    command: >
+      bash -c "
+      apt-get update && apt-get install -y curl xz-utils &&
+      curl --proto '=https' --tlsv1.2 -LsSf https://github.com/diesel-rs/diesel/releases/download/v2.3.5/diesel_cli-installer.sh | bash &&
+      export PATH=\"$$PATH:$$HOME/.cargo/bin\" &&
+      diesel migration run --database-url \"$$DATABASE_URL\" --migration-dir /migrations"
+    working_dir: /tmp
+    networks: [router_net]
+    volumes:
+      - ./hyperswitch-src/migrations:/migrations:ro
+    environment:
+      DATABASE_URL: postgresql://db_user:db_pass@pg:5432/hyperswitch_db
+    depends_on:
+      pg:
+        condition: service_healthy
+
+  superposition:
+    image: ghcr.io/juspay/superposition-demo:0.113.0
+    networks: [router_net]
+    environment:
+      API_HOSTNAME: http://superposition:8080
+      REDIS_URL: redis://redis-standalone:6379
+    depends_on:
+      redis-standalone:
+        condition: service_healthy
+
+  superposition-init:
+    image: alpine:latest
+    depends_on:
+      superposition:
+        condition: service_started
+    networks: [router_net]
+    volumes:
+      - ./hyperswitch-src/config/superposition_seed.toml:/seed.toml:ro
+      - ./hyperswitch-src/scripts/seed_superposition.sh:/seed_superposition.sh:ro
+    environment:
+      SUPERPOSITION_URL: http://superposition:8080
+      SEED_FILE: /seed.toml
+      WORKSPACE_ID: dev
+      ORG_ID: localorg
+    command: sh -c "apk add --no-cache bash curl jq yq && bash /seed_superposition.sh"
+    restart: "no"
+
+  hyperswitch-server:
+    image: docker.juspay.io/juspaydotin/hyperswitch-router:standalone
+    command: /local/bin/router -f /local/config/docker_compose.toml
+    ports:
+      - "127.0.0.1:18083:8080"
+    networks: [router_net]
+    volumes:
+      - ./hyperswitch-src/config:/local/config:ro
+      - ./files:/local/bin/files
+    depends_on:
+      pg:
+        condition: service_healthy
+      redis-standalone:
+        condition: service_healthy
+      migration_runner:
+        condition: service_completed_successfully
+      superposition:
+        condition: service_started
+    healthcheck:
+      test: curl --fail http://localhost:8080/health || exit 1
+      interval: 5s
+      retries: 20
+      start_period: 10s
+      timeout: 5s

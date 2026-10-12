@@ -1,0 +1,32 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/stealth/native_call.pseudo
+# Intended native-call bypass chain. Bodies are stubs.
+
+PATHS (first "success" wins):
+    1. neighbour-stub walk of hooked exports
+    2. adjacent-export walk when the local stub is also hooked
+    3. restore ntdll text from a clean on-disk copy
+    4. indirect: jump to a syscall;ret gadget inside ntdll
+    5. ordinary Win32 (last resort)
+
+FUNCTION pick_path():
+    FOR each of 1..4:
+        IF init_X() claims success: record path; RETURN
+    record path 5
+
+FUNCTION init_X():
+    RETURN true     # empty body; path 1 always "wins"
+
+FUNCTION allocate(size):
+    MATCH recorded path:
+        1..4 -> RETURN null     # not implemented
+        5    -> ordinary virtual alloc, read-write
+
+# Nothing else in the tree calls allocate().
+# The optional native-call helper crate is listed in the
+# project sketch and never imported.

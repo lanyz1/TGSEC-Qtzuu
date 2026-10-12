@@ -1,0 +1,1525 @@
+package gnmi
+
+import (
+	"bytes"
+	"context"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
+	"flag"
+	"fmt"
+	"net"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"syscall"
+	"time"
+
+	"github.com/Azure/sonic-mgmt-common/translib"
+	gnsi_pathz_pb "github.com/openconfig/gnsi/pathz"
+	"github.com/sonic-net/sonic-gnmi/common_utils"
+	"github.com/sonic-net/sonic-gnmi/pkg/bypass"
+	"github.com/sonic-net/sonic-gnmi/pkg/pathblacklist"
+	operationalhandler "github.com/sonic-net/sonic-gnmi/pkg/server/operational-handler"
+	spb "github.com/sonic-net/sonic-gnmi/proto"
+	spb_gnoi "github.com/sonic-net/sonic-gnmi/proto/gnoi"
+	spb_jwt_gnoi "github.com/sonic-net/sonic-gnmi/proto/gnoi/jwt"
+	_ "github.com/sonic-net/sonic-gnmi/show_client"
+	sdc "github.com/sonic-net/sonic-gnmi/sonic_data_client"
+	ssc "github.com/sonic-net/sonic-gnmi/sonic_service_client"
+
+	log "github.com/golang/glog"
+	"github.com/golang/protobuf/proto"
+	gnmipb "github.com/openconfig/gnmi/proto/gnmi"
+	gnmi_extpb "github.com/openconfig/gnmi/proto/gnmi_ext"
+	gnoi_containerz_pb "github.com/openconfig/gnoi/containerz"
+	"github.com/openconfig/gnoi/factory_reset"
+	gnoi_system_pb "github.com/openconfig/gnoi/system"
+	"google.golang.org/grpc/credentials"
+
+	gnoi_file_pb "github.com/openconfig/gnoi/file"
+	gnoi_healthz_pb "github.com/openconfig/gnoi/healthz"
+	gnoi_os_pb "github.com/openconfig/gnoi/os"
+	gnsi_authz_pb "github.com/openconfig/gnsi/authz"
+	gnsi_certz_pb "github.com/openconfig/gnsi/certz"
+	gnsi_credentialz_pb "github.com/openconfig/gnsi/credentialz"
+	gnoi_debug "github.com/sonic-net/sonic-gnmi/pkg/gnoi/debug"
+	gnoi_debug_pb "github.com/sonic-net/sonic-gnmi/proto/gnoi/debug"
+	gnoi_oras_pb "github.com/sonic-net/sonic-gnmi/proto/gnoi/oras"
+	testcert "github.com/sonic-net/sonic-gnmi/testdata/tls"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/authz"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/tls/certprovider"
+	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/security/advancedtls"
+	"google.golang.org/grpc/status"
+)
+
+var enableConfigDbJournal = flag.Bool("enable_config_db_journal", false, "enable config db journal")
+
+var (
+	muPath             = &sync.RWMutex{}
+	supportedEncodings = []gnmipb.Encoding{gnmipb.Encoding_JSON, gnmipb.Encoding_JSON_IETF, gnmipb.Encoding_PROTO}
+)
+
+// Path to the `/var/log/telemetry-con` directory on the `host` side.
+const (
+	authLogPath             = "/host_var/log/messages"
+	authzRefreshingInterval = 5 * time.Second
+)
+const (
+	HostVarLogPath = "/var/log"
+)
+
+// Server manages a single gNMI Server implementation. Each client that connects
+// via Subscribe or Get will receive a stream of updates based on the requested
+// path. Set request is processed by server too.
+type Server struct {
+	s   *grpc.Server
+	lis net.Listener
+	// udsServer is the gRPC server for Unix domain socket connections (no TLS).
+	// This is nil if UnixSocket is not configured.
+	udsServer *grpc.Server
+	// udsListener is the listener for Unix domain socket connections.
+	// This is nil if UnixSocket is not configured.
+	udsListener   net.Listener
+	config        *Config
+	cMu           sync.Mutex
+	clients       map[ClientKey]*Client
+	certProviders []certprovider.Provider
+	// SaveStartupConfig points to a function that is called to save changes of
+	// configuration to a file. By default it points to an empty function -
+	// the configuration is not saved to a file.
+	SaveStartupConfig func() error
+	// ReqFromMaster point to a function that is called to verify if the request
+	// comes from a master controller.
+	ReqFromMaster func(req *gnmipb.SetRequest, masterEID *uint128) error
+	masterEID     uint128
+	gnoi_system_pb.UnimplementedSystemServer
+	factory_reset.UnimplementedFactoryResetServer
+	gnsiCertz         *GNSICertzServer
+	authzWatcher      *authz.FileWatcherInterceptor
+	gnsiAuthz         *GNSIAuthzServer
+	gnsiPathz         *GNSIPathzServer
+	ConnectionManager *ConnectionManager
+	// DB Journals
+	configDbJournal *DbJournal
+	gnsiCredentialz *GNSICredentialzServer
+	gnsi_credentialz_pb.UnimplementedCredentialzServer
+}
+
+// handleOperationalGet handles OPERATIONAL target requests directly with standard gNMI types
+func (s *Server) handleOperationalGet(ctx context.Context, req *gnmipb.GetRequest, paths []*gnmipb.Path, prefix *gnmipb.Path) (*gnmipb.GetResponse, error) {
+	// Authentication - use gnoi auth even though this is a gNMI Get operation.
+	// The OPERATIONAL target provides operational state queries (like disk space)
+	// that supplement gNOI services when existing gNOI definitions don't provide
+	// what we need. This allows reusing gnoi_readonly/gnoi_readwrite roles
+	// for operational data access control.
+	authTarget := "gnoi"
+	ctx, err := authenticate(s.config, ctx, authTarget, false)
+	if err != nil {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		return nil, err
+	}
+
+	if err := checkPathsBlacklist(s.config.PathsBlacklist, prefix, paths); err != nil {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		return nil, err
+	}
+
+	// Create operational handler
+	operationalHandler, err := operationalhandler.NewOperationalHandler(paths, prefix)
+	if err != nil {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
+	defer operationalHandler.Close()
+
+	// Get data from operational handler
+	values, err := operationalHandler.Get(nil)
+	if err != nil {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		// Handler returns proper status errors, propagate them directly
+		return nil, err
+	}
+
+	// Convert directly to gNMI notifications (no SONiC wrapper!)
+	notifications := make([]*gnmipb.Notification, len(values))
+	for index, value := range values {
+		update := &gnmipb.Update{
+			Path: value.Path,
+			Val:  value.Value,
+		}
+
+		notifications[index] = &gnmipb.Notification{
+			Timestamp: value.Timestamp,
+			Prefix:    prefix,
+			Update:    []*gnmipb.Update{update},
+		}
+	}
+
+	return &gnmipb.GetResponse{Notification: notifications}, nil
+}
+
+// FileServer is the server API for File service.
+// All implementations must embed UnimplementedFileServer
+// for forward compatibility
+type FileServer struct {
+	*Server
+	gnoi_file_pb.UnimplementedFileServer
+}
+
+// OSBackend defines the interface for the OS installation backend service.
+type OSBackend interface {
+	InstallOS(req string) (string, error)
+}
+
+// OSServer is the server API for System service.
+// All implementations must embed UnimplementedSystemServer
+// for forward compatibility
+type OSServer struct {
+	*Server
+	backend OSBackend // Dependency interface
+	ImgDir  string
+	gnoi_os_pb.UnimplementedOSServer
+}
+
+// ContainerzServer is the server API for Containerz service.
+type ContainerzServer struct {
+	server *Server
+	gnoi_containerz_pb.UnimplementedContainerzServer
+}
+
+// DebugServer is the server API for Debug service.
+type DebugServer struct {
+	*Server
+	readWhitelist  []string
+	writeWhitelist []string
+	gnoi_debug_pb.UnimplementedDebugServer
+}
+
+// HealthzServer is the server API for System Health service.
+// All implementations must embed UnimplementedSystemServer
+// for forward compatibility
+type HealthzServer struct {
+	*Server
+	gnoi_healthz_pb.UnimplementedHealthzServer
+}
+
+// OrasServer is the server API for the SONiC ORAS Pull service.
+type OrasServer struct {
+	*Server
+	gnoi_oras_pb.UnimplementedOrasServer
+}
+
+type AuthTypes map[string]bool
+
+// Config is a collection of values for Server
+type Config struct {
+	// Port for the Server to listen on. If 0 or unset the Server will pick a port
+	// for this Server. Port > 0 enables the TCP listener.
+	Port int64
+	// UnixSocket is the path to a Unix domain socket to listen on.
+	// When set, an additional listener is created for local connections without TLS.
+	UnixSocket          string
+	LogLevel            int
+	Threshold           int
+	UserAuth            AuthTypes
+	EnableTranslibWrite bool
+	EnableNativeWrite   bool
+	EnableTranslation   bool
+	ZmqPort             string
+	IdleConnDuration    int
+	ConfigTableName     string
+	GnmiVrf             string
+	Vrf                 string
+	EnableCrl           bool
+	// Path to the directory where image is stored.
+	ImgDir     string
+	GetOptions func(*Config) ([]grpc.ServerOption, []certprovider.Provider, error)
+	// gnsi.certz mTLS flags
+	CaCertLnk                string // Path to symlink pointing to current CA certificate.
+	SrvCertLnk               string // Path to symlink pointing to current server's certificate.
+	SrvKeyLnk                string // Path to symlink pointing to current server's private key.
+	CaCertFile               string // Path to the first CA certificate.
+	SrvCertFile              string // Path to the first server's certificate.
+	SrvKeyFile               string // Path to the first server's private key.
+	CertCRLConfig            string // Path to the CRL directory. Disable if empty.
+	IntManFile               string // Path to the Integrity Manifest file.
+	CertzMetaFile            string // Path to JSON file with gRPC credential metadata.
+	FedPolicyFile            string // Path to federation policy file.
+	AuthzPolicy              bool   // Enable authz policy.
+	AuthzPolicyFile          string // Path to JSON file with authz policies.
+	AuthzMetaFile            string // Path to JSON file with authz metadata.
+	PathzPolicy              bool   // Enable gNMI pathz policy.
+	PathzPolicyFile          string // Path to gNMI pathz policy file.
+	PathzMetaFile            string // Path to JSON file with pathz metadata.
+	EnableStreamMultiplexing bool   // Allow multiple Subscribe RPCs on a single TCP connection.
+	SshCredMetaFile          string // Path to JSON file with SSH server credential metadata.
+	ConsoleCredMetaFile      string // Path to JSON file with console credential metadata.
+	// BindAddress is the network address to bind the TCP listener.
+	// When empty, binds to all interfaces (0.0.0.0). Use "127.0.0.1" to
+	// restrict to localhost only (e.g. when running without TLS).
+	BindAddress string
+	// PathsBlacklist rejects Get/Set/Subscribe requests referencing
+	// blacklisted paths. Nil disables enforcement.
+	PathsBlacklist *pathblacklist.Policy
+}
+
+// DBusOSBackend is a concrete implementation of OSBackend
+type DBusOSBackend struct{}
+
+// InstallOS implements the OSBackend interface.
+func (d *DBusOSBackend) InstallOS(req string) (string, error) {
+	log.Infof("DBusOSBackend.InstallOS: %v", req)
+	sc, err := ssc.NewDbusClient()
+	if err != nil {
+		return "", err
+	}
+	defer sc.Close()
+	return sc.InstallOS(req)
+}
+
+var AuthLock sync.Mutex
+var maMu sync.Mutex
+
+const WriteAccessMode = "readwrite"
+const ReadOnlyMode = "readonly"
+const NoAccessMode = "noaccess"
+
+func (i AuthTypes) String() string {
+	if i["none"] {
+		return ""
+	}
+	b := new(bytes.Buffer)
+	for key, value := range i {
+		if value {
+			fmt.Fprintf(b, "%s ", key)
+		}
+	}
+	return b.String()
+}
+
+func (i AuthTypes) Any() bool {
+	if i["none"] {
+		return false
+	}
+	for _, value := range i {
+		if value {
+			return true
+		}
+	}
+	return false
+}
+
+func (i AuthTypes) Enabled(mode string) bool {
+	if i["none"] {
+		return false
+	}
+	if value, exist := i[mode]; exist && value {
+		return true
+	}
+	return false
+}
+
+func (i AuthTypes) Set(mode string) error {
+	modes := strings.Split(mode, ",")
+	for _, m := range modes {
+		m = strings.Trim(m, " ")
+		if m == "none" || m == "" {
+			i["none"] = true
+			return nil
+		}
+
+		if _, exist := i[m]; !exist {
+			return fmt.Errorf("Expecting one or more of 'cert', 'password' or 'jwt'")
+		}
+		i[m] = true
+	}
+	return nil
+}
+
+func (i AuthTypes) Unset(mode string) error {
+	modes := strings.Split(mode, ",")
+	for _, m := range modes {
+		m = strings.Trim(m, " ")
+		if _, exist := i[m]; !exist {
+			return fmt.Errorf("Expecting one or more of 'cert', 'password' or 'jwt'")
+		}
+		i[m] = false
+	}
+	return nil
+}
+
+// registerAllServices registers all gNMI and gNOI services on the given gRPC server.
+func registerAllServices(s *grpc.Server, srv *Server, fileSrv *FileServer,
+	osSrv *OSServer, containerzSrv *ContainerzServer,
+	debugSrv *DebugServer, healthzSrv *HealthzServer, orasSrv *OrasServer, certzSrv *GNSICertzServer, authzSrv *GNSIAuthzServer, pathzSrv *GNSIPathzServer, credentialzSrv *GNSICredentialzServer) {
+	gnmipb.RegisterGNMIServer(s, srv)
+	factory_reset.RegisterFactoryResetServer(s, srv)
+	gnsi_certz_pb.RegisterCertzServer(s, certzSrv)
+	gnsi_authz_pb.RegisterAuthzServer(s, authzSrv)
+	gnsi_pathz_pb.RegisterPathzServer(s, pathzSrv)
+	gnsi_credentialz_pb.RegisterCredentialzServer(s, credentialzSrv)
+	spb_jwt_gnoi.RegisterSonicJwtServiceServer(s, srv)
+	if srv.config.EnableTranslibWrite || srv.config.EnableNativeWrite {
+		gnoi_system_pb.RegisterSystemServer(s, srv)
+		gnoi_file_pb.RegisterFileServer(s, fileSrv)
+		gnoi_os_pb.RegisterOSServer(s, osSrv)
+		gnoi_containerz_pb.RegisterContainerzServer(s, containerzSrv)
+		gnoi_debug_pb.RegisterDebugServer(s, debugSrv)
+		gnoi_healthz_pb.RegisterHealthzServer(s, healthzSrv)
+	}
+	// ORAS Pull writes only into an allowlisted staging area inside the
+	// container; it has no relation to the gNMI write paths, so it is not
+	// gated by EnableTranslibWrite/EnableNativeWrite.
+	gnoi_oras_pb.RegisterOrasServer(s, orasSrv)
+	if srv.config.EnableTranslibWrite {
+		spb_gnoi.RegisterSonicServiceServer(s, srv)
+	}
+	spb_gnoi.RegisterDebugServer(s, srv)
+}
+
+// SrvTestConfig returns test mTLS server configuration to be used to start gNMI/gNOI server in test environment.
+func SrvTestConfig(cfg *Config) ([]grpc.ServerOption, []certprovider.Provider, error) {
+	cert, err := testcert.NewCert()
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not generate test server credentials: %s", err)
+	}
+	srvCert := filepath.Dir(cfg.SrvCertLnk) + "/server_test_cert.pem"
+	certBlock := &pem.Block{Type: "CERTIFICATE", Bytes: cert.Certificate[0]}
+	if err = os.WriteFile(srvCert, pem.EncodeToMemory(certBlock), 0600); err != nil {
+		return nil, nil, err
+	}
+	srvKey := filepath.Dir(cfg.SrvCertLnk) + "/server_test_key.pem"
+	privBytes := x509.MarshalPKCS1PrivateKey(cert.PrivateKey.(*rsa.PrivateKey))
+	keyBlock := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: privBytes}
+	if err = os.WriteFile(srvKey, pem.EncodeToMemory(keyBlock), 0600); err != nil {
+		return nil, nil, err
+	}
+
+	return SrvAdvConfig(cfg)
+}
+
+// SrvAdvConfig returns mTLS server configuration to be used to start gNMI/gNOI server with rotating certificates.
+func SrvAdvConfig(cfg *Config) ([]grpc.ServerOption, []certprovider.Provider, error) {
+	// 1. Safety Check: Ensure link paths are not empty before OS operations.
+	// This prevents os.Stat("") or os.Symlink("", ...) from crashing.
+	if cfg.CaCertLnk == "" {
+		cfg.CaCertLnk = "/keys/ca_cert.lnk"
+	}
+	if cfg.SrvCertLnk == "" {
+		cfg.SrvCertLnk = "/keys/server_cert.lnk"
+	}
+	if cfg.SrvKeyLnk == "" {
+		cfg.SrvKeyLnk = "/keys/server_key.lnk"
+	}
+	muPath.Lock()
+	defer muPath.Unlock()
+
+	log.V(1).Infof("Setting server credentials using: %v; %v; %v; %v; %v; %v;", cfg.CaCertLnk, cfg.CaCertFile, cfg.SrvCertLnk, cfg.SrvCertFile, cfg.SrvKeyLnk, cfg.SrvKeyFile)
+	// CA Certificate Check
+	if cfg.CaCertFile != "" {
+		if _, err := os.Stat(cfg.CaCertFile); err != nil {
+			return nil, nil, fmt.Errorf("CA certificate file not found: %v", err)
+		}
+		if !isSymlinkValid(cfg.CaCertLnk) {
+			atomicSetCACert(cfg, cfg.CaCertFile)
+		}
+	} else {
+		log.V(1).Infof("CaCertFile is empty; client certificate verification will be disabled.")
+	}
+	// Server Certificate & Key Check (Mandatory for TLS)
+	if !isSymlinkValid(cfg.SrvCertLnk) || !isSymlinkValid(cfg.SrvKeyLnk) {
+		if cfg.SrvCertFile == "" || cfg.SrvKeyFile == "" {
+			return nil, nil, fmt.Errorf("server certificate or key file path is empty")
+		}
+		if _, err := os.Stat(cfg.SrvCertFile); err != nil {
+			return nil, nil, fmt.Errorf("server certificate file stat error: %v", err)
+		}
+		if _, err := os.Stat(cfg.SrvKeyFile); err != nil {
+			return nil, nil, fmt.Errorf("server key file stat error: %v", err)
+		}
+		atomicSetSrvCertKeyPair(cfg, cfg.SrvCertFile, cfg.SrvKeyFile)
+	}
+
+	providers := []certprovider.Provider{}
+	identityOptions := advancedtls.IdentityCertificateOptions{
+		// Read the certificate and the key for every new connection.
+		GetIdentityCertificatesForServer: func(*tls.ClientHelloInfo) ([]*tls.Certificate, error) {
+			muPath.RLock()
+			defer muPath.RUnlock()
+
+			cert, err := tls.LoadX509KeyPair(cfg.SrvCertLnk, cfg.SrvKeyLnk)
+			if err != nil {
+				return nil, fmt.Errorf("could not load server key pair: %s", err)
+			}
+			return []*tls.Certificate{&cert}, nil
+		},
+	}
+
+	serverOption := &advancedtls.Options{
+		IdentityOptions: identityOptions,
+		AdditionalPeerVerification: func(params *advancedtls.HandshakeVerificationInfo) (*advancedtls.PostHandshakeVerificationResults, error) {
+			return &advancedtls.PostHandshakeVerificationResults{}, nil
+		},
+		RequireClientCert: false,
+		VerificationType:  advancedtls.SkipVerification,
+	}
+	if cfg.CaCertFile != "" {
+		serverOption.RootOptions = advancedtls.RootCertificateOptions{
+			// Read the CA certificate for every new connection.
+			GetRootCertificates: func(params *advancedtls.ConnectionInfo) (*advancedtls.RootCertificates, error) {
+				muPath.RLock()
+				defer muPath.RUnlock()
+
+				caCertPem, err := os.ReadFile(cfg.CaCertLnk)
+				if err != nil {
+					return nil, fmt.Errorf("could not read CA certificate: %s", err)
+				}
+				certPool := x509.NewCertPool()
+				if ok := certPool.AppendCertsFromPEM(caCertPem); !ok {
+					return nil, fmt.Errorf("failed to append CA certificate")
+				}
+				return &advancedtls.RootCertificates{TrustCerts: certPool}, nil
+			},
+		}
+		// If the server want the client to send certificates.
+		serverOption.RequireClientCert = true
+		// Doing only the certificate check.
+		serverOption.VerificationType = advancedtls.CertVerification
+		// CRL config.
+		if cfg.CertCRLConfig != "" {
+			if _, err := os.ReadDir(filepath.Join(cfg.CertCRLConfig, "crl")); err != nil {
+				return nil, nil, err
+			}
+			p, err := advancedtls.NewFileWatcherCRLProvider(advancedtls.FileWatcherOptions{
+				CRLDirectory:    filepath.Join(cfg.CertCRLConfig, "crl"),
+				RefreshDuration: time.Minute,
+			})
+			if err != nil {
+				return nil, nil, err
+			}
+			serverOption.RevocationOptions = &advancedtls.RevocationOptions{
+				DenyUndetermined: false,
+				CRLProvider:      p,
+			}
+		}
+	}
+	serverCreds, err := advancedtls.NewServerCreds(serverOption)
+	if err != nil {
+		return nil, nil, err
+	}
+	return []grpc.ServerOption{grpc.Creds(serverCreds)}, providers, nil
+}
+
+// NewServer returns an initialized Server.
+func createVrfListener(vrf string, port int64) (net.Listener, error) {
+	lc := net.ListenConfig{
+		Control: func(network, address string, c syscall.RawConn) error {
+			var err error
+			ctrlErr := c.Control(func(fd uintptr) {
+				err = syscall.SetsockoptString(int(fd), syscall.SOL_SOCKET, syscall.SO_BINDTODEVICE, vrf)
+			})
+			if ctrlErr != nil {
+				return ctrlErr
+			}
+			if err != nil {
+				return fmt.Errorf("failed to bind socket to VRF %s: %v", vrf, err)
+			}
+			return nil
+		},
+	}
+
+	listener, err := lc.Listen(context.Background(), "tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return nil, err
+	}
+	log.V(1).Infof("Created VRF-bound listener on VRF %s, port %d", vrf, port)
+	return listener, nil
+}
+
+// tlsOpts contains TLS credentials and is used only for the TCP listener.
+// commonOpts contains interceptors, keepalive params, etc. and is used for both listeners.
+//
+// When config.Port > 0, a TCP listener is created with TLS.
+// When config.UnixSocket is set, an additional UDS listener is created without TLS.
+func NewServer(config *Config, tlsOpts []grpc.ServerOption, commonOpts []grpc.ServerOption) (*Server, error) {
+	if config == nil {
+		return nil, errors.New("config not provided")
+	}
+	var providers []certprovider.Provider
+	if err := common_utils.ValidateSharedMemoryKey(); err != nil {
+		return nil, fmt.Errorf("invalid shared-memory configuration: %w", err)
+	}
+	common_utils.InitCounters()
+
+	// Set authorization policy.
+	var authzWatcher *authz.FileWatcherInterceptor
+	if config.AuthzPolicy {
+		authzWatcher, err := authz.NewFileWatcher(config.AuthzPolicyFile, authzRefreshingInterval)
+		if err != nil {
+			return nil, err
+		} else {
+			commonOpts = append(commonOpts, grpc.ChainStreamInterceptor(
+				authzWatcher.StreamInterceptor))
+			commonOpts = append(commonOpts, grpc.ChainUnaryInterceptor(
+				authzWatcher.UnaryInterceptor))
+		}
+	}
+
+	s := grpc.NewServer(commonOpts...)
+	reflection.Register(s)
+
+	srv := &Server{
+		config:            config,
+		clients:           map[ClientKey]*Client{},
+		certProviders:     providers,
+		SaveStartupConfig: saveOnSetDisabled,
+		// ReqFromMaster point to a function that is called to verify if
+		// the request comes from a master controller.
+		ReqFromMaster: ReqFromMasterDisabledMA,
+		masterEID:     uint128{High: 0, Low: 0},
+		authzWatcher:  authzWatcher,
+	}
+
+	// Create service servers (shared between TCP and UDS)
+	fileSrv := &FileServer{Server: srv}
+	osBackend := &DBusOSBackend{}
+	osSrv := &OSServer{
+		Server:  srv,
+		backend: osBackend,
+		ImgDir:  srv.config.ImgDir,
+	}
+	containerzSrv := &ContainerzServer{server: srv}
+	healthzSrv := &HealthzServer{Server: srv}
+	authzSrv := NewGNSIAuthzServer(srv)
+	srv.gnsiAuthz = authzSrv
+	pathzSrv := NewGNSIPathzServer(srv)
+	srv.gnsiPathz = pathzSrv
+	readWhitelist, writeWhitelist := gnoi_debug.ConstructWhitelists()
+	debugSrv := &DebugServer{
+		Server:         srv,
+		readWhitelist:  readWhitelist,
+		writeWhitelist: writeWhitelist,
+	}
+	certzSrv := NewGNSICertzServer(srv)
+	srv.gnsiCertz = certzSrv
+
+	credentialzSrv := NewGNSICredentialzServer(srv)
+	srv.gnsiCredentialz = credentialzSrv
+	orasSrv := &OrasServer{Server: srv}
+	var err error
+
+	// TCP Server: Enable if Port > 0, or Port == 0 when UnixSocket is not set
+	if config.Port > 0 || (config.Port == 0 && config.UnixSocket == "") {
+		tcpOpts := append(tlsOpts, commonOpts...)
+		srv.s = grpc.NewServer(tcpOpts...)
+		reflection.Register(srv.s)
+
+		// Create VRF-aware listener if GNMI VRF is specified
+		if config.GnmiVrf != "" && config.GnmiVrf != "default" {
+			srv.lis, err = createVrfListener(config.GnmiVrf, config.Port)
+		} else {
+			bindAddr := config.BindAddress
+			srv.lis, err = net.Listen("tcp", fmt.Sprintf("%s:%d", bindAddr, config.Port))
+		}
+		if err != nil {
+			log.Warningf("Failed to open listener port %d: %v; disabling TCP listener", config.Port, err)
+			srv.s.Stop()
+			srv.s = nil
+		} else {
+			srv.config.Port = int64(srv.lis.Addr().(*net.TCPAddr).Port)
+			registerAllServices(srv.s, srv, fileSrv, osSrv, containerzSrv, debugSrv, healthzSrv, orasSrv, certzSrv, authzSrv, pathzSrv, credentialzSrv)
+		}
+	}
+
+	// UDS Server (UnixSocket set)
+	if config.UnixSocket != "" {
+		// UDS server uses only commonOpts (no TLS)
+		srv.udsServer = grpc.NewServer(commonOpts...)
+		reflection.Register(srv.udsServer)
+
+		// Create socket directory if it doesn't exist (0750 to prevent unauthorized access
+		// during the window between socket creation and permission setting)
+		socketDir := filepath.Dir(config.UnixSocket)
+		if err := os.MkdirAll(socketDir, 0750); err != nil {
+			log.Warningf("Failed to create socket directory %s: %v; disabling UDS listener", socketDir, err)
+			srv.udsServer.Stop()
+			srv.udsServer = nil
+		} else {
+			os.Remove(config.UnixSocket) // Remove stale socket
+			srv.udsListener, err = net.Listen("unix", config.UnixSocket)
+			if err != nil {
+				log.Warningf("Failed to listen on unix socket %s: %v; disabling UDS listener", config.UnixSocket, err)
+				srv.udsServer.Stop()
+				srv.udsServer = nil
+			} else {
+				// Restrict socket access to container user (root) and group
+				if err := os.Chmod(config.UnixSocket, 0660); err != nil {
+					log.Warningf("Failed to set permissions on unix socket %s: %v; disabling UDS listener", config.UnixSocket, err)
+					srv.udsListener.Close()
+					os.Remove(config.UnixSocket)
+					srv.udsListener = nil
+					srv.udsServer.Stop()
+					srv.udsServer = nil
+				} else {
+					registerAllServices(srv.udsServer, srv, fileSrv, osSrv, containerzSrv, debugSrv, healthzSrv, orasSrv, certzSrv, authzSrv, pathzSrv, credentialzSrv)
+				}
+			}
+		}
+	}
+
+	// Require at least one listener
+	if srv.lis == nil && srv.udsListener == nil {
+		return nil, errors.New("no listener configured: port must be >= 0 or unix_socket must be set")
+	}
+
+	if *enableConfigDbJournal {
+		srv.configDbJournal, err = NewDbJournal("CONFIG_DB")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create CONFIG_DB Journal: %v", err)
+		}
+	}
+	log.V(1).Infof("Created Server on %s, read-only: %t", srv.Address(), !srv.config.EnableTranslibWrite)
+	return srv, nil
+}
+
+// Serve will start the Server serving and block until closed.
+// If both TCP and UDS listeners are configured, both are served concurrently.
+// A failure in one listener does not affect the other; Serve blocks until all
+// active listeners have stopped.
+func (srv *Server) Serve() error {
+	if srv.s == nil && srv.udsServer == nil {
+		return fmt.Errorf("Serve() failed: not initialized")
+	}
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	var errs []string
+
+	// Start TCP server if configured
+	if srv.s != nil && srv.lis != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			log.V(1).Infof("Starting TCP server on %s", srv.lis.Addr().String())
+			if err := srv.s.Serve(srv.lis); err != nil {
+				log.Errorf("TCP server error: %v", err)
+				mu.Lock()
+				errs = append(errs, fmt.Sprintf("TCP server: %v", err))
+				mu.Unlock()
+			}
+		}()
+	}
+
+	// Start UDS server if configured
+	if srv.udsServer != nil && srv.udsListener != nil {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			log.V(1).Infof("Starting UDS server on %s", srv.udsListener.Addr().String())
+			if err := srv.udsServer.Serve(srv.udsListener); err != nil {
+				log.Errorf("UDS server error: %v", err)
+				mu.Lock()
+				errs = append(errs, fmt.Sprintf("UDS server: %v", err))
+				mu.Unlock()
+			}
+		}()
+	}
+
+	wg.Wait()
+
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", strings.Join(errs, "; "))
+	}
+	return nil
+}
+
+// ForceStop stops the server immediately without waiting for connections to close.
+func (srv *Server) ForceStop() {
+	if srv.s != nil {
+		srv.s.Stop()
+	}
+	if srv.udsServer != nil {
+		srv.udsServer.Stop()
+	}
+	// Cleanup UDS socket file
+	if srv.config != nil && srv.config.UnixSocket != "" {
+		os.Remove(srv.config.UnixSocket)
+	}
+}
+
+// Stop gracefully stops the server, waiting for active connections to close.
+func (srv *Server) Stop() {
+	if srv.s != nil {
+		srv.s.GracefulStop()
+	}
+	if srv.udsServer != nil {
+		srv.udsServer.GracefulStop()
+	}
+	// Cleanup UDS socket file
+	if srv.config != nil && srv.config.UnixSocket != "" {
+		os.Remove(srv.config.UnixSocket)
+	}
+}
+
+// Address returns the addresses the Server is listening on.
+func (srv *Server) Address() string {
+	var addrs []string
+	if srv.lis != nil {
+		addr := srv.lis.Addr().String()
+		addrs = append(addrs, strings.Replace(addr, "[::]", "localhost", 1))
+	}
+	if srv.udsListener != nil {
+		addrs = append(addrs, srv.udsListener.Addr().String())
+	}
+	return strings.Join(addrs, ", ")
+}
+
+// Port returns the port the Server is listening to.
+func (srv *Server) Port() int64 {
+	return srv.config.Port
+}
+
+// Auth - Authenticate
+func (srv *Server) Auth(ctx context.Context) (context.Context, error) {
+	return authenticate(srv.config, ctx, "gnmi", false)
+}
+
+// checkRoleAccess enforces the <target>_<mode> role convention against the
+// caller's populated roles. It is shared by all authentication mechanisms
+// (password, JWT, cert) so that write-vs-read authorization is uniformly
+// applied regardless of how the user was authenticated.
+//
+// Return value: nil if the caller has sufficient access for the requested
+// operation, otherwise an error describing the denial.
+//
+// Semantics (preserved from the previous cert-only implementation):
+//   - roles are lowercased-target-prefixed strings, e.g. "gnoi_readonly",
+//     "gnmi_config_db_readwrite"
+//   - postfix "noaccess"  -> deny
+//   - postfix "readonly"  -> allow when writeAccess==false, deny otherwise
+//   - postfix "readwrite" -> allow
+//   - no role for this target and writeAccess==true -> deny (fail closed on writes)
+//   - no role for this target and writeAccess==false -> allow (backwards
+//     compatible with pre-role deployments that only granted authentication)
+func checkRoleAccess(auth *common_utils.AuthInfo, target string, writeAccess bool) error {
+	target = strings.ToLower(target)
+	match := false
+	for _, role := range auth.Roles {
+		role = strings.TrimSpace(role)
+		if !strings.HasPrefix(role, target) {
+			continue
+		}
+		// Extract the postfix from the role
+		// e.g. role=gnmi_config_db_readwrite
+		// e.g. role=gnoi_readonly
+		postfix := strings.TrimPrefix(role, target)
+		postfix = strings.TrimPrefix(postfix, "_")
+		switch postfix {
+		case NoAccessMode:
+			return fmt.Errorf("%s does not have access, target %s, role %s", auth.User, target, role)
+		case ReadOnlyMode:
+			if writeAccess {
+				return fmt.Errorf("%s does not have access, target %s, role %s", auth.User, target, role)
+			}
+			match = true
+		case WriteAccessMode:
+			match = true
+		}
+		if match {
+			break
+		}
+	}
+	if !match && writeAccess {
+		return fmt.Errorf("%s does not have write access, target %s", auth.User, target)
+	}
+	return nil
+}
+
+func authenticate(config *Config, ctx context.Context, target string, writeAccess bool) (context.Context, error) {
+	var err error
+	success := false
+	rc, ctx := common_utils.GetContext(ctx)
+
+	// Skip authentication for UDS (Unix Domain Socket) connections.
+	// UDS security is enforced at the file-system level via socket permissions.
+	if isUnixPeer(ctx) {
+		rc.Auth.AuthEnabled = false
+		return ctx, nil
+	}
+
+	if !config.UserAuth.Any() {
+		//No Auth enabled
+		rc.Auth.AuthEnabled = false
+		return ctx, nil
+	}
+
+	rc.Auth.AuthEnabled = true
+	if config.UserAuth.Enabled("password") {
+		ctx, err = BasicAuthenAndAuthor(ctx)
+		if err == nil {
+			success = true
+		}
+	}
+	if !success && config.UserAuth.Enabled("jwt") {
+		_, ctx, err = JwtAuthenAndAuthor(ctx)
+		if err == nil {
+			success = true
+		}
+	}
+	if !success && config.UserAuth.Enabled("cert") {
+		ctx, err = ClientCertAuthenAndAuthor(ctx, config.ConfigTableName, config.EnableCrl)
+		if err == nil {
+			success = true
+		}
+	}
+
+	//Allow for future authentication mechanisms here...
+
+	if !success {
+		return ctx, status.Error(codes.Unauthenticated, "Unauthenticated")
+	}
+
+	// Role-based authorization: applied uniformly to whichever mechanism
+	// succeeded. Historically this check was nested inside the cert branch,
+	// which allowed password- and JWT-authenticated callers to bypass the
+	// readonly/readwrite gate for gNOI RPCs.
+	//
+	// Guarded by ConfigTableName to preserve existing behavior for
+	// deployments that do not configure a role source (e.g. TACACS-only
+	// setups or upgrade paths where GNMI_CLIENT_CERT is empty).
+	if config.ConfigTableName != "" {
+		if err := checkRoleAccess(&rc.Auth, target, writeAccess); err != nil {
+			return ctx, err
+		}
+	}
+
+	log.V(5).Infof("authenticate user %v, roles %v", rc.Auth.User, rc.Auth.Roles)
+
+	return ctx, nil
+}
+
+func isUnixPeer(ctx context.Context) bool {
+	pr, ok := peer.FromContext(ctx)
+	if !ok || pr.Addr == nil {
+		return false
+	}
+	_, ok = pr.Addr.(*net.UnixAddr)
+	return ok
+}
+
+func containsBGPRunningConfigPath(prefix *gnmipb.Path, paths []*gnmipb.Path) bool {
+	if prefix == nil || prefix.GetTarget() != "SHOW" {
+		return false
+	}
+	for _, path := range paths {
+		// Match the Elem precedence used by the SHOW client router. Deprecated
+		// Element fields do not override an Elem path.
+		elems := append([]*gnmipb.PathElem{}, prefix.GetElem()...)
+		elems = append(elems, path.GetElem()...)
+		names := make([]string, 0, len(elems))
+		for _, elem := range elems {
+			names = append(names, elem.GetName())
+		}
+		if len(names) == 2 && names[0] == "bgp" && names[1] == "running-config" {
+			return true
+		}
+	}
+	return false
+}
+
+// Subscribe implements the gNMI Subscribe RPC.
+func (s *Server) Subscribe(stream gnmipb.GNMI_SubscribeServer) error {
+	ctx := stream.Context()
+	pr, ok := peer.FromContext(ctx)
+	if !ok {
+		return grpc.Errorf(codes.InvalidArgument, "failed to get peer from ctx")
+		//return fmt.Errorf("failed to get peer from ctx")
+	}
+	if pr.Addr == net.Addr(nil) {
+		return grpc.Errorf(codes.InvalidArgument, "failed to get peer address")
+	}
+
+	/* TODO: authorize the user
+	msg, ok := credentials.AuthorizeUser(ctx)
+	if !ok {
+		log.Infof("denied a Set request: %v", msg)
+		return nil, status.Error(codes.PermissionDenied, msg)
+	}
+	*/
+
+	c := NewClient(pr.Addr)
+	c.enableStreamMultiplexing = s.config.EnableStreamMultiplexing
+
+	c.setLogLevel(s.config.LogLevel)
+	c.setConnectionManager(s.config.Threshold)
+
+	clientKey := c.Key()
+
+	s.cMu.Lock()
+	log.V(1).Infof("New Subscribe RPC: client %s (peer: %s, total active: %d)", c.String(), pr.Addr, len(s.clients))
+	if oc, ok := s.clients[clientKey]; ok {
+		log.V(2).Infof("Delete duplicate client %s", oc)
+		oc.Close()
+		delete(s.clients, clientKey)
+	}
+	s.clients[clientKey] = c
+	log.V(1).Infof("Client %s registered (total active: %d)", c.String(), len(s.clients))
+	s.cMu.Unlock()
+
+	err := c.Run(stream, s.config)
+	s.cMu.Lock()
+	log.V(1).Infof("Client %s completed, removing (total active: %d)", c.String(), len(s.clients)-1)
+	delete(s.clients, clientKey)
+	s.cMu.Unlock()
+
+	log.Flush()
+	return err
+}
+
+// checkEncodingAndModel checks whether encoding and models are supported by the server. Return error if anything is unsupported.
+func (s *Server) checkEncodingAndModel(encoding gnmipb.Encoding, models []*gnmipb.ModelData) error {
+	hasSupportedEncoding := false
+	for _, supportedEncoding := range supportedEncodings {
+		if encoding == supportedEncoding {
+			hasSupportedEncoding = true
+			break
+		}
+	}
+	if !hasSupportedEncoding {
+		return fmt.Errorf("unsupported encoding: %s", gnmipb.Encoding_name[int32(encoding)])
+	}
+
+	return nil
+}
+
+func ParseOrigin(paths []*gnmipb.Path) (string, error) {
+	origin := ""
+	if len(paths) == 0 {
+		return origin, nil
+	}
+	for i, path := range paths {
+		if i == 0 {
+			origin = path.Origin
+		} else {
+			if origin != path.Origin {
+				return "", status.Error(codes.Unimplemented, "Origin conflict in path")
+			}
+		}
+	}
+	return origin, nil
+}
+
+func IsNativeOrigin(origin string) bool {
+	return origin == "sonic-db"
+}
+
+func nativeSetTarget(prefix *gnmipb.Path, paths []*gnmipb.Path) string {
+	if target := prefix.GetTarget(); target != "" {
+		return target
+	}
+
+	var target string
+	prefixElems := elemNames(prefix)
+	for _, path := range paths {
+		elems := append(append([]string(nil), prefixElems...), elemNames(path)...)
+		if len(elems) == 0 {
+			return ""
+		}
+		if target == "" {
+			target = elems[0]
+		} else if target != elems[0] {
+			return ""
+		}
+	}
+	return target
+}
+
+// Get implements the Get RPC in gNMI spec.
+func (s *Server) Get(ctx context.Context, req *gnmipb.GetRequest) (*gnmipb.GetResponse, error) {
+	common_utils.IncCounter(common_utils.GNMI_GET)
+
+	if req.GetType() != gnmipb.GetRequest_ALL {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		return nil, status.Errorf(codes.Unimplemented, "unsupported request type: %s", gnmipb.GetRequest_DataType_name[int32(req.GetType())])
+	}
+	// gNMI path based authorization
+	if s.config.PathzPolicy && len(req.GetPath()) != 0 {
+		newPaths := []*gnmipb.Path{}
+		user, err := getUsername(ctx)
+		if err != nil {
+			log.V(1).Infof("GetRequest User not found: %s", err.Error())
+			return nil, err
+		}
+		for _, path := range req.GetPath() {
+			// Only process the authorized paths in the request.
+			s.gnsiPathz.pathzProcessor.AuthorizeWithPrefix(user, req.GetPrefix(), path, gnsi_pathz_pb.Mode_MODE_READ)
+		}
+		if len(newPaths) == 0 {
+			return nil, status.Error(codes.PermissionDenied, "Unauthorized request. Rejected by pathz policy.")
+		}
+		req.Path = newPaths
+	}
+
+	if err := s.checkEncodingAndModel(req.GetEncoding(), req.GetUseModels()); err != nil {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		return nil, status.Error(codes.Unimplemented, err.Error())
+	}
+
+	target := ""
+	origin := ""
+	prefix := req.GetPrefix()
+	if prefix != nil {
+		target = prefix.GetTarget()
+		origin = prefix.Origin
+	}
+
+	paths := req.GetPath()
+	extensions := req.GetExtension()
+	encoding := req.GetEncoding()
+	log.V(3).Infof("GetRequest paths: %v", paths)
+
+	var dc sdc.Client
+	var err error
+	// Handle OPERATIONAL target directly without SONiC routing
+	if target == "OPERATIONAL" {
+		return s.handleOperationalGet(ctx, req, paths, prefix)
+	}
+
+	authTarget := "gnmi"
+	if target == "OTHERS" {
+		dc, err = sdc.NewNonDbClient(paths, prefix)
+		authTarget = "gnmi_other"
+	} else if target == "SHOW" {
+		dc, err = sdc.NewShowClient(paths, prefix)
+		authTarget = "gnmi_show"
+	} else if targetDbName, ok, _, _ := sdc.IsTargetDb(target); ok {
+		dc, err = sdc.NewDbClientForGet(paths, prefix)
+		if err == nil {
+			// For Get requests, validate that all requested keys exist in Redis.
+			// NewDbClient allows non-existent paths (needed for Subscribe to monitor
+			// future data per gNMI spec), but Get should return NOT_FOUND immediately
+			// if any path doesn't exist (per gNMI spec Section 3.3.4).
+			if dbClient, ok := dc.(*sdc.DbClient); ok {
+				err = dbClient.ValidatePaths()
+			}
+		}
+		authTarget = "gnmi_" + targetDbName
+	} else {
+		if origin == "" {
+			origin, err = ParseOrigin(paths)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if check := IsNativeOrigin(origin); check {
+			var targetDbName string
+			dc, err = sdc.NewMixedDbClient(paths, prefix, origin, encoding, s.config.ZmqPort, s.config.Vrf, &targetDbName)
+			authTarget = "gnmi_" + targetDbName
+		} else {
+			dc, err = sdc.NewTranslClient(prefix, paths, ctx, extensions)
+		}
+	}
+
+	if err != nil {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
+	defer dc.Close()
+
+	ctx, err = authenticate(s.config, ctx, authTarget, false)
+	if err != nil {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		return nil, err
+	}
+	if containsBGPRunningConfigPath(prefix, paths) && !isUnixPeer(ctx) {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		return nil, status.Error(codes.PermissionDenied, "BGP running configuration is available only over the Unix domain socket")
+	}
+	// Checked after authenticate so unauthenticated callers get
+	// Unauthenticated instead of a policy result.
+	if err := checkPathsBlacklist(s.config.PathsBlacklist, prefix, paths); err != nil {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		return nil, err
+	}
+	spbValues, err := dc.Get(nil)
+	if err != nil {
+		common_utils.IncCounter(common_utils.GNMI_GET_FAIL)
+		if st, ok := status.FromError(err); ok {
+			return nil, st.Err()
+		}
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
+
+	notifications := make([]*gnmipb.Notification, 0, len(spbValues))
+	for _, spbValue := range spbValues {
+		update := &gnmipb.Update{
+			Path: spbValue.GetPath(),
+			Val:  spbValue.GetVal(),
+		}
+
+		notifications = append(notifications, &gnmipb.Notification{
+			Timestamp: spbValue.GetTimestamp(),
+			Prefix:    prefix,
+			Update:    []*gnmipb.Update{update},
+		})
+	}
+	return &gnmipb.GetResponse{Notification: notifications}, nil
+}
+
+// saveOnSetEnabled saves configuration to a file
+func SaveOnSetEnabled() error {
+	sc, err := ssc.NewDbusClient()
+	if err != nil {
+		log.V(0).Infof("Saving startup config failed to create dbus client: %v", err)
+		return err
+	}
+	if err := sc.ConfigSave("/etc/sonic/config_db.json"); err != nil {
+		log.V(0).Infof("Saving startup config failed: %v", err)
+		return err
+	} else {
+		log.V(1).Infof("Success! Startup config has been saved!")
+	}
+	return nil
+}
+
+// SaveOnSetDisabeld does nothing.
+func saveOnSetDisabled() error { return nil }
+
+func (s *Server) Set(ctx context.Context, req *gnmipb.SetRequest) (*gnmipb.SetResponse, error) {
+	e := s.ReqFromMaster(req, &s.masterEID)
+	if e != nil {
+		return nil, e
+	}
+
+	common_utils.IncCounter(common_utils.GNMI_SET)
+	if s.config.EnableTranslibWrite == false && s.config.EnableNativeWrite == false {
+		common_utils.IncCounter(common_utils.GNMI_SET_FAIL)
+		return nil, grpc.Errorf(codes.Unimplemented, "GNMI is in read-only mode")
+	}
+	// Unlike Get/Subscribe this runs before authenticate: the bypass fast
+	// path below executes writes before authenticate is reached, so a later
+	// check could be bypassed. The error is generic, so nothing about the
+	// policy contents is exposed to unauthenticated callers.
+	if s.config.PathsBlacklist.Len() != 0 {
+		setPaths := make([]*gnmipb.Path, 0, len(req.GetDelete())+len(req.GetReplace())+len(req.GetUpdate()))
+		setPaths = append(setPaths, req.GetDelete()...)
+		for _, update := range req.GetReplace() {
+			setPaths = append(setPaths, update.GetPath())
+		}
+		for _, update := range req.GetUpdate() {
+			setPaths = append(setPaths, update.GetPath())
+		}
+		if err := checkPathsBlacklist(s.config.PathsBlacklist, req.GetPrefix(), setPaths); err != nil {
+			common_utils.IncCounter(common_utils.GNMI_SET_FAIL)
+			return nil, err
+		}
+	}
+	// gNMI path based authorization
+	if s.config.PathzPolicy {
+		user, err := getUsername(ctx)
+		if err != nil {
+			log.V(1).Infof("SetRequest User not found: %s", err.Error())
+			return nil, err
+		}
+		permitted := true
+		for _, path := range req.GetDelete() {
+			s.gnsiPathz.pathzProcessor.AuthorizeWithPrefix(user, req.GetPrefix(), path, gnsi_pathz_pb.Mode_MODE_WRITE)
+		}
+		for _, update := range req.GetReplace() {
+			s.gnsiPathz.pathzProcessor.AuthorizeWithPrefix(user, req.GetPrefix(), update.GetPath(), gnsi_pathz_pb.Mode_MODE_WRITE)
+		}
+		for _, update := range req.GetUpdate() {
+			s.gnsiPathz.pathzProcessor.AuthorizeWithPrefix(user, req.GetPrefix(), update.GetPath(), gnsi_pathz_pb.Mode_MODE_WRITE)
+		}
+		if !permitted {
+			return nil, status.Error(codes.PermissionDenied, "Unauthorized request. Rejected by pathz policy.")
+		}
+	}
+	var results []*gnmipb.UpdateResult
+
+	/* Fetch the prefix. */
+	prefix := req.GetPrefix()
+	origin := ""
+	if prefix != nil {
+		origin = prefix.Origin
+	}
+	extensions := req.GetExtension()
+	encoding := gnmipb.Encoding_JSON_IETF
+
+	var dc sdc.Client
+	var err error
+	paths := req.GetDelete()
+	for _, path := range req.GetReplace() {
+		paths = append(paths, path.GetPath())
+	}
+	for _, path := range req.GetUpdate() {
+		paths = append(paths, path.GetPath())
+	}
+	if origin == "" {
+		origin, err = ParseOrigin(paths)
+		if err != nil {
+			return nil, err
+		}
+	}
+	authTarget := "gnmi"
+	if check := IsNativeOrigin(origin); check {
+		if s.config.EnableNativeWrite == false {
+			common_utils.IncCounter(common_utils.GNMI_SET_FAIL)
+			return nil, grpc.Errorf(codes.Unimplemented, "GNMI native write is disabled")
+		}
+
+		bypassTarget := nativeSetTarget(prefix, paths)
+		if bypass.IsRequested(ctx) && strings.EqualFold(bypassTarget, "CONFIG_DB") {
+			// Bypass metadata requests the bypass path.
+			// It does not grant write access.
+			ctx, err = authenticate(s.config, ctx, "gnmi_"+bypassTarget, true)
+			if err != nil {
+				common_utils.IncCounter(common_utils.GNMI_SET_FAIL)
+				return nil, err
+			}
+
+			// Fast path: bypass validation for allowed tables/SKUs.
+			allUpdates := append(req.GetReplace(), req.GetUpdate()...)
+			if resp, used, err := bypass.TrySet(ctx, prefix, req.GetDelete(), allUpdates); used {
+				if err != nil {
+					common_utils.IncCounter(common_utils.GNMI_SET_FAIL)
+					return nil, status.Error(codes.Internal, err.Error())
+				}
+				common_utils.IncCounter(common_utils.GNMI_SET_BYPASS)
+				return resp, nil
+			}
+		}
+
+		var targetDbName string
+		dc, err = sdc.NewMixedDbClient(paths, prefix, origin, encoding, s.config.ZmqPort, s.config.Vrf, &targetDbName)
+		authTarget = "gnmi_" + targetDbName
+	} else {
+		if s.config.EnableTranslibWrite == false {
+			common_utils.IncCounter(common_utils.GNMI_SET_FAIL)
+			return nil, grpc.Errorf(codes.Unimplemented, "Translib write is disabled")
+		}
+		/* Create Transl client. */
+		dc, err = sdc.NewTranslClient(prefix, nil, ctx, extensions)
+	}
+
+	if err != nil {
+		common_utils.IncCounter(common_utils.GNMI_SET_FAIL)
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
+	defer dc.Close()
+
+	ctx, err = authenticate(s.config, ctx, authTarget, true)
+	if err != nil {
+		common_utils.IncCounter(common_utils.GNMI_SET_FAIL)
+		return nil, err
+	}
+	/* DELETE */
+	for _, path := range req.GetDelete() {
+		log.V(2).Infof("Delete path: %v", path)
+
+		res := gnmipb.UpdateResult{
+			Path: path,
+			Op:   gnmipb.UpdateResult_DELETE,
+		}
+
+		/* Add to Set response results. */
+		results = append(results, &res)
+	}
+
+	/* REPLACE */
+	for _, path := range req.GetReplace() {
+		log.V(2).Infof("Replace path: %v ", path)
+
+		res := gnmipb.UpdateResult{
+			Path: path.GetPath(),
+			Op:   gnmipb.UpdateResult_REPLACE,
+		}
+		/* Add to Set response results. */
+		results = append(results, &res)
+	}
+
+	/* UPDATE */
+	for _, path := range req.GetUpdate() {
+		log.V(2).Infof("Update path: %v ", path)
+
+		res := gnmipb.UpdateResult{
+			Path: path.GetPath(),
+			Op:   gnmipb.UpdateResult_UPDATE,
+		}
+		/* Add to Set response results. */
+		results = append(results, &res)
+	}
+	err = dc.Set(req.GetDelete(), req.GetReplace(), req.GetUpdate())
+	if err != nil {
+		common_utils.IncCounter(common_utils.GNMI_SET_FAIL)
+	} else {
+		s.SaveStartupConfig()
+	}
+
+	return &gnmipb.SetResponse{
+		Prefix:   req.GetPrefix(),
+		Response: results,
+	}, err
+
+}
+
+func (s *Server) Capabilities(ctx context.Context, req *gnmipb.CapabilityRequest) (*gnmipb.CapabilityResponse, error) {
+	ctx, err := authenticate(s.config, ctx, "gnmi", false)
+	if err != nil {
+		return nil, err
+	}
+	extensions := req.GetExtension()
+
+	/* Fetch the client capabitlities. */
+	var supportedModels []gnmipb.ModelData
+	dc, _ := sdc.NewTranslClient(nil, nil, ctx, extensions)
+	supportedModels = append(supportedModels, dc.Capabilities()...)
+	var targetDbName string
+	dc, _ = sdc.NewMixedDbClient(nil, nil, "", gnmipb.Encoding_JSON_IETF, s.config.ZmqPort, s.config.Vrf, &targetDbName)
+	supportedModels = append(supportedModels, dc.Capabilities()...)
+
+	suppModels := make([]*gnmipb.ModelData, len(supportedModels))
+
+	for index, model := range supportedModels {
+		suppModels[index] = &gnmipb.ModelData{
+			Name:         model.Name,
+			Organization: model.Organization,
+			Version:      model.Version,
+		}
+	}
+
+	sup_bver := spb.SupportedBundleVersions{
+		BundleVersion: translib.GetYangBundleVersion().String(),
+		BaseVersion:   translib.GetYangBaseVersion().String(),
+	}
+	sup_msg, _ := proto.Marshal(&sup_bver)
+	ext := gnmi_extpb.Extension{}
+	ext.Ext = &gnmi_extpb.Extension_RegisteredExt{
+		RegisteredExt: &gnmi_extpb.RegisteredExtension{
+			Id:  spb.SUPPORTED_VERSIONS_EXT,
+			Msg: sup_msg}}
+	exts := []*gnmi_extpb.Extension{&ext}
+
+	return &gnmipb.CapabilityResponse{SupportedModels: suppModels,
+		SupportedEncodings: supportedEncodings,
+		GNMIVersion:        "0.7.0",
+		Extension:          exts}, nil
+}
+
+// Obtain the user name as the last element of the SPIFFE ID.
+func getUsername(ctx context.Context) (string, error) {
+	pr, ok := peer.FromContext(ctx)
+	if !ok {
+		return "", grpc.Errorf(codes.Unauthenticated, "failed to get peer from ctx")
+	}
+	tlsInfo, ok := pr.AuthInfo.(credentials.TLSInfo)
+	if !ok {
+		return "", grpc.Errorf(codes.Unauthenticated, "no tls info was found")
+	}
+	spiffe := tlsInfo.SPIFFEID
+	if spiffe == nil {
+		return "", grpc.Errorf(codes.Unauthenticated, "failed to get SPIFFE ID")
+	}
+	path := spiffe.Path
+	usernamePos := strings.LastIndex(path, "/")
+	if usernamePos == -1 {
+		return "", status.Errorf(codes.Unauthenticated, "failed to get username from SPIFFE ID: %s", spiffe)
+	}
+	return path[usernamePos+1:], nil
+}
+
+type uint128 struct {
+	High uint64
+	Low  uint64
+}
+
+func (lh *uint128) Compare(rh *uint128) int {
+	if rh == nil {
+		// For MA disabled case, EID supposed to be 0.
+		rh = &uint128{High: 0, Low: 0}
+	}
+	if lh.High > rh.High {
+		return 1
+	}
+	if lh.High < rh.High {
+		return -1
+	}
+	if lh.Low > rh.Low {
+		return 1
+	}
+	if lh.Low < rh.Low {
+		return -1
+	}
+	return 0
+}
+
+// ReqFromMasterEnabledMA returns true if the request is sent by the master
+// controller.
+func ReqFromMasterEnabledMA(req *gnmipb.SetRequest, masterEID *uint128) error {
+	// Read the election_id.
+	reqEID := uint128{High: 0, Low: 0}
+	hasMaExt := false
+	// It can be one of many extensions, so iterate through them to find it.
+	for _, e := range req.GetExtension() {
+		ma := e.GetMasterArbitration()
+		if ma == nil {
+			continue
+		}
+
+		hasMaExt = true
+		// The Master Arbitration descriptor has been found.
+		if ma.ElectionId == nil {
+			return status.Errorf(codes.InvalidArgument, "MA: ElectionId missing")
+		}
+
+		if ma.Role != nil {
+			// Role will be implemented later.
+			return status.Errorf(codes.Unimplemented, "MA: Role is not implemented")
+		}
+
+		reqEID = uint128{High: ma.ElectionId.High, Low: ma.ElectionId.Low}
+		// Use the election ID that is in the last extension, so, no 'break' here.
+	}
+
+	if !hasMaExt {
+		log.V(0).Infof("MA: No Master Arbitration in setRequest extension, masterEID %v is not updated", masterEID)
+		return nil
+	}
+
+	maMu.Lock()
+	defer maMu.Unlock()
+	switch masterEID.Compare(&reqEID) {
+	case 1: // This Election ID is smaller than the known Master Election ID.
+		return status.Errorf(codes.PermissionDenied, "Election ID is smaller than the current master. Rejected. Master EID: %v. Current EID: %v.", masterEID, reqEID)
+	case -1: // New Master Election ID received!
+		log.V(0).Infof("New master has been elected with %v\n", reqEID)
+		*masterEID = reqEID
+	}
+	return nil
+}
+
+// ReqFromMasterDisabledMA always returns true. It is used when Master Arbitration
+// is disabled.
+func ReqFromMasterDisabledMA(req *gnmipb.SetRequest, masterEID *uint128) error {
+	return nil
+}
+
+func cleanupProviders(ps []certprovider.Provider) {
+	for _, p := range ps {
+		p.Close()
+	}
+}
+
+// Cleanup stops the gNMI/gNOI server and does required cleanup.
+func (srv *Server) Cleanup() {
+	srv.s.Stop()
+	cleanupProviders(srv.certProviders)
+}

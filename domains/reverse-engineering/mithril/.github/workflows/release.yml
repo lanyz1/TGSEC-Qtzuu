@@ -1,0 +1,141 @@
+name: release
+
+# Build prebuilt binaries on every version tag (e.g. `git tag v0.1.0 && git push
+# --tags`) and attach one self-contained tarball per platform to the GitHub
+# Release. mithril has zero third-party dependencies, so each tarball is just the
+# binary plus the license and readme. The vulnerability index is distributed
+# separately (see the update-db workflow); fetch it after install with
+# `mithril --fetch-db`.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build the .deb from and attach it to"
+        required: true
+
+permissions:
+  contents: write        # needed to create/update the Release
+
+jobs:
+  build:
+    if: github.event_name == 'push'        # binary tarballs only on a tag push
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            runner: ubuntu-latest
+            installer: apt
+          - name: linux-arm64
+            runner: ubuntu-24.04-arm
+            installer: apt
+          - name: macos-arm64
+            runner: macos-latest
+            installer: brew
+    steps:
+      - uses: actions/checkout@v4
+
+      # VERSION is the single source of truth (CMakeLists.txt and package.nix both
+      # read it). The git tag and debian/changelog carry the number independently,
+      # so fail the release if either drifts from VERSION rather than shipping a
+      # mislabeled artifact.
+      - name: Version consistency
+        run: |
+          ver="$(cat VERSION)"
+          if [ "v$ver" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::git tag $GITHUB_REF_NAME does not match VERSION (v$ver)"; exit 1
+          fi
+          deb="$(sed -n '1s/.*(\([^-)]*\).*/\1/p' debian/changelog)"
+          if [ "$deb" != "$ver" ]; then
+            echo "::error::debian/changelog version $deb does not match VERSION $ver"; exit 1
+          fi
+
+      # mithril is stdlib-only C++20: just a compiler, CMake, and python3 for the
+      # test gate. No compression or other libraries.
+      - name: Install build dependencies (apt)
+        if: matrix.installer == 'apt'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ python3
+
+      - name: Install build dependencies (brew)
+        if: matrix.installer == 'brew'
+        run: brew install cmake   # python3 ships on the macOS runner
+
+      - name: Configure and build (Release)
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j
+
+      - name: Test gate
+        run: |
+          ./build/mithril_unit
+          python3 tests/test_secrets.py ./build/mithril
+          python3 tests/test_sbom.py ./build/mithril
+          python3 tests/test_cve.py ./build/mithril
+          python3 tests/test_licenses.py ./build/mithril
+          python3 tests/test_kconfig.py ./build/mithril
+          python3 tests/test_kconfig_recovery.py ./build/mithril
+
+      - name: Package
+        run: |
+          pkg="mithril-${GITHUB_REF_NAME}-${{ matrix.name }}"
+          mkdir -p "dist/${pkg}"
+          cp build/mithril LICENSE README.md "dist/${pkg}/"
+          tar -C dist -czf "${pkg}.tar.gz" "${pkg}"
+          # sha256sum on Linux, shasum on macOS.
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "${pkg}.tar.gz" > "${pkg}.tar.gz.sha256"
+          else
+            shasum -a 256 "${pkg}.tar.gz" > "${pkg}.tar.gz.sha256"
+          fi
+
+      - name: Attach to the Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            mithril-*-${{ matrix.name }}.tar.gz
+            mithril-*-${{ matrix.name }}.tar.gz.sha256
+
+  deb:
+    name: deb-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref_name }}
+
+      - name: Install packaging toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential debhelper dpkg-dev cmake lintian
+
+      - name: Build .deb
+        run: |
+          dpkg-buildpackage -b -us -uc
+          mkdir -p dist
+          cp ../mithril_*.deb dist/        # main package only (not -dbgsym)
+          ( cd dist && for f in *.deb; do sha256sum "$f" > "$f.sha256"; done )
+
+      - name: Lintian (advisory)
+        run: lintian ../mithril_*.changes || true
+
+      - name: Attach .deb to the Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: |
+            dist/*.deb
+            dist/*.deb.sha256

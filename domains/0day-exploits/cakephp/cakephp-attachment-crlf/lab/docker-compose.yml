@@ -1,0 +1,13 @@
+name: cakephp-attachment-crlf
+
+services:
+  mailer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19460:19460"
+    labels:
+      lab: cakephp-attachment-crlf

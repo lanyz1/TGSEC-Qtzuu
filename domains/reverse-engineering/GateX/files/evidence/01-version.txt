@@ -1,0 +1,12 @@
+# GateX CTF evidence — live cage exec
+# captured 2026-08-26 18:23:26Z
+# container /gatex-cage-bypass-smoke-bp gatex-cage:noble net=none user=65532:65532
+# command: FH_PASS=gatex /opt/fh/7350FH.bin --version
+# exit 0  duration 3.69s
+# sandbox: linux/amd64  network=none  cap-drop=ALL  read-only
+
+pyserial not installed. UART support limited.
+xgboost not installed. EPSS local predictor limited.
+tensorflow not available. Anomaly detection limited to statistical methods.
+sklearn not available. Vulnerability classification limited.
+fortinet-hunter 2026.08

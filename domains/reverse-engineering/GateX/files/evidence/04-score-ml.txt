@@ -1,0 +1,39 @@
+# GateX CTF evidence — live cage exec
+# captured 2026-08-26 18:23:26Z
+# container /gatex-cage-bypass-smoke-bp gatex-cage:noble net=none user=65532:65532
+# command: FH_PASS=gatex /opt/fh/7350FH.bin score --ml
+# exit 0  duration 3.87s
+# sandbox: linux/amd64  network=none  cap-drop=ALL  read-only
+
+pyserial not installed. UART support limited.
+xgboost not installed. EPSS local predictor limited.
+tensorflow not available. Anomaly detection limited to statistical methods.
+sklearn not available. Vulnerability classification limited.
+
+╔══════════════════════════════════════════════════════════════╗
+║       FortiOS Attack Surface Mapper & 0-Day Fuzzer           ║
+╚══════════════════════════════════════════════════════════════╝
+
+
+[ml] trained on 58 entries (features 35, logistic acc 1.00)
+CVE                  RISK    PCT    CVSS   AUTH      FAMILY
+CVE-2026-25089       0.996   100.0  9.8    PRE       FORTISANDBOX
+CVE-2025-32756       0.993   98.3   9.8    PRE       FORTIVOICE
+CVE-2026-70465       0.992   96.6   9.8    PRE       FORTICLIENT
+CVE-2026-39801       0.992   94.8   9.8    PRE       FORTIGATE
+CVE-2025-24472       0.991   93.1   9.8    PRE       FORTIGATE
+CVE-2026-54121       0.990   91.4   9.8    auth      UNKNOWN
+CVE-2025-25256       0.990   89.7   9.8    PRE       FORTISIEM
+CVE-2026-35616       0.990   87.9   9.8    PRE       FORTICLIENT_EMS
+LDAP-CRED-LEAK-2026  0.988   86.2   7.5    PRE       FORTIGATE
+CVE-2025-68686       0.988   84.5   8.1    PRE       FORTIGATE
+CVE-2018-13379       0.986   82.8   9.8    PRE       FORTIGATE
+CVE-2025-56399       0.986   81.0   8.8    auth      UNKNOWN
+CVE-2025-59718       0.977   79.3   9.8    PRE       FORTIGATE
+CVE-2025-59719       0.977   77.6   9.8    PRE       FORTIGATE
+CVE-2026-21643       0.974   75.9   9.8    PRE       FORTICLIENT_EMS
+CVE-2025-25249       0.974   74.1   9.1    PRE       FORTIGATE
+CVE-2024-23108       0.973   72.4   9.8    PRE       FORTISIEM
+CVE-2023-34992       0.972   70.7   10.0   PRE       FORTISIEM
+CVE-2025-61624       0.972   69.0   6.0    auth      FORTIGATE
+CVE-2024-55591       0.972   67.2   9.6    PRE       FORTIGATE

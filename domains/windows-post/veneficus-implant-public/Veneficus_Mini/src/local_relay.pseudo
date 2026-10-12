@@ -1,0 +1,40 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# src/local_relay.pseudo
+# SOCKS5-like CONNECT proxy.
+
+GLOBAL ENABLED = false   # operator flips this with /relay_on / /relay_off
+
+FUNCTION is_on() -> bool
+FUNCTION enable(on: bool)
+
+FUNCTION listen(addr):
+    spawn a dedicated async runtime
+    bind TCP on addr          # default is loopback; not reachable remotely
+    LOOP:
+        IF not ENABLED: idle briefly; CONTINUE
+        accept
+        spawn handle(conn)
+
+FUNCTION handle(conn):
+    read greeting; require SOCKS5
+    reply: no authentication
+    read CONNECT request
+    PARSE destination:
+        IPv4  -> host, port
+        name  -> host, port
+        other -> close
+    IF connect(host, port) succeeds:
+        reply success
+        bidirectional copy
+    ELSE:
+        reply failure
+
+NOTES:
+    Bind happens even while ENABLED is false; the flag only gates accept().
+    No IPv6. No auth. Loopback default means a remote operator still needs
+    some other path onto the host.

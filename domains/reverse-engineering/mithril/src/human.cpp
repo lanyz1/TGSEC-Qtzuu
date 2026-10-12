@@ -1,0 +1,747 @@
+#include "human.hpp"
+
+#include <algorithm>
+#include <cstdio>
+#include <unordered_map>
+#include <unordered_set>
+
+#include "kconfig_infer.hpp"
+
+namespace ft {
+
+namespace {
+
+struct Ansi {
+    bool on;
+    const char* bold() const { return on ? "\033[1m" : ""; }
+    const char* dim() const { return on ? "\033[2m" : ""; }
+    const char* yellow() const { return on ? "\033[33m" : ""; }
+    const char* cyan() const { return on ? "\033[36m" : ""; }
+    const char* green() const { return on ? "\033[32m" : ""; }
+    const char* red() const { return on ? "\033[31m" : ""; }
+    const char* reset() const { return on ? "\033[0m" : ""; }
+};
+
+// Color by confidence tier: validated (checksum) strongest, then structural.
+const char* tier_color(const Ansi& a, uint8_t conf) {
+    if (conf >= static_cast<uint8_t>(Confidence::Validated)) return a.green();
+    if (conf >= static_cast<uint8_t>(Confidence::Structural)) return a.cyan();
+    return a.yellow();
+}
+
+void pad(std::string& o, const std::string& s, size_t w) {
+    o += s;
+    for (size_t i = s.size(); i < w; ++i) o += ' ';
+}
+
+std::string clip_to(const std::string& s, size_t w) {
+    if (s.size() <= w) return s;
+    if (w <= 3) return s.substr(0, w);
+    return s.substr(0, w - 3) + "...";
+}
+
+// Width the value line (e.g. a kernel command line) is shown to before it is
+// tail-truncated with "..."; `--verbose` shows the whole value instead.
+constexpr size_t kValueWidth = 200;
+
+}  // namespace
+
+std::string emit_report_human(const Report& rep, const Passes& passes, const std::string& footer,
+                              bool color, bool license_paths, bool verbose) {
+    Ansi a{color};
+    // In verbose mode nothing is tail-truncated; otherwise clip to the column.
+    auto clip = [&](const std::string& s, size_t w) { return verbose ? s : clip_to(s, w); };
+    std::string o;
+
+    // ---- secrets ----
+    if (passes.secrets) {
+        size_t validated = 0;
+        for (const auto& h : rep.secrets)
+            if (h.finding.confidence >= static_cast<uint8_t>(Confidence::Validated)) ++validated;
+        o += a.bold();
+        o += std::to_string(rep.secrets.size());
+        o += rep.secrets.size() == 1 ? " secret" : " secrets";
+        o += a.reset();
+        if (validated) o += " (" + std::to_string(validated) + " checksum-validated)";
+        o += " in ";
+        o += std::to_string(rep.file_count);
+        o += rep.file_count == 1 ? " file\n" : " files\n";
+
+        if (!rep.secrets.empty()) {
+            size_t wtype = 4, wtier = 4, wloc = 8;
+            for (const auto& h : rep.secrets) {
+                wtype = std::max(wtype, h.finding.type.size());
+                wtier = std::max(wtier, h.finding.confidence_tier.size());
+                wloc = std::max(wloc, h.path.size() + std::to_string(h.finding.offset).size() + 1);
+            }
+            wtype = std::min<size_t>(wtype, 34);
+            wloc = std::min<size_t>(wloc, 56);
+            o += "\n";
+            for (const auto& h : rep.secrets) {
+                const Finding& f = h.finding;
+                std::string loc = clip(h.path + "@" + std::to_string(f.offset), wloc);
+                o += "  ";
+                o += a.bold();
+                pad(o, clip(f.type, wtype), wtype);
+                o += a.reset();
+                o += "  ";
+                o += tier_color(a, f.confidence);
+                pad(o, f.confidence_tier, wtier);
+                o += a.reset();
+                o += "  ";
+                o += a.dim();
+                pad(o, loc, wloc);
+                o += a.reset();
+                o += "  ";
+                o += f.label;
+                o += "\n";
+            }
+        } else {
+            o += a.green();
+            o += "no secrets found";
+            o += a.reset();
+            o += "\n";
+        }
+    }
+
+    // ---- notable files (secrets path rules + SBOM kconfig) ----
+    if ((passes.secrets || passes.sbom) && !rep.notable.empty()) {
+        if (passes.secrets) o += "\n";
+        o += a.bold();
+        o += std::to_string(rep.notable.size());
+        o += rep.notable.size() == 1 ? " notable file" : " notable files";
+        o += a.reset();
+        o += "\n\n";
+        size_t wtype = 4;
+        for (const auto& h : rep.notable) wtype = std::max(wtype, h.finding.type.size());
+        wtype = std::min<size_t>(wtype, 20);
+        for (const auto& h : rep.notable) {
+            o += "  ";
+            o += a.cyan();
+            pad(o, clip(h.finding.type, wtype), wtype);
+            o += a.reset();
+            o += "  ";
+            o += h.path;
+            o += "\n";
+        }
+    }
+
+    // ---- SBOM component table ----
+    if (passes.sbom) {
+        if (passes.secrets) o += "\n";
+        o += a.bold();
+        o += std::to_string(rep.components.size());
+        o += rep.components.size() == 1 ? " component" : " components";
+        o += a.reset();
+        o += "\n";
+        if (!rep.components.empty()) {
+            size_t wname = 4, wver = 7, wsrc = 6;
+            for (const auto& c : rep.components) {
+                wname = std::max(wname, c.name.size());
+                wver = std::max(wver, c.version.size());
+                wsrc = std::max(wsrc, c.source.size());
+            }
+            wname = std::min<size_t>(wname, 30);
+            wver = std::min<size_t>(wver, 24);
+            o += "\n";
+            for (const auto& c : rep.components) {
+                o += "  ";
+                o += a.bold();
+                pad(o, clip(c.name, wname), wname);
+                o += a.reset();
+                o += "  ";
+                pad(o, clip(c.version, wver), wver);
+                o += "  ";
+                o += a.dim();
+                pad(o, c.source, wsrc);
+                o += a.reset();
+                o += "  ";
+                o += c.purl;
+                o += "\n";
+            }
+        }
+    }
+
+    // ---- CVE matches ----
+    // The default view is gated to high-signal component CVEs (KEV / CVSS>=9.0 /
+    // EPSS>=0.10) and sorted worst-first, so a manual pentester triages by impact
+    // instead of reading a flat dump of every range match. --component-cves-all
+    // shows the full list; JSON (-j) is always complete regardless of the gate.
+    if (passes.cve) {
+        if (passes.secrets || passes.sbom) o += "\n";
+
+        // Score + gate every match up front.
+        struct Row { const CveMatch* m; double score; bool high; };
+        std::vector<Row> rows;
+        rows.reserve(rep.cves.size());
+        size_t high_n = 0;
+        for (const auto& m : rep.cves) {
+            bool h = cve_is_high_signal(m);
+            if (h) ++high_n;
+            rows.push_back({&m, cvss_base_score(m.severity), h});
+        }
+        size_t hidden = rep.component_cves_all ? 0 : rep.cves.size() - high_n;
+
+        o += a.bold();
+        o += std::to_string(rep.cves.size());
+        o += rep.cves.size() == 1 ? " CVE" : " CVEs";
+        o += a.reset();
+        if (hidden) {
+            o += a.dim();
+            o += "  (" + std::to_string(high_n) + " high-signal shown, " +
+                 std::to_string(hidden) + " hidden)";
+            o += a.reset();
+        }
+        o += "\n";
+
+        // Rows to render: high-signal only (default) or all (--component-cves-all).
+        std::vector<Row> show;
+        for (const auto& r : rows)
+            if (rep.component_cves_all || r.high) show.push_back(r);
+
+        // The gated view sorts worst-first (KEV, then CVSS, then EPSS); the full
+        // view keeps the join's component-grouped order.
+        if (!rep.component_cves_all) {
+            std::stable_sort(show.begin(), show.end(), [](const Row& x, const Row& y) {
+                if (x.m->kev != y.m->kev) return x.m->kev;
+                if (x.score != y.score) return x.score > y.score;
+                if (x.m->epss != y.m->epss) return x.m->epss > y.m->epss;
+                return x.m->cve_id < y.m->cve_id;
+            });
+        }
+
+        if (!show.empty()) {
+            size_t wcve = 3, wcomp = 9;
+            for (const auto& r : show) {
+                wcve = std::max(wcve, r.m->cve_id.size());
+                wcomp = std::max(wcomp, r.m->component.size());
+            }
+            wcomp = std::min<size_t>(wcomp, 32);
+            o += "\n";
+            for (const auto& r : show) {
+                const auto& m = *r.m;
+                o += "  ";
+                o += a.yellow();
+                pad(o, m.cve_id, wcve);
+                o += a.reset();
+                o += "  ";
+                o += a.bold();
+                pad(o, clip(m.component, wcomp), wcomp);
+                o += a.reset();
+                o += "  ";
+                // CVSS base score, colored by band (critical red, high yellow).
+                char sb[8];
+                if (r.score >= 0) std::snprintf(sb, sizeof(sb), "%4.1f", r.score);
+                else std::snprintf(sb, sizeof(sb), " n/a");
+                o += r.score >= 9.0 ? a.red() : r.score >= 7.0 ? a.yellow() : a.dim();
+                o += sb;
+                o += a.reset();
+                o += "  ";
+                o += a.dim();
+                o += m.basis;
+                o += a.reset();
+                if (m.kev) {
+                    o += a.red();
+                    o += " [KEV]";
+                    o += a.reset();
+                }
+                if (m.epss >= 0.10) {  // only surface a non-trivial exploit probability
+                    char b[24];
+                    std::snprintf(b, sizeof(b), " epss=%.2f", m.epss);
+                    o += b;
+                }
+                o += "\n";
+            }
+        }
+
+        // When the default view hid CVEs, say how to see the rest.
+        if (hidden) {
+            o += a.dim();
+            o += "\n  Gated to high-signal (KEV, or High/Critical CVSS>=7.0 with EPSS "
+                 "traction, real impact or trending remote DoS).\n"
+                 "  Run --component-cves-all for every component CVE in range.\n";
+            o += a.reset();
+        }
+    }
+
+    // ---- curated kernel CVEs (applicable, undetermined, then ruled-out) ----
+    // Printed whenever a kernel version was detected, even with zero in-range
+    // curated hits: the curated list is a high-signal set, not an exhaustive one,
+    // so a modern kernel that outruns the table must still show a line rather than
+    // vanish (which reads as "mithril did not see the kernel").
+    if (passes.cve && !rep.kernel_version.empty()) {
+        o += "\n";
+        o += a.bold();
+        o += "Kernel CVEs";
+        o += a.reset();
+        o += a.dim();
+        o += rep.kernel_cves_full ? "  (curated high-signal set + full kernel.org feed)"
+                                  : "  (curated high-signal checklist, not a full CVE list)";
+        o += a.reset();
+        o += "\n\n  ";
+        // Curated (built-in, kconfig-gated) and feed (kernel.org, version-matched)
+        // are counted and shown separately: the curated summary must not be diluted
+        // by the feed's version-only matches.
+        auto is_feed = [](const KernelCveResult& k) { return k.source == "kernel.org"; };
+        size_t app = 0, unk = 0, ruled = 0, cur_total = 0;
+        size_t feed_n = 0, feed_broad = 0;
+        for (const auto& k : rep.kernel_cves) {
+            if (is_feed(k)) {
+                ++feed_n;
+                if (k.reason.find("verify backport") != std::string::npos) ++feed_broad;
+                continue;
+            }
+            ++cur_total;
+            if (k.state == KcveState::Applicable) ++app;
+            else if (k.state == KcveState::Unknown) ++unk;
+            else ++ruled;
+        }
+        if (cur_total == 0) {
+            o += a.dim();
+            o += "kernel " + rep.kernel_version + " detected; 0 of " +
+                 std::to_string(kernel_cve_curated_total()) +
+                 " curated checks in range for this version";
+            o += a.reset();
+        } else {
+            o += a.bold();
+            o += std::to_string(app);
+            o += a.reset();
+            o += " applicable of " + std::to_string(cur_total) +
+                 " curated check" + (cur_total == 1 ? "" : "s") +
+                 " in range for " + rep.kernel_version;
+            if (unk || ruled) {
+                o += a.dim();
+                o += "  [" + std::to_string(ruled) + " ruled out, " + std::to_string(unk) +
+                     " undetermined]";
+                o += a.reset();
+            }
+        }
+        // Config posture: how we learned the config, plus the hardening flags,
+        // color-coded green=good / yellow=warn / red=bad / (default)=info.
+        const auto& kcv = rep.kcv;
+        o += a.dim();
+        o += "\n  config: ";
+        o += a.reset();
+        if (kcv.authoritative) {
+            o += rep.kconfig_source == "ikconfig" ? "recovered .config (embedded IKCONFIG)"
+                 : rep.kconfig_source.empty()     ? "recovered .config"
+                                                  : ("recovered .config (" + rep.kconfig_source + ")");
+            o += a.dim();
+            o += " (" + std::to_string(kcv.enabled.size()) + " options set)";
+            o += a.reset();
+        } else if (kcv.kallsyms_complete || kcv.modules_seen || !kcv.enabled.empty()) {
+            o += "inferred";
+            o += a.dim();
+            o += kcv.kallsyms_complete ? " (kallsyms" : " (";
+            if (kcv.modules_seen) o += kcv.kallsyms_complete ? " + modules" : "modules";
+            o += "; no .config)";
+            o += a.reset();
+        } else {
+            o += a.dim();
+            o += "unknown (no config, no kallsyms)";
+            o += a.reset();
+        }
+        o += "\n\n";
+        size_t wcve = 3;
+        for (const auto& k : rep.kernel_cves)
+            if (!is_feed(k)) wcve = std::max(wcve, k.cve.size());
+        for (const auto& k : rep.kernel_cves) {
+            if (is_feed(k) || k.state != KcveState::Applicable) continue;
+            o += "  ";
+            o += a.red();  // applicable == exploitable attack surface -> bad
+            pad(o, k.cve, wcve);
+            o += a.reset();
+            o += "  ";
+            o += a.bold();
+            pad(o, k.impact, 4);
+            o += a.reset();
+            o += "  " + k.note;
+            if (k.kev) {
+                o += a.red();
+                o += " [KEV]";
+                o += a.reset();
+            }
+            if (k.epss >= 0.10) {
+                char b[24];
+                std::snprintf(b, sizeof(b), " epss=%.2f", k.epss);
+                o += b;
+            }
+            o += "\n";
+        }
+        // undetermined (in range, but the gating config option is unknown)
+        if (unk) {
+            o += "\n";
+            o += a.dim();
+            o += "  undetermined (config signal incomplete):";
+            o += a.reset();
+            o += "\n";
+            for (const auto& k : rep.kernel_cves) {
+                if (is_feed(k) || k.state != KcveState::Unknown) continue;
+                o += "    ";
+                o += a.dim();
+                pad(o, k.cve, wcve);
+                o += "  " + k.reason;
+                o += a.reset();
+                o += "\n";
+            }
+        }
+        // ruled-out, with the evidence that ruled each out
+        if (ruled) {
+            o += "\n";
+            o += a.dim();
+            o += "  ruled out by config:";
+            o += a.reset();
+            o += "\n";
+            for (const auto& k : rep.kernel_cves) {
+                if (is_feed(k) || k.state != KcveState::RuledOut) continue;
+                o += "    ";
+                o += a.green();  // ruled out == surface removed -> good
+                pad(o, k.cve, wcve);
+                o += a.reset();
+                o += a.dim();
+                o += "  " + k.reason;
+                o += a.reset();
+                o += "\n";
+            }
+        }
+        // --kernel-cves-all: the full kernel.org feed, version-matched. Can be
+        // hundreds of lines, so cap the human list and point at -j for the rest.
+        if (rep.kernel_cves_full) {
+            o += "\n";
+            o += a.bold();
+            o += "  kernel.org feed";
+            o += a.reset();
+            o += a.dim();
+            o += "  " + std::to_string(feed_n) + " CVE" + (feed_n == 1 ? "" : "s") +
+                 " in range for " + rep.kernel_version;
+            if (feed_broad)
+                o += " (" + std::to_string(feed_broad) + " broad-range, verify backport)";
+            o += " — not kconfig-gated";
+            o += a.reset();
+            o += "\n";
+            constexpr size_t kCap = 40;
+            size_t shown = 0, wid = 3;
+            for (const auto& k : rep.kernel_cves)
+                if (is_feed(k)) wid = std::max(wid, k.cve.size());
+            for (const auto& k : rep.kernel_cves) {
+                if (!is_feed(k)) continue;
+                if (shown++ >= kCap) continue;
+                o += "    ";
+                o += a.dim();
+                pad(o, k.cve, wid);
+                o += a.reset();
+                if (!k.impact.empty()) o += "  " + k.impact;  // CVSS severity
+                if (!k.note.empty()) o += "  " + k.note;
+                if (k.kev) {
+                    o += a.red();
+                    o += " [KEV]";
+                    o += a.reset();
+                }
+                if (k.epss >= 0.10) {
+                    char b[24];
+                    std::snprintf(b, sizeof(b), " epss=%.2f", k.epss);
+                    o += b;
+                }
+                o += "\n";
+            }
+            if (feed_n > kCap) {
+                o += a.dim();
+                o += "    ... and " + std::to_string(feed_n - kCap) +
+                     " more (use -j for the complete list)";
+                o += a.reset();
+                o += "\n";
+            }
+        }
+        // Say what the curated set is, and where the complete list lives, so a short
+        // or empty result is never read as exhaustive.
+        o += "\n";
+        o += a.dim();
+        o += rep.kernel_cves_full
+                 ? "  Curated entries are kconfig-gated; feed entries are version-matched "
+                   "(confirm the backport)."
+                 : "  Curated high-signal set. Run --kernel-cves-all for every kernel CVE in range.";
+        o += a.reset();
+        o += "\n";
+    }
+
+    // ---- kernel hardening (its own section; only from a recovered .config) ----
+    if ((passes.cve || passes.sbom) && !rep.kconfig_text.empty()) {
+        auto items = kernel_hardening(rep.kconfig_text);
+        if (!items.empty()) {
+            o += "\n";
+            o += a.bold();
+            o += "Kernel hardening";
+            o += a.reset();
+            o += a.dim();
+            o += rep.kconfig_source == "ikconfig" ? "  (from embedded .config)"
+                                                  : "  (from recovered .config)";
+            o += a.reset();
+            o += "\n\n";
+            size_t w = 0;
+            for (const auto& it : items) w = std::max(w, std::string(it.name).size());
+            for (const auto& it : items) {
+                o += "  ";
+                pad(o, it.name, w);
+                o += "  ";
+                const char* label;
+                const char* col;
+                switch (it.state) {
+                    case HardState::On: label = "[enabled]"; col = a.green(); break;
+                    case HardState::Off: label = "[disabled]"; col = a.red(); break;
+                    default: label = "[not available]"; col = a.dim(); break;
+                }
+                o += col;
+                o += label;
+                o += a.reset();
+                o += "\n";
+            }
+        }
+    }
+
+    // ---- licenses (aggregated by id) ----
+    if (passes.licenses) {
+        if (passes.secrets || passes.sbom || passes.cve) o += "\n";
+        // Group findings by license id, preserving first-seen order; each group
+        // keeps its file paths so --license-paths can list them.
+        std::vector<std::pair<std::string, std::vector<std::string>>> groups;
+        for (const auto& h : rep.licenses) {
+            auto it = std::find_if(groups.begin(), groups.end(),
+                                   [&](const auto& g) { return g.first == h.finding.type; });
+            if (it == groups.end()) groups.push_back({h.finding.type, {h.path}});
+            else it->second.push_back(h.path);
+        }
+        std::sort(groups.begin(), groups.end(), [](const auto& x, const auto& y) {
+            if (x.second.size() != y.second.size()) return x.second.size() > y.second.size();
+            return x.first < y.first;
+        });
+        o += a.bold();
+        o += std::to_string(groups.size());
+        o += groups.size() == 1 ? " license" : " licenses";
+        o += a.reset();
+        o += "\n";
+        if (!groups.empty()) {
+            size_t wid = 7;
+            for (const auto& g : groups) wid = std::max(wid, g.first.size());
+            // SPDX ids are short and bounded, and compound expressions ("A OR B",
+            // "A WITH exception") carry meaning in the leading term that a tight
+            // clip would drop. Allow a wide column (fits every realistic id) so
+            // the cap only ever guards against a degenerate value.
+            wid = std::min<size_t>(wid, 48);
+            o += "\n";
+            if (license_paths) {
+                // Detail view: one row per (license, file), grouped by id, in the
+                // notable-files layout. A single very common license is capped;
+                // -j always carries the complete set.
+                constexpr size_t kCap = 20;
+                for (const auto& g : groups) {
+                    size_t shown = std::min(g.second.size(), kCap);
+                    for (size_t i = 0; i < shown; ++i) {
+                        o += "  ";
+                        o += a.cyan();
+                        pad(o, clip(g.first, wid), wid);
+                        o += a.reset();
+                        o += "  ";
+                        o += g.second[i];
+                        o += "\n";
+                    }
+                    if (g.second.size() > kCap) {
+                        o += "  ";
+                        for (size_t i = 0; i < wid; ++i) o += ' ';  // align under the paths
+                        o += "  ";
+                        o += a.dim();
+                        o += "... and " + std::to_string(g.second.size() - kCap) +
+                             " more (use -j for the complete list)";
+                        o += a.reset();
+                        o += "\n";
+                    }
+                }
+            } else {
+                // Summary view (default): id + count.
+                for (const auto& g : groups) {
+                    o += "  ";
+                    o += a.cyan();
+                    pad(o, clip(g.first, wid), wid);
+                    o += a.reset();
+                    o += "  ";
+                    o += a.dim();
+                    o += "x" + std::to_string(g.second.size());
+                    o += a.reset();
+                    o += "\n";
+                }
+                o += "\n";
+                o += a.dim();
+                o += "  Run --license-paths to show where each license was found.";
+                o += a.reset();
+                o += "\n";
+            }
+        }
+    }
+
+    // ---- read errors ----
+    if (!rep.errors.empty()) {
+        o += "\n";
+        for (const auto& e : rep.errors) {
+            // File-scoped errors carry a path and render as "unreadable <path>";
+            // scan-level errors (empty path, e.g. a missing CVE DB) render as a
+            // plain "error" line.
+            o += "  ";
+            o += a.yellow();
+            o += e.first.empty() ? "error" : "unreadable";
+            o += a.reset();
+            if (e.first.empty())
+                o += "  (" + e.second + ")\n";
+            else
+                o += "  " + e.first + "  (" + e.second + ")\n";
+        }
+    }
+
+    // ---- boot security ----
+    if (passes.boot) {
+        if (passes.secrets || passes.sbom || passes.cve || passes.licenses) o += "\n";
+        std::unordered_set<std::string> uniq;
+        for (const auto& h : rep.boot) uniq.insert(h.finding.type + "\x1f" + h.finding.label);
+        o += a.bold();
+        o += std::to_string(rep.boot.size());
+        o += rep.boot.size() == 1 ? " boot finding" : " boot findings";
+        if (uniq.size() < rep.boot.size()) o += " (" + std::to_string(uniq.size()) + " unique)";
+        o += a.reset();
+        o += "\n\n";
+        if (rep.boot.empty()) {
+            o += "  no boot artifacts (U-Boot env, device tree, FIT) found\n";
+        } else {
+            // Split the [sev] prefix off the evidence; order high -> medium -> info.
+            auto sev_rank = [](const std::string& ev) {
+                if (ev.rfind("[high]", 0) == 0) return 0;
+                if (ev.rfind("[medium]", 0) == 0) return 1;
+                return 2;
+            };
+            std::vector<const Hit*> rows;
+            rows.reserve(rep.boot.size());
+            for (const auto& h : rep.boot) rows.push_back(&h);
+            std::stable_sort(rows.begin(), rows.end(), [&](const Hit* x, const Hit* y) {
+                int rx = sev_rank(x->finding.evidence), ry = sev_rank(y->finding.evidence);
+                if (rx != ry) return rx < ry;
+                return x->finding.type < y->finding.type;
+            });
+            size_t wtype = 4;
+            for (const Hit* h : rows) wtype = std::max(wtype, h->finding.type.size());
+            wtype = std::min<size_t>(wtype, 34);
+            // Collapse identical (type, value) findings — the same lead repeated
+            // across e.g. a multi-config FIT's sub-FDTs — into one row + a count.
+            auto key = [](const Hit* h) { return h->finding.type + "\x1f" + h->finding.label; };
+            std::unordered_map<std::string, int> counts;
+            for (const Hit* h : rows) counts[key(h)]++;
+            std::unordered_set<std::string> shown;
+            for (const Hit* h : rows) {
+                if (!shown.insert(key(h)).second) continue;  // already collapsed
+                const int n = counts[key(h)];
+                const std::string& ev = h->finding.evidence;
+                int r = sev_rank(ev);
+                const char* tag = r == 0 ? "high" : (r == 1 ? "med " : "info");
+                const char* col = r == 0 ? a.red() : (r == 1 ? a.yellow() : a.dim());
+                size_t close = ev.find(']');
+                std::string reason = close != std::string::npos ? ev.substr(close + 2) : ev;
+                o += "  ";
+                o += col;
+                o += tag;
+                o += a.reset();
+                o += "  ";
+                o += a.cyan();
+                pad(o, clip(h->finding.type, wtype), wtype);
+                o += a.reset();
+                o += "  ";
+                o += reason;
+                if (n > 1) o += " (\xc3\x97" + std::to_string(n) + ")";  // "(×N)"
+                o += "\n";
+                // Value + source path, dimmed, on the continuation line.
+                if (!h->finding.label.empty()) {
+                    o += "        ";
+                    o += a.dim();
+                    o += clip(h->finding.label, kValueWidth);
+                    o += "  (" + h->path + (n > 1 ? ", +" + std::to_string(n - 1) + " more" : "") +
+                         ")";
+                    o += a.reset();
+                    o += "\n";
+                }
+            }
+        }
+    }
+
+    // ---- key weakness ----
+    if (passes.keys) {
+        if (passes.secrets || passes.sbom || passes.cve || passes.licenses || passes.boot)
+            o += "\n";
+        o += a.bold();
+        o += std::to_string(rep.keys.size());
+        o += rep.keys.size() == 1 ? " key finding" : " key findings";
+        o += a.reset();
+        o += "\n\n";
+        if (rep.keys.empty()) {
+            o += "  no public keys with a known weakness found\n";
+        } else {
+            auto sev_rank = [](const std::string& ev) {
+                if (ev.rfind("[high]", 0) == 0) return 0;
+                if (ev.rfind("[medium]", 0) == 0) return 1;
+                return 2;
+            };
+            std::vector<const Hit*> rows;
+            rows.reserve(rep.keys.size());
+            for (const auto& h : rep.keys) rows.push_back(&h);
+            std::stable_sort(rows.begin(), rows.end(), [&](const Hit* x, const Hit* y) {
+                int rx = sev_rank(x->finding.evidence), ry = sev_rank(y->finding.evidence);
+                if (rx != ry) return rx < ry;
+                return x->finding.type < y->finding.type;
+            });
+            size_t wtype = 4;
+            for (const Hit* h : rows) wtype = std::max(wtype, h->finding.type.size());
+            wtype = std::min<size_t>(wtype, 34);
+            // Collapse identical (type, value) findings (e.g. many legacy 1024-bit
+            // roots in one CA bundle) into one row plus a count.
+            auto key = [](const Hit* h) { return h->finding.type + "\x1f" + h->finding.label; };
+            std::unordered_map<std::string, int> counts;
+            for (const Hit* h : rows) counts[key(h)]++;
+            std::unordered_set<std::string> shown;
+            for (const Hit* h : rows) {
+                if (!shown.insert(key(h)).second) continue;
+                const int n = counts[key(h)];
+                const std::string& ev = h->finding.evidence;
+                int r = sev_rank(ev);
+                const char* tag = r == 0 ? "high" : (r == 1 ? "med " : "info");
+                const char* col = r == 0 ? a.red() : (r == 1 ? a.yellow() : a.dim());
+                size_t close = ev.find(']');
+                std::string reason = close != std::string::npos ? ev.substr(close + 2) : ev;
+                o += "  ";
+                o += col;
+                o += tag;
+                o += a.reset();
+                o += "  ";
+                o += a.cyan();
+                pad(o, clip(h->finding.type, wtype), wtype);
+                o += a.reset();
+                o += "  ";
+                o += reason;
+                if (n > 1) o += " (\xc3\x97" + std::to_string(n) + ")";
+                o += "\n";
+                if (!h->finding.label.empty()) {
+                    o += "        ";
+                    o += a.dim();
+                    o += clip(h->finding.label, kValueWidth);
+                    o += "  (" + h->path + (n > 1 ? ", +" + std::to_string(n - 1) + " more" : "") +
+                         ")";
+                    o += a.reset();
+                    o += "\n";
+                }
+            }
+        }
+    }
+
+    // ---- footer ----
+    if (!footer.empty()) {
+        o += "\n";
+        o += footer;
+        if (o.back() != '\n') o += "\n";
+    }
+    return o;
+}
+
+}  // namespace ft

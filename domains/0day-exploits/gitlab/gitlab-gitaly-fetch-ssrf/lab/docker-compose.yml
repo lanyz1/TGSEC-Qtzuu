@@ -1,0 +1,124 @@
+name: gitlab-gitaly-fetch-ssrf
+
+services:
+  dns:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python3", "/lab/dns_server.py"]
+    volumes:
+      - shared:/shared
+      - ./logs:/logs
+    networks:
+      labnet:
+        ipv4_address: 172.30.2.2
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: "1"
+      GHE_NAME: "ghe.lab"
+      PUBLIC_IP: "1.1.1.1"
+      REBIND_IP: "127.0.0.1"
+      SHARED_DIR: "/shared"
+      LOG_DIR: "/logs"
+      DNS_BIND: "0.0.0.0"
+      DNS_PORT: "53"
+      FORWARDER: "8.8.8.8"
+
+  gitlab:
+    image: gitlab/gitlab-ce:19.4.1-ce.0
+    hostname: gitlab.lab.invalid
+    shm_size: "256m"
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "127.0.0.1:18410:80"
+      - "127.0.0.1:18412:22"
+    dns:
+      - 172.30.2.2
+    dns_search: []
+    extra_hosts:
+      - "gitlab.lab.invalid:127.0.0.1"
+    environment:
+      GITLAB_ROOT_PASSWORD: "CveLabRoot9!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://127.0.0.1:18410'
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['redirect_http_to_https'] = false
+        letsencrypt['enable'] = false
+        gitlab_rails['initial_root_password'] = 'CveLabRoot9!xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+        gitlab_rails['gitlab_signup_enabled'] = false
+        gitlab_rails['usage_ping_enabled'] = false
+        gitlab_rails['gitlab_default_projects_features_container_registry'] = false
+        gitlab_rails['monitoring_whitelist'] = ['127.0.0.0/8']
+        gitlab_rails['allow_local_requests_from_web_hooks_and_services'] = false
+        gitlab_rails['allow_local_requests_from_system_hooks'] = false
+        gitlab_rails['import_sources'] = ['github', 'git', 'gitea', 'bitbucket', 'gitlab', 'bitbucket_server']
+        puma['worker_processes'] = 2
+        sidekiq['concurrency'] = 8
+        prometheus_monitoring['enable'] = false
+        prometheus['enable'] = false
+        alertmanager['enable'] = false
+        node_exporter['enable'] = false
+        redis_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        gitlab_exporter['enable'] = false
+        registry['enable'] = false
+        gitlab_pages['enable'] = false
+        gitlab_kas['enable'] = false
+        mattermost['enable'] = false
+        postgresql['shared_buffers'] = '128MB'
+        gitaly['configuration'] = {
+          logging: {
+            level: 'debug',
+          },
+        }
+    volumes:
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+    networks:
+      labnet:
+        ipv4_address: 172.30.2.10
+    depends_on:
+      - dns
+
+  catcher:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python3", "/lab/catcher.py"]
+    network_mode: "service:gitlab"
+    cap_add:
+      - NET_ADMIN
+    privileged: true
+    depends_on:
+      - gitlab
+      - dns
+    volumes:
+      - shared:/shared
+      - ./logs:/logs
+    environment:
+      PYTHONUNBUFFERED: "1"
+      WITNESS: "GITLAB-GITALY-FETCH-SSRF-WITNESS"
+      GIT_ROOT: "/git"
+      SHARED_DIR: "/shared"
+      LOG_DIR: "/logs"
+      BIND_HOST: "0.0.0.0"
+      BIND_PORT: "18080"
+      PUBLIC_IP: "1.1.1.1"
+      GHE_NAME: "ghe.lab"
+    restart: unless-stopped
+
+volumes:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:
+  shared:
+
+networks:
+  labnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.2.0/24

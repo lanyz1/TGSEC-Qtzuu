@@ -1,0 +1,65 @@
+name: n8n-databricks-path-join
+
+services:
+  mock:
+    build:
+      context: ./mock
+    image: n8n-databricks-path-join-mock:lab
+    ports:
+      - "127.0.0.1:18203:8080"
+    networks:
+      - labnet
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  n8n:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: n8n-databricks-path-join:2.42.0
+    ports:
+      - "127.0.0.1:18202:5678"
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      N8N_HOST: "127.0.0.1"
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: http
+      N8N_LISTEN_ADDRESS: "0.0.0.0"
+      WEBHOOK_URL: "http://127.0.0.1:18202/"
+      N8N_EDITOR_BASE_URL: "http://127.0.0.1:18202/"
+      N8N_ENCRYPTION_KEY: "lab-n8n-databricks-path-join-key"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_TEMPLATES_ENABLED: "false"
+      N8N_HIRING_BANNER_ENABLED: "false"
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      GENERIC_TIMEZONE: UTC
+      TZ: UTC
+    depends_on:
+      mock:
+        condition: service_healthy
+    networks:
+      - labnet
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:5678/healthz >/dev/null || exit 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+networks:
+  labnet:

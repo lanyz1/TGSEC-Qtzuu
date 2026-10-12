@@ -1,0 +1,14 @@
+name: mysql-install-component-scheme
+
+services:
+  mysql:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    pull_policy: never
+    init: true
+    ports:
+      - "127.0.0.1:18650:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: labroot
+      MYSQL_DATABASE: lab

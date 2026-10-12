@@ -1,0 +1,40 @@
+name: prometheus-unix-socket-dial
+
+services:
+  sidecar:
+    image: python:3.13-slim
+    pull_policy: missing
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19390:9090"
+    volumes:
+      - ./sidecar.py:/lab/sidecar.py:ro
+      - sockets:/sockets
+      - hits:/hits
+    environment:
+      PYTHONUNBUFFERED: "1"
+      WITNESS: "PROMETHEUS-UNIX-SOCKET-DIAL-WITNESS"
+    working_dir: /lab
+    command: ["python3", "/lab/sidecar.py"]
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    pull_policy: missing
+    init: true
+    restart: "no"
+    network_mode: "service:sidecar"
+    depends_on:
+      - sidecar
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - sockets:/sockets
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.listen-address=0.0.0.0:9090
+      - --storage.tsdb.retention.time=15m
+
+volumes:
+  sockets:
+  hits:

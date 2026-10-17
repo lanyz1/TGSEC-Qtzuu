@@ -1,0 +1,20 @@
+name: pfsense-api-enroll-autoadd
+
+services:
+  sshd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19111:19111"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      WITNESS: "PFSENSE-API-ENROLL-AUTOADD-WITNESS"
+      SSH_BIND: "0.0.0.0"
+      SSH_PORT: "19111"
+      SSH_USER: "admin"
+      SSH_PASS: "sshsecret"
+    labels:
+      lab: pfsense-api-enroll-autoadd

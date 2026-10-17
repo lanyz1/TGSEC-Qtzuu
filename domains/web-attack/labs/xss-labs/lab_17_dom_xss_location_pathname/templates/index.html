@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab 17 - DOM XSS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-8">
+      <h1 class="text-3xl font-bold text-slate-800 mb-3">Lab 17 - DOM XSS</h1>
+      <p class="text-slate-600 mb-6">
+        DOM XSS via <code>location.pathname</code>
+      </p>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg p-5">
+        <p class="text-sm text-slate-500 mb-2">Profile:</p>
+        <div id="profile" class="text-xl font-semibold text-slate-800">
+          Loading...
+        </div>
+      </div>
+    </div>
+    <script>
+      const path = window.location.pathname;
+      const username = decodeURIComponent(path.substring(1)) || "Guest";
+      document.getElementById("profile").innerHTML =
+        "<p>Welcome, " + username + "!</p>";
+    </script>
+  </body>
+</html>

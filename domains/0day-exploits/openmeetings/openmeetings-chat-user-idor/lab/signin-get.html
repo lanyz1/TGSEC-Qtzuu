@@ -1,0 +1,442 @@
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+
+-->
+<!DOCTYPE html>
+<html xml:lang="en" lang="en" dir="ltr">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+	<meta name="viewport" content="height=device-height, initial-scale=1, width=device-width, initial-scale=1" />
+	<link rel="apple-touch-icon" href="images/icons/apple-icon-180.png">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1620-2160.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2160-1620.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2778-1284.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2532-1170.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="images/icons/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="manifest" href="services/info/manifest.webmanifest">
+	<link rel="shortcut icon" href="public/favicon.png" type="image/png"/>
+	<script type="text/javascript" src="./wicket/resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="Alq-La_bMcUD3_jYxoisMHHl"></script>
+<script type="text/javascript" src="./wicket/resource/org.apache.wicket.markup.html.pages.BrowserInfoForm/wicket-browser-info-ver-3E3ED096DC173FF1D7266810E67BFABE.js" nonce="Alq-La_bMcUD3_jYxoisMHHl"></script>
+<script type="text/javascript" id="om-main" src="js/main.js" nonce="Alq-La_bMcUD3_jYxoisMHHl"></script>
+<script type="text/javascript" id="om-util-init" nonce="Alq-La_bMcUD3_jYxoisMHHl">
+/*<![CDATA[*/
+OmUtil.init({"debug":false})
+/*]]>*/
+</script>
+<script type="text/javascript" src="./wicket/resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="Alq-La_bMcUD3_jYxoisMHHl"></script>
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="Alq-La_bMcUD3_jYxoisMHHl">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="signin";
+/*]]>*/
+</script>
+<link rel="stylesheet" type="text/css" href="./wicket/resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="Alq-La_bMcUD3_jYxoisMHHl" />
+<script type="text/javascript" src="./wicket/resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.spinner.SpinnerJsReference/js/ladda-ver-2A6BBAE0717A1BEFAFD0FD2D8FB61856.js" nonce="Alq-La_bMcUD3_jYxoisMHHl"></script>
+<script type="text/javascript" src="./wicket/resource/org.wicketstuff.urlfragment.UrlParametersReceivingBehavior/urlfragment-ver-DBC507E012E2A775149FD09196030D3D.js" nonce="Alq-La_bMcUD3_jYxoisMHHl"></script>
+<link rel="stylesheet" type="text/css" href="css/theme_om/jquery-ui.min.css" nonce="Alq-La_bMcUD3_jYxoisMHHl" />
+<link rel="stylesheet" type="text/css" href="css/theme.min.css" nonce="Alq-La_bMcUD3_jYxoisMHHl" />
+<link rel="stylesheet" type="text/css" href="./wicket/resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/font-awesome/7.1.0/css/all-ver-2A16261AD0706F6F7FBF4CB04E487611.css" nonce="Alq-La_bMcUD3_jYxoisMHHl" />
+<script type="text/javascript" src="./wicket/resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="Alq-La_bMcUD3_jYxoisMHHl"></script>
+<script type="text/javascript" id="bootstrap-js" src="./wicket/resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="Alq-La_bMcUD3_jYxoisMHHl"></script>
+<script type="text/javascript" nonce="Alq-La_bMcUD3_jYxoisMHHl">
+/*<![CDATA[*/
+Wicket.Event.add(window, "domready", function(event) { 
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-signin-signin-credentials-forget","c":"id1","e":"click","pd":true});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-signin-signin-submit","m":"POST","c":"id3","f":"id2","sc":"p::submit","e":"click","pd":true});;
+Wicket.Event.add('id2', 'keypress', function(event) { if (event.target.tagName.toLowerCase() !== 'input' || event.which != 13) return;var b = document.getElementById('id3');if (window.getComputedStyle(b).visibility === 'hidden') return;event.stopPropagation();event.preventDefault();if (b != null && b.onclick != null && typeof (b.onclick) != 'undefined') {var r = Wicket.bind(b.onclick, b)();if (r != false) b.click();} else {b.click();}return false;;});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-signin-dialog-footer-buttons-0-button","m":"POST","c":"id4","f":"id2","sc":"signin:dialog:footer:buttons:0:button","bsh":[function(attrs, jqXHR, settings){var $this = jQuery('#'+attrs.c); var l = Ladda.create($this[0]); l.start(); $this.data('ladda', l)}],"coh":[function(attrs, jqXHR, textStatus){var $this = jQuery('#'+attrs.c); var l = $this.data('ladda'); if (l) {l.stop(); $this.removeData('ladda');}}],"e":"click","pd":true});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-signin-dialog-footer-buttons-1-button","c":"id5","e":"click","pd":true});;
+new bootstrap.Modal(document.getElementById('signin-dialog')).show();;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-register-form-captcha-refresh","c":"id6","e":"click","pd":true});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-register-form-submit","m":"POST","c":"id8","f":"id7","sc":"p::submit","e":"click","pd":true});;
+Wicket.Event.add('id7', 'keypress', function(event) { if (event.target.tagName.toLowerCase() !== 'input' || event.which != 13) return;var b = document.getElementById('id8');if (window.getComputedStyle(b).visibility === 'hidden') return;event.stopPropagation();event.preventDefault();if (b != null && b.onclick != null && typeof (b.onclick) != 'undefined') {var r = Wicket.bind(b.onclick, b)();if (r != false) b.click();} else {b.click();}return false;;});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-register-dialog-footer-buttons-0-button","m":"POST","c":"id9","f":"id7","sc":"register:dialog:footer:buttons:0:button","bsh":[function(attrs, jqXHR, settings){var $this = jQuery('#'+attrs.c); var l = Ladda.create($this[0]); l.start(); $this.data('ladda', l)}],"coh":[function(attrs, jqXHR, textStatus){var $this = jQuery('#'+attrs.c); var l = $this.data('ladda'); if (l) {l.stop(); $this.removeData('ladda');}}],"e":"click","pd":true});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-register-dialog-footer-buttons-1-button","c":"ida","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('register-dialog')).hide();}],"e":"click","pd":true});;
+new bootstrap.Modal(document.getElementById('register-dialog'));;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-register","c":"register-dialog","e":"hidden.bs.modal"});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-forget-form-captcha-refresh","c":"idb","e":"click","pd":true});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-forget-form-type","m":"POST","c":"idc","sr":true,"pre":[function(attrs){return attrs.event.target.name === 'type'}],"e":"change"});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-forget-form-submit","m":"POST","c":"ide","f":"idd","sc":"p::submit","e":"click","pd":true});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-forget-dialog-footer-buttons-0-button","m":"POST","c":"idf","f":"idd","sc":"forget:dialog:footer:buttons:0:button","e":"click","pd":true});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-forget-dialog-footer-buttons-1-button","c":"id10","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('forget-dialog')).hide();}],"e":"click","pd":true});;
+new bootstrap.Modal(document.getElementById('forget-dialog'));;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-forget","c":"forget-dialog","e":"hidden.bs.modal"});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-forgetInfo-dialog-footer-buttons-0-button","c":"id12","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id11')).hide();}],"e":"click","pd":true});;
+new bootstrap.Modal(document.getElementById('id11'));;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-forgetInfo","c":"id11","e":"hidden.bs.modal"});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-registerInfo-dialog-footer-buttons-0-button","c":"id14","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id13')).hide();}],"e":"click","pd":true});;
+new bootstrap.Modal(document.getElementById('id13'));;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-registerInfo","c":"id13","e":"hidden.bs.modal"});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-otpDialog-form-type","m":"POST","c":"id15","sr":true,"pre":[function(attrs){return attrs.event.target.name === 'type'}],"e":"change"});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-otpDialog-form-submit","m":"POST","c":"id17","f":"id16","sc":"p::submit","e":"click","pd":true});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-otpDialog-dialog-footer-buttons-0-button","m":"POST","c":"id18","f":"id16","sc":"otpDialog:dialog:footer:buttons:0:button","bsh":[function(attrs, jqXHR, settings){var $this = jQuery('#'+attrs.c); var l = Ladda.create($this[0]); l.start(); $this.data('ladda', l)}],"coh":[function(attrs, jqXHR, textStatus){var $this = jQuery('#'+attrs.c); var l = $this.data('ladda'); if (l) {l.stop(); $this.removeData('ladda');}}],"e":"click","pd":true});;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-otpDialog-dialog-footer-buttons-1-button","c":"id19","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('otp-dialog')).hide();}],"e":"click","pd":true});;
+new bootstrap.Modal(document.getElementById('otp-dialog'));;
+Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-otpDialog","c":"otp-dialog","e":"hidden.bs.modal"});;
+$('#signin-dialog, #register-dialog, #forget-dialog').on('shown.bs.modal', function () {
+	$(this).find('.auto-focus').trigger('focus');
+})
+;
+try{if (window.UrlUtil === undefined) {window.UrlUtil = newUrlUtil({"keyValueDelimiter":"/","fragmentIdentifierSuffix":""});UrlUtil.setWicketAjaxCall(function(){var attrs = {"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-","dep":[function(attrs){return window.UrlUtil.joinQueryAndFragment();}]};
+var params = [];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+});$(window).bind('hashchange',window.UrlUtil.back);window.UrlUtil.sendUrlParameters();}}catch(e){};
+Wicket.Event.publish(Wicket.Event.Topic.AJAX_HANDLERS_BOUND);
+;});
+/*]]>*/
+</script>
+<script type="text/javascript" nonce="Alq-La_bMcUD3_jYxoisMHHl">
+/*<![CDATA[*/
+Wicket.Event.add(window, "load", function(event) { 
+Wicket.Timer.set('signin-dialog.0', function(){Wicket.Ajax.ajax({"u":"./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.0-signin","c":"signin-dialog","dep":[function(attrs){return Wicket.BrowserInfo.collect()}]});}, 50);;
+;});
+/*]]>*/
+</script>
+<meta name="wicket.header.items"/>
+	<title>OpenMeetings</title>
+	<link rel="stylesheet" type="text/css" href="css/custom.css" nonce="Alq-La_bMcUD3_jYxoisMHHl" />
+
+</head>
+<body class="om-body">
+	<div id="id1a" hidden="" data-wicket-placeholder=""></div>
+	<div id="header">
+	<span class="logo position-absolute start-0 top-0"></span>
+	<span>OpenMeetings</span>
+</div>
+	
+	<div id="signin-dialog" class="modal fade" data-bs-keyboard="false" data-bs-focus="true" data-bs-backdrop="static" role="dialog" aria-labelledby="id1b" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id1b">Login</h4>
+                        
+                    </div>
+                    <div class="modal-body">
+                        
+	<form class="signin" id="id2" method="post" action="./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.-signin-signin"><div id="id2_hf_0" hidden="" class="hidden-fields"></div>
+		<div>
+			<div class="input-group mb-1 g-0">
+				<span class="input-group-text"><i class="fa fa-user"></i></span>
+				<input class="form-control auto-focus" type="text" value="" name="credentials:login" placeholder="Username or mail address" title="Username or mail address"/>
+			</div>
+			<div class="input-group mb-1 g-0">
+				<span class="input-group-text"><i class="fa fa-lock"></i></span>
+				<input class="form-control" type="password" value="" name="credentials:pass" placeholder="Password" title="Password"/>
+			</div>
+			
+			<div class="row mb-1 g-0">
+				<div class="col-6">
+					<div class="form-check">
+						<input type="checkbox" class="form-check-input" name="credentials:rememberMe" id="id1c"/>
+						<label class="form-check-label" id="id1c-w-lbl" for="id1c">Remember login</label>
+					</div>
+				</div>
+				<div class="col-5">
+					<a class="text-primary" id="id1" href="#">Forgotten your password?</a>
+				</div>
+			</div>
+		</div>
+		
+		<div class="error" id="id1d">
+            
+        </div>
+		<div class="row g-0">
+			<div class="col-6"><a class="text-primary" target="_blank" rel="noopener noreferrer" href="./privacy;jsessionid=168513F20808466AFED83C420C107B85">privacy statement</a></div>
+			<div class="col-5"><a class="text-primary" target="_blank" rel="noopener noreferrer" href="./hash?app=network">Network testing</a></div>
+		</div>
+		<input type="submit" hidden="hidden" name="p::submit" id="id3"/>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="signin:dialog:footer:buttons:0:button" id="id4" class="btn btn-outline-primary ladda-button" data-style="spinner-border" data-spinner-small="true">
+            Sign in
+        </button>
+                        
+                            <button type="button" id="id5" class="btn  btn-outline-secondary">
+            Not a member?
+        </button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="register-dialog" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id1e" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id1e">Sign up</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id1f"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form id="id7" method="post" action="./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.-register-form"><div id="id7_hf_0" hidden="" class="hidden-fields"></div>
+		<div class="row mb-1 g-0">
+			<div class="col-6">
+				<div class="input-group">
+					<span class="input-group-text"><i class="fa fa-user"></i></span>
+					<input class="form-control auto-focus" type="text" value="" name="firstName" placeholder="First name"/>
+				</div>
+			</div>
+			<div class="col-6">
+				<div class="input-group">
+					<span class="input-group-text"><i class="fa fa-user"></i></span>
+					<input class="form-control" type="text" value="" name="lastName" placeholder="Last name"/>
+				</div>
+			</div>
+		</div>
+		<div class="row mb-1 g-0">
+			<div class="col-6">
+				<div class="input-group">
+					<span class="input-group-text"><i class="fa fa-user"></i></span>
+					<input class="form-control" type="text" value="" name="login" placeholder="Username" minlength="4"/>
+				</div>
+			</div>
+			<div class="col-6">
+				<div class="input-group">
+					<span class="input-group-text"><i class="fas fa-envelope"></i></span>
+					<input class="form-control" type="email" value="" name="email" placeholder="Email address"/>
+				</div>
+			</div>
+		</div>
+		<div class="row mb-1 g-0">
+			<div class="col-6">
+				<div class="input-group">
+					<span class="input-group-text"><i class="fa fa-lock"></i></span>
+					<input class="form-control" type="password" value="" name="password" placeholder="Password"/>
+				</div>
+			</div>
+			<div class="col-6">
+				<div class="input-group">
+					<span class="input-group-text"><i class="fa fa-lock"></i></span>
+					<input class="form-control" type="password" value="" name="confirmPassword" placeholder="Re-enter password"/>
+				</div>
+			</div>
+		</div>
+		<div class="row mb-1 g-0">
+			<div class="col-12 centered" id="id20">
+	<div class="col-6 d-inline-block">
+		<input type="text" class="captcha-text form-control" value="" name="captcha:captchaText" id="id21" title="Captcha text" placeholder="Only capital Latin letters A-Z"/>
+	</div>
+	<img class="captcha-img" id="id22" src="./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0--register-form-captcha-captcha"/>
+	<button id="id6" type="button" alt="Refresh" title="Refresh" class="btn  btn-outline-info">
+            <i class="fa-solid fa-rotate"></i>&nbsp;Refresh
+        </button>
+</div>
+		</div>
+		<div class="error" id="id23">
+            
+        </div>
+		<input type="submit" hidden="hidden" name="p::submit" id="id8"/>
+	</form>
+	<div>
+		By clicking "Register", you agree to our <a target="_blank" href="./privacy;jsessionid=168513F20808466AFED83C420C107B85">privacy statement</a>.
+	</div>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="register:dialog:footer:buttons:0:button" id="id9" class="btn btn-outline-primary ladda-button" data-style="spinner-border" data-spinner-small="true">
+            Register
+        </button>
+                        
+                            <button type="button" id="ida" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="id13" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id24" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id24">Registration complete</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id25"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+            <div id="id26">You have successfully signed up. An email with a verification code will be sent to your mailbox.</div>
+        
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id14" data-bs-dismiss="modal" class="btn  btn-outline-secondary">OK</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="forget-dialog" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id27" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id27">Reset password</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id28"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form class="signin-forget" id="idd" method="post" action="./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.-forget-form"><div id="idd_hf_0" hidden="" class="hidden-fields"></div>
+		<div class="row mb-1 ms-2 me-2 g-0" id="idc">
+			<div class="col-6">
+				<div class="form-check form-check-inline">
+					<label class="form-check-label" id="id29-w-lbl" for="id29">Using email address</label>
+					<input class="form-check-input" type="radio" id="id29" name="type" value="radio0" checked="checked"/>
+				</div>
+			</div>
+			<div class="col-5">
+				<div class="form-check form-check-inline">
+					<label class="form-check-label" id="id2a-w-lbl" for="id2a">Using login</label>
+					<input class="form-check-input" type="radio" id="id2a" name="type" value="radio1"/>
+				</div>
+			</div>
+		</div>
+		<div class="input-group mb-1 g-0">
+			<span class="input-group-text"><i class="fa fa-at" id="id2b"></i></span>
+			<input class="form-control auto-focus" type="email" value="" name="p::name" id="id2c" title="Your email address" placeholder="Your email address"/>
+		</div>
+		<div class="row mb-1 g-0">
+			<div class="col-12 centered" id="id2d">
+	<div class="col-6 d-inline-block">
+		<input type="text" class="captcha-text form-control" value="" name="captcha:captchaText" id="id2e" title="Captcha text" placeholder="Only capital Latin letters A-Z"/>
+	</div>
+	<img class="captcha-img" id="id2f" src="./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0--forget-form-captcha-captcha"/>
+	<button id="idb" type="button" alt="Refresh" title="Refresh" class="btn  btn-outline-info">
+            <i class="fa-solid fa-rotate"></i>&nbsp;Refresh
+        </button>
+</div>
+		</div>
+		<div id="id30">
+            
+        </div>
+		<input type="submit" hidden="hidden" name="p::submit" id="ide"/>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="forget:dialog:footer:buttons:0:button" id="idf" class="btn  btn-outline-primary">
+            Send email with a reset link
+        </button>
+                        
+                            <button type="button" id="id10" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="id11" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id31" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id31">Reset password</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id32"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+            <div>The email containing a special link has been sent to the email address, registered to the user corresponding to the data entered</div>
+        
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id12" data-bs-dismiss="modal" class="btn  btn-outline-secondary">OK</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="id33" hidden="" data-wicket-placeholder=""></div>
+	<div id="otp-dialog" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id34" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id34">One Time Password</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id35"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form class="signin-forget" id="id16" method="post" action="./wicket/bookmarkable/org.apache.openmeetings.web.pages.auth.SignInPage;jsessionid=168513F20808466AFED83C420C107B85?0-1.-otpDialog-form"><div id="id16_hf_0" hidden="" class="hidden-fields"></div>
+		<div class="row mb-1 ms-2 me-2 g-0" id="id15">
+			<div class="col-6">
+				<div class="form-check form-check-inline">
+					<label class="form-check-label" id="id36-w-lbl" for="id36">One Time Password</label>
+					<input class="form-check-input" type="radio" id="id36" name="type" value="radio2" checked="checked"/>
+				</div>
+			</div>
+			<div class="col-5">
+				<div class="form-check form-check-inline">
+					<label class="form-check-label" id="id37-w-lbl" for="id37">Recovery code</label>
+					<input class="form-check-input" type="radio" id="id37" name="type" value="radio3"/>
+				</div>
+			</div>
+		</div>
+		<div class="input-group mb-1 g-0" id="id38">
+			<span class="input-group-text"><i class="fa fa-key"></i></span>
+			<input class="form-control auto-focus" type="number" value="" maxlength="6" name="otp-block:otp"/>
+		</div>
+		<div class="input-group mb-1 g-0" id="id39">
+			<span class="input-group-text"><i class="fa fa-key"></i></span>
+			<input class="form-control auto-focus" type="text" value="" name="fallback-block:fallback"/>
+		</div>
+		<div id="id3a">
+            
+        </div>
+		<input type="submit" hidden="hidden" name="p::submit" id="id17"/>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="otpDialog:dialog:footer:buttons:0:button" id="id18" class="btn btn-outline-primary ladda-button" data-style="spinner-border" data-spinner-small="true">
+            OK
+        </button>
+                        
+                            <button type="button" id="id19" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+	<div id="alert-holder" class="position-fixed bottom-0 end-0 mx-3" data-lbl-close="Close"></div>
+</body>
+</html>

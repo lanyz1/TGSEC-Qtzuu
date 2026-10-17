@@ -1,0 +1,16 @@
+# Core Packages
+colorama==0.4.4
+requests==2.26.0
+dnspython==2.2.1
+tldextract==3.3.1
+
+# Additional Functionality
+ratelimit==2.2.1
+rich==12.5.1
+pandas==1.3.3
+
+# Security
+urllib3==1.26.12
+
+# Proxy support for the raw WHOIS socket (not just HTTP lookups)
+PySocks==1.7.1

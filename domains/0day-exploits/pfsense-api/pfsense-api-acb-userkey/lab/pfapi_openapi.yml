@@ -1,0 +1,83 @@
+# Pin excerpt of pfapi_openapi.yml
+# github.com/Netgate/pfsense-api b4acd7ca21dbca739a530403a1f62a7440f7726f
+# Apache-2.0. Host-side prove() parses this text. No securitySchemes in the pin YAML.
+  /services/acb:
+    get:
+      tags:
+        - services
+      summary: List backups
+      description: ""
+      operationId: GetACBList
+      parameters:
+        - in: query
+          name: userkey
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACBList'
+        '400':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /services/acb/backup:
+    post:
+      tags:
+        - services
+      summary: Perform a backup
+      description: ""
+      operationId: BackupACB
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ACBManualBackupRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+        '400':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /services/acb/bkp:
+    get:
+      tags:
+        - services
+      summary: Retrieve backup
+      description: ""
+      operationId: GetACB
+      parameters:
+        - in: query
+          name: userkey
+          schema:
+            type: string
+        - in: query
+          name: revision
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrievedBackup'
+        '400':
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

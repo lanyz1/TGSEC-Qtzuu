@@ -1,0 +1,2 @@
+#!/bin/sh
+printf '%s\n' 'PFSENSE-GW-IPV6-ZONE-WITNESS' > /oracle/PFSENSE-GW-IPV6-ZONE-WITNESS

@@ -1,0 +1,36 @@
+#!/bin/sh
+# Lab stub for pin /usr/bin/su -m unbound -c "...". Run the -c string.
+PATH="/lab/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export PATH
+user=""
+cmd=""
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-c)
+			shift
+			cmd="$1"
+			shift
+			;;
+		-m|-p|-l|-)
+			shift
+			;;
+		-*)
+			shift
+			;;
+		*)
+			if [ -z "$user" ]; then
+				user="$1"
+			fi
+			shift
+			;;
+	esac
+done
+{
+	printf 'user=%s\n' "$user"
+	printf -- '-c=%s\n' "$cmd"
+} >> /oracle/su.log
+if [ -n "$cmd" ]; then
+	/bin/sh -c "$cmd"
+	exit $?
+fi
+exit 0

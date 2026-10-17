@@ -1,0 +1,2 @@
+#!/bin/sh
+printf '%s\n' 'PFSENSE-SSHGUARD-CRLF-WITNESS' > /oracle/PFSENSE-SSHGUARD-CRLF-WITNESS

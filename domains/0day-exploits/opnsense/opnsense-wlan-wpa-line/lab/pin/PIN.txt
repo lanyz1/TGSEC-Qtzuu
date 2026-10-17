@@ -1,0 +1,7 @@
+product=OPNsense core
+tag=26.7.6
+sha=a842fe48c21288d11a422cb944678e8eb308becf
+file=src/etc/inc/interfaces.inc
+function=interfaces_wlan_configure
+sink=identity="{$wlcfg['wpa']['identity']}"
+conf=/var/etc/wpa_supplicant_{device}.conf

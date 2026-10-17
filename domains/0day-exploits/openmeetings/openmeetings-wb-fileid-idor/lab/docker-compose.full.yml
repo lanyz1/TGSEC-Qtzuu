@@ -1,0 +1,6 @@
+services:
+  openmeetings:
+    image: apache/openmeetings:9.1.0
+    environment:
+      OM_TYPE: full
+      JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64

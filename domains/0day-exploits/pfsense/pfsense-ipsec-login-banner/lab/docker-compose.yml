@@ -1,0 +1,21 @@
+name: pfsense-ipsec-login-banner
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+      - SYS_MODULE
+    ports:
+      - "127.0.0.1:18850:18850"
+    volumes:
+      - ./work:/work
+      - ./gadget.php:/lab/gadget.php:ro
+      - ./apply.py:/lab/apply.py:ro

@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-shield-alt"></i> Administration</h1>
+    </div>
+
+    <div class="dashboard-card">
+        <h3><i class="fas fa-cog"></i> System Settings</h3>
+        <div id="settings-container">
+            <p>Loading settings...</p>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <h3><i class="fas fa-key"></i> API Keys & Secrets</h3>
+        <div id="keys-container">
+            <p>Loading API keys...</p>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <h3><i class="fas fa-users"></i> All Users Data</h3>
+        <div id="users-data-container">
+            <p>Loading users data...</p>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <h3><i class="fas fa-users"></i> User Management</h3>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td><span class="badge badge-{{ 'admin' if user.role == 'admin' else 'user' }}">{{ user.role }}</span></td>
+                            <td>
+                                <a href="{{ url_for('profile', user_id=user.id) }}" class="btn-small">View</a>
+                                <a href="/api/user/{{ user.id }}" class="btn-small" target="_blank">API</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Admin panel automatically fetches data from API endpoints
+// These requests will be visible in network traffic when intercepted
+
+// Fetch admin settings
+fetch('/api/admin/settings')
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('settings-container');
+        if (data.length > 0) {
+            let html = '<div class="settings-list">';
+            data.forEach(setting => {
+                html += `<div class="setting-item">
+                    <strong>${setting.setting_key}:</strong>
+                    <span>${setting.setting_value}</span>
+                </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p>No settings found.</p>';
+        }
+    })
+    .catch(error => {
+        document.getElementById('settings-container').innerHTML = '<p class="text-danger">Error loading settings.</p>';
+    });
+
+// Fetch API keys
+fetch('/api/admin/keys')
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('keys-container');
+        let html = '<div class="settings-list">';
+        
+        if (data.admin_api_keys && data.admin_api_keys.length > 0) {
+            html += '<h4>Admin API Keys</h4>';
+            data.admin_api_keys.forEach(key => {
+                html += `<div class="setting-item">
+                    <strong>${key.setting_key}:</strong>
+                    <span style="font-family: monospace; color: #48bb78;">${key.setting_value}</span>
+                </div>`;
+            });
+        }
+        
+        if (data.organization_keys && data.organization_keys.length > 0) {
+            html += '<h4 style="margin-top: 1rem;">Organization API Keys</h4>';
+            data.organization_keys.forEach(org => {
+                html += `<div class="setting-item">
+                    <strong>${org.org_name}:</strong>
+                    <div style="margin-left: 1rem;">
+                        <div><strong>API Key:</strong> <span style="font-family: monospace; color: #48bb78;">${org.api_key}</span></div>
+                        <div><strong>Secret Token:</strong> <span style="font-family: monospace; color: #48bb78;">${org.secret_token}</span></div>
+                    </div>
+                </div>`;
+            });
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+    })
+    .catch(error => {
+        document.getElementById('keys-container').innerHTML = '<p class="text-danger">Error loading API keys.</p>';
+    });
+
+// Fetch all users data
+fetch('/api/admin/users/all')
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('users-data-container');
+        if (data.users && data.users.length > 0) {
+            let html = '<div class="table-responsive"><table class="data-table"><thead><tr><th>User ID</th><th>Username</th><th>Email</th><th>Role</th><th>Data</th></tr></thead><tbody>';
+            data.users.forEach(userEntry => {
+                const user = userEntry.user;
+                const userData = userEntry.data;
+                html += `<tr>
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td><span class="badge badge-${user.role === 'admin' ? 'admin' : 'user'}">${user.role}</span></td>
+                    <td>`;
+                if (userData && userData.length > 0) {
+                    userData.forEach(data => {
+                        html += `<div><strong>${data.data_key}:</strong> ${data.data_value}</div>`;
+                    });
+                } else {
+                    html += '<span class="text-muted">No data</span>';
+                }
+                html += `</td></tr>`;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<p>No users data found.</p>';
+        }
+    })
+    .catch(error => {
+        document.getElementById('users-data-container').innerHTML = '<p class="text-danger">Error loading users data.</p>';
+    });
+</script>
+{% endblock %}
+

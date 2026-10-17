@@ -1,5 +1,6 @@
 # TGSEC-Qtzuu · 安全知识聚合库
 
+- 2026-10-17：**abraxas 增量批 — 外部 83 仓 + 工具/研究卡** — **83 新包入库**（**pfSense CE×44**（CRLF/uid0 文件写/SQLi/RCE 系 · **111228 已被 VulnCheck 收录**）· OpenMeetings×10 · pfSense-API×9 · Spark×9 · OPNsense×7 · vsftpd×3 · tomcat+1）+ **3 研究卡**（Atlassian **21589** 预认证任意文件读 **9.3**（8 DC 产品 · PoC×4）· Telegram Desktop **107181** IPC 注入盗 tdata · WP Profile Builder **15826** 类型混淆建超管 **9.8**）+ **nextjs 55182**（React2Shell 扫描器+靶场）+ **工具/词表/靶场 ×26**（Web-Fuzzing-Box · ClatScope · HUNT · keyhunter · CloudRip · bypass-403 · ffufai · XNLDorker · JS-Analyser · 7 靶场 …）。**署名清理归零**。详见 [UPDATE-2026-10-17.md](docs/updates/UPDATE-2026-10-17.md)
 - 2026-10-12：**0day 批 — 外部 158 仓差分吸收** — 全量对账 0day 库后 **145 包入库**：SQLite×14（rsync 命令注入 8.8）· WordPress×13（JetFormBuilder 提权 9.8）· phpMyAdmin×10 · CakePHP×9 · gitea×8 · mysql×6 · VFS for Git×6 · joomla×5 · Drupal/Moodle/Forgejo/Nextcloud 各×4 … + **AnyDesk AnyPwn**（pre-auth 堆溢出 → root RCE，TCP/7070）+ 工具/研究件（veneficus 植入物审计 · ShieldCrash · Chrome ABE 解密器 · Atlas · GateX · mithril · Fortigate kit）+ 方法论提炼（闭环验证打分器 / 确定性 DAG 台账）。**署名/来源标识全批剥离归零**。详见 [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)
 - 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → **14 案**：r4z.lol 帝国 ROOT（BillionMail→iptables→chroot host_root）· 包网 GVA→AWS 账号级（EC2 Instance Connect ×28）· SUNNIC 杀猪盘（审核流 CSRF）· kachiho 密码预言机 · PrimeTools（EIP-7702 Vault）· Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 案卷）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
 - 2026-10-06：**K 批 X 博主吸收** — @luckyhacker43/@Zerodaylabowner/@ethical_h4ck3r_/@n0aziXss 评估 → **6 卡 + 2 补强**：OOBdump FR30（零泄漏单发穿 ASLR/PIE/堆硬化）· Mozilla VPN RCE（$6k）· GraphQL→ES Painless（$7k）· App Insights 连接串链 · CodeIgniter 空 where 绕过 · 盲 RCE sleep 预言机；文件名绕过 V2 / Cuneiform payload。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
@@ -16,11 +17,15 @@
 **👉 完全零基础：只看 [`START.md`](START.md)（3 步）**  
 **👉 AI 查「说了啥去哪个目录」：[`ROUTING.md`](ROUTING.md)**  
 **👉 全部主题地图：[`MASTER.md`](MASTER.md)**  
-**👉 本轮更新说明：见下方 §十 融合批次（2026-10-12 0day 批）· 详情 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md)
+**👉 本轮更新说明：见下方 §十 融合批次（2026-10-17 abraxas 增量批）· 详情 [`UPDATE-2026-10-17.md`](docs/updates/UPDATE-2026-10-17.md)
 
 ---
 
-## 〇、本轮更新了什么（2026-10-12）
+## 〇、本轮更新了什么（2026-10-17）
+
+### abraxas 增量批 — 外部 83 仓 + 工具/研究卡（2026-10-17）
+
+83 个真新包（产品级全 MISS）全量入库：**pfSense CE×44**（CRLF 注入 / uid0 文件写 / SQLi / RCE 系；**CVE-2026-111228 已被 VulnCheck 收录**）· **pfSense-API×9** · **OpenMeetings 9.1×10** · **Spark 4.2.0×9** · **OPNsense 26.7.6×7** · **vsftpd 3.0.5×3** · tomcat+1。**研究卡×3**：**CVE-2026-21589**（Atlassian DC 预认证任意文件读 **9.3** · 8 产品 · PoC×4 · 公开 2 小时被全网扫）· **CVE-2026-107181**（Telegram Desktop IPC 注入 → 盗 tdata）· **CVE-2026-15826/15748**（WP Profile Builder 类型混淆 **9.8** → 超管 + 双靶场）。**nextjs CVE-2025-55182**（React2Shell：扫描器 + vuln-app）。**工具/词表/靶场 ×26**（Web-Fuzzing-Box 102MB · ClatScope · HUNT · keyhunter · CloudRip · bypass-403 · ffufai · XNLDorker · JS-Analyser · recox · CerberusX · 6 侦察工具 · 7 靶场）。**清理 344 文件 + 84 图 · 279 .py 编译 0 失败 · 复扫归零**。详见 [UPDATE-2026-10-17.md](docs/updates/UPDATE-2026-10-17.md)
 
 ### 0day 批 — 外部 158 仓差分吸收（2026-10-12）
 
@@ -409,6 +414,15 @@ bash scripts/install-tools.sh        # 按清单补工具
 
 ## 十、融合批次
 
+### 2026-10-17
+
+- **abraxas 增量批 — 外部 83 仓 + 工具/研究卡**：241 仓逐仓对账 → **83 真新包全量入库**：**pfSense CE×44**（CRLF/XSS/uid0 文件写/SQLi/RCE；**111228 已被 VulnCheck 收录**）· pfSense-API×9 · OpenMeetings×10 · Spark×9 · OPNsense×7 · vsftpd×3 · tomcat+1
+- **研究卡 ×3（新产品线）**：**CVE-2026-21589** Atlassian DC 预认证任意文件读 **9.3**（8 产品 · watchtowr/tc4dy/marcus/AtlasSniper 四 PoC）→ `0day-exploits/atlassian/` · **CVE-2026-107181** TG Desktop IPC 记录分隔符注入盗 tdata → `0day-exploits/telegram-desktop/` · **CVE-2026-15826/15748** WP Profile Builder 类型混淆 **9.8** 建超管（双靶场）→ `0day-exploits/wordpress/`
+- **nextjs 补强**：**CVE-2025-55182**（React2Shell 根 CVE）advanced-scanner + vuln-app → `0day-exploits/nextjs/`
+- **工具 / 词表 / 靶场 ×26**：`recon/wordlists/`（Web-Fuzzing-Box 102MB · BugBounty_Wordlists · DorkVault）· `recon/tools/` +16（CerberusX · Domain/Net/Origin/Port/Secure_Crawl/SubSpectre · JS-Analyser · recox · keyhunter · CloudRip · bypass-403 · ffufai · XNLDorker · HUNT · ClatScope）· `web-attack/labs/` +7 靶场
+- **署名/来源清仓（硬口径）**：344 文件 + 84 图片剥离（横幅/联系/社交/人物 handle；文件名归一）；**复扫 0 命中**；279 个 .py 编译 0 失败；修复上游损坏 app.py ×1；guard 白名单 +7 路径
+- 完整账本：[`INGEST-20261017-INDEX.md`](domains/0day-exploits/INGEST-20261017-INDEX.md) · 详情 [`UPDATE-2026-10-17.md`](docs/updates/UPDATE-2026-10-17.md)
+
 ### 2026-10-12
 
 - **0day 批 — 外部 158 仓差分吸收**：全量对账后 **145 包全量入库**（0day-exploits 136 · windows-post 5 · ad-attack 1 · reverse-engineering 2 · recon/tools 1）：**SQLite×14**（sqlite3_rsync 命令注入 RCE CVSS 8.8 · FTS5/rtree/CTE 系）· **WordPress×13**（JetFormBuilder 提权 9.8 · SMS-OTP · Tickera · Gravity Forms · Elementor …）· **phpMyAdmin×10** · **CakePHP×9** · **gitea×8** · **mysql×6 / VFS for Git×6** · **joomla×5** · Drupal / Moodle / Forgejo / Nextcloud 各×4 · 单包线 sudo **96512** · tomcat **86350** · strapi **22599** · openproject **52782** · linux-kernel **38502**（BPF LPE）· magento **48356** …
@@ -536,7 +550,7 @@ cd ~/security-suite && git pull
 bash scripts/bootstrap.sh --force    # 或 sync-agent-skills / sync-hermes-skills
 ```
 
-**更新说明文件：** `docs/updates/UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md)）。自述首页「〇、本轮更新了什么」+ 第十节融合批次同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
+**更新说明文件：** `docs/updates/UPDATE-YYYY-MM-DD.md`（最新：[`UPDATE-2026-10-17.md`](docs/updates/UPDATE-2026-10-17.md)）。自述首页「〇、本轮更新了什么」+ 第十节融合批次同步摘要；细节只维护 UPDATE 文件，避免 README 膨胀。
 
 ---
 

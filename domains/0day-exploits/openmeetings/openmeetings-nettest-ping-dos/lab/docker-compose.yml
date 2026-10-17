@@ -1,0 +1,63 @@
+name: om-g4-nettest
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.57.4.0/24
+
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_ROOT_PASSWORD: "12345"
+      MARIADB_DATABASE: openmeetings
+      MARIADB_USER: om_admin
+      MARIADB_PASSWORD: "12345"
+    command:
+      - --innodb-buffer-pool-size=128M
+      - --performance-schema=OFF
+      - --skip-name-resolve
+    tmpfs:
+      - /var/lib/mysql:rw,noexec,nosuid,nodev,size=512m
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    mem_limit: 512m
+    restart: "no"
+
+  openmeetings:
+    image: om-g4-nettest:min-9.1.0-jre
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+    platform: linux/amd64
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      OM_TYPE: min
+      OM_DB_TYPE: mysql
+      OM_DB_HOST: db
+      OM_DB_PORT: "3306"
+      OM_DB_NAME: openmeetings
+      OM_DB_USER: om_admin
+      OM_DB_PASS: "12345"
+      OM_USER: om_admin
+      OM_PASS: "1Q2w3e4r5t^y"
+      OM_KURENTO_WS_URL: "ws://127.0.0.1:8888/kurento"
+      SERVER_TZ: UTC
+    ports:
+      - "127.0.0.1:18153:5443"
+    volumes:
+      - ./entrypoint.sh:/opt/lab-entrypoint.sh:ro
+    entrypoint: ["bash", "/opt/lab-entrypoint.sh"]
+    mem_limit: 2g
+    labels:
+      lab: OPENMEETINGS-NETTEST-PING
+    restart: "no"

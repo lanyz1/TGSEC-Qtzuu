@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  keyhunter:
+    build: .
+    container_name: keyhunter
+    volumes:
+      - ./config.toml:/app/config.toml:ro
+      - ./results:/app/results
+    working_dir: /app
+    # Override command as needed:
+    # command: ["scan", "-p", "openai"]
+    # command: ["scan", "-p", "openai", "-v"]
+    # command: ["patterns"]

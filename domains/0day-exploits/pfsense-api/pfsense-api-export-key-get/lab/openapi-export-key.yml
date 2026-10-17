@@ -1,0 +1,71 @@
+# Excerpt from github.com/Netgate/pfsense-api
+# pin b4acd7ca21dbca739a530403a1f62a7440f7726f (pfapi_openapi.yml).
+# Public-client contract lab only. Not the full spec.
+openapi: 3.0.3
+info:
+  title: pfSense API
+  version: "1.0"
+paths:
+  /system/certauth/{refid}/export-key:
+    parameters:
+      - in: path
+        name: refid
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - system
+      summary: Download the CA certificate signing key
+      description: ""
+      operationId: DownloadCAKey
+      responses:
+        "200":
+          description: ok
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /system/certificates/{refid}/export-key:
+    parameters:
+      - in: path
+        name: refid
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - system
+      summary: Download the certificate's private key
+      description: ""
+      operationId: GetCertKey
+      responses:
+        "200":
+          description: ok
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /system/certificates/{refid}/export-p12:
+    parameters:
+      - in: path
+        name: refid
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - system
+      summary: Download the certificate and key as a unified PKCS12 file, without password protection
+      description: ""
+      operationId: GetCertP12
+      responses:
+        "200":
+          description: ok
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary

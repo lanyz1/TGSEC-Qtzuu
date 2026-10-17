@@ -1,0 +1,15 @@
+name: vsftpd-deny-file-brace-child
+
+services:
+  vsftpd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vsftpd-deny-file-brace-child:3.0.5
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:18710:21"
+      - "127.0.0.1:18711-18718:18711-18718"
+    volumes:
+      - ./vsftpd.conf:/etc/vsftpd.conf:ro

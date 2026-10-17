@@ -1,0 +1,15 @@
+name: pfsense-vlan-parent-ioctl
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19290:19290"
+    environment:
+      PATH: /lab/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    labels:
+      lab: pfsense-vlan-parent-ioctl

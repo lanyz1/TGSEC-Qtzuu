@@ -1,0 +1,22 @@
+name: spark-history-zip-symlink
+
+services:
+  history:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: spark-history-zip-symlink:lab
+    init: true
+    restart: "no"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      BIND_HOST: "0.0.0.0"
+      BIND_PORT: "18080"
+      LOG_DIR: "/tmp/spark-events"
+      SECRET_PATH: "/secret/host-secret"
+      APP_ID: "app-2026-0001"
+      WITNESS: "SPARK-HISTORY-ZIP-SYMLINK-WITNESS"
+    ports:
+      - "127.0.0.1:18980:18080"
+    labels:
+      lab: SPARK-HISTORY-ZIP-SYMLINK

@@ -1,0 +1,50 @@
+name: om-g12-kms
+
+# G12: official OM docker/docs publish Kurento JSON-RPC :8888 with no auth.
+# Full image (OM_TYPE=full) bundles KMS. Docs path is
+#   docker run -p 8888:8888 kurento/kurento-media-server
+# Host binds stay loopback-only.
+
+services:
+  om:
+    image: apache/openmeetings:9.1.0
+    platform: linux/amd64
+    profiles: ["full"]
+    ports:
+      - "127.0.0.1:18163:5443"
+      - "127.0.0.1:18164:8888"
+    mem_limit: 3g
+    shm_size: 256mb
+    environment:
+      OM_TYPE: full
+    labels:
+      lab: OPENMEETINGS-KMS-UNAUTH
+    restart: "no"
+
+  kms:
+    image: kurento/kurento-media-server:7.3.0
+    platform: linux/amd64
+    profiles: ["docs"]
+    ports:
+      - "127.0.0.1:18164:8888"
+    mem_limit: 2g
+    environment:
+      GST_DEBUG: "Kurento*:3"
+    labels:
+      lab: OPENMEETINGS-KMS-UNAUTH
+    restart: "no"
+
+  ommin:
+    image: apache/openmeetings:min-9.1.0
+    platform: linux/amd64
+    profiles: ["docs"]
+    ports:
+      - "127.0.0.1:18163:5443"
+    mem_limit: 1g
+    environment:
+      OM_KURENTO_WS_URL: ws://kms:8888/kurento
+    depends_on:
+      - kms
+    labels:
+      lab: OPENMEETINGS-KMS-UNAUTH
+    restart: "no"

@@ -1,0 +1,15 @@
+name: opnsense-firmware-mirror-sed
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:18860:18860"
+    volumes:
+      - ./oracle:/oracle
+    labels:
+      lab: opnsense-firmware-mirror-sed

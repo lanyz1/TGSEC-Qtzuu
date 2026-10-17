@@ -1,0 +1,51 @@
+name: spark-rest-auth-bypass
+
+services:
+  master:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: spark-rest-auth-bypass:lab
+    pull_policy: never
+    hostname: master
+    init: true
+    restart: "no"
+    environment:
+      SPARK_MASTER_HOST: master
+      SPARK_MASTER_PORT: "7077"
+      SPARK_MASTER_WEBUI_PORT: "8080"
+      SPARK_LOCAL_HOSTNAME: master
+      SPARK_CONF_DIR: /opt/spark/conf
+      SPARK_DAEMON_MEMORY: 512m
+    command: ["/opt/lab/start-master.sh"]
+    ports:
+      - "127.0.0.1:18900:6066"
+    volumes:
+      - ./oracle:/oracle
+    labels:
+      lab: spark-rest-auth-bypass
+
+  worker:
+    image: spark-rest-auth-bypass:lab
+    pull_policy: never
+    hostname: worker
+    init: true
+    restart: "no"
+    depends_on:
+      - master
+    environment:
+      SPARK_MASTER_HOST: master
+      SPARK_MASTER_PORT: "7077"
+      SPARK_WORKER_HOST: worker
+      SPARK_WORKER_WEBUI_PORT: "8081"
+      SPARK_LOCAL_HOSTNAME: worker
+      SPARK_CONF_DIR: /opt/spark/conf
+      SPARK_WORKER_MEMORY: 1g
+      SPARK_WORKER_CORES: "2"
+      SPARK_WORKER_DIR: /opt/spark/work
+      SPARK_DAEMON_MEMORY: 512m
+    command: ["/opt/lab/start-worker.sh"]
+    volumes:
+      - ./oracle:/oracle
+    labels:
+      lab: spark-rest-auth-bypass

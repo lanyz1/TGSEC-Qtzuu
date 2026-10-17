@@ -1,0 +1,14 @@
+name: opnsense-ntp-gps-fudge
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    command: ["sleep", "infinity"]
+    volumes:
+      - ./oracle:/oracle
+    labels:
+      lab: opnsense-ntp-gps-fudge

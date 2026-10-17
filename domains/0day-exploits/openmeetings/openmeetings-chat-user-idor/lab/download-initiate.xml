@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.AjaxDownload.initiate({"attributes":{"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer","c":"id59"},"name":"wicket-ajaxdownload-id59-0","downloadUrl":"./?1-.1-main~container-main-chatPanel-chat-sendForm-toolbarContainer","sameSite":"; SameSite=Lax","method":"blob"});})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></evaluate></ajax-response>

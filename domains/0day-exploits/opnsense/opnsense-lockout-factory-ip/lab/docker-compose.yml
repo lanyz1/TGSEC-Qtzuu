@@ -1,0 +1,15 @@
+name: opnsense-lockout-factory-ip
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: opnsense-lockout-factory-ip:26.7.6
+    init: true
+    restart: "no"
+    volumes:
+      - ./oracle:/oracle
+    labels:
+      lab: opnsense-lockout-factory-ip
+    command: ["sleep", "infinity"]

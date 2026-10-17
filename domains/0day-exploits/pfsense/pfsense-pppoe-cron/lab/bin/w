@@ -1,0 +1,2 @@
+#!/bin/sh
+printf '%s\n' 'PFSENSE-PPPOE-CRON-WITNESS' > /oracle/PFSENSE-PPPOE-CRON-WITNESS

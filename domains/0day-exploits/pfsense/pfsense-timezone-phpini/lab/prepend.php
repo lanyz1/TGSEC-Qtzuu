@@ -1,0 +1,5 @@
+<?php
+file_put_contents(
+	'/oracle/PFSENSE-TIMEZONE-PHPINI-WITNESS',
+	"PFSENSE-TIMEZONE-PHPINI-WITNESS\n"
+);

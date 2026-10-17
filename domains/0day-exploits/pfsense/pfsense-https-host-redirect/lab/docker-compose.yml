@@ -1,0 +1,15 @@
+name: pfsense-https-host-redirect
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19210:19210"
+    environment:
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    labels:
+      lab: pfsense-https-host-redirect

@@ -1,0 +1,45 @@
+.qodo
+
+# Python
+pycache/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scan results and outputs
+*.json
+results/
+output/
+logs/
+*.log
+reports/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.temp
+
+# User-specific
+.secrets
+.config

@@ -1,0 +1,51 @@
+name: om-g2-chat
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.57.2.0/24
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: "12345"
+      MYSQL_DATABASE: openmeetings
+      MYSQL_USER: om_admin
+      MYSQL_PASSWORD: "12345"
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uom_admin", "-p12345"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: "no"
+
+  openmeetings:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: om-g2-chat:min-9.1.0-jre
+    platform: linux/amd64
+    mem_limit: 2g
+    ports:
+      - "127.0.0.1:18151:5443"
+    environment:
+      OM_DB_TYPE: mysql
+      OM_DB_HOST: mysql
+      OM_DB_PORT: "3306"
+      OM_DB_NAME: openmeetings
+      OM_DB_USER: om_admin
+      OM_DB_PASS: "12345"
+      OM_USER: om_admin
+      OM_PASS: "1Q2w3e4r5t^y"
+      OM_KURENTO_WS_URL: "ws://127.0.0.1:8888/kurento"
+      SERVER_TZ: UTC
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"

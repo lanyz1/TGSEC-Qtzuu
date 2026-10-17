@@ -1,0 +1,14 @@
+name: opnsense-uidfield-system-uid0
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    command: ["sleep", "infinity"]
+    volumes:
+      - ./lab:/lab:ro
+    labels:
+      lab: opnsense-uidfield-system-uid0

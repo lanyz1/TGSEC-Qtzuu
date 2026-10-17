@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Course{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-graduation-cap"></i> Bug Bounty Course</h1>
+        <p>Learn advanced bug bounty hunting techniques</p>
+    </div>
+
+    <div id="course-container">
+        <div style="text-align: center; padding: 2rem;">
+            <p>Loading course content...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+let paidStatus = false;
+
+// Fetch paid status from /api/user/paid-status
+// DEFAULT: Regular users get {"paid": false}
+// VULNERABILITY: Attacker intercepts this response and changes "paid": false to "paid": true
+fetch('/api/user/paid-status')
+    .then(response => response.json())
+    .then(data => {
+        // Explicitly check - default should be false for regular users
+        // Attacker will modify response: {"paid": false} → {"paid": true}
+        paidStatus = data.paid === true;
+        console.log('Raw API response:', data);
+        console.log('Paid status (should be false for regular users):', paidStatus);
+        loadCourseContent();
+    })
+    .catch(error => {
+        console.error('Error loading paid status:', error);
+        paidStatus = false;
+        loadCourseContent();
+    });
+
+function loadCourseContent() {
+    const container = document.getElementById('course-container');
+    
+    if (!paidStatus) {
+        // User is NOT paid - show upgrade message with teaser
+        // Videos will NOT be accessible - lure them to upgrade
+        container.innerHTML = `
+            <div class="dashboard-card" style="text-align: center; max-width: 800px; margin: 2rem auto;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                    <h1 style="color: white; margin-bottom: 0.5rem;"><i class="fas fa-graduation-cap"></i> Premium Bug Bounty Course</h1>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem;">Unlock exclusive content from </p>
+                </div>
+                
+                <div style="margin: 2rem 0;">
+                    <h2 style="color: #ed8936; margin-bottom: 1rem;">
+                        <i class="fas fa-lock"></i> Upgrade to Premium to See the Course
+                    </h2>
+                    <p style="font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9;">
+                        Get instant access to premium course videos and advanced bug bounty techniques!
+                    </p>
+                </div>
+                
+                <!-- Teaser video placeholders (blurred/locked) -->
+                <div class="video-grid" style="margin: 2rem 0;">
+                    <div class="video-card" style="position: relative; opacity: 0.5;">
+                        <div class="video-embed" style="filter: blur(5px); pointer-events: none;">
+                            <div style="background: #1a202c; width: 100%; height: 315px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                <div style="text-align: center;">
+                                    <i class="fas fa-lock" style="font-size: 3rem; color: #ed8936;"></i>
+                                    <p style="margin-top: 1rem; font-size: 1.2rem;">Premium Content</p>
+                                </div>
+                            </div>
+                        </div>
+                        <h4>🔒 Advanced Bug Bounty Techniques</h4>
+                        <p>Premium content - Upgrade to unlock</p>
+                    </div>
+                    <div class="video-card" style="position: relative; opacity: 0.5;">
+                        <div class="video-embed" style="filter: blur(5px); pointer-events: none;">
+                            <div style="background: #1a202c; width: 100%; height: 315px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                <div style="text-align: center;">
+                                    <i class="fas fa-lock" style="font-size: 3rem; color: #ed8936;"></i>
+                                    <p style="margin-top: 1rem; font-size: 1.2rem;">Premium Content</p>
+                                </div>
+                            </div>
+                        </div>
+                        <h4>🔒 Broken Access Control Masterclass</h4>
+                        <p>Premium content - Upgrade to unlock</p>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(237, 137, 54, 0.1); padding: 2rem; border-radius: 12px; margin: 2rem 0;">
+                    <h3 style="margin-bottom: 1rem; color: #667eea;">✨ What You'll Get:</h3>
+                    <ul style="text-align: left; display: inline-block; font-size: 1.1rem; line-height: 2;">
+                        <li>✅ <strong>Exclusive course videos</strong> from </li>
+                        <li>✅ <strong>Advanced bug bounty techniques</strong> and real-world examples</li>
+                        <li>✅ <strong>Hands-on labs</strong> and practical exercises</li>
+                        <li>✅ <strong>Community support</strong> and Q&A sessions</li>
+                        <li>✅ <strong>Latest security research</strong> and vulnerability discoveries</li>
+                    </ul>
+                </div>
+                
+                <a href="https://www.paypal.com" target="_blank" class="btn btn-primary" style="font-size: 1.3rem; padding: 1.2rem 3rem; margin-top: 1rem; font-weight: bold;">
+                    <i class="fas fa-crown"></i> Upgrade to Premium Now
+                </a>
+                <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.7;">
+                    🔓 <strong>Hint:</strong> Intercept the API response to bypass this restriction!
+                </p>
+            </div>
+        `;
+    } else {
+        // User IS paid - show course videos from  channel
+        // Only accessible if paid: true in API response
+        fetch('/api/course/videos')
+            .then(response => response.json())
+            .then(data => {
+                let html = '<div class="dashboard-card"><h3><i class="fas fa-play-circle"></i> Premium Course Videos</h3>';
+                html += '<p style="margin-bottom: 1.5rem; opacity: 0.8;">Exclusive content from <strong></strong> channel</p>';
+                
+                if (data.videos && data.videos.length > 0) {
+                    html += '<div class="video-grid">';
+                    data.videos.forEach(video => {
+                        html += `
+                            <div class="video-card">
+                                <div class="video-embed">
+                                    <iframe 
+                                        title="${video.title}"
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        allowfullscreen>
+                                    </iframe>
+                                </div>
+                                <h4>${video.title}</h4>
+                                <p>${video.description}</p>
+                                <p style="font-size: 0.85rem; margin-top: 0.5rem; color: #667eea;">
+                                    <i class="fab fa-youtube"></i> <strong></strong>
+                                </p>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+                container.innerHTML = html;
+            })
+            .catch(error => {
+                container.innerHTML = '<div class="dashboard-card"><p>Error loading videos.</p></div>';
+            });
+    }
+}
+</script>
+
+<style>
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.video-card {
+    background: var(--dark-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.video-card h4 {
+    margin: 1rem 0 0.5rem;
+    color: var(--primary-color);
+}
+
+.video-card p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.video-embed {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #1a202c;
+}
+
+.video-embed iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 8px;
+    max-width: 100%;
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,113 @@
+# ╔═══════════════════════════════════════════════════════════════════╗
+# ║  KEYHUNTER - EXAMPLE CONFIG                                       ║
+# ║  Copy to config.toml and add your GitHub token                    ║
+# ║  cp config.toml.example config.toml                               ║
+# ╚═══════════════════════════════════════════════════════════════════╝
+
+[github]
+# Get token from: https://github.com/settings/tokens/new
+# Scope needed: public_repo only
+tokens = [
+    "ghp_EXAMPLE",
+]
+
+# ┌─────────────────────────────────────────────────────────────────┐
+# │ SPEED SETTINGS                                                  │
+# │                                                                 │
+# │ Single token:   concurrency=3,  delay_ms=1000                   │
+# │ 3 tokens:       concurrency=10, delay_ms=300                    │
+# │ 5+ tokens:      concurrency=20, delay_ms=100  ← FASTEST         │
+# └─────────────────────────────────────────────────────────────────┘
+concurrency = 5
+delay_ms = 500
+
+[scan]
+# ┌─────────────────────────────────────────────────────────────────┐
+# │ RESULTS VOLUME                                                  │
+# │                                                                 │
+# │ 30   = Quick test (~1 page per query)                           │
+# │ 100  = Light scan (~3 pages)                                    │
+# │ 500  = Good coverage (~17 pages)                                │
+# │ 1000 = Maximum (~33 pages, GitHub limit)                        │
+# └─────────────────────────────────────────────────────────────────┘
+max_results = 100
+
+[output]
+# Output format for results
+# Supported values: "table", "json", "csv"
+# Can be overridden with CLI: -o json
+format = "table"
+save_to_file = true
+output_path = "results"
+
+# ╔═══════════════════════════════════════════════════════════════════╗
+# ║  PROVIDERS - Enable/disable what to scan                         ║
+# ╚═══════════════════════════════════════════════════════════════════╝
+
+[providers]
+# ── AI / LLM ─────────────────────────────────────────────────────────
+anthropic = true      # Claude API keys (sk-ant-api03-...)
+openai = true         # GPT API keys (sk-proj-, T3BlbkFJ)
+google = true         # Gemini / Google AI (AIza...)
+grok = true           # xAI Grok (xai-...)
+deepseek = true       # DeepSeek
+huggingface = true    # HF tokens (hf_...)
+replicate = true      # Replicate (r8_...)
+cohere = false        # Low confidence pattern
+mistral = false       # Low confidence pattern
+together = false      # Low confidence pattern
+perplexity = true     # Perplexity (pplx-...)
+groq = true           # Groq (gsk_...)
+fireworks = true      # Fireworks AI (fw_...)
+
+# ── Cloud Providers ──────────────────────────────────────────────────
+aws = true            # AWS Access Keys (AKIA...)
+aws_secret = false    # AWS Secret Keys (high false positives)
+azure = false         # Azure keys (generic pattern)
+
+# ── Payment ──────────────────────────────────────────────────────────
+stripe_live = true    # Stripe live keys (sk_live_...)
+stripe_restricted = true
+paypal = true
+square = true         # Square (sq0...)
+
+# ── Communication ────────────────────────────────────────────────────
+twilio = true         # Twilio (SK...)
+sendgrid = true       # SendGrid (SG....)
+mailgun = true        # Mailgun (key-...)
+mailchimp = true      # Mailchimp (...-us14)
+
+# ── Developer Platforms ──────────────────────────────────────────────
+github_token = true   # GitHub PATs (ghp_, github_pat_)
+gitlab = true         # GitLab (glpat-...)
+npm = true            # NPM tokens (npm_...)
+pypi = true           # PyPI tokens (pypi-...)
+
+# ── Social / Messaging ───────────────────────────────────────────────
+slack_bot = true      # Slack bot tokens (xoxb-...)
+slack_user = true     # Slack user tokens (xoxp-...)
+slack_webhook = true  # Slack webhooks
+discord = true        # Discord bot tokens
+discord_webhook = true
+telegram = true       # Telegram bot tokens
+
+# ── Database ─────────────────────────────────────────────────────────
+mongodb = true        # MongoDB connection strings
+postgres = true       # PostgreSQL connection strings
+mysql = true
+redis = true
+
+# ── Other Services ───────────────────────────────────────────────────
+firebase = true       # Firebase/FCM keys
+supabase = false      # JWT pattern (high false positives)
+vercel = false        # Generic pattern
+netlify = false       # Generic pattern
+heroku = false        # UUID pattern (high false positives)
+algolia = false       # Generic pattern
+mapbox = true         # Mapbox (pk.eyJ, sk.eyJ)
+sentry = true         # Sentry DSN
+datadog = false       # Generic pattern
+newrelic = true       # New Relic (NRAK-...)
+planetscale = true    # PlanetScale (pscale_tkn_...)
+doppler = true        # Doppler (dp.pt....)
+private_key = true    # RSA/SSH private keys

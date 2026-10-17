@@ -1,0 +1,8 @@
+#!/bin/sh
+{
+	printf 'argc=%s argv=%s\n' "$#" "$*"
+} >> /oracle/ifconfig-calls
+# Extra shell words after a metachar are a separate /bin/sh -c command
+# (lab bin/w). This stub only logs argv and prints a clone name.
+printf '%s\n' 'wlan0'
+exit 0

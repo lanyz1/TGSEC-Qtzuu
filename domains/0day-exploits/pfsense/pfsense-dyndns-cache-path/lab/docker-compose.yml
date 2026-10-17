@@ -1,0 +1,15 @@
+name: pfsense-dyndns-cache-path
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19270:19270"
+    labels:
+      lab: pfsense-dyndns-cache-path
+    environment:
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

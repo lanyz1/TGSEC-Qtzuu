@@ -1,0 +1,13 @@
+name: pfsense-separator-color-xss
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19160:19160"
+    labels:
+      lab: pfsense-separator-color-xss

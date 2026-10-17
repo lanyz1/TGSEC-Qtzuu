@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><component id="id5a" ><![CDATA[<a class="chat-btn chat-tool-icon btn btn-outline-secondary save" id="id5a" title="Save and export">
+							<i class="fas fa-save"></i>
+						</a>]]></component><component id="id5b" ><![CDATA[<a class="chat-btn chat-tool-icon btn btn-outline-danger" name="toolbarContainer:toolbar:delete" id="id5b" title="Delete server chat log">
+							<i class="fas fa-trash-alt"></i>
+						</a>]]></component><header-contribution><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]]]><![CDATA[>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="bootstrap-js" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.confirmation.ConfirmationBehavior/bootstrap-confirmation-ver-906B68C44708FD36263D895A9A340BAD.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+</head>]]></header-contribution><evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-save","c":"id5a","e":"click"});})();(function(){$('#id5b').confirmation({"btnCancelLabel":"Cancel","btnOkLabel":"OK","btnOkClass":"btn btn-sm btn-danger","btnOkIconClass":"fas fa-exclamation-triangle","customClass":"chat-delete","rootSelector":"id5b"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-delete","m":"POST","c":"id5b","f":"id43","sc":"toolbarContainer:toolbar:delete","e":"click","pd":true});})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></evaluate></ajax-response>

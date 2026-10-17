@@ -1,0 +1,61 @@
+#!/usr/bin/env php
+<?php
+/* Stub Unbound: honor include: and dump planted WITNESS. */
+
+const WITNESS = 'PFSENSE-UNBOUND-ACL-CRLF-WITNESS';
+const WITNESS_PATH = '/oracle/PFSENSE-UNBOUND-ACL-CRLF-WITNESS';
+
+function parse_conf_path(array $argv): string {
+	$conf = '';
+	$count = count($argv);
+	for ($i = 1; $i < $count; $i++) {
+		$arg = $argv[$i];
+		if ($arg === '-c' && isset($argv[$i + 1])) {
+			$conf = $argv[$i + 1];
+			$i++;
+			continue;
+		}
+		if (str_starts_with($arg, '-c') && strlen($arg) > 2) {
+			$conf = substr($arg, 2);
+		}
+	}
+	return $conf;
+}
+
+function follow_includes(string $path, array &$seen): void {
+	$real = realpath($path);
+	$key = is_string($real) ? $real : $path;
+	if (isset($seen[$key])) {
+		return;
+	}
+	$seen[$key] = true;
+	if (!is_file($path)) {
+		return;
+	}
+	$body = file_get_contents($path);
+	if (!is_string($body)) {
+		return;
+	}
+	if (str_contains($body, WITNESS)) {
+		file_put_contents(WITNESS_PATH, WITNESS . "\n");
+	}
+	foreach (preg_split("/\r\n|\n|\r/", $body) as $line) {
+		$trim = trim($line);
+		if ($trim === '' || str_starts_with($trim, '#')) {
+			continue;
+		}
+		if (preg_match('/^include(?:-toplevel)?:\s+(\S+)/', $trim, $match) !== 1) {
+			continue;
+		}
+		follow_includes($match[1], $seen);
+	}
+}
+
+$conf = parse_conf_path($argv);
+if ($conf === '') {
+	fwrite(STDERR, "unbound: missing -c\n");
+	exit(1);
+}
+$seen = array();
+follow_includes($conf, $seen);
+exit(0);

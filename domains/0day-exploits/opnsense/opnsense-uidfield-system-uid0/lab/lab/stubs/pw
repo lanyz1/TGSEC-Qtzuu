@@ -1,0 +1,41 @@
+#!/bin/sh
+# Lab pw(8) stand-in. Records argv. Writes the witness only for useradd -o -u 0.
+# Not a privilege-escalation payload.
+
+WITNESS="OPNSENSE-UIDFIELD-SYSTEM-UID0-WITNESS"
+ARGV_LOG="/tmp/pw-argv.log"
+ORACLE="/oracle/secret"
+KEYS="/root/.ssh/authorized_keys"
+
+mkdir -p /tmp /oracle
+printf '%s\n' "$*" >> "${ARGV_LOG}"
+
+is_useradd=0
+has_o=0
+has_u0=0
+prev=""
+for arg in "$@"; do
+    case "${arg}" in
+        useradd) is_useradd=1 ;;
+        -o) has_o=1 ;;
+        -u0) has_u0=1 ;;
+    esac
+    if [ "${prev}" = "-u" ] && [ "${arg}" = "0" ]; then
+        has_u0=1
+    fi
+    prev="${arg}"
+done
+
+if [ "${is_useradd}" -eq 1 ]; then
+    cat >/dev/null || true
+    if [ "${has_o}" -eq 1 ] && [ "${has_u0}" -eq 1 ]; then
+        mkdir -p /root/.ssh /oracle
+        printf '%s\n' "${WITNESS}" > "${KEYS}"
+        printf '%s\n' "${WITNESS}" > "${ORACLE}"
+    fi
+    exit 0
+fi
+
+# usershow / unlock / usermod: one line, no colon, so local_user_set treats as missing.
+printf '\n'
+exit 0

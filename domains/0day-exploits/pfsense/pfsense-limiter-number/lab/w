@@ -1,0 +1,2 @@
+#!/bin/sh
+printf '%s\n' 'PFSENSE-LIMITER-NUMBER-WITNESS' > /oracle/PFSENSE-LIMITER-NUMBER-WITNESS

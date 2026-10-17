@@ -1,0 +1,13 @@
+# Core Packages
+requests==2.31.0
+beautifulsoup4==4.12.2
+urllib3==2.0.4
+
+# CLI & Display
+rich==13.7.0
+colorama==0.4.6
+pyfiglet==0.8.post1
+
+# Optional (For future versions)
+selenium==4.10.0
+playwright==1.36.0

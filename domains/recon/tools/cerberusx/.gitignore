@@ -1,0 +1,30 @@
+.qodo
+
+# Logs
+*.log
+*.json
+*.sha256
+
+# Environment
+.env
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+
+# System
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.bak
+
+# Custom
+config.ini

@@ -1,0 +1,5 @@
+product: OPNsense core
+tag: 26.7.6
+commit: a842fe48c21288d11a422cb944678e8eb308becf
+file: src/etc/inc/plugins.inc.d/ntpd.inc
+sha256: 0af2e1f1960d949231145e44d2ddefc73d4ba55fd9feba1863f59fcfbc100a28

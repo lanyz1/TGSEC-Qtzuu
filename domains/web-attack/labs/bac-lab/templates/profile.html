@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-user"></i> User Profile</h1>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2>{{ user.username }}</h2>
+                <span class="badge badge-{{ 'admin' if user.role == 'admin' else 'user' }}">{{ user.role }}</span>
+            </div>
+
+            <div class="profile-details">
+                <div class="detail-item">
+                    <strong><i class="fas fa-id-badge"></i> User ID:</strong>
+                    <span>{{ user.id }}</span>
+                </div>
+                <div class="detail-item">
+                    <strong><i class="fas fa-envelope"></i> Email:</strong>
+                    <span>{{ user.email }}</span>
+                </div>
+                <div class="detail-item">
+                    <strong><i class="fas fa-calendar"></i> Created:</strong>
+                    <span>{{ user.created_at }}</span>
+                </div>
+            </div>
+
+            {% if user.id == session.user_id or is_admin %}
+            <div class="profile-actions">
+                <a href="/api/user/{{ user.id }}" class="btn btn-primary" target="_blank">
+                    <i class="fas fa-code"></i> View API Data
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+

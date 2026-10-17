@@ -1,0 +1,7 @@
+.vscode/
+.env/
+__pycache__/
+*.egg-info/
+build/
+dist/
+xnldorker_*.html

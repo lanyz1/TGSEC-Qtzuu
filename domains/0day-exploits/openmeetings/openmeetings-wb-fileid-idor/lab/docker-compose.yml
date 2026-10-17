@@ -1,0 +1,53 @@
+name: om-g5-wb
+
+services:
+  db:
+    image: mysql:8.0
+    platform: linux/amd64
+    mem_limit: 1g
+    environment:
+      MYSQL_ROOT_PASSWORD: "12345"
+      MYSQL_DATABASE: openmeetings
+      MYSQL_USER: om_admin
+      MYSQL_PASSWORD: "12345"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uom_admin -p12345 --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: "no"
+
+  openmeetings:
+    image: ${OM_IMAGE:-om-g5-wb:min-9.1.0-jre}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    mem_limit: 3g
+    shm_size: 256mb
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:18154:5443"
+      - "127.0.0.1:18155:8888"
+    environment:
+      OM_TYPE: min
+      OM_USER: om_admin
+      OM_PASS: "1Q2w3e4r5t^y"
+      OM_DB_TYPE: mysql
+      OM_DB_HOST: db
+      OM_DB_PORT: "3306"
+      OM_DB_NAME: openmeetings
+      OM_DB_USER: om_admin
+      OM_DB_PASS: "12345"
+      OM_DATA_DIR: /opt/omdata
+      OM_KURENTO_WS_URL: "ws://127.0.0.1:8888/kurento"
+      SERVER_TZ: UTC
+      DAEMON_USER: nobody
+      JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
+    restart: "no"

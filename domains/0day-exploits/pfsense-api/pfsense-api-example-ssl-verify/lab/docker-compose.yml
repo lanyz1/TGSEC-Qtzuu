@@ -1,0 +1,20 @@
+name: pfsense-api-example-ssl-verify
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    command: ["sleep", "infinity"]
+    ports:
+      - "127.0.0.1:19191:19191"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      LAB_BIND_HOST: "0.0.0.0"
+      LAB_BIND_PORT: "19191"
+      LAB_CONNECT_HOST: "127.0.0.1"
+      LAB_CERT_CN: "pfsense-controller.lab"
+    volumes:
+      - ./poc.py:/lab/poc.py:ro

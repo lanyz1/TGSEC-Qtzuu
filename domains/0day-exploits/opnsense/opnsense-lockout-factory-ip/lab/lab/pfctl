@@ -1,0 +1,31 @@
+#!/bin/sh
+# Fake /sbin/pfctl for the lockout_handler gadget. Record argv only.
+set -eu
+
+ORACLE="${ORACLE:-/oracle}"
+mkdir -p "${ORACLE}"
+
+printf '%s\n' "$*" >> "${ORACLE}/pfctl.log"
+
+add_next=0
+kill_next=0
+prev=""
+for arg in "$@"; do
+    if [ "${kill_next}" = 1 ]; then
+        printf '%s\n' "${arg}" >> "${ORACLE}/pfkill.txt"
+        kill_next=0
+    fi
+    if [ "${add_next}" = 1 ]; then
+        printf '%s\n' "${arg}" >> "${ORACLE}/sshlockout.txt"
+        add_next=0
+    fi
+    if [ "${arg}" = "-k" ]; then
+        kill_next=1
+    fi
+    if [ "${prev}" = "-T" ] && [ "${arg}" = "add" ]; then
+        add_next=1
+    fi
+    prev="${arg}"
+done
+
+exit 0

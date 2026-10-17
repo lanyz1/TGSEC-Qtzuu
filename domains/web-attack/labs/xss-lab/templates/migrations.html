@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Migrations{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Migrations</h1>
+    <p>Create and manage data migrations for your projects.</p>
+    
+    <h2>Create New Migration</h2>
+    <form method="POST" style="margin-bottom: 30px;">
+        <div class="form-group">
+            <label for="title">Migration Title:</label>
+            <input type="text" id="title" name="title" placeholder="Enter migration title" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" placeholder="Enter migration description"></textarea>
+        </div>
+        <button type="submit">Create Migration</button>
+    </form>
+    
+    <h2>All Migrations</h2>
+    {% if migrations %}
+    <div style="margin-top: 20px;">
+        {% for migration in migrations %}
+        <div class="card" style="margin-bottom: 15px;">
+            <h3 style="color: #58a6ff;">
+                {# VULNERABLE: Directly rendering user input without sanitization #}
+                {{ migration[1]|safe }}
+            </h3>
+            <p style="color: #8b949e; font-size: 14px;">
+                Created by: <strong>{{ migration[4] }}</strong> | 
+                Date: {{ migration[3] }}
+            </p>
+            {% if migration[2] %}
+            <p style="margin-top: 10px;">{{ migration[2] }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: #8b949e;">No migrations found. Create one above!</p>
+    {% endif %}
+</div>
+{% endblock %}
+

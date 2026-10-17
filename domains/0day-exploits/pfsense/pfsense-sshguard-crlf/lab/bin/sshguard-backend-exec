@@ -1,0 +1,41 @@
+#!/bin/sh
+# Lab stand-in for SSHGuard src/sshguard.in (SSHGuard 2.4+,
+# https://github.com/sshguard/sshguard).
+#
+# sshguard sources sshguard.conf as a shell script, then pipelines:
+#   eval $tailcmd | eval "$RUN_PARSER" | \
+#       $libexec/sshg-blocker $flags | $BACKEND &
+#
+# Copied behavior:
+#   config="@sysconfdir@/sshguard.conf"
+#   . $config
+#   ...
+#   [ -z "$BACKEND" ] / [ ! -x "$BACKEND" ] checks
+#   $BACKEND as the last pipeline stage
+#
+# Last BACKEND= assignment wins because the file is sourced. This reader
+# skips logtail/parser/blocker; those are not required to prove BACKEND
+# is launched. Witness files must be written by $BACKEND, not by this
+# wrapper.
+
+config="${1:-/usr/local/etc/sshguard.conf}"
+if [ ! -r "$config" ]; then
+	echo "sshguard: Could not read '$config'" >&2
+	exit 78
+fi
+
+# sshguard.in: `. $config` (unquoted). Keep the same source.
+# shellcheck disable=SC1090
+. "$config"
+
+if [ -z "$BACKEND" ]; then
+	echo "sshguard: BACKEND must be set in '$config'" >&2
+	exit 78
+elif [ ! -x "$BACKEND" ]; then
+	echo "sshguard: '$BACKEND' is not executable" >&2
+	exit 78
+fi
+
+echo "BACKEND=$BACKEND"
+"$BACKEND"
+exit $?

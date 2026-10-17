@@ -1,0 +1,6 @@
+pin
+.venv
+__pycache__
+*.pyc
+poc-last-run.txt
+.git

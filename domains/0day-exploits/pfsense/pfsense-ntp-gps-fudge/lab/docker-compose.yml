@@ -1,0 +1,15 @@
+name: pfsense-ntp-gps-fudge
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19230:19230"
+    labels:
+      lab: pfsense-ntp-gps-fudge
+    environment:
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Security Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-shield-alt"></i> JavaScript Security Analyzer</h1>
+            <p class="subtitle">Analyze JavaScript files for sensitive data, XSS vulnerabilities, and API endpoints</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">
+                <i class="fas fa-server"></i> All analysis is performed server-side for security and performance
+            </p>
+            <div class="social-links">
+                <a href="https://lureo.shop" target="_blank" title="Ethical Hacking Course">
+                    <i class="fas fa-graduation-cap"></i> Course
+                </a>
+                    <i class="fab fa-youtube"></i> YouTube
+                </a>
+                    <i class="fab fa-twitter"></i> Twitter
+                </a>
+                <a href="https://instagram.com/" target="_blank" title="Instagram">
+                    <i class="fab fa-instagram"></i> Instagram
+                </a>
+                <a href="https://github.com/" target="_blank" title="GitHub">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+        </header>
+
+        <div class="input-section">
+            <div class="input-tabs">
+                <button class="tab-btn active" data-tab="single">Single URL</button>
+                <button class="tab-btn" data-tab="multiple">Multiple URLs</button>
+                <button class="tab-btn" data-tab="file">Upload File</button>
+            </div>
+
+            <!-- Single URL Tab -->
+            <div id="single-tab" class="tab-content active">
+                <div class="input-group">
+                    <input type="text" id="jsUrl" placeholder="Enter JavaScript file URL (e.g., https://example.com/app.js)" />
+                    <button id="analyzeBtn" class="btn-primary">
+                        <i class="fas fa-search"></i> Analyze
+                    </button>
+                </div>
+            </div>
+
+            <!-- Multiple URLs Tab -->
+            <div id="multiple-tab" class="tab-content hidden">
+                <div class="input-group-vertical">
+                    <textarea id="multipleUrls" placeholder="Enter multiple URLs, one per line&#10;Example:&#10;https://example.com/app.js&#10;https://example.com/lib.js&#10;http://localhost:8081/test.js" rows="6"></textarea>
+                    <button id="analyzeMultipleBtn" class="btn-primary">
+                        <i class="fas fa-search"></i> Analyze All
+                    </button>
+                </div>
+            </div>
+
+            <!-- File Upload Tab -->
+            <div id="file-tab" class="tab-content hidden">
+                <div class="input-group-vertical">
+                    <label for="urlFile" class="file-label">
+                        <i class="fas fa-upload"></i> Choose file with URLs (one per line)
+                        <input type="file" id="urlFile" accept=".txt,.csv" style="display: none;" />
+                    </label>
+                    <div id="fileName" class="file-name hidden"></div>
+                    <button id="analyzeFileBtn" class="btn-primary" disabled>
+                        <i class="fas fa-search"></i> Analyze File
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">
+                <i class="fas fa-info-circle"></i> For local files, use <code>localhost</code> or <code>127.0.0.1</code> instead of <code>0.0.0.0</code>
+            </div>
+            <div id="loading" class="loading hidden">
+                <i class="fas fa-spinner fa-spin"></i> <span id="loading-text">Analyzing...</span>
+            </div>
+        </div>
+
+        <div id="error" class="error hidden"></div>
+
+        <!-- File Cards Section (for multiple files) -->
+        <div id="files-section" class="files-section hidden">
+            <h2>Files Analyzed</h2>
+            <div id="files-grid" class="files-grid"></div>
+        </div>
+
+        <div id="results" class="results hidden">
+            <div class="results-header">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 id="results-title">Analysis Results</h2>
+                    <button id="backToFiles" class="btn-secondary hidden">
+                        <i class="fas fa-arrow-left"></i> Back to Files
+                    </button>
+                </div>
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="api_keys">API Keys</button>
+                    <button class="filter-btn" data-filter="credentials">Credentials</button>
+                    <button class="filter-btn" data-filter="emails">Emails</button>
+                    <button class="filter-btn" data-filter="xss">XSS Vulnerabilities</button>
+                    <button class="filter-btn" data-filter="xss_functions">XSS Functions</button>
+                    <button class="filter-btn" data-filter="api_endpoints">API Endpoints</button>
+                    <button class="filter-btn" data-filter="parameters">Parameters</button>
+                    <button class="filter-btn" data-filter="paths">Paths/Directories</button>
+                    <button class="filter-btn" data-filter="comments">Comments</button>
+                </div>
+            </div>
+
+            <div class="summary">
+                <div class="stat-card">
+                    <i class="fas fa-key"></i>
+                    <div>
+                        <span class="stat-value" id="stat-api-keys">0</span>
+                        <span class="stat-label">API Keys</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-lock"></i>
+                    <div>
+                        <span class="stat-value" id="stat-credentials">0</span>
+                        <span class="stat-label">Credentials</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <span class="stat-value" id="stat-emails">0</span>
+                        <span class="stat-label">Emails</span>
+                    </div>
+                </div>
+                <div class="stat-card danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <span class="stat-value" id="stat-xss">0</span>
+                        <span class="stat-label">XSS Issues</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-code-branch"></i>
+                    <div>
+                        <span class="stat-value" id="stat-endpoints">0</span>
+                        <span class="stat-label">API Endpoints</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="findings-container">
+                <div id="findings-content"></div>
+            </div>
+        </div>
+        
+        <footer style="text-align: center; margin-top: 60px; padding: 30px 0; border-top: 1px solid var(--border); color: var(--text-muted);">
+            <p style="margin-bottom: 15px;">
+            </p>
+            <div class="social-links" style="justify-content: center;">
+                <a href="https://lureo.shop" target="_blank" title="Ethical Hacking Course">
+                    <i class="fas fa-graduation-cap"></i> Ethical Hacking Course
+                </a>
+                    <i class="fab fa-youtube"></i> YouTube
+                </a>
+                    <i class="fab fa-twitter"></i> Twitter
+                </a>
+                <a href="https://instagram.com/" target="_blank" title="Instagram">
+                    <i class="fab fa-instagram"></i> Instagram
+                </a>
+                <a href="https://github.com/" target="_blank" title="GitHub">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+            <p style="margin-top: 20px; font-size: 0.85rem;">
+                For authorized security testing and educational purposes only
+            </p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

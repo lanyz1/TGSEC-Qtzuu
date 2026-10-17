@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><priority-evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="s3HdMpIK_h6E5vJUvgEuiEh-">
+/*<![CDATA[*/
+(function(){try{if(window.UrlUtil){window.UrlUtil.setFragment('user','dashboard');}}catch(e){}})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></priority-evaluate></ajax-response>

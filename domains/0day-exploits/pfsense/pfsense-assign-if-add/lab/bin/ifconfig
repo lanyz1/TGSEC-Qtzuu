@@ -1,0 +1,8 @@
+#!/bin/sh
+{
+	printf 'argc=%s argv=%s\n' "$#" "$*"
+} >> /oracle/ifconfig-calls
+if [ "$1" = "wlan" ] && [ "$2" = "create" ]; then
+	printf '%s\n' 'wlan0'
+fi
+exit 0

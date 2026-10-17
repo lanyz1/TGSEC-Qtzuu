@@ -1,0 +1,19 @@
+.qodo
+
+# Python
+__pycache__/
+*.py[cod]
+*.log
+.env/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local data
+*.tmp

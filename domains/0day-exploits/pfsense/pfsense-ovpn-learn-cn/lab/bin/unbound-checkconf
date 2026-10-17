@@ -1,0 +1,9 @@
+#!/bin/sh
+{
+	printf 'unbound-checkconf'
+	for a in "$@"; do
+		printf ' %s' "$a"
+	done
+	printf '\n'
+} >> /oracle/unbound-checkconf.log
+exit 0

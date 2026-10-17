@@ -1,0 +1,13 @@
+name: opnsense-tunables-loader
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    volumes:
+      - ./oracle:/oracle
+    labels:
+      lab: opnsense-tunables-loader

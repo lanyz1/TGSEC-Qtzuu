@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab 01 - Basic Open Redirect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white w-full max-w-xl rounded-2xl shadow-lg p-8">
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">Lab 01</h1>
+      <p class="text-slate-600 mb-6">Basic Open Redirect</p>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6">
+        <p class="text-sm text-slate-600">
+          This application provides a redirect endpoint. Your task is to
+          investigate how the destination URL is handled.
+        </p>
+      </div>
+      <a
+        href="/redirect?url=/"
+        class="inline-block bg-slate-800 text-white px-5 py-3 rounded-lg rounded-lg hover:bg-slate-700 transition"
+      >
+        Continue
+      </a>
+    </div>
+  </body>
+</html>

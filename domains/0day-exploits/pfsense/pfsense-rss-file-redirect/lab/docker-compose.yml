@@ -1,0 +1,13 @@
+name: pfsense-rss-file-redirect
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19100:19100"
+    labels:
+      lab: pfsense-rss-file-redirect

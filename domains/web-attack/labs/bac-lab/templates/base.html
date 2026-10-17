@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BAC Lab - Broken Access Control{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-shield-alt"></i>
+                <span>SecureApp</span>
+            </div>
+            <div class="nav-links">
+                {% if session.user_id %}
+                    <a href="{{ url_for('user_dashboard') }}">Dashboard</a>
+                    <a href="{{ url_for('course') }}">Course</a>
+                    {% if session.role == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}">Admin Panel</a>
+                    {% endif %}
+                    <a href="{{ url_for('profile', user_id=session.user_id) }}">Profile</a>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('index') }}">Home</a>
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>SecureApp</h4>
+                    <p>Secure user management and administration platform</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                            <i class="fab fa-youtube"></i> YouTube Channel
+                        </a>
+                            <i class="fab fa-twitter"></i> @
+                        </a>
+                        <a href="https://github.com/" target="_blank" rel="noopener">
+                            <i class="fab fa-github"></i> 
+                        </a>
+                        <a href="https://linkedin.com/in/" target="_blank" rel="noopener">
+                            <i class="fab fa-linkedin"></i> 
+                        </a>
+                        <a href="https://instagram.com/" target="_blank" rel="noopener">
+                            <i class="fab fa-instagram"></i> @
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="https://lureo.shop" target="_blank" rel="noopener" class="course-link">
+                        <i class="fas fa-graduation-cap"></i> Bug Bounty Course
+                    </a>
+                        <i class="fas fa-coffee"></i> Buy Me a Coffee
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 . Educational Purpose Only.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+

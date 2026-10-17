@@ -7,14 +7,16 @@ description: "Use for attack-surface domain knowledge matrix."
 
 > 小白入口：[`START.md`](START.md) · 全 AI 路径表：[`ROUTING.md`](ROUTING.md)
 >
-> **本轮（2026-10-12）：** ① 0day 批 — 外部 158 仓差分吸收（145 包 + AnyDesk AnyPwn；**署名清仓**）；② **报告包 B 批 — 本地独有经验迁移**（127+7 技能卡 · case-lessons +14 · GPU 域 05-07 扩编 · loot/PII 硬闸拒收）。说明 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md) · 融合批次 [`README.md`](README.md) 第十节。
+> **本轮（2026-10-17）：** abraxas 增量批 — 83 新包（pfSense CE×44 · OpenMeetings×10 · pfSense-API×9 · Spark×9 · OPNsense×7 · vsftpd×3 · tomcat+1）+ 研究卡（Atlassian **21589** 预认证任意文件读 9.3 · TG Desktop **107181** 盗 tdata · WP **15826** 类型混淆建超管 9.8）+ nextjs **55182** + 工具/词表/靶场 ×26（Web-Fuzzing-Box · ClatScope · HUNT · keyhunter · CloudRip · bypass-403 · ffufai · XNLDorker …）；**署名清仓归零**。说明 [`UPDATE-2026-10-17.md`](docs/updates/UPDATE-2026-10-17.md) · 融合批次 [`README.md`](README.md) 第十节。
+>
+> **上一轮（2026-10-12）：** ① 0day 批 — 外部 158 仓差分吸收（145 包 + AnyDesk AnyPwn；**署名清仓**）；② **报告包 B 批 — 本地独有经验迁移**（127+7 技能卡 · case-lessons +14 · GPU 域 05-07 扩编 · loot/PII 硬闸拒收）。说明 [`UPDATE-2026-10-12.md`](docs/updates/UPDATE-2026-10-12.md) · 融合批次 [`README.md`](README.md) 第十节。
 
 > **全 AI 先读 [`ROUTING.md`](ROUTING.md)**（关键词→路径，不绑 Hermes）。再本表定域。
 
 > **任意 AI 打开本仓：先 `bash scripts/bootstrap.sh`，再读 AGENTS.md。**
 
 
-按攻击面组织的安全知识矩阵 — **25 个主题域、约 18700+ 个文件**，一个目录直达。
+按攻击面组织的安全知识矩阵 — **25 个主题域、约 29800+ 个文件**，一个目录直达。
 
 Clone 后目录一般为 `~/security-suite`（Windows: `%USERPROFILE%\security-suite`）  
 融合索引: `domains/FUSION-6000.md` · `domains/FUSION-20260920-absorb.md`  

@@ -1,0 +1,71 @@
+#!/usr/local/bin/php
+<?php
+
+/*
+ * Copyright (C) 2023-2026 Franco Fichtner <franco@opnsense.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+require_once('util.inc');
+require_once('script/load_phalcon.php');
+
+use OPNsense\Core\Config;
+
+$config = Config::getInstance()->object();
+$url_sub = '';
+
+/* canonically handles OPNsense.conf, OPNsense-aux.conf and FreeBSD.conf */
+
+$frmt = ['/usr/local/sbin/opnsense-update -sd -A %s'];
+$args = [shell_safe('opnsense-version -x')]; /* calculate the effective ABI */
+
+if (strpos((string)$config->system->firmware->subscription, '-') !== false) {
+    /*
+     * Append the subscription to the URL here since it is not part
+     * of the mirror selection.  This only ever works if the mirror
+     * is set to a non-default.  Also check for a "viable" candidate
+     * with a dash as special values could also be the case.
+     */
+    $url_sub = '/' . $config->system->firmware->subscription;
+} else {
+    /* clear the license file when no subscription key is set */
+    @unlink('/usr/local/opnsense/version/core.license');
+}
+
+if (!empty($config->system->firmware->mirror)) {
+    $frmt[] = '-m %s';
+    $args[] = $config->system->firmware->mirror . $url_sub;
+}
+
+if (!empty($config->system->firmware->flavour)) {
+    $frmt[] = '-n %s';
+    $args[] = (string)$config->system->firmware->flavour;
+}
+
+if (!empty($config->system->firmware->aux)) {
+    $frmt[] = '-E';
+}
+
+/* rewrite the config via the defaults and possible arguments */
+shell_safe($frmt, $args);

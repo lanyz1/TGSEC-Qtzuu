@@ -1,0 +1,2483 @@
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+
+-->
+<!DOCTYPE html>
+<html xml:lang="en-US" lang="en-US" dir="ltr">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+	<meta name="viewport" content="height=device-height, initial-scale=1, width=device-width, initial-scale=1" />
+	<link rel="apple-touch-icon" href="../../images/icons/apple-icon-180.png">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1620-2160.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2160-1620.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2778-1284.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2532-1170.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="manifest" href="../../services/info/manifest.webmanifest">
+	<link rel="shortcut icon" href="../../public/favicon.png" type="image/png"/>
+	<script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/org.apache.openmeetings.web.pages.BasePage/loader-ver-C4A9D2D0B231E64E9DE325DB90AC1C16.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/org.wicketstuff.urlfragment.UrlParametersReceivingBehavior/urlfragment-ver-DBC507E012E2A775149FD09196030D3D.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../../css/theme_om/jquery-ui.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/theme.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/font-awesome/7.1.0/css/all-ver-2A16261AD0706F6F7FBF4CB04E487611.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="bootstrap-js" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]>*/
+</script>
+<script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Event.add(window, "domready", function(event) { 
+try{if (window.UrlUtil === undefined) {window.UrlUtil = newUrlUtil({"keyValueDelimiter":"/","fragmentIdentifierSuffix":""});UrlUtil.setWicketAjaxCall(function(){var attrs = {"u":"./?1-1.0-","dep":[function(attrs){return window.UrlUtil.joinQueryAndFragment();}]};
+var params = [];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+});$(window).bind('hashchange',window.UrlUtil.back);window.UrlUtil.sendUrlParameters();}}catch(e){};
+Wicket.Ajax.ajax({"u":"./?1-1.1-"});;
+Wicket.Event.publish(Wicket.Event.Topic.AJAX_HANDLERS_BOUND);
+;});
+/*]]>*/
+</script>
+<meta name="wicket.header.items"/>
+	<title>OpenMeetings</title>
+	<link rel="stylesheet" type="text/css" href="../../css/custom.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+
+</head>
+<body class="om-body">
+	<div class="main-loader" id="id3b">
+		<div class="sk-chasing-dots">
+			<div class="sk-child sk-dot1"></div>
+			<div class="sk-child sk-dot2"></div>
+		</div>
+	</div>
+	<div id="header" hidden="" data-wicket-placeholder=""></div>
+	
+	<div class="main-container" id="id3c"><div class="main h-100">
+</div></div>
+
+	<div id="alert-holder" class="position-fixed bottom-0 end-0 mx-3" data-lbl-close="Close"></div>
+</body>
+</html>
+
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><component id="id3c" ><![CDATA[<div class="main-container" id="id3c"><div class="main h-100" id="id58">
+	<div id="topControls">
+		<div id="topLinks" hidden="" data-wicket-placeholder=""></div>
+		<div id="busy-indicator" class="end-0"><i class="fas fa-spinner fa-spin"></i></div>
+		<div id="menu" hidden="" data-wicket-placeholder=""></div>
+	</div>
+	
+	<div id="contents"><div class="child-panel h-100"></div></div>
+	<div class="closed end-0 me-3" id="chatPanel">
+	<div id="chatPopup" class="bg-body">
+		<div class="control block clickable bg-secondary" data-ttl-dock="Click to dock panel" data-ttl-undock="Click to undock panel" data-new-msg="You have new chat message(s)">
+			<i class="fas me-1"></i>
+			<div class="label">Chat</div>
+		</div>
+		<div id="chat">
+	<div id="chatTabs">
+		<ul class="nav nav-tabs">
+		</ul>
+		<div class="tab-content"></div>
+	</div>
+	<form id="id43" method="post" action="./?1-1.-main~container-main-chatPanel-chat-sendForm"><div id="id43_hf_0" hidden="" class="hidden-fields"></div>
+		<div class="tool-container" id="id59">
+	<nav class="btn-toolbar chat-toolbar navbar navbar-expand navbar-light bg-body p-0" data-role="editor-toolbar" data-bs-target="#id3e">
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarChatContent" aria-controls="navbarChatContent" aria-expanded="false">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarChatContent">
+			<ul class="navbar-nav ms-auto">
+				<li class="nav-item dropup">
+					<a id="emoticons" class="chat btn btn-outline-secondary emt dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Emoticons"></a>
+					<ul class="chat dropdown-menu" >
+						<li>
+							<table id="emotMenuList">
+							</table>
+						</li>
+					</ul>
+				</li>
+				<li class="nav-item dropup">
+					<a id="fontSize" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" role="button" title="Font Size"> A </a>
+					<div class="dropdown-menu">
+						<a class="dropdown-item" data-edit="fontSize 5"><span class="font-huge text-center clickable">Huge</span></a>
+						<a class="dropdown-item" data-edit="fontSize 3"><span class="font-small text-center clickable">Normal</span></a>
+						<a class="dropdown-item" data-edit="fontSize 1"><span class="font-tiny text-center clickable">Small</span></a>
+					</div>
+				</li>
+				<li class="nav-item dropup">
+					<a id="fontStyle" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Font Style">
+						<i class="fas fa-cog"></i>
+					</a>
+					<ul class="dropdown-menu btns-only">
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary bold" id="bold" data-edit="bold" title="Bold (Ctrl/Cmd+B)"> B </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary italic" id="italic" data-edit="italic" title="Italic (Ctrl/Cmd+I)"> I </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary strike" id="strikethrough" data-edit="strikethrough" title="Strikethrough"> S </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary under" id="underline" data-edit="underline" title="Underline (Ctrl/Cmd+U)"> U </a></li>
+					</ul>
+				</li>
+				<li class="nav-item dropup">
+					<a id="hyperlink" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Hyperlink">
+						<i class="fas fa-link"></i>
+					</a>
+					<div class="dropdown-menu input-append">
+						<input class="span2 link-field" placeholder="URL" type="text"/>
+						<button class="btn btn-outline-secondary" type="button">Add</button>
+					</div>
+				</li>
+				<li class="nav-item dropup">
+					<a id="actions" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Actions">
+						<i class="fas fa-bars"></i>
+					</a>
+					<ul class="dropdown-menu btns-only">
+						<li><a id="id5a" hidden="" data-wicket-placeholder=""></a></li>
+						<li><a id="id5b" hidden="" data-wicket-placeholder=""></a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary audio" data-sound-enabled="Mute sound" data-sound-muted="Enable sound">
+							<i class="fas"></i>
+						</a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary send-btn" data-send-enter="Send on Enter" data-send-ctrl="Send on Ctrl+Enter"><strong>&crarr;</strong></a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</nav>
+</div>
+		<div class="chat-msg-container">
+			<div class="input-group">
+				<div id="chatMessage">
+    <div class="wysiwyg-editor" id="id3e"></div>
+    <input type="hidden" value="" name="chatMessage:textarea" id="id44"/>
+</div>
+				<button class="send btn btn-outline-primary" name="send" id="id45" title="Send">&crarr;</button>
+			</div>
+			<input type="hidden" id="activeChatTab" value="" name="activeTab"/>
+		</div>
+	</form>
+	<div hidden="hidden">
+		<div id="chat-date-template" class='date-row'></div>
+		<div id="chat-msg-template" class='msg-row'>
+			<div class='user-row ps-5'>
+				<div class='from float-start'></div>
+				<span class='time float-end'></span>
+				<div class="clear"></div>
+			</div>
+			<div class='msg float-start'></div>
+			<div class="clear"></div>
+		</div>
+		<div id="chat-actions-short-template" class="user clickable" title="Contact information"><i class="fas fa-address-card"></i></div>
+		<div id="chat-actions-others-template">
+			<div class="add clickable" title="Add to contacts"><i class="fas fa-plus-circle"></i></div>
+			<div class="new-email clickable" title="Send private message"><i class="fas fa-envelope"></i></div>
+			<div class="invite clickable" title="Invite user to conference room"><i class="fas fa-link"></i></div>
+		</div>
+		<div id="chat-actions-accept-template" class="accept clickable" title="Accept"><i class="fas fa-check"></i></div>
+		<button id="chat-close-block" class="btn btn-sm btn-outline-secondary close-chat" title="Close">
+			<i class="fas fa-times"></i>
+			<span class="visually-hidden">Close</span>
+		</button>
+		<div id="chat-msg-area-template" class="messageArea bg-body tab-pane h-100"></div>
+	</div>
+</div>
+	</div>
+</div>
+	<div id="id42" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id5c" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id5c">About</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id5d"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div class="row g-0">
+		<div class="col-6">Name</div>
+		<div class="col-6">OpenMeetings</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Version</div>
+		<div class="col-6">9.1.0</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Revision</div>
+		<div class="col-6">eff125a</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Build date</div>
+		<div class="col-6">2026-07-08T06:20:19Z</div>
+	</div>
+
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+	<div id="id50" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id5e" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id5e">User profile</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id5f"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div id="id60">
+		<div></div>
+	</div>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id4e" class="btn  btn-outline-primary">
+            Send private message
+        </button>
+                        
+                            <button type="button" id="id4f" class="btn  btn-outline-info">
+            Add to contacts
+        </button>
+                        
+                            <button type="button" id="id51" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="newMessageDialog" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id61" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id61">Write new message</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id62"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form id="id4b" method="post" action="./?1-1.-main~container-main-newMessageDialog-form"><div id="id4b_hf_0" hidden="" class="hidden-fields"></div>
+		<td id="id63">
+            
+        </td>
+		<div class="formelement row">
+			<label class="form-label col-2 text-right required" id="id46-w-lbl" for="id46">To:</label>
+			<div class="om-select2 p-0 d-inline-block col-9"><select class="input w-100" name="to" id="id46" multiple="multiple"></select></div>
+		</div>
+		<div class="formelement row">
+			<label class="form-label col-2 text-right" id="id64-w-lbl" for="id64">Subject:</label>
+			<div class="col-9 p-0">
+				<input type="text" class="form-control" value="" name="subject" id="id64"/>
+			</div>
+		</div>
+		<div>
+	<div class="btn-toolbar wysiwyg-toolbar" data-role="editor-toolbar" id="bToolbar" data-target="#id3f">
+		<div class="btn-group">
+			<a id="fontSize" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" role="button" title="Font Size"> A </a>
+			<ul class="dropdown-menu">
+				<li><a class="font-huge text-center clickable" data-edit="fontSize 5">Huge</a></li>
+				<li><a class="font-small text-center clickable" data-edit="fontSize 3">Medium</a></li>
+				<li><a class="font-tiny text-center clickable" data-edit="fontSize 1">Small</a></li>
+			</ul>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary tool-btn bold" data-edit="bold" title="Bold (Ctrl/Cmd+B)"> B </a>
+			<a class="btn btn-outline-secondary tool-btn italic" data-edit="italic" title="Italic (Ctrl/Cmd+I)"> I </a>
+			<a class="btn btn-outline-secondary tool-btn strike" data-edit="strikethrough" title="Strikethrough"> S </a>
+			<a class="btn btn-outline-secondary tool-btn under" data-edit="underline" title="Underline (Ctrl/Cmd+U)"> U </a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="insertunorderedlist" title="Bullet list">
+				<i class="fas fa-list-ul"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="insertorderedlist" title="Number list">
+				<i class="fas fa-list-ol"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="outdent" title="Indent (Tab)">
+				<i class="fas fa-indent"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="indent" title="Reduce indent (Shift+Tab)">
+				<i class="fas fa-outdent"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="justifyleft" title="Align Left (Ctrl/Cmd+L)">
+				<i class="fas fa-align-left"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifycenter" title="Center (Ctrl/Cmd+E)">
+				<i class="fas fa-align-center"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifyright" title="Align Right (Ctrl/Cmd+R)">
+				<i class="fas fa-align-right"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifyfull" title="Justify (Ctrl/Cmd+J)">
+				<i class="fas fa-align-justify"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Hyperlink">
+				<i class="fas fa-link"></i>
+			</a>
+			<div class="dropdown-menu input-append">
+				<input class="span2" placeholder="URL" type="text" data-edit="createLink"/>
+				<button class="btn btn-outline-secondary" type="button">Add</button>
+			</div>
+			<a class="btn btn-outline-secondary" data-edit="unlink" title="Remove Hyperlink">
+				<i class="fas fa-unlink"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="undo" title="Undo (Ctrl/Cmd+Z)">
+				<i class="fas fa-undo-alt"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="redo" title="Redo (Ctrl/Cmd+Y)">
+				<i class="fas fa-redo-alt"></i>
+			</a>
+		</div>
+	</div>
+</div>
+		<div class="private message body">
+    <div class="wysiwyg-editor" id="id3f"></div>
+    <input type="hidden" value="" name="message:textarea" id="id47"/>
+</div>
+		<div class="mt-1 mb-1" id="id65">
+			<input type="checkbox" name="bookedRoom" id="id4a"/><label id="id4a-w-lbl" for="id4a">Book conference room</label>
+		</div>
+		<div id="id66">
+			<div class="row">
+				<div class="col-7">
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id67-w-lbl" for="id67">Type</label>
+						<div class="col-10 p-0">
+							<select class="form-select" name="roomParamsBlock:roomParams:room.type" id="id67">
+<option selected="selected" value="">Choose One</option>
+<option value="CONFERENCE">conference (1-25 users)</option>
+<option value="PRESENTATION">presentation (1-150 users)</option>
+<option value="INTERVIEW">interview (1:1 meeting with recording)</option>
+</select>
+						</div>
+					</div>
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id68-w-lbl" for="id68">Start</label>
+						<div class="d-inline-block col-10 p-0"><span class="date time picker" id="id68">
+	<span id="id40" class="input-group date" data-td-target-input="nearest" data-td-target-toggle="nearest">
+    <input type="text" class="form-control" value="" name="roomParamsBlock:roomParams:start:picker:date" data-td-target="#id40"/>
+    <span class="input-group-text" data-td-target="#id40" data-td-toggle="datetimepicker">
+        <i class="fa-regular fa-calendar-days"></i>
+    </span>
+</span>
+	<input type="hidden" value="2026-10-16T22:41:32.034544712" name="roomParamsBlock:roomParams:start:date" id="id48"/>
+</span></div>
+					</div>
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id69-w-lbl" for="id69">End</label>
+						<div class="d-inline-block col-10 p-0"><span class="date time picker" id="id69">
+	<span id="id41" class="input-group date" data-td-target-input="nearest" data-td-target-toggle="nearest">
+    <input type="text" class="form-control" value="" name="roomParamsBlock:roomParams:end:picker:date" data-td-target="#id41"/>
+    <span class="input-group-text" data-td-target="#id41" data-td-toggle="datetimepicker">
+        <i class="fa-regular fa-calendar-days"></i>
+    </span>
+</span>
+	<input type="hidden" value="2026-10-16T22:41:32.036782045" name="roomParamsBlock:roomParams:end:date" id="id49"/>
+</span></div>
+					</div>
+				</div>
+				<div class="col-5">
+					<i class="fas fa-info-circle m-1 text-info"></i>Add an optional request for meeting to the message and create a conference room. The event is then copied in the calendar of every participant.
+				</div>
+			</div>
+		</div>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="main-container:main:newMessageDialog:dialog:footer:buttons:0:button" id="id4c" class="btn  btn-outline-primary">
+            Send
+        </button>
+                        
+                            <button type="button" id="id4d" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="id56" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id6a" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id6a">Invite user to conference room</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id6b"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div class="rooms desc"><i class="fas fa-info-circle m-1 text-info"></i>Choose a conference room. The invited user will get a message with your name and a link to the room.</div>
+	<div class="rooms title">Public rooms</div>
+	<div class="room list container">
+		<div id="id6c">
+	<table class="room-list table table-striped table-hover">
+		
+	</table>
+</div>
+	</div>
+	<div class="rooms title">Private rooms</div>
+	<div class="room list container">
+		<div id="id6d">
+	<table class="room-list table table-striped table-hover">
+		
+	</table>
+</div>
+	</div>
+	<div id="id54" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id6e" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id6e">Invite message</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id6f"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form id="id52" method="post" action="./?1-1.-main~container-main-invite~to~room-inviteMsg-form"><div id="id52_hf_0" hidden="" class="hidden-fields"></div>
+		<textarea class="w-100" name="message"></textarea>
+		<div>
+			<input type="checkbox" name="enterRoom" id="id70"/><label id="id70-w-lbl" for="id70">Enter room after sending invitation</label>
+		</div>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="main-container:main:invite-to-room:inviteMsg:dialog:footer:buttons:0:button" id="id53" class="btn  btn-outline-primary">
+            Send invitation
+        </button>
+                        
+                            <button type="button" id="id55" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id57" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div hidden="hidden"></div>
+</div></div>]]></component><header-contribution><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.markup.html.pages.BrowserInfoForm/wicket-browser-info-ver-3E3ED096DC173FF1D7266810E67BFABE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="om-main" src="../../js/main.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="om-util-init" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+OmUtil.init({"debug":false})
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="showUserInfo-95833fee-4dfb-482f-98fc-0e8ba890d9fb" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function showUserInfo(userId) {
+var attrs = {"u":"./?1-1.1-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="addContact-b3923516-128d-4801-97f2-0966e4477d67" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function addContact(userId) {
+var attrs = {"u":"./?1-1.2-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="privateMessage-3669f347-ba22-4e63-a202-df759f90b8d6" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function privateMessage(userId) {
+var attrs = {"u":"./?1-1.3-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="inviteUser-e686ed61-72a6-4336-b5b6-bf7449baf506" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function inviteUser(userId) {
+var attrs = {"u":"./?1-1.4-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="preserve-bs-tooltip" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+const bstooltip = jQuery.fn.tooltip;
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/jquery-ui/1.14.2/jquery-ui-ver-4FC65EC60712F6DC7C12892ACF51CC64.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="restore-bs-tooltip" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+jQuery.fn.tooltip = bstooltip;
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="om-chat" src="../../js/chat.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="chatActivity-a67cbbef-f07f-4e78-921c-302950d5ec36" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function chatActivity(type,roomId,msgId) {
+var attrs = {"u":"./?1-1.0-main~container-main-chatPanel-chat","c":"chat"};
+var params = [{"name":"type","value":type},{"name":"roomId","value":roomId},{"name":"msgId","value":msgId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.EditorStyleSheetResourceReference/css/editor-ver-027E6CF0E49013BE0BA5A2273C2BE146.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.EditorJavaScriptResourceReference/js/editor-ver-1E2C148343A7CDCF3C36F84D05A88A6C.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.BootstrapWysiwygJavaScriptResourceReference/js/bootstrap-wysiwyg-ver-2731F22ABD63C94F23A5AF839761331F.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.JQueryHotKeysJavaScriptResourceReference/js/jquery.hotkeys-ver-89A115D74D249709EE41BEEF54DBA3C5.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="user-multi-choice" src="../resource/org.apache.openmeetings.web.util.UserMultiChoice/user-multi-choice-ver-635BCD831ACAC35A939E7783A9D01A42.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.protocol.ws.api.WicketWebSocketJQueryResourceReference/res/js/wicket-websocket-jquery-ver-B538D514A84740870773649C4330BC10.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="ws-connected-script" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Event.subscribe(Wicket.Event.Topic.WebSocket.Opened, function() {Wicket.WebSocket.send('socketConnected');});
+/*]]]]><![CDATA[>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" src="../resource/org.apache.wicket.extensions.ajax.AjaxDownloadBehavior/wicket-ajaxdownload-ver-E9A61BEF8883E76D4FF66128A89813ED.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/select2/4.1.0-rc.0/dist/js/select2.full-ver-D279FEC970D3A6176C5E66905CD98F64.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/select2/4.1.0-rc.0/dist/css/select2-ver-E71C39430469A3EEA74514A2B48F6536.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/select2/4.1.0-rc.0/dist/js/i18n/en-ver-19258707D627FB6F62A886B5EC16E778.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/eonasdan__tempus-dominus/6.10.4/dist/css/tempus-dominus-ver-73E16947D776F7DC12054067E7697451.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/eonasdan__tempus-dominus/6.10.4/dist/js/tempus-dominus-ver-5D3BB0B33BA2DE119C294A856CE3AB26.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.references.TempusDominusJsReference/js/wicket.tempus-dominus-ver-C079D02731AAA2A069FC0F205D42EB89.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.openmeetings.web.common.datetime.AbstractOmDateTimePicker/datepicker-functions-ver-1AF2ED166AB6A00BDE35B65683FC40F3.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.urlfragment.UrlParametersReceivingBehavior/urlfragment-ver-DBC507E012E2A775149FD09196030D3D.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../../css/theme_om/jquery-ui.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/theme.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/font-awesome/7.1.0/css/all-ver-2A16261AD0706F6F7FBF4CB04E487611.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/custom.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+</head>]]></header-contribution><evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_FAILURE, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_BEFORE, showBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_SUCCESS, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_COMPLETE, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.WebSocket.Opened, function() { Wicket.WebSocket.send('socketConnected'); });})();(function(){;(function(undefined) {
+	'use strict';
+
+	if (typeof(Wicket.WebSocket.appName) === "undefined") {
+		jQuery.extend(Wicket.WebSocket, { pageId: 1,  context: 'org.apache.openmeetings.web.pages.MainPage', resourceName: '', connectionToken: '',
+			baseUrl: 'wicket/bookmarkable/', contextPath: '/openmeetings', appName: 'OpenmeetingsApplication',
+			port: 0, securePort: 0, filterPrefix: '', sessionId: '' });
+		Wicket.WebSocket.createDefaultConnection();
+	}
+})();
+})();(function(){OmUtil.ping();})();(function(){new bootstrap.Modal(document.getElementById('id42'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-activeTab","m":"POST","c":"activeChatTab","f":"id43","e":"change"});})();(function(){jQuery('#id3e').wysiwyg({  });})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-send","m":"POST","c":"id45","f":"id43","sc":"send","pre":[function(attrs){return Chat.validate();}],"e":"click","pd":true});})();(function(){Chat.reinit({"userId":3,"all":"All","room":"Room","sendOnEnter":false}); })();(function(){(function($) { $('#id46').select2({"allowClear":false,"multiple":true,"closeOnSelect":false,"templateSelection":formatOmUser,"templateResult":formatOmUser,"escapeMarkup":escapeOmUserMarkup,"selectOnClose":false,"dropdownAutoWidth":false,"dropdownParent":$('#newMessageDialog'),"ajax":{"data":function(params) { return { 'q': params.term, page: params.page, 'wicket-ajax':true, 'wicket-ajax-baseurl':[window.location.protocol, '//', window.location.host, window.location.pathname].join('')}; },"dataType":"json","delay":100,"processResults":function(data, page) { return { results: data.items, pagination: { more: data.more } };  },"url":"./?1-1.-main~container-main-newMessageDialog-form-to","cache":false},"tags":false,"language":"en"}); })(jQuery);})();(function(){jQuery('#id3f').wysiwyg({  });})();(function(){Wicket.Bootstrap.createTempusDominus('id40',{"display":{"icons":{"up":"fa-solid fa-arrow-up","down":"fa-solid fa-arrow-down","date":"fa-solid fa-calendar","time":"fa-solid fa-clock","previous":"fa-solid fa-arrow-left","next":"fa-solid fa-arrow-right","today":"fa-solid fa-calendar-check","clear":"fa-solid fa-eraser","close":"fa-solid fa-xmark"},"buttons":{},"components":{}},"restrictions":{"disabledDates":[],"enabledDates":[],"daysOfWeekDisabled":[],"disabledTimeIntervals":[],"enabledHours":[],"disabledHours":[]}},{"locale":"en-US","format":"LLL"},'en')})();(function(){omDateTimeInit('id40', 'id48');})();(function(){Wicket.Bootstrap.createTempusDominus('id41',{"display":{"icons":{"up":"fa-solid fa-arrow-up","down":"fa-solid fa-arrow-down","date":"fa-solid fa-calendar","time":"fa-solid fa-clock","previous":"fa-solid fa-arrow-left","next":"fa-solid fa-arrow-right","today":"fa-solid fa-calendar-check","clear":"fa-solid fa-eraser","close":"fa-solid fa-xmark"},"buttons":{},"components":{}},"restrictions":{"disabledDates":[],"enabledDates":[],"daysOfWeekDisabled":[],"disabledTimeIntervals":[],"enabledHours":[],"disabledHours":[]}},{"locale":"en-US","format":"LLL"},'en')})();(function(){omDateTimeInit('id41', 'id49');})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-form-bookedRoom","c":"id4a","e":"click"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-dialog-footer-buttons-0-button","m":"POST","c":"id4c","f":"id4b","sc":"main-container:main:newMessageDialog:dialog:footer:buttons:0:button","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-dialog-footer-buttons-1-button","c":"id4d","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('newMessageDialog')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('newMessageDialog'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog","c":"newMessageDialog","e":"hidden.bs.modal"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-0-button","c":"id4e","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-1-button","c":"id4f","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-2-button","c":"id51","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id50')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id50'));})();(function(){$('.om-tooltip').tooltip({html: true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-inviteMsg-dialog-footer-buttons-0-button","m":"POST","c":"id53","f":"id52","sc":"main-container:main:invite-to-room:inviteMsg:dialog:footer:buttons:0:button","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-inviteMsg-dialog-footer-buttons-1-button","c":"id55","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id54')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id54'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-dialog-footer-buttons-0-button","c":"id57","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id56')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id56'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container","c":"id3c"});})();(function(){wysiwygAddTextAreaMapper('id3e', 'id44')})();(function(){wysiwygAddTextAreaMapper('id3f', 'id47')})();(function(){Wicket.Timer.set('id58.0', function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main","c":"id58","dep":[function(attrs){return Wicket.BrowserInfo.collect()}]});}, 50);})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></evaluate></ajax-response>
+<div class="main-container" id="id3c"><div class="main h-100" id="id58">
+	<div id="topControls">
+		<div id="topLinks" hidden="" data-wicket-placeholder=""></div>
+		<div id="busy-indicator" class="end-0"><i class="fas fa-spinner fa-spin"></i></div>
+		<div id="menu" hidden="" data-wicket-placeholder=""></div>
+	</div>
+	
+	<div id="contents"><div class="child-panel h-100"></div></div>
+	<div class="closed end-0 me-3" id="chatPanel">
+	<div id="chatPopup" class="bg-body">
+		<div class="control block clickable bg-secondary" data-ttl-dock="Click to dock panel" data-ttl-undock="Click to undock panel" data-new-msg="You have new chat message(s)">
+			<i class="fas me-1"></i>
+			<div class="label">Chat</div>
+		</div>
+		<div id="chat">
+	<div id="chatTabs">
+		<ul class="nav nav-tabs">
+		</ul>
+		<div class="tab-content"></div>
+	</div>
+	<form id="id43" method="post" action="./?1-1.-main~container-main-chatPanel-chat-sendForm"><div id="id43_hf_0" hidden="" class="hidden-fields"></div>
+		<div class="tool-container" id="id59">
+	<nav class="btn-toolbar chat-toolbar navbar navbar-expand navbar-light bg-body p-0" data-role="editor-toolbar" data-bs-target="#id3e">
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarChatContent" aria-controls="navbarChatContent" aria-expanded="false">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarChatContent">
+			<ul class="navbar-nav ms-auto">
+				<li class="nav-item dropup">
+					<a id="emoticons" class="chat btn btn-outline-secondary emt dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Emoticons"></a>
+					<ul class="chat dropdown-menu" >
+						<li>
+							<table id="emotMenuList">
+							</table>
+						</li>
+					</ul>
+				</li>
+				<li class="nav-item dropup">
+					<a id="fontSize" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" role="button" title="Font Size"> A </a>
+					<div class="dropdown-menu">
+						<a class="dropdown-item" data-edit="fontSize 5"><span class="font-huge text-center clickable">Huge</span></a>
+						<a class="dropdown-item" data-edit="fontSize 3"><span class="font-small text-center clickable">Normal</span></a>
+						<a class="dropdown-item" data-edit="fontSize 1"><span class="font-tiny text-center clickable">Small</span></a>
+					</div>
+				</li>
+				<li class="nav-item dropup">
+					<a id="fontStyle" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Font Style">
+						<i class="fas fa-cog"></i>
+					</a>
+					<ul class="dropdown-menu btns-only">
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary bold" id="bold" data-edit="bold" title="Bold (Ctrl/Cmd+B)"> B </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary italic" id="italic" data-edit="italic" title="Italic (Ctrl/Cmd+I)"> I </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary strike" id="strikethrough" data-edit="strikethrough" title="Strikethrough"> S </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary under" id="underline" data-edit="underline" title="Underline (Ctrl/Cmd+U)"> U </a></li>
+					</ul>
+				</li>
+				<li class="nav-item dropup">
+					<a id="hyperlink" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Hyperlink">
+						<i class="fas fa-link"></i>
+					</a>
+					<div class="dropdown-menu input-append">
+						<input class="span2 link-field" placeholder="URL" type="text"/>
+						<button class="btn btn-outline-secondary" type="button">Add</button>
+					</div>
+				</li>
+				<li class="nav-item dropup">
+					<a id="actions" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Actions">
+						<i class="fas fa-bars"></i>
+					</a>
+					<ul class="dropdown-menu btns-only">
+						<li><a id="id5a" hidden="" data-wicket-placeholder=""></a></li>
+						<li><a id="id5b" hidden="" data-wicket-placeholder=""></a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary audio" data-sound-enabled="Mute sound" data-sound-muted="Enable sound">
+							<i class="fas"></i>
+						</a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary send-btn" data-send-enter="Send on Enter" data-send-ctrl="Send on Ctrl+Enter"><strong>&crarr;</strong></a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</nav>
+</div>
+		<div class="chat-msg-container">
+			<div class="input-group">
+				<div id="chatMessage">
+    <div class="wysiwyg-editor" id="id3e"></div>
+    <input type="hidden" value="" name="chatMessage:textarea" id="id44"/>
+</div>
+				<button class="send btn btn-outline-primary" name="send" id="id45" title="Send">&crarr;</button>
+			</div>
+			<input type="hidden" id="activeChatTab" value="" name="activeTab"/>
+		</div>
+	</form>
+	<div hidden="hidden">
+		<div id="chat-date-template" class='date-row'></div>
+		<div id="chat-msg-template" class='msg-row'>
+			<div class='user-row ps-5'>
+				<div class='from float-start'></div>
+				<span class='time float-end'></span>
+				<div class="clear"></div>
+			</div>
+			<div class='msg float-start'></div>
+			<div class="clear"></div>
+		</div>
+		<div id="chat-actions-short-template" class="user clickable" title="Contact information"><i class="fas fa-address-card"></i></div>
+		<div id="chat-actions-others-template">
+			<div class="add clickable" title="Add to contacts"><i class="fas fa-plus-circle"></i></div>
+			<div class="new-email clickable" title="Send private message"><i class="fas fa-envelope"></i></div>
+			<div class="invite clickable" title="Invite user to conference room"><i class="fas fa-link"></i></div>
+		</div>
+		<div id="chat-actions-accept-template" class="accept clickable" title="Accept"><i class="fas fa-check"></i></div>
+		<button id="chat-close-block" class="btn btn-sm btn-outline-secondary close-chat" title="Close">
+			<i class="fas fa-times"></i>
+			<span class="visually-hidden">Close</span>
+		</button>
+		<div id="chat-msg-area-template" class="messageArea bg-body tab-pane h-100"></div>
+	</div>
+</div>
+	</div>
+</div>
+	<div id="id42" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id5c" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id5c">About</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id5d"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div class="row g-0">
+		<div class="col-6">Name</div>
+		<div class="col-6">OpenMeetings</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Version</div>
+		<div class="col-6">9.1.0</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Revision</div>
+		<div class="col-6">eff125a</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Build date</div>
+		<div class="col-6">2026-07-08T06:20:19Z</div>
+	</div>
+
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+	<div id="id50" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id5e" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id5e">User profile</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id5f"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div id="id60">
+		<div></div>
+	</div>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id4e" class="btn  btn-outline-primary">
+            Send private message
+        </button>
+                        
+                            <button type="button" id="id4f" class="btn  btn-outline-info">
+            Add to contacts
+        </button>
+                        
+                            <button type="button" id="id51" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="newMessageDialog" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id61" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id61">Write new message</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id62"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form id="id4b" method="post" action="./?1-1.-main~container-main-newMessageDialog-form"><div id="id4b_hf_0" hidden="" class="hidden-fields"></div>
+		<td id="id63">
+            
+        </td>
+		<div class="formelement row">
+			<label class="form-label col-2 text-right required" id="id46-w-lbl" for="id46">To:</label>
+			<div class="om-select2 p-0 d-inline-block col-9"><select class="input w-100" name="to" id="id46" multiple="multiple"></select></div>
+		</div>
+		<div class="formelement row">
+			<label class="form-label col-2 text-right" id="id64-w-lbl" for="id64">Subject:</label>
+			<div class="col-9 p-0">
+				<input type="text" class="form-control" value="" name="subject" id="id64"/>
+			</div>
+		</div>
+		<div>
+	<div class="btn-toolbar wysiwyg-toolbar" data-role="editor-toolbar" id="bToolbar" data-target="#id3f">
+		<div class="btn-group">
+			<a id="fontSize" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" role="button" title="Font Size"> A </a>
+			<ul class="dropdown-menu">
+				<li><a class="font-huge text-center clickable" data-edit="fontSize 5">Huge</a></li>
+				<li><a class="font-small text-center clickable" data-edit="fontSize 3">Medium</a></li>
+				<li><a class="font-tiny text-center clickable" data-edit="fontSize 1">Small</a></li>
+			</ul>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary tool-btn bold" data-edit="bold" title="Bold (Ctrl/Cmd+B)"> B </a>
+			<a class="btn btn-outline-secondary tool-btn italic" data-edit="italic" title="Italic (Ctrl/Cmd+I)"> I </a>
+			<a class="btn btn-outline-secondary tool-btn strike" data-edit="strikethrough" title="Strikethrough"> S </a>
+			<a class="btn btn-outline-secondary tool-btn under" data-edit="underline" title="Underline (Ctrl/Cmd+U)"> U </a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="insertunorderedlist" title="Bullet list">
+				<i class="fas fa-list-ul"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="insertorderedlist" title="Number list">
+				<i class="fas fa-list-ol"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="outdent" title="Indent (Tab)">
+				<i class="fas fa-indent"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="indent" title="Reduce indent (Shift+Tab)">
+				<i class="fas fa-outdent"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="justifyleft" title="Align Left (Ctrl/Cmd+L)">
+				<i class="fas fa-align-left"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifycenter" title="Center (Ctrl/Cmd+E)">
+				<i class="fas fa-align-center"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifyright" title="Align Right (Ctrl/Cmd+R)">
+				<i class="fas fa-align-right"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifyfull" title="Justify (Ctrl/Cmd+J)">
+				<i class="fas fa-align-justify"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Hyperlink">
+				<i class="fas fa-link"></i>
+			</a>
+			<div class="dropdown-menu input-append">
+				<input class="span2" placeholder="URL" type="text" data-edit="createLink"/>
+				<button class="btn btn-outline-secondary" type="button">Add</button>
+			</div>
+			<a class="btn btn-outline-secondary" data-edit="unlink" title="Remove Hyperlink">
+				<i class="fas fa-unlink"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="undo" title="Undo (Ctrl/Cmd+Z)">
+				<i class="fas fa-undo-alt"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="redo" title="Redo (Ctrl/Cmd+Y)">
+				<i class="fas fa-redo-alt"></i>
+			</a>
+		</div>
+	</div>
+</div>
+		<div class="private message body">
+    <div class="wysiwyg-editor" id="id3f"></div>
+    <input type="hidden" value="" name="message:textarea" id="id47"/>
+</div>
+		<div class="mt-1 mb-1" id="id65">
+			<input type="checkbox" name="bookedRoom" id="id4a"/><label id="id4a-w-lbl" for="id4a">Book conference room</label>
+		</div>
+		<div id="id66">
+			<div class="row">
+				<div class="col-7">
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id67-w-lbl" for="id67">Type</label>
+						<div class="col-10 p-0">
+							<select class="form-select" name="roomParamsBlock:roomParams:room.type" id="id67">
+<option selected="selected" value="">Choose One</option>
+<option value="CONFERENCE">conference (1-25 users)</option>
+<option value="PRESENTATION">presentation (1-150 users)</option>
+<option value="INTERVIEW">interview (1:1 meeting with recording)</option>
+</select>
+						</div>
+					</div>
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id68-w-lbl" for="id68">Start</label>
+						<div class="d-inline-block col-10 p-0"><span class="date time picker" id="id68">
+	<span id="id40" class="input-group date" data-td-target-input="nearest" data-td-target-toggle="nearest">
+    <input type="text" class="form-control" value="" name="roomParamsBlock:roomParams:start:picker:date" data-td-target="#id40"/>
+    <span class="input-group-text" data-td-target="#id40" data-td-toggle="datetimepicker">
+        <i class="fa-regular fa-calendar-days"></i>
+    </span>
+</span>
+	<input type="hidden" value="2026-10-16T22:41:32.034544712" name="roomParamsBlock:roomParams:start:date" id="id48"/>
+</span></div>
+					</div>
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id69-w-lbl" for="id69">End</label>
+						<div class="d-inline-block col-10 p-0"><span class="date time picker" id="id69">
+	<span id="id41" class="input-group date" data-td-target-input="nearest" data-td-target-toggle="nearest">
+    <input type="text" class="form-control" value="" name="roomParamsBlock:roomParams:end:picker:date" data-td-target="#id41"/>
+    <span class="input-group-text" data-td-target="#id41" data-td-toggle="datetimepicker">
+        <i class="fa-regular fa-calendar-days"></i>
+    </span>
+</span>
+	<input type="hidden" value="2026-10-16T22:41:32.036782045" name="roomParamsBlock:roomParams:end:date" id="id49"/>
+</span></div>
+					</div>
+				</div>
+				<div class="col-5">
+					<i class="fas fa-info-circle m-1 text-info"></i>Add an optional request for meeting to the message and create a conference room. The event is then copied in the calendar of every participant.
+				</div>
+			</div>
+		</div>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="main-container:main:newMessageDialog:dialog:footer:buttons:0:button" id="id4c" class="btn  btn-outline-primary">
+            Send
+        </button>
+                        
+                            <button type="button" id="id4d" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="id56" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id6a" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id6a">Invite user to conference room</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id6b"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div class="rooms desc"><i class="fas fa-info-circle m-1 text-info"></i>Choose a conference room. The invited user will get a message with your name and a link to the room.</div>
+	<div class="rooms title">Public rooms</div>
+	<div class="room list container">
+		<div id="id6c">
+	<table class="room-list table table-striped table-hover">
+		
+	</table>
+</div>
+	</div>
+	<div class="rooms title">Private rooms</div>
+	<div class="room list container">
+		<div id="id6d">
+	<table class="room-list table table-striped table-hover">
+		
+	</table>
+</div>
+	</div>
+	<div id="id54" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id6e" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id6e">Invite message</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id6f"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form id="id52" method="post" action="./?1-1.-main~container-main-invite~to~room-inviteMsg-form"><div id="id52_hf_0" hidden="" class="hidden-fields"></div>
+		<textarea class="w-100" name="message"></textarea>
+		<div>
+			<input type="checkbox" name="enterRoom" id="id70"/><label id="id70-w-lbl" for="id70">Enter room after sending invitation</label>
+		</div>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="main-container:main:invite-to-room:inviteMsg:dialog:footer:buttons:0:button" id="id53" class="btn  btn-outline-primary">
+            Send invitation
+        </button>
+                        
+                            <button type="button" id="id55" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id57" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div hidden="hidden"></div>
+</div></div>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.markup.html.pages.BrowserInfoForm/wicket-browser-info-ver-3E3ED096DC173FF1D7266810E67BFABE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="om-main" src="../../js/main.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="om-util-init" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+OmUtil.init({"debug":false})
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="showUserInfo-95833fee-4dfb-482f-98fc-0e8ba890d9fb" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function showUserInfo(userId) {
+var attrs = {"u":"./?1-1.1-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="addContact-b3923516-128d-4801-97f2-0966e4477d67" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function addContact(userId) {
+var attrs = {"u":"./?1-1.2-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="privateMessage-3669f347-ba22-4e63-a202-df759f90b8d6" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function privateMessage(userId) {
+var attrs = {"u":"./?1-1.3-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="inviteUser-e686ed61-72a6-4336-b5b6-bf7449baf506" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function inviteUser(userId) {
+var attrs = {"u":"./?1-1.4-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="preserve-bs-tooltip" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+const bstooltip = jQuery.fn.tooltip;
+/*]]
+>*/
+</script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/jquery-ui/1.14.2/jquery-ui-ver-4FC65EC60712F6DC7C12892ACF51CC64.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="restore-bs-tooltip" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+jQuery.fn.tooltip = bstooltip;
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="om-chat" src="../../js/chat.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="chatActivity-a67cbbef-f07f-4e78-921c-302950d5ec36" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function chatActivity(type,roomId,msgId) {
+var attrs = {"u":"./?1-1.0-main~container-main-chatPanel-chat","c":"chat"};
+var params = [{"name":"type","value":type},{"name":"roomId","value":roomId},{"name":"msgId","value":msgId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.EditorStyleSheetResourceReference/css/editor-ver-027E6CF0E49013BE0BA5A2273C2BE146.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.EditorJavaScriptResourceReference/js/editor-ver-1E2C148343A7CDCF3C36F84D05A88A6C.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.BootstrapWysiwygJavaScriptResourceReference/js/bootstrap-wysiwyg-ver-2731F22ABD63C94F23A5AF839761331F.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.JQueryHotKeysJavaScriptResourceReference/js/jquery.hotkeys-ver-89A115D74D249709EE41BEEF54DBA3C5.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="user-multi-choice" src="../resource/org.apache.openmeetings.web.util.UserMultiChoice/user-multi-choice-ver-635BCD831ACAC35A939E7783A9D01A42.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.protocol.ws.api.WicketWebSocketJQueryResourceReference/res/js/wicket-websocket-jquery-ver-B538D514A84740870773649C4330BC10.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="ws-connected-script" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Event.subscribe(Wicket.Event.Topic.WebSocket.Opened, function() {Wicket.WebSocket.send('socketConnected');});
+/*]]
+>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]
+>*/
+</script>
+<script type="text/javascript" src="../resource/org.apache.wicket.extensions.ajax.AjaxDownloadBehavior/wicket-ajaxdownload-ver-E9A61BEF8883E76D4FF66128A89813ED.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/select2/4.1.0-rc.0/dist/js/select2.full-ver-D279FEC970D3A6176C5E66905CD98F64.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/select2/4.1.0-rc.0/dist/css/select2-ver-E71C39430469A3EEA74514A2B48F6536.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/select2/4.1.0-rc.0/dist/js/i18n/en-ver-19258707D627FB6F62A886B5EC16E778.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/eonasdan__tempus-dominus/6.10.4/dist/css/tempus-dominus-ver-73E16947D776F7DC12054067E7697451.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/eonasdan__tempus-dominus/6.10.4/dist/js/tempus-dominus-ver-5D3BB0B33BA2DE119C294A856CE3AB26.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.references.TempusDominusJsReference/js/wicket.tempus-dominus-ver-C079D02731AAA2A069FC0F205D42EB89.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.openmeetings.web.common.datetime.AbstractOmDateTimePicker/datepicker-functions-ver-1AF2ED166AB6A00BDE35B65683FC40F3.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.urlfragment.UrlParametersReceivingBehavior/urlfragment-ver-DBC507E012E2A775149FD09196030D3D.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../../css/theme_om/jquery-ui.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/theme.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/font-awesome/7.1.0/css/all-ver-2A16261AD0706F6F7FBF4CB04E487611.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/custom.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+</head>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_FAILURE, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_BEFORE, showBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_SUCCESS, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_COMPLETE, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.WebSocket.Opened, function() { Wicket.WebSocket.send('socketConnected'); });})();(function(){;(function(undefined) {
+	'use strict';
+
+	if (typeof(Wicket.WebSocket.appName) === "undefined") {
+		jQuery.extend(Wicket.WebSocket, { pageId: 1,  context: 'org.apache.openmeetings.web.pages.MainPage', resourceName: '', connectionToken: '',
+			baseUrl: 'wicket/bookmarkable/', contextPath: '/openmeetings', appName: 'OpenmeetingsApplication',
+			port: 0, securePort: 0, filterPrefix: '', sessionId: '' });
+		Wicket.WebSocket.createDefaultConnection();
+	}
+})();
+})();(function(){OmUtil.ping();})();(function(){new bootstrap.Modal(document.getElementById('id42'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-activeTab","m":"POST","c":"activeChatTab","f":"id43","e":"change"});})();(function(){jQuery('#id3e').wysiwyg({  });})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-send","m":"POST","c":"id45","f":"id43","sc":"send","pre":[function(attrs){return Chat.validate();}],"e":"click","pd":true});})();(function(){Chat.reinit({"userId":3,"all":"All","room":"Room","sendOnEnter":false}); })();(function(){(function($) { $('#id46').select2({"allowClear":false,"multiple":true,"closeOnSelect":false,"templateSelection":formatOmUser,"templateResult":formatOmUser,"escapeMarkup":escapeOmUserMarkup,"selectOnClose":false,"dropdownAutoWidth":false,"dropdownParent":$('#newMessageDialog'),"ajax":{"data":function(params) { return { 'q': params.term, page: params.page, 'wicket-ajax':true, 'wicket-ajax-baseurl':[window.location.protocol, '//', window.location.host, window.location.pathname].join('')}; },"dataType":"json","delay":100,"processResults":function(data, page) { return { results: data.items, pagination: { more: data.more } };  },"url":"./?1-1.-main~container-main-newMessageDialog-form-to","cache":false},"tags":false,"language":"en"}); })(jQuery);})();(function(){jQuery('#id3f').wysiwyg({  });})();(function(){Wicket.Bootstrap.createTempusDominus('id40',{"display":{"icons":{"up":"fa-solid fa-arrow-up","down":"fa-solid fa-arrow-down","date":"fa-solid fa-calendar","time":"fa-solid fa-clock","previous":"fa-solid fa-arrow-left","next":"fa-solid fa-arrow-right","today":"fa-solid fa-calendar-check","clear":"fa-solid fa-eraser","close":"fa-solid fa-xmark"},"buttons":{},"components":{}},"restrictions":{"disabledDates":[],"enabledDates":[],"daysOfWeekDisabled":[],"disabledTimeIntervals":[],"enabledHours":[],"disabledHours":[]}},{"locale":"en-US","format":"LLL"},'en')})();(function(){omDateTimeInit('id40', 'id48');})();(function(){Wicket.Bootstrap.createTempusDominus('id41',{"display":{"icons":{"up":"fa-solid fa-arrow-up","down":"fa-solid fa-arrow-down","date":"fa-solid fa-calendar","time":"fa-solid fa-clock","previous":"fa-solid fa-arrow-left","next":"fa-solid fa-arrow-right","today":"fa-solid fa-calendar-check","clear":"fa-solid fa-eraser","close":"fa-solid fa-xmark"},"buttons":{},"components":{}},"restrictions":{"disabledDates":[],"enabledDates":[],"daysOfWeekDisabled":[],"disabledTimeIntervals":[],"enabledHours":[],"disabledHours":[]}},{"locale":"en-US","format":"LLL"},'en')})();(function(){omDateTimeInit('id41', 'id49');})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-form-bookedRoom","c":"id4a","e":"click"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-dialog-footer-buttons-0-button","m":"POST","c":"id4c","f":"id4b","sc":"main-container:main:newMessageDialog:dialog:footer:buttons:0:button","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-dialog-footer-buttons-1-button","c":"id4d","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('newMessageDialog')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('newMessageDialog'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog","c":"newMessageDialog","e":"hidden.bs.modal"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-0-button","c":"id4e","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-1-button","c":"id4f","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-2-button","c":"id51","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id50')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id50'));})();(function(){$('.om-tooltip').tooltip({html: true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-inviteMsg-dialog-footer-buttons-0-button","m":"POST","c":"id53","f":"id52","sc":"main-container:main:invite-to-room:inviteMsg:dialog:footer:buttons:0:button","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-inviteMsg-dialog-footer-buttons-1-button","c":"id55","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id54')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id54'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-dialog-footer-buttons-0-button","c":"id57","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id56')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id56'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container","c":"id3c"});})();(function(){wysiwygAddTextAreaMapper('id3e', 'id44')})();(function(){wysiwygAddTextAreaMapper('id3f', 'id47')})();(function(){Wicket.Timer.set('id58.0', function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main","c":"id58","dep":[function(attrs){return Wicket.BrowserInfo.collect()}]});}, 50);})();
+/*]]
+>*/
+</script>
+</head>
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><priority-evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){try{if(window.UrlUtil){window.UrlUtil.setFragment('user','dashboard');}}catch(e){}})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></priority-evaluate></ajax-response>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){try{if(window.UrlUtil){window.UrlUtil.setFragment('user','dashboard');}}catch(e){}})();
+/*]]
+>*/
+</script>
+</head>
+<?xml version="1.0" encoding="UTF-8"?><ajax-response></ajax-response>
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><component id="id5a" ><![CDATA[<a class="chat-btn chat-tool-icon btn btn-outline-secondary save" id="id5a" title="Save and export">
+							<i class="fas fa-save"></i>
+						</a>]]></component><component id="id5b" ><![CDATA[<a class="chat-btn chat-tool-icon btn btn-outline-danger" name="toolbarContainer:toolbar:delete" id="id5b" title="Delete server chat log">
+							<i class="fas fa-trash-alt"></i>
+						</a>]]></component><header-contribution><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]]]><![CDATA[>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="bootstrap-js" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.confirmation.ConfirmationBehavior/bootstrap-confirmation-ver-906B68C44708FD36263D895A9A340BAD.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+</head>]]></header-contribution><evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-save","c":"id5a","e":"click"});})();(function(){$('#id5b').confirmation({"btnCancelLabel":"Cancel","btnOkLabel":"OK","btnOkClass":"btn btn-sm btn-danger","btnOkIconClass":"fas fa-exclamation-triangle","customClass":"chat-delete","rootSelector":"id5b"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-delete","m":"POST","c":"id5b","f":"id43","sc":"toolbarContainer:toolbar:delete","e":"click","pd":true});})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></evaluate></ajax-response>
+<a class="chat-btn chat-tool-icon btn btn-outline-secondary save" id="id5a" title="Save and export">
+							<i class="fas fa-save"></i>
+						</a>
+<a class="chat-btn chat-tool-icon btn btn-outline-danger" name="toolbarContainer:toolbar:delete" id="id5b" title="Delete server chat log">
+							<i class="fas fa-trash-alt"></i>
+						</a>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]
+>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="bootstrap-js" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.confirmation.ConfirmationBehavior/bootstrap-confirmation-ver-906B68C44708FD36263D895A9A340BAD.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+</head>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-save","c":"id5a","e":"click"});})();(function(){$('#id5b').confirmation({"btnCancelLabel":"Cancel","btnOkLabel":"OK","btnOkClass":"btn btn-sm btn-danger","btnOkIconClass":"fas fa-exclamation-triangle","customClass":"chat-delete","rootSelector":"id5b"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-delete","m":"POST","c":"id5b","f":"id43","sc":"toolbarContainer:toolbar:delete","e":"click","pd":true});})();
+/*]]
+>*/
+</script>
+</head>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+
+-->
+<!DOCTYPE html>
+<html xml:lang="en-US" lang="en-US" dir="ltr">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+	<meta name="viewport" content="height=device-height, initial-scale=1, width=device-width, initial-scale=1" />
+	<link rel="apple-touch-icon" href="../../images/icons/apple-icon-180.png">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1620-2160.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2160-1620.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2778-1284.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2532-1170.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+	<link rel="apple-touch-startup-image" href="../../images/icons/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+	<link rel="manifest" href="../../services/info/manifest.webmanifest">
+	<link rel="shortcut icon" href="../../public/favicon.png" type="image/png"/>
+	<script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/org.apache.openmeetings.web.pages.BasePage/loader-ver-C4A9D2D0B231E64E9DE325DB90AC1C16.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/org.wicketstuff.urlfragment.UrlParametersReceivingBehavior/urlfragment-ver-DBC507E012E2A775149FD09196030D3D.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../../css/theme_om/jquery-ui.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/theme.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/font-awesome/7.1.0/css/all-ver-2A16261AD0706F6F7FBF4CB04E487611.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="bootstrap-js" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]>*/
+</script>
+<script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Event.add(window, "domready", function(event) { 
+try{if (window.UrlUtil === undefined) {window.UrlUtil = newUrlUtil({"keyValueDelimiter":"/","fragmentIdentifierSuffix":""});UrlUtil.setWicketAjaxCall(function(){var attrs = {"u":"./?1-1.0-","dep":[function(attrs){return window.UrlUtil.joinQueryAndFragment();}]};
+var params = [];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+});$(window).bind('hashchange',window.UrlUtil.back);window.UrlUtil.sendUrlParameters();}}catch(e){};
+Wicket.Ajax.ajax({"u":"./?1-1.1-"});;
+Wicket.Event.publish(Wicket.Event.Topic.AJAX_HANDLERS_BOUND);
+;});
+/*]]>*/
+</script>
+<meta name="wicket.header.items"/>
+	<title>OpenMeetings</title>
+	<link rel="stylesheet" type="text/css" href="../../css/custom.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+
+</head>
+<body class="om-body">
+	<div class="main-loader" id="id3b">
+		<div class="sk-chasing-dots">
+			<div class="sk-child sk-dot1"></div>
+			<div class="sk-child sk-dot2"></div>
+		</div>
+	</div>
+	<div id="header" hidden="" data-wicket-placeholder=""></div>
+	
+	<div class="main-container" id="id3c"><div class="main h-100">
+</div></div>
+
+	<div id="alert-holder" class="position-fixed bottom-0 end-0 mx-3" data-lbl-close="Close"></div>
+</body>
+</html>
+
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><component id="id3c" ><![CDATA[<div class="main-container" id="id3c"><div class="main h-100" id="id58">
+	<div id="topControls">
+		<div id="topLinks" hidden="" data-wicket-placeholder=""></div>
+		<div id="busy-indicator" class="end-0"><i class="fas fa-spinner fa-spin"></i></div>
+		<div id="menu" hidden="" data-wicket-placeholder=""></div>
+	</div>
+	
+	<div id="contents"><div class="child-panel h-100"></div></div>
+	<div class="closed end-0 me-3" id="chatPanel">
+	<div id="chatPopup" class="bg-body">
+		<div class="control block clickable bg-secondary" data-ttl-dock="Click to dock panel" data-ttl-undock="Click to undock panel" data-new-msg="You have new chat message(s)">
+			<i class="fas me-1"></i>
+			<div class="label">Chat</div>
+		</div>
+		<div id="chat">
+	<div id="chatTabs">
+		<ul class="nav nav-tabs">
+		</ul>
+		<div class="tab-content"></div>
+	</div>
+	<form id="id43" method="post" action="./?1-1.-main~container-main-chatPanel-chat-sendForm"><div id="id43_hf_0" hidden="" class="hidden-fields"></div>
+		<div class="tool-container" id="id59">
+	<nav class="btn-toolbar chat-toolbar navbar navbar-expand navbar-light bg-body p-0" data-role="editor-toolbar" data-bs-target="#id3e">
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarChatContent" aria-controls="navbarChatContent" aria-expanded="false">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarChatContent">
+			<ul class="navbar-nav ms-auto">
+				<li class="nav-item dropup">
+					<a id="emoticons" class="chat btn btn-outline-secondary emt dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Emoticons"></a>
+					<ul class="chat dropdown-menu" >
+						<li>
+							<table id="emotMenuList">
+							</table>
+						</li>
+					</ul>
+				</li>
+				<li class="nav-item dropup">
+					<a id="fontSize" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" role="button" title="Font Size"> A </a>
+					<div class="dropdown-menu">
+						<a class="dropdown-item" data-edit="fontSize 5"><span class="font-huge text-center clickable">Huge</span></a>
+						<a class="dropdown-item" data-edit="fontSize 3"><span class="font-small text-center clickable">Normal</span></a>
+						<a class="dropdown-item" data-edit="fontSize 1"><span class="font-tiny text-center clickable">Small</span></a>
+					</div>
+				</li>
+				<li class="nav-item dropup">
+					<a id="fontStyle" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Font Style">
+						<i class="fas fa-cog"></i>
+					</a>
+					<ul class="dropdown-menu btns-only">
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary bold" id="bold" data-edit="bold" title="Bold (Ctrl/Cmd+B)"> B </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary italic" id="italic" data-edit="italic" title="Italic (Ctrl/Cmd+I)"> I </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary strike" id="strikethrough" data-edit="strikethrough" title="Strikethrough"> S </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary under" id="underline" data-edit="underline" title="Underline (Ctrl/Cmd+U)"> U </a></li>
+					</ul>
+				</li>
+				<li class="nav-item dropup">
+					<a id="hyperlink" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Hyperlink">
+						<i class="fas fa-link"></i>
+					</a>
+					<div class="dropdown-menu input-append">
+						<input class="span2 link-field" placeholder="URL" type="text"/>
+						<button class="btn btn-outline-secondary" type="button">Add</button>
+					</div>
+				</li>
+				<li class="nav-item dropup">
+					<a id="actions" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Actions">
+						<i class="fas fa-bars"></i>
+					</a>
+					<ul class="dropdown-menu btns-only">
+						<li><a id="id5a" hidden="" data-wicket-placeholder=""></a></li>
+						<li><a id="id5b" hidden="" data-wicket-placeholder=""></a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary audio" data-sound-enabled="Mute sound" data-sound-muted="Enable sound">
+							<i class="fas"></i>
+						</a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary send-btn" data-send-enter="Send on Enter" data-send-ctrl="Send on Ctrl+Enter"><strong>&crarr;</strong></a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</nav>
+</div>
+		<div class="chat-msg-container">
+			<div class="input-group">
+				<div id="chatMessage">
+    <div class="wysiwyg-editor" id="id3e"></div>
+    <input type="hidden" value="" name="chatMessage:textarea" id="id44"/>
+</div>
+				<button class="send btn btn-outline-primary" name="send" id="id45" title="Send">&crarr;</button>
+			</div>
+			<input type="hidden" id="activeChatTab" value="" name="activeTab"/>
+		</div>
+	</form>
+	<div hidden="hidden">
+		<div id="chat-date-template" class='date-row'></div>
+		<div id="chat-msg-template" class='msg-row'>
+			<div class='user-row ps-5'>
+				<div class='from float-start'></div>
+				<span class='time float-end'></span>
+				<div class="clear"></div>
+			</div>
+			<div class='msg float-start'></div>
+			<div class="clear"></div>
+		</div>
+		<div id="chat-actions-short-template" class="user clickable" title="Contact information"><i class="fas fa-address-card"></i></div>
+		<div id="chat-actions-others-template">
+			<div class="add clickable" title="Add to contacts"><i class="fas fa-plus-circle"></i></div>
+			<div class="new-email clickable" title="Send private message"><i class="fas fa-envelope"></i></div>
+			<div class="invite clickable" title="Invite user to conference room"><i class="fas fa-link"></i></div>
+		</div>
+		<div id="chat-actions-accept-template" class="accept clickable" title="Accept"><i class="fas fa-check"></i></div>
+		<button id="chat-close-block" class="btn btn-sm btn-outline-secondary close-chat" title="Close">
+			<i class="fas fa-times"></i>
+			<span class="visually-hidden">Close</span>
+		</button>
+		<div id="chat-msg-area-template" class="messageArea bg-body tab-pane h-100"></div>
+	</div>
+</div>
+	</div>
+</div>
+	<div id="id42" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id5c" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id5c">About</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id5d"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div class="row g-0">
+		<div class="col-6">Name</div>
+		<div class="col-6">OpenMeetings</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Version</div>
+		<div class="col-6">9.1.0</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Revision</div>
+		<div class="col-6">eff125a</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Build date</div>
+		<div class="col-6">2026-07-08T06:20:19Z</div>
+	</div>
+
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+	<div id="id50" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id5e" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id5e">User profile</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id5f"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div id="id60">
+		<div></div>
+	</div>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id4e" class="btn  btn-outline-primary">
+            Send private message
+        </button>
+                        
+                            <button type="button" id="id4f" class="btn  btn-outline-info">
+            Add to contacts
+        </button>
+                        
+                            <button type="button" id="id51" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="newMessageDialog" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id61" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id61">Write new message</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id62"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form id="id4b" method="post" action="./?1-1.-main~container-main-newMessageDialog-form"><div id="id4b_hf_0" hidden="" class="hidden-fields"></div>
+		<td id="id63">
+            
+        </td>
+		<div class="formelement row">
+			<label class="form-label col-2 text-right required" id="id46-w-lbl" for="id46">To:</label>
+			<div class="om-select2 p-0 d-inline-block col-9"><select class="input w-100" name="to" id="id46" multiple="multiple"></select></div>
+		</div>
+		<div class="formelement row">
+			<label class="form-label col-2 text-right" id="id64-w-lbl" for="id64">Subject:</label>
+			<div class="col-9 p-0">
+				<input type="text" class="form-control" value="" name="subject" id="id64"/>
+			</div>
+		</div>
+		<div>
+	<div class="btn-toolbar wysiwyg-toolbar" data-role="editor-toolbar" id="bToolbar" data-target="#id3f">
+		<div class="btn-group">
+			<a id="fontSize" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" role="button" title="Font Size"> A </a>
+			<ul class="dropdown-menu">
+				<li><a class="font-huge text-center clickable" data-edit="fontSize 5">Huge</a></li>
+				<li><a class="font-small text-center clickable" data-edit="fontSize 3">Medium</a></li>
+				<li><a class="font-tiny text-center clickable" data-edit="fontSize 1">Small</a></li>
+			</ul>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary tool-btn bold" data-edit="bold" title="Bold (Ctrl/Cmd+B)"> B </a>
+			<a class="btn btn-outline-secondary tool-btn italic" data-edit="italic" title="Italic (Ctrl/Cmd+I)"> I </a>
+			<a class="btn btn-outline-secondary tool-btn strike" data-edit="strikethrough" title="Strikethrough"> S </a>
+			<a class="btn btn-outline-secondary tool-btn under" data-edit="underline" title="Underline (Ctrl/Cmd+U)"> U </a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="insertunorderedlist" title="Bullet list">
+				<i class="fas fa-list-ul"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="insertorderedlist" title="Number list">
+				<i class="fas fa-list-ol"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="outdent" title="Indent (Tab)">
+				<i class="fas fa-indent"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="indent" title="Reduce indent (Shift+Tab)">
+				<i class="fas fa-outdent"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="justifyleft" title="Align Left (Ctrl/Cmd+L)">
+				<i class="fas fa-align-left"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifycenter" title="Center (Ctrl/Cmd+E)">
+				<i class="fas fa-align-center"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifyright" title="Align Right (Ctrl/Cmd+R)">
+				<i class="fas fa-align-right"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifyfull" title="Justify (Ctrl/Cmd+J)">
+				<i class="fas fa-align-justify"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Hyperlink">
+				<i class="fas fa-link"></i>
+			</a>
+			<div class="dropdown-menu input-append">
+				<input class="span2" placeholder="URL" type="text" data-edit="createLink"/>
+				<button class="btn btn-outline-secondary" type="button">Add</button>
+			</div>
+			<a class="btn btn-outline-secondary" data-edit="unlink" title="Remove Hyperlink">
+				<i class="fas fa-unlink"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="undo" title="Undo (Ctrl/Cmd+Z)">
+				<i class="fas fa-undo-alt"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="redo" title="Redo (Ctrl/Cmd+Y)">
+				<i class="fas fa-redo-alt"></i>
+			</a>
+		</div>
+	</div>
+</div>
+		<div class="private message body">
+    <div class="wysiwyg-editor" id="id3f"></div>
+    <input type="hidden" value="" name="message:textarea" id="id47"/>
+</div>
+		<div class="mt-1 mb-1" id="id65">
+			<input type="checkbox" name="bookedRoom" id="id4a"/><label id="id4a-w-lbl" for="id4a">Book conference room</label>
+		</div>
+		<div id="id66">
+			<div class="row">
+				<div class="col-7">
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id67-w-lbl" for="id67">Type</label>
+						<div class="col-10 p-0">
+							<select class="form-select" name="roomParamsBlock:roomParams:room.type" id="id67">
+<option selected="selected" value="">Choose One</option>
+<option value="CONFERENCE">conference (1-25 users)</option>
+<option value="PRESENTATION">presentation (1-150 users)</option>
+<option value="INTERVIEW">interview (1:1 meeting with recording)</option>
+</select>
+						</div>
+					</div>
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id68-w-lbl" for="id68">Start</label>
+						<div class="d-inline-block col-10 p-0"><span class="date time picker" id="id68">
+	<span id="id40" class="input-group date" data-td-target-input="nearest" data-td-target-toggle="nearest">
+    <input type="text" class="form-control" value="" name="roomParamsBlock:roomParams:start:picker:date" data-td-target="#id40"/>
+    <span class="input-group-text" data-td-target="#id40" data-td-toggle="datetimepicker">
+        <i class="fa-regular fa-calendar-days"></i>
+    </span>
+</span>
+	<input type="hidden" value="2026-10-16T22:41:32.034544712" name="roomParamsBlock:roomParams:start:date" id="id48"/>
+</span></div>
+					</div>
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id69-w-lbl" for="id69">End</label>
+						<div class="d-inline-block col-10 p-0"><span class="date time picker" id="id69">
+	<span id="id41" class="input-group date" data-td-target-input="nearest" data-td-target-toggle="nearest">
+    <input type="text" class="form-control" value="" name="roomParamsBlock:roomParams:end:picker:date" data-td-target="#id41"/>
+    <span class="input-group-text" data-td-target="#id41" data-td-toggle="datetimepicker">
+        <i class="fa-regular fa-calendar-days"></i>
+    </span>
+</span>
+	<input type="hidden" value="2026-10-16T22:41:32.036782045" name="roomParamsBlock:roomParams:end:date" id="id49"/>
+</span></div>
+					</div>
+				</div>
+				<div class="col-5">
+					<i class="fas fa-info-circle m-1 text-info"></i>Add an optional request for meeting to the message and create a conference room. The event is then copied in the calendar of every participant.
+				</div>
+			</div>
+		</div>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="main-container:main:newMessageDialog:dialog:footer:buttons:0:button" id="id4c" class="btn  btn-outline-primary">
+            Send
+        </button>
+                        
+                            <button type="button" id="id4d" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="id56" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id6a" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id6a">Invite user to conference room</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id6b"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div class="rooms desc"><i class="fas fa-info-circle m-1 text-info"></i>Choose a conference room. The invited user will get a message with your name and a link to the room.</div>
+	<div class="rooms title">Public rooms</div>
+	<div class="room list container">
+		<div id="id6c">
+	<table class="room-list table table-striped table-hover">
+		
+	</table>
+</div>
+	</div>
+	<div class="rooms title">Private rooms</div>
+	<div class="room list container">
+		<div id="id6d">
+	<table class="room-list table table-striped table-hover">
+		
+	</table>
+</div>
+	</div>
+	<div id="id54" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id6e" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id6e">Invite message</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id6f"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form id="id52" method="post" action="./?1-1.-main~container-main-invite~to~room-inviteMsg-form"><div id="id52_hf_0" hidden="" class="hidden-fields"></div>
+		<textarea class="w-100" name="message"></textarea>
+		<div>
+			<input type="checkbox" name="enterRoom" id="id70"/><label id="id70-w-lbl" for="id70">Enter room after sending invitation</label>
+		</div>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="main-container:main:invite-to-room:inviteMsg:dialog:footer:buttons:0:button" id="id53" class="btn  btn-outline-primary">
+            Send invitation
+        </button>
+                        
+                            <button type="button" id="id55" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id57" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div hidden="hidden"></div>
+</div></div>]]></component><header-contribution><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.markup.html.pages.BrowserInfoForm/wicket-browser-info-ver-3E3ED096DC173FF1D7266810E67BFABE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="om-main" src="../../js/main.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="om-util-init" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+OmUtil.init({"debug":false})
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="showUserInfo-95833fee-4dfb-482f-98fc-0e8ba890d9fb" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function showUserInfo(userId) {
+var attrs = {"u":"./?1-1.1-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="addContact-b3923516-128d-4801-97f2-0966e4477d67" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function addContact(userId) {
+var attrs = {"u":"./?1-1.2-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="privateMessage-3669f347-ba22-4e63-a202-df759f90b8d6" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function privateMessage(userId) {
+var attrs = {"u":"./?1-1.3-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="inviteUser-e686ed61-72a6-4336-b5b6-bf7449baf506" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function inviteUser(userId) {
+var attrs = {"u":"./?1-1.4-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="preserve-bs-tooltip" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+const bstooltip = jQuery.fn.tooltip;
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/jquery-ui/1.14.2/jquery-ui-ver-4FC65EC60712F6DC7C12892ACF51CC64.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="restore-bs-tooltip" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+jQuery.fn.tooltip = bstooltip;
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" id="om-chat" src="../../js/chat.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="chatActivity-a67cbbef-f07f-4e78-921c-302950d5ec36" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function chatActivity(type,roomId,msgId) {
+var attrs = {"u":"./?1-1.0-main~container-main-chatPanel-chat","c":"chat"};
+var params = [{"name":"type","value":type},{"name":"roomId","value":roomId},{"name":"msgId","value":msgId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]]]><![CDATA[>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.EditorStyleSheetResourceReference/css/editor-ver-027E6CF0E49013BE0BA5A2273C2BE146.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.EditorJavaScriptResourceReference/js/editor-ver-1E2C148343A7CDCF3C36F84D05A88A6C.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.BootstrapWysiwygJavaScriptResourceReference/js/bootstrap-wysiwyg-ver-2731F22ABD63C94F23A5AF839761331F.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.JQueryHotKeysJavaScriptResourceReference/js/jquery.hotkeys-ver-89A115D74D249709EE41BEEF54DBA3C5.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="user-multi-choice" src="../resource/org.apache.openmeetings.web.util.UserMultiChoice/user-multi-choice-ver-635BCD831ACAC35A939E7783A9D01A42.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.protocol.ws.api.WicketWebSocketJQueryResourceReference/res/js/wicket-websocket-jquery-ver-B538D514A84740870773649C4330BC10.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="ws-connected-script" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Event.subscribe(Wicket.Event.Topic.WebSocket.Opened, function() {Wicket.WebSocket.send('socketConnected');});
+/*]]]]><![CDATA[>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]]]><![CDATA[>*/
+</script>
+<script type="text/javascript" src="../resource/org.apache.wicket.extensions.ajax.AjaxDownloadBehavior/wicket-ajaxdownload-ver-E9A61BEF8883E76D4FF66128A89813ED.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/select2/4.1.0-rc.0/dist/js/select2.full-ver-D279FEC970D3A6176C5E66905CD98F64.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/select2/4.1.0-rc.0/dist/css/select2-ver-E71C39430469A3EEA74514A2B48F6536.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/select2/4.1.0-rc.0/dist/js/i18n/en-ver-19258707D627FB6F62A886B5EC16E778.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/eonasdan__tempus-dominus/6.10.4/dist/css/tempus-dominus-ver-73E16947D776F7DC12054067E7697451.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/eonasdan__tempus-dominus/6.10.4/dist/js/tempus-dominus-ver-5D3BB0B33BA2DE119C294A856CE3AB26.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.references.TempusDominusJsReference/js/wicket.tempus-dominus-ver-C079D02731AAA2A069FC0F205D42EB89.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.openmeetings.web.common.datetime.AbstractOmDateTimePicker/datepicker-functions-ver-1AF2ED166AB6A00BDE35B65683FC40F3.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.urlfragment.UrlParametersReceivingBehavior/urlfragment-ver-DBC507E012E2A775149FD09196030D3D.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../../css/theme_om/jquery-ui.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/theme.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/font-awesome/7.1.0/css/all-ver-2A16261AD0706F6F7FBF4CB04E487611.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/custom.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+</head>]]></header-contribution><evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_FAILURE, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_BEFORE, showBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_SUCCESS, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_COMPLETE, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.WebSocket.Opened, function() { Wicket.WebSocket.send('socketConnected'); });})();(function(){;(function(undefined) {
+	'use strict';
+
+	if (typeof(Wicket.WebSocket.appName) === "undefined") {
+		jQuery.extend(Wicket.WebSocket, { pageId: 1,  context: 'org.apache.openmeetings.web.pages.MainPage', resourceName: '', connectionToken: '',
+			baseUrl: 'wicket/bookmarkable/', contextPath: '/openmeetings', appName: 'OpenmeetingsApplication',
+			port: 0, securePort: 0, filterPrefix: '', sessionId: '' });
+		Wicket.WebSocket.createDefaultConnection();
+	}
+})();
+})();(function(){OmUtil.ping();})();(function(){new bootstrap.Modal(document.getElementById('id42'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-activeTab","m":"POST","c":"activeChatTab","f":"id43","e":"change"});})();(function(){jQuery('#id3e').wysiwyg({  });})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-send","m":"POST","c":"id45","f":"id43","sc":"send","pre":[function(attrs){return Chat.validate();}],"e":"click","pd":true});})();(function(){Chat.reinit({"userId":3,"all":"All","room":"Room","sendOnEnter":false}); })();(function(){(function($) { $('#id46').select2({"allowClear":false,"multiple":true,"closeOnSelect":false,"templateSelection":formatOmUser,"templateResult":formatOmUser,"escapeMarkup":escapeOmUserMarkup,"selectOnClose":false,"dropdownAutoWidth":false,"dropdownParent":$('#newMessageDialog'),"ajax":{"data":function(params) { return { 'q': params.term, page: params.page, 'wicket-ajax':true, 'wicket-ajax-baseurl':[window.location.protocol, '//', window.location.host, window.location.pathname].join('')}; },"dataType":"json","delay":100,"processResults":function(data, page) { return { results: data.items, pagination: { more: data.more } };  },"url":"./?1-1.-main~container-main-newMessageDialog-form-to","cache":false},"tags":false,"language":"en"}); })(jQuery);})();(function(){jQuery('#id3f').wysiwyg({  });})();(function(){Wicket.Bootstrap.createTempusDominus('id40',{"display":{"icons":{"up":"fa-solid fa-arrow-up","down":"fa-solid fa-arrow-down","date":"fa-solid fa-calendar","time":"fa-solid fa-clock","previous":"fa-solid fa-arrow-left","next":"fa-solid fa-arrow-right","today":"fa-solid fa-calendar-check","clear":"fa-solid fa-eraser","close":"fa-solid fa-xmark"},"buttons":{},"components":{}},"restrictions":{"disabledDates":[],"enabledDates":[],"daysOfWeekDisabled":[],"disabledTimeIntervals":[],"enabledHours":[],"disabledHours":[]}},{"locale":"en-US","format":"LLL"},'en')})();(function(){omDateTimeInit('id40', 'id48');})();(function(){Wicket.Bootstrap.createTempusDominus('id41',{"display":{"icons":{"up":"fa-solid fa-arrow-up","down":"fa-solid fa-arrow-down","date":"fa-solid fa-calendar","time":"fa-solid fa-clock","previous":"fa-solid fa-arrow-left","next":"fa-solid fa-arrow-right","today":"fa-solid fa-calendar-check","clear":"fa-solid fa-eraser","close":"fa-solid fa-xmark"},"buttons":{},"components":{}},"restrictions":{"disabledDates":[],"enabledDates":[],"daysOfWeekDisabled":[],"disabledTimeIntervals":[],"enabledHours":[],"disabledHours":[]}},{"locale":"en-US","format":"LLL"},'en')})();(function(){omDateTimeInit('id41', 'id49');})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-form-bookedRoom","c":"id4a","e":"click"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-dialog-footer-buttons-0-button","m":"POST","c":"id4c","f":"id4b","sc":"main-container:main:newMessageDialog:dialog:footer:buttons:0:button","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-dialog-footer-buttons-1-button","c":"id4d","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('newMessageDialog')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('newMessageDialog'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog","c":"newMessageDialog","e":"hidden.bs.modal"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-0-button","c":"id4e","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-1-button","c":"id4f","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-2-button","c":"id51","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id50')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id50'));})();(function(){$('.om-tooltip').tooltip({html: true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-inviteMsg-dialog-footer-buttons-0-button","m":"POST","c":"id53","f":"id52","sc":"main-container:main:invite-to-room:inviteMsg:dialog:footer:buttons:0:button","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-inviteMsg-dialog-footer-buttons-1-button","c":"id55","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id54')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id54'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-dialog-footer-buttons-0-button","c":"id57","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id56')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id56'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container","c":"id3c"});})();(function(){wysiwygAddTextAreaMapper('id3e', 'id44')})();(function(){wysiwygAddTextAreaMapper('id3f', 'id47')})();(function(){Wicket.Timer.set('id58.0', function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main","c":"id58","dep":[function(attrs){return Wicket.BrowserInfo.collect()}]});}, 50);})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></evaluate></ajax-response>
+<div class="main-container" id="id3c"><div class="main h-100" id="id58">
+	<div id="topControls">
+		<div id="topLinks" hidden="" data-wicket-placeholder=""></div>
+		<div id="busy-indicator" class="end-0"><i class="fas fa-spinner fa-spin"></i></div>
+		<div id="menu" hidden="" data-wicket-placeholder=""></div>
+	</div>
+	
+	<div id="contents"><div class="child-panel h-100"></div></div>
+	<div class="closed end-0 me-3" id="chatPanel">
+	<div id="chatPopup" class="bg-body">
+		<div class="control block clickable bg-secondary" data-ttl-dock="Click to dock panel" data-ttl-undock="Click to undock panel" data-new-msg="You have new chat message(s)">
+			<i class="fas me-1"></i>
+			<div class="label">Chat</div>
+		</div>
+		<div id="chat">
+	<div id="chatTabs">
+		<ul class="nav nav-tabs">
+		</ul>
+		<div class="tab-content"></div>
+	</div>
+	<form id="id43" method="post" action="./?1-1.-main~container-main-chatPanel-chat-sendForm"><div id="id43_hf_0" hidden="" class="hidden-fields"></div>
+		<div class="tool-container" id="id59">
+	<nav class="btn-toolbar chat-toolbar navbar navbar-expand navbar-light bg-body p-0" data-role="editor-toolbar" data-bs-target="#id3e">
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarChatContent" aria-controls="navbarChatContent" aria-expanded="false">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarChatContent">
+			<ul class="navbar-nav ms-auto">
+				<li class="nav-item dropup">
+					<a id="emoticons" class="chat btn btn-outline-secondary emt dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Emoticons"></a>
+					<ul class="chat dropdown-menu" >
+						<li>
+							<table id="emotMenuList">
+							</table>
+						</li>
+					</ul>
+				</li>
+				<li class="nav-item dropup">
+					<a id="fontSize" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" role="button" title="Font Size"> A </a>
+					<div class="dropdown-menu">
+						<a class="dropdown-item" data-edit="fontSize 5"><span class="font-huge text-center clickable">Huge</span></a>
+						<a class="dropdown-item" data-edit="fontSize 3"><span class="font-small text-center clickable">Normal</span></a>
+						<a class="dropdown-item" data-edit="fontSize 1"><span class="font-tiny text-center clickable">Small</span></a>
+					</div>
+				</li>
+				<li class="nav-item dropup">
+					<a id="fontStyle" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Font Style">
+						<i class="fas fa-cog"></i>
+					</a>
+					<ul class="dropdown-menu btns-only">
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary bold" id="bold" data-edit="bold" title="Bold (Ctrl/Cmd+B)"> B </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary italic" id="italic" data-edit="italic" title="Italic (Ctrl/Cmd+I)"> I </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary strike" id="strikethrough" data-edit="strikethrough" title="Strikethrough"> S </a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary under" id="underline" data-edit="underline" title="Underline (Ctrl/Cmd+U)"> U </a></li>
+					</ul>
+				</li>
+				<li class="nav-item dropup">
+					<a id="hyperlink" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Hyperlink">
+						<i class="fas fa-link"></i>
+					</a>
+					<div class="dropdown-menu input-append">
+						<input class="span2 link-field" placeholder="URL" type="text"/>
+						<button class="btn btn-outline-secondary" type="button">Add</button>
+					</div>
+				</li>
+				<li class="nav-item dropup">
+					<a id="actions" class="chat btn btn-outline-secondary dropdown-toggle nav-link" data-bs-toggle="dropdown" title="Actions">
+						<i class="fas fa-bars"></i>
+					</a>
+					<ul class="dropdown-menu btns-only">
+						<li><a id="id5a" hidden="" data-wicket-placeholder=""></a></li>
+						<li><a id="id5b" hidden="" data-wicket-placeholder=""></a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary audio" data-sound-enabled="Mute sound" data-sound-muted="Enable sound">
+							<i class="fas"></i>
+						</a></li>
+						<li><a class="chat-btn chat-tool-icon btn btn-outline-secondary send-btn" data-send-enter="Send on Enter" data-send-ctrl="Send on Ctrl+Enter"><strong>&crarr;</strong></a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</nav>
+</div>
+		<div class="chat-msg-container">
+			<div class="input-group">
+				<div id="chatMessage">
+    <div class="wysiwyg-editor" id="id3e"></div>
+    <input type="hidden" value="" name="chatMessage:textarea" id="id44"/>
+</div>
+				<button class="send btn btn-outline-primary" name="send" id="id45" title="Send">&crarr;</button>
+			</div>
+			<input type="hidden" id="activeChatTab" value="" name="activeTab"/>
+		</div>
+	</form>
+	<div hidden="hidden">
+		<div id="chat-date-template" class='date-row'></div>
+		<div id="chat-msg-template" class='msg-row'>
+			<div class='user-row ps-5'>
+				<div class='from float-start'></div>
+				<span class='time float-end'></span>
+				<div class="clear"></div>
+			</div>
+			<div class='msg float-start'></div>
+			<div class="clear"></div>
+		</div>
+		<div id="chat-actions-short-template" class="user clickable" title="Contact information"><i class="fas fa-address-card"></i></div>
+		<div id="chat-actions-others-template">
+			<div class="add clickable" title="Add to contacts"><i class="fas fa-plus-circle"></i></div>
+			<div class="new-email clickable" title="Send private message"><i class="fas fa-envelope"></i></div>
+			<div class="invite clickable" title="Invite user to conference room"><i class="fas fa-link"></i></div>
+		</div>
+		<div id="chat-actions-accept-template" class="accept clickable" title="Accept"><i class="fas fa-check"></i></div>
+		<button id="chat-close-block" class="btn btn-sm btn-outline-secondary close-chat" title="Close">
+			<i class="fas fa-times"></i>
+			<span class="visually-hidden">Close</span>
+		</button>
+		<div id="chat-msg-area-template" class="messageArea bg-body tab-pane h-100"></div>
+	</div>
+</div>
+	</div>
+</div>
+	<div id="id42" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id5c" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id5c">About</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id5d"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div class="row g-0">
+		<div class="col-6">Name</div>
+		<div class="col-6">OpenMeetings</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Version</div>
+		<div class="col-6">9.1.0</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Revision</div>
+		<div class="col-6">eff125a</div>
+	</div>
+	<div class="row g-0">
+		<div class="col-6">Build date</div>
+		<div class="col-6">2026-07-08T06:20:19Z</div>
+	</div>
+
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+	<div id="id50" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id5e" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id5e">User profile</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id5f"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div id="id60">
+		<div></div>
+	</div>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id4e" class="btn  btn-outline-primary">
+            Send private message
+        </button>
+                        
+                            <button type="button" id="id4f" class="btn  btn-outline-info">
+            Add to contacts
+        </button>
+                        
+                            <button type="button" id="id51" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="newMessageDialog" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id61" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id61">Write new message</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id62"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form id="id4b" method="post" action="./?1-1.-main~container-main-newMessageDialog-form"><div id="id4b_hf_0" hidden="" class="hidden-fields"></div>
+		<td id="id63">
+            
+        </td>
+		<div class="formelement row">
+			<label class="form-label col-2 text-right required" id="id46-w-lbl" for="id46">To:</label>
+			<div class="om-select2 p-0 d-inline-block col-9"><select class="input w-100" name="to" id="id46" multiple="multiple"></select></div>
+		</div>
+		<div class="formelement row">
+			<label class="form-label col-2 text-right" id="id64-w-lbl" for="id64">Subject:</label>
+			<div class="col-9 p-0">
+				<input type="text" class="form-control" value="" name="subject" id="id64"/>
+			</div>
+		</div>
+		<div>
+	<div class="btn-toolbar wysiwyg-toolbar" data-role="editor-toolbar" id="bToolbar" data-target="#id3f">
+		<div class="btn-group">
+			<a id="fontSize" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" role="button" title="Font Size"> A </a>
+			<ul class="dropdown-menu">
+				<li><a class="font-huge text-center clickable" data-edit="fontSize 5">Huge</a></li>
+				<li><a class="font-small text-center clickable" data-edit="fontSize 3">Medium</a></li>
+				<li><a class="font-tiny text-center clickable" data-edit="fontSize 1">Small</a></li>
+			</ul>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary tool-btn bold" data-edit="bold" title="Bold (Ctrl/Cmd+B)"> B </a>
+			<a class="btn btn-outline-secondary tool-btn italic" data-edit="italic" title="Italic (Ctrl/Cmd+I)"> I </a>
+			<a class="btn btn-outline-secondary tool-btn strike" data-edit="strikethrough" title="Strikethrough"> S </a>
+			<a class="btn btn-outline-secondary tool-btn under" data-edit="underline" title="Underline (Ctrl/Cmd+U)"> U </a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="insertunorderedlist" title="Bullet list">
+				<i class="fas fa-list-ul"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="insertorderedlist" title="Number list">
+				<i class="fas fa-list-ol"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="outdent" title="Indent (Tab)">
+				<i class="fas fa-indent"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="indent" title="Reduce indent (Shift+Tab)">
+				<i class="fas fa-outdent"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="justifyleft" title="Align Left (Ctrl/Cmd+L)">
+				<i class="fas fa-align-left"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifycenter" title="Center (Ctrl/Cmd+E)">
+				<i class="fas fa-align-center"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifyright" title="Align Right (Ctrl/Cmd+R)">
+				<i class="fas fa-align-right"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="justifyfull" title="Justify (Ctrl/Cmd+J)">
+				<i class="fas fa-align-justify"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Hyperlink">
+				<i class="fas fa-link"></i>
+			</a>
+			<div class="dropdown-menu input-append">
+				<input class="span2" placeholder="URL" type="text" data-edit="createLink"/>
+				<button class="btn btn-outline-secondary" type="button">Add</button>
+			</div>
+			<a class="btn btn-outline-secondary" data-edit="unlink" title="Remove Hyperlink">
+				<i class="fas fa-unlink"></i>
+			</a>
+		</div>
+		<div class="btn-group">
+			<a class="btn btn-outline-secondary" data-edit="undo" title="Undo (Ctrl/Cmd+Z)">
+				<i class="fas fa-undo-alt"></i>
+			</a>
+			<a class="btn btn-outline-secondary" data-edit="redo" title="Redo (Ctrl/Cmd+Y)">
+				<i class="fas fa-redo-alt"></i>
+			</a>
+		</div>
+	</div>
+</div>
+		<div class="private message body">
+    <div class="wysiwyg-editor" id="id3f"></div>
+    <input type="hidden" value="" name="message:textarea" id="id47"/>
+</div>
+		<div class="mt-1 mb-1" id="id65">
+			<input type="checkbox" name="bookedRoom" id="id4a"/><label id="id4a-w-lbl" for="id4a">Book conference room</label>
+		</div>
+		<div id="id66">
+			<div class="row">
+				<div class="col-7">
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id67-w-lbl" for="id67">Type</label>
+						<div class="col-10 p-0">
+							<select class="form-select" name="roomParamsBlock:roomParams:room.type" id="id67">
+<option selected="selected" value="">Choose One</option>
+<option value="CONFERENCE">conference (1-25 users)</option>
+<option value="PRESENTATION">presentation (1-150 users)</option>
+<option value="INTERVIEW">interview (1:1 meeting with recording)</option>
+</select>
+						</div>
+					</div>
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id68-w-lbl" for="id68">Start</label>
+						<div class="d-inline-block col-10 p-0"><span class="date time picker" id="id68">
+	<span id="id40" class="input-group date" data-td-target-input="nearest" data-td-target-toggle="nearest">
+    <input type="text" class="form-control" value="" name="roomParamsBlock:roomParams:start:picker:date" data-td-target="#id40"/>
+    <span class="input-group-text" data-td-target="#id40" data-td-toggle="datetimepicker">
+        <i class="fa-regular fa-calendar-days"></i>
+    </span>
+</span>
+	<input type="hidden" value="2026-10-16T22:41:32.034544712" name="roomParamsBlock:roomParams:start:date" id="id48"/>
+</span></div>
+					</div>
+					<div class="formelement row">
+						<label class="form-label col-2 text-right" id="id69-w-lbl" for="id69">End</label>
+						<div class="d-inline-block col-10 p-0"><span class="date time picker" id="id69">
+	<span id="id41" class="input-group date" data-td-target-input="nearest" data-td-target-toggle="nearest">
+    <input type="text" class="form-control" value="" name="roomParamsBlock:roomParams:end:picker:date" data-td-target="#id41"/>
+    <span class="input-group-text" data-td-target="#id41" data-td-toggle="datetimepicker">
+        <i class="fa-regular fa-calendar-days"></i>
+    </span>
+</span>
+	<input type="hidden" value="2026-10-16T22:41:32.036782045" name="roomParamsBlock:roomParams:end:date" id="id49"/>
+</span></div>
+					</div>
+				</div>
+				<div class="col-5">
+					<i class="fas fa-info-circle m-1 text-info"></i>Add an optional request for meeting to the message and create a conference room. The event is then copied in the calendar of every participant.
+				</div>
+			</div>
+		</div>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="main-container:main:newMessageDialog:dialog:footer:buttons:0:button" id="id4c" class="btn  btn-outline-primary">
+            Send
+        </button>
+                        
+                            <button type="button" id="id4d" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div id="id56" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id6a" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id6a">Invite user to conference room</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id6b"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<div class="rooms desc"><i class="fas fa-info-circle m-1 text-info"></i>Choose a conference room. The invited user will get a message with your name and a link to the room.</div>
+	<div class="rooms title">Public rooms</div>
+	<div class="room list container">
+		<div id="id6c">
+	<table class="room-list table table-striped table-hover">
+		
+	</table>
+</div>
+	</div>
+	<div class="rooms title">Private rooms</div>
+	<div class="room list container">
+		<div id="id6d">
+	<table class="room-list table table-striped table-hover">
+		
+	</table>
+</div>
+	</div>
+	<div id="id54" class="modal fade" data-bs-keyboard="true" data-bs-focus="true" role="dialog" aria-labelledby="id6e" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="id6e">Invite message</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true" id="id6f"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+	<form id="id52" method="post" action="./?1-1.-main~container-main-invite~to~room-inviteMsg-form"><div id="id52_hf_0" hidden="" class="hidden-fields"></div>
+		<textarea class="w-100" name="message"></textarea>
+		<div>
+			<input type="checkbox" name="enterRoom" id="id70"/><label id="id70-w-lbl" for="id70">Enter room after sending invitation</label>
+		</div>
+	</form>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" name="main-container:main:invite-to-room:inviteMsg:dialog:footer:buttons:0:button" id="id53" class="btn  btn-outline-primary">
+            Send invitation
+        </button>
+                        
+                            <button type="button" id="id55" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        
+                            <button type="button" id="id57" data-bs-dismiss="modal" class="btn  btn-outline-secondary">Cancel</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+	<div hidden="hidden"></div>
+</div></div>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.markup.html.pages.BrowserInfoForm/wicket-browser-info-ver-3E3ED096DC173FF1D7266810E67BFABE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="om-main" src="../../js/main.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="om-util-init" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+OmUtil.init({"debug":false})
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="showUserInfo-95833fee-4dfb-482f-98fc-0e8ba890d9fb" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function showUserInfo(userId) {
+var attrs = {"u":"./?1-1.1-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="addContact-b3923516-128d-4801-97f2-0966e4477d67" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function addContact(userId) {
+var attrs = {"u":"./?1-1.2-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="privateMessage-3669f347-ba22-4e63-a202-df759f90b8d6" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function privateMessage(userId) {
+var attrs = {"u":"./?1-1.3-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="inviteUser-e686ed61-72a6-4336-b5b6-bf7449baf506" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function inviteUser(userId) {
+var attrs = {"u":"./?1-1.4-main~container-main","c":"id58"};
+var params = [{"name":"userId","value":userId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="preserve-bs-tooltip" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+const bstooltip = jQuery.fn.tooltip;
+/*]]
+>*/
+</script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/jquery-ui/1.14.2/jquery-ui-ver-4FC65EC60712F6DC7C12892ACF51CC64.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="restore-bs-tooltip" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+jQuery.fn.tooltip = bstooltip;
+/*]]
+>*/
+</script>
+<script type="text/javascript" id="om-chat" src="../../js/chat.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="chatActivity-a67cbbef-f07f-4e78-921c-302950d5ec36" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+function chatActivity(type,roomId,msgId) {
+var attrs = {"u":"./?1-1.0-main~container-main-chatPanel-chat","c":"chat"};
+var params = [{"name":"type","value":type},{"name":"roomId","value":roomId},{"name":"msgId","value":msgId}];
+attrs.ep = params.concat(attrs.ep || []);
+Wicket.Ajax.ajax(attrs);
+}
+
+/*]]
+>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.EditorStyleSheetResourceReference/css/editor-ver-027E6CF0E49013BE0BA5A2273C2BE146.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.EditorJavaScriptResourceReference/js/editor-ver-1E2C148343A7CDCF3C36F84D05A88A6C.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.BootstrapWysiwygJavaScriptResourceReference/js/bootstrap-wysiwyg-ver-2731F22ABD63C94F23A5AF839761331F.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.jquery.ui.plugins.wysiwyg.resource.JQueryHotKeysJavaScriptResourceReference/js/jquery.hotkeys-ver-89A115D74D249709EE41BEEF54DBA3C5.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="user-multi-choice" src="../resource/org.apache.openmeetings.web.util.UserMultiChoice/user-multi-choice-ver-635BCD831ACAC35A939E7783A9D01A42.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.protocol.ws.api.WicketWebSocketJQueryResourceReference/res/js/wicket-websocket-jquery-ver-B538D514A84740870773649C4330BC10.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="ws-connected-script" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Event.subscribe(Wicket.Event.Topic.WebSocket.Opened, function() {Wicket.WebSocket.send('socketConnected');});
+/*]]
+>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]
+>*/
+</script>
+<script type="text/javascript" src="../resource/org.apache.wicket.extensions.ajax.AjaxDownloadBehavior/wicket-ajaxdownload-ver-E9A61BEF8883E76D4FF66128A89813ED.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/select2/4.1.0-rc.0/dist/js/select2.full-ver-D279FEC970D3A6176C5E66905CD98F64.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/select2/4.1.0-rc.0/dist/css/select2-ver-E71C39430469A3EEA74514A2B48F6536.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/select2/4.1.0-rc.0/dist/js/i18n/en-ver-19258707D627FB6F62A886B5EC16E778.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/eonasdan__tempus-dominus/6.10.4/dist/css/tempus-dominus-ver-73E16947D776F7DC12054067E7697451.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/eonasdan__tempus-dominus/6.10.4/dist/js/tempus-dominus-ver-5D3BB0B33BA2DE119C294A856CE3AB26.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.references.TempusDominusJsReference/js/wicket.tempus-dominus-ver-C079D02731AAA2A069FC0F205D42EB89.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.openmeetings.web.common.datetime.AbstractOmDateTimePicker/datepicker-functions-ver-1AF2ED166AB6A00BDE35B65683FC40F3.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.wicketstuff.urlfragment.UrlParametersReceivingBehavior/urlfragment-ver-DBC507E012E2A775149FD09196030D3D.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<link rel="stylesheet" type="text/css" href="../../css/theme_om/jquery-ui.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/theme.min.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/font-awesome/7.1.0/css/all-ver-2A16261AD0706F6F7FBF4CB04E487611.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<link rel="stylesheet" type="text/css" href="../../css/custom.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+</head>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_FAILURE, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_BEFORE, showBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_SUCCESS, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.AJAX_CALL_COMPLETE, hideBusyIndicator);Wicket.Event.subscribe(Wicket.Event.Topic.WebSocket.Opened, function() { Wicket.WebSocket.send('socketConnected'); });})();(function(){;(function(undefined) {
+	'use strict';
+
+	if (typeof(Wicket.WebSocket.appName) === "undefined") {
+		jQuery.extend(Wicket.WebSocket, { pageId: 1,  context: 'org.apache.openmeetings.web.pages.MainPage', resourceName: '', connectionToken: '',
+			baseUrl: 'wicket/bookmarkable/', contextPath: '/openmeetings', appName: 'OpenmeetingsApplication',
+			port: 0, securePort: 0, filterPrefix: '', sessionId: '' });
+		Wicket.WebSocket.createDefaultConnection();
+	}
+})();
+})();(function(){OmUtil.ping();})();(function(){new bootstrap.Modal(document.getElementById('id42'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-activeTab","m":"POST","c":"activeChatTab","f":"id43","e":"change"});})();(function(){jQuery('#id3e').wysiwyg({  });})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-send","m":"POST","c":"id45","f":"id43","sc":"send","pre":[function(attrs){return Chat.validate();}],"e":"click","pd":true});})();(function(){Chat.reinit({"userId":3,"all":"All","room":"Room","sendOnEnter":false}); })();(function(){(function($) { $('#id46').select2({"allowClear":false,"multiple":true,"closeOnSelect":false,"templateSelection":formatOmUser,"templateResult":formatOmUser,"escapeMarkup":escapeOmUserMarkup,"selectOnClose":false,"dropdownAutoWidth":false,"dropdownParent":$('#newMessageDialog'),"ajax":{"data":function(params) { return { 'q': params.term, page: params.page, 'wicket-ajax':true, 'wicket-ajax-baseurl':[window.location.protocol, '//', window.location.host, window.location.pathname].join('')}; },"dataType":"json","delay":100,"processResults":function(data, page) { return { results: data.items, pagination: { more: data.more } };  },"url":"./?1-1.-main~container-main-newMessageDialog-form-to","cache":false},"tags":false,"language":"en"}); })(jQuery);})();(function(){jQuery('#id3f').wysiwyg({  });})();(function(){Wicket.Bootstrap.createTempusDominus('id40',{"display":{"icons":{"up":"fa-solid fa-arrow-up","down":"fa-solid fa-arrow-down","date":"fa-solid fa-calendar","time":"fa-solid fa-clock","previous":"fa-solid fa-arrow-left","next":"fa-solid fa-arrow-right","today":"fa-solid fa-calendar-check","clear":"fa-solid fa-eraser","close":"fa-solid fa-xmark"},"buttons":{},"components":{}},"restrictions":{"disabledDates":[],"enabledDates":[],"daysOfWeekDisabled":[],"disabledTimeIntervals":[],"enabledHours":[],"disabledHours":[]}},{"locale":"en-US","format":"LLL"},'en')})();(function(){omDateTimeInit('id40', 'id48');})();(function(){Wicket.Bootstrap.createTempusDominus('id41',{"display":{"icons":{"up":"fa-solid fa-arrow-up","down":"fa-solid fa-arrow-down","date":"fa-solid fa-calendar","time":"fa-solid fa-clock","previous":"fa-solid fa-arrow-left","next":"fa-solid fa-arrow-right","today":"fa-solid fa-calendar-check","clear":"fa-solid fa-eraser","close":"fa-solid fa-xmark"},"buttons":{},"components":{}},"restrictions":{"disabledDates":[],"enabledDates":[],"daysOfWeekDisabled":[],"disabledTimeIntervals":[],"enabledHours":[],"disabledHours":[]}},{"locale":"en-US","format":"LLL"},'en')})();(function(){omDateTimeInit('id41', 'id49');})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-form-bookedRoom","c":"id4a","e":"click"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-dialog-footer-buttons-0-button","m":"POST","c":"id4c","f":"id4b","sc":"main-container:main:newMessageDialog:dialog:footer:buttons:0:button","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog-dialog-footer-buttons-1-button","c":"id4d","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('newMessageDialog')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('newMessageDialog'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-newMessageDialog","c":"newMessageDialog","e":"hidden.bs.modal"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-0-button","c":"id4e","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-1-button","c":"id4f","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-userInfoDialog-dialog-footer-buttons-2-button","c":"id51","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id50')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id50'));})();(function(){$('.om-tooltip').tooltip({html: true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-inviteMsg-dialog-footer-buttons-0-button","m":"POST","c":"id53","f":"id52","sc":"main-container:main:invite-to-room:inviteMsg:dialog:footer:buttons:0:button","e":"click","pd":true});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-inviteMsg-dialog-footer-buttons-1-button","c":"id55","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id54')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id54'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-invite~to~room-dialog-footer-buttons-0-button","c":"id57","bsh":[function(attrs, jqXHR, settings){bootstrap.Modal.getInstance(document.getElementById('id56')).hide();}],"e":"click","pd":true});})();(function(){new bootstrap.Modal(document.getElementById('id56'));})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container","c":"id3c"});})();(function(){wysiwygAddTextAreaMapper('id3e', 'id44')})();(function(){wysiwygAddTextAreaMapper('id3f', 'id47')})();(function(){Wicket.Timer.set('id58.0', function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main","c":"id58","dep":[function(attrs){return Wicket.BrowserInfo.collect()}]});}, 50);})();
+/*]]
+>*/
+</script>
+</head>
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><priority-evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){try{if(window.UrlUtil){window.UrlUtil.setFragment('user','dashboard');}}catch(e){}})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></priority-evaluate></ajax-response>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){try{if(window.UrlUtil){window.UrlUtil.setFragment('user','dashboard');}}catch(e){}})();
+/*]]
+>*/
+</script>
+</head>
+<?xml version="1.0" encoding="UTF-8"?><ajax-response></ajax-response>
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><component id="id5a" ><![CDATA[<a class="chat-btn chat-tool-icon btn btn-outline-secondary save" id="id5a" title="Save and export">
+							<i class="fas fa-save"></i>
+						</a>]]></component><component id="id5b" ><![CDATA[<a class="chat-btn chat-tool-icon btn btn-outline-danger" name="toolbarContainer:toolbar:delete" id="id5b" title="Delete server chat log">
+							<i class="fas fa-trash-alt"></i>
+						</a>]]></component><header-contribution><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]]]><![CDATA[>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="bootstrap-js" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.confirmation.ConfirmationBehavior/bootstrap-confirmation-ver-906B68C44708FD36263D895A9A340BAD.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+</head>]]></header-contribution><evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-save","c":"id5a","e":"click"});})();(function(){$('#id5b').confirmation({"btnCancelLabel":"Cancel","btnOkLabel":"OK","btnOkClass":"btn btn-sm btn-danger","btnOkIconClass":"fas fa-exclamation-triangle","customClass":"chat-delete","rootSelector":"id5b"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-delete","m":"POST","c":"id5b","f":"id43","sc":"toolbarContainer:toolbar:delete","e":"click","pd":true});})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></evaluate></ajax-response>
+<a class="chat-btn chat-tool-icon btn btn-outline-secondary save" id="id5a" title="Save and export">
+							<i class="fas fa-save"></i>
+						</a>
+<a class="chat-btn chat-tool-icon btn btn-outline-danger" name="toolbarContainer:toolbar:delete" id="id5b" title="Delete server chat log">
+							<i class="fas fa-trash-alt"></i>
+						</a>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]
+>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="bootstrap-js" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.confirmation.ConfirmationBehavior/bootstrap-confirmation-ver-906B68C44708FD36263D895A9A340BAD.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+</head>
+<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-save","c":"id5a","e":"click"});})();(function(){$('#id5b').confirmation({"btnCancelLabel":"Cancel","btnOkLabel":"OK","btnOkClass":"btn btn-sm btn-danger","btnOkIconClass":"fas fa-exclamation-triangle","customClass":"chat-delete","rootSelector":"id5b"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-delete","m":"POST","c":"id5b","f":"id43","sc":"toolbarContainer:toolbar:delete","e":"click","pd":true});})();
+/*]]
+>*/
+</script>
+</head>
+<?xml version="1.0" encoding="UTF-8"?><ajax-response><component id="id5a" ><![CDATA[<a class="chat-btn chat-tool-icon btn btn-outline-secondary save" id="id5a" title="Save and export">
+							<i class="fas fa-save"></i>
+						</a>]]></component><component id="id5b" ><![CDATA[<a class="chat-btn chat-tool-icon btn btn-outline-danger" name="toolbarContainer:toolbar:delete" id="id5b" title="Delete server chat log">
+							<i class="fas fa-trash-alt"></i>
+						</a>]]></component><header-contribution><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" src="../resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-3.7.1-ver-962A4A135B116C30221466C5E4F0E7A1.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery-ver-EF5CE716023AC851E8B721946431BE44.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="wicket-ajax-base-url" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+Wicket.Ajax.baseUrl="wicket/bookmarkable/";
+/*]]]]><![CDATA[>*/
+</script>
+<link rel="stylesheet" type="text/css" href="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference/webjars/bootstrap/5.3.8/css/bootstrap-ver-1B1CB0E2BE9A21F091A87691F20C6300.css" nonce="b1ft06HpX7CgzmKoeA9a9iY1" />
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/popperjs__core/2.11.8/dist/umd/popper-ver-31152A770657905251A6EEF3F53DD073.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" id="bootstrap-js" src="../resource/de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference/webjars/bootstrap/5.3.8/js/bootstrap-ver-F32DB50F758369B7F9910DE371FB10AE.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+<script type="text/javascript" src="../resource/de.agilecoders.wicket.extensions.markup.html.bootstrap.confirmation.ConfirmationBehavior/bootstrap-confirmation-ver-906B68C44708FD36263D895A9A340BAD.js" nonce="b1ft06HpX7CgzmKoeA9a9iY1"></script>
+</head>]]></header-contribution><evaluate><![CDATA[<head xmlns:wicket="http://wicket.apache.org"><script type="text/javascript" nonce="b1ft06HpX7CgzmKoeA9a9iY1">
+/*<![CDATA[*/
+(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-save","c":"id5a","e":"click"});})();(function(){$('#id5b').confirmation({"btnCancelLabel":"Cancel","btnOkLabel":"OK","btnOkClass":"btn btn-sm btn-danger","btnOkIconClass":"fas fa-exclamation-triangle","customClass":"chat-delete","rootSelector":"id5b"});})();(function(){Wicket.Ajax.ajax({"u":"./?1-1.0-main~container-main-chatPanel-chat-sendForm-toolbarContainer-toolbar-delete","m":"POST","c":"id5b","f":"id43","sc":"toolbarContainer:toolbar:delete","e":"click","pd":true});})();
+/*]]]]><![CDATA[>*/
+</script>
+</head>]]></evaluate></ajax-response>

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - XSS Lab{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Dashboard</h1>
+    <p>Welcome, <strong>{{ user.username }}</strong>!</p>
+    <p>Role: <strong>{{ user.role }}</strong></p>
+    
+    <div style="margin-top: 30px;">
+        <h2>Available Features:</h2>
+        <ul style="margin-left: 20px; margin-top: 15px;">
+            <li><a href="/migrations">Migrations</a> - Create and view migrations (Vulnerability 1: Stored XSS in title)</li>
+            <li><a href="/profile">Profile</a> - Edit your profile name (Vulnerability 2: Stored XSS in profile name)</li>
+            <li><a href="/help?url=test">Help Page</a> - Help page with URL parameter (Vulnerability 3: Reflected XSS)</li>
+        </ul>
+    </div>
+    
+    <div class="vulnerability-info" style="margin-top: 30px;">
+        <h3>Lab Objectives:</h3>
+        <ol style="margin-left: 20px; margin-top: 10px;">
+            <li>Identify the XSS vulnerabilities in each feature</li>
+            <li>Create payloads to exploit each vulnerability</li>
+            <li>Understand the impact of each vulnerability</li>
+            <li>Practice responsible disclosure techniques</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Settings{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Profile Settings</h1>
+    
+    <h2>Current Profile</h2>
+    <div style="margin: 20px 0; padding: 15px; background: #0d1117; border-radius: 6px;">
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Role:</strong> {{ user.role }}</p>
+        <p><strong>Profile Name:</strong> 
+            {# VULNERABLE: Directly rendering user input without sanitization #}
+            <span>{{ user.profile_name|safe if user.profile_name else 'Not set' }}</span>
+        </p>
+    </div>
+    
+    <h2>Edit Profile Name</h2>
+    <form method="POST" style="margin-top: 20px;">
+        <div class="form-group">
+            <label for="profile_name">Profile Name:</label>
+            <input type="text" id="profile_name" name="profile_name" 
+                   value="{{ user.profile_name }}" 
+                   placeholder="Enter your profile name" required>
+        </div>
+        <button type="submit">Update Profile</button>
+    </form>
+</div>
+{% endblock %}
+

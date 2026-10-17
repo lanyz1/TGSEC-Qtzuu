@@ -1,0 +1,4 @@
+#!/bin/sh
+# Lab stub: pin /usr/local/bin/voucher always OK so voucher_expire reaches SQL.
+printf '%s\n' 'OK 1 1'
+exit 0

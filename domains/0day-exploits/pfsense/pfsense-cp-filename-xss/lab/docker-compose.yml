@@ -1,0 +1,13 @@
+name: pfsense-cp-filename-xss
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:19110:19110"
+    labels:
+      lab: pfsense-cp-filename-xss

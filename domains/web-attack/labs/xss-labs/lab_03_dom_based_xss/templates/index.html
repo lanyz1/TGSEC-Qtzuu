@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM-based XSS Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-slate-950 text-white">
+    <main class="mx-auto max-w-2xl px-6 py-16">
+      <div class="mb-8 text-center">
+        <h1 class="text-4xl font-bold">DOM-based XSS Lab</h1>
+        <p class="mt-3 text-slate-400">Find the client-side vulnerability.</p>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <h2 class="text-lg font-semibold">Welcome</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          The application reads information from the URL and displays it on the
+          page.
+        </p>
+        <div
+          id="output"
+          class="mt-6 rounded-lg border border-slate-800 bg-slate-950 p-4 text-slate-300"
+        ></div>
+      </div>
+      <p class="mt-6 text-center text-xs text-slate-600">
+        Educational lab • Run locally
+      </p>
+    </main>
+    <!-- Script -->
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const message = params.get("message");
+      document.getElementById("output").innerHTML = message || "Hello!";
+    </script>
+  </body>
+</html>

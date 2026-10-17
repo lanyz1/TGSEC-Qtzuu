@@ -1,0 +1,30 @@
+name: pfsense-api-acme-key-dump
+
+services:
+  mock:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PYTHONUNBUFFERED: "1"
+      LAB_ROLE: mock
+      LAB_BIND: "0.0.0.0"
+      LAB_PORT: "19151"
+      WITNESS: "PFSENSE-API-ACME-KEY-DUMP-WITNESS"
+    ports:
+      - "127.0.0.1:19151:19151"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:19151/health', timeout=2)",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 2s
+    labels:
+      lab: pfsense-api-acme-key-dump
+    restart: "no"

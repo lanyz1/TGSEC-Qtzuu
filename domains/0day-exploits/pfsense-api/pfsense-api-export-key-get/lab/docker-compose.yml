@@ -1,0 +1,27 @@
+name: pfsense-api-export-key-get
+
+services:
+  mock:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PYTHONUNBUFFERED: "1"
+      WITNESS: "PFSENSE-API-EXPORT-KEY-GET-WITNESS"
+      MOCK_BIND: "0.0.0.0"
+      MOCK_PORT: "19141"
+    ports:
+      - "127.0.0.1:19141:19141"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:19141/health', timeout=2)",
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 2s
+    restart: "no"

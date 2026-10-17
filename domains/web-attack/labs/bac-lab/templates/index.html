@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1><i class="fas fa-shield-alt"></i> SecureApp</h1>
+            <p class="hero-subtitle">Secure user management and administration platform</p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-secondary">Register</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Lab Instructions Section (Only on Home Page) -->
+    <section class="info-section" style="background: #1a202c; padding: 2rem; border-radius: 12px; margin: 2rem 0; border: 2px solid #667eea;">
+        <h2 class="section-title" style="color: #667eea;"><i class="fas fa-bug"></i> BAC Lab - Broken Access Control Challenge</h2>
+        <div class="info-box" style="background: transparent; border: none; padding: 0;">
+            <h3>🎯 Challenge Objective</h3>
+            <p>As a <strong>low-level user</strong>, your goal is to discover and access admin-only API endpoints to retrieve sensitive data including API keys and all organization users' information.</p>
+            
+            <h3 style="margin-top: 1.5rem;">🐛 Bugs to Find</h3>
+            <div style="background: rgba(102, 126, 234, 0.1); padding: 1.5rem; border-radius: 8px; margin: 1rem 0;">
+                <h4 style="color: #667eea; margin-bottom: 1rem;">1. Hidden Admin API Endpoints (Missing Authorization)</h4>
+                <p><strong>Description:</strong> Admin API endpoints are not advertised but accessible to any authenticated user.</p>
+                <p><strong>Endpoints to discover:</strong></p>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li><code>GET /api/admin/settings</code> - Admin configuration and settings</li>
+                    <li><code>GET /api/admin/keys</code> - Organization API keys and secrets</li>
+                    <li><code>GET /api/admin/users/all</code> - All organization users' sensitive data</li>
+                </ul>
+                <p><strong>How to exploit:</strong> Intercept admin's network requests → Discover endpoint paths → Access with your regular user cookie</p>
+            </div>
+
+            <div style="background: rgba(237, 137, 54, 0.1); padding: 1.5rem; border-radius: 8px; margin: 1rem 0;">
+                <h4 style="color: #ed8936; margin-bottom: 1rem;">2. Client-Side Security - Payment Bypass</h4>
+                <p><strong>Description:</strong> Premium course access is controlled client-side only.</p>
+                <p><strong>Vulnerability:</strong> The <code>/api/user/paid-status</code> endpoint returns payment status, but frontend trusts it without server verification.</p>
+                <p><strong>How to exploit:</strong> Intercept <code>/api/user/paid-status</code> response → Change <code>"paid": false</code> to <code>"paid": true</code> → Unlock all premium course videos</p>
+            </div>
+
+            <p><strong>🎯 Your Mission:</strong> Find and exploit these vulnerabilities to access admin data and premium content!</p>
+            
+            <h3 style="margin-top: 1.5rem;">🛠️ How to Exploit</h3>
+            <ol>
+                <li>Set up Burp Suite or use browser DevTools Network tab</li>
+                <li>Login as admin in one browser/tab: <code>admin / admin123</code></li>
+                <li>Have admin visit the admin panel - this will automatically make requests to hidden API endpoints</li>
+                <li>Intercept/capture the requests to see what API endpoints admin is calling:
+                    <ul>
+                        <li><code>GET /api/admin/settings</code></li>
+                        <li><code>GET /api/admin/keys</code></li>
+                        <li><code>GET /api/admin/users/all</code></li>
+                    </ul>
+                </li>
+                <li>Copy these API endpoint paths from the intercepted requests</li>
+                <li>Login as a regular user (user1 / user123) in another browser/tab</li>
+                <li>Send a GET request to the discovered endpoint (e.g., <code>GET /api/admin/users/all</code>) using your regular user's session cookie</li>
+                <li><strong>Success!</strong> You can access admin data because the endpoint only checks authentication, not admin role!</li>
+            </ol>
+            <p><strong>Example:</strong> Using cURL or Burp Repeater, send:</p>
+            <pre style="background: #1a202c; padding: 1rem; border-radius: 6px; overflow-x: auto;"><code>GET /api/admin/users/all HTTP/1.1
+Host: 127.0.0.1:5000
+Cookie: session=YOUR_REGULAR_USER_SESSION_COOKIE</code></pre>
+            
+            <h3 style="margin-top: 1.5rem;">📋 Default Credentials</h3>
+            <ul>
+                <li><strong>Admin:</strong> <code>admin / admin123</code></li>
+                <li><strong>User:</strong> <code>user1 / user123</code></li>
+            </ul>
+            
+            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
+                <p><strong>⚠️ Important:</strong> This is an educational lab. In a real application, discovering hidden endpoints via request interception can lead to serious security vulnerabilities. Always test with authorization!</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="cta-box">
+            <h2><i class="fas fa-graduation-cap"></i> Learn Bug Bounty</h2>
+            <p>Check out my comprehensive bug bounty course and YouTube channel</p>
+            <a href="https://lureo.shop" target="_blank" class="btn btn-primary">
+                <i class="fas fa-external-link-alt"></i> Visit Course
+            </a>
+                <i class="fab fa-youtube"></i> YouTube Channel
+            </a>
+                <i class="fas fa-coffee"></i> Buy Me a Coffee
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}
+

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Home - XSS Lab{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Welcome to Active Networks</h1>
+    <p>This is a simulated home page for testing the profile XSS vulnerability.</p>
+    
+    <div style="margin: 30px 0;">
+        <a href="/login" class="btn">Sign In</a>
+    </div>
+    
+    <div class="vulnerability-info">
+        <h3>Testing the Profile XSS Vulnerability</h3>
+        <p>To test the stored XSS in profile name:</p>
+        <ol style="margin-left: 20px; margin-top: 10px;">
+            <li>Log in to your account</li>
+            <li>Modify your profile name with an XSS payload</li>
+            <li>Log out</li>
+            <li>Log back in - the XSS should execute</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+

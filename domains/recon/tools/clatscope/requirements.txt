@@ -1,0 +1,17 @@
+requests
+dnspython
+python-whois
+phonenumbers
+email_validator
+beautifulsoup4
+pystyle
+Pillow
+PyPDF2
+python-docx
+python-pptx
+openai
+openpyxl
+mutagen
+tinytag
+tqdm
+python-magic

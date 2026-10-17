@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab 13 - DOM XSS via innerHTML</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-lg">
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">Lab 13</h1>
+      <p class="text-slate-500 mb-6">DOM XSS via location.hash</p>
+      <div class="p-4 bg-slate-50 rounded-lg">
+        <p class="text-sm text-slate-500 mb-2">Search Result</p>
+        <div id="result" class="text-slate-800">Waiting for input...</div>
+      </div>
+    </div>
+    <script>
+      const hashValue = window.location.hash.substring(1);
+      const decodedValue = decodeURIComponent(hashValue);
+      document.getElementById("result").innerHTML =
+        "<p>Result: " + decodedValue + "</p>";
+    </script>
+  </body>
+</html>

@@ -1,0 +1,4 @@
+#!/bin/sh
+# No-op stand-in for pfSense default BACKEND="/usr/local/libexec/sshg-fw-pf".
+# Must not write the oracle witness.
+exit 0

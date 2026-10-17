@@ -1,0 +1,27 @@
+.qodo
+
+# Python
+__pycache__/
+*.py[cod]
+*.log
+.env
+venv/
+.venv/
+
+# Local data / scan output
+*.json
+*.csv
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/

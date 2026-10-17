@@ -1,0 +1,2 @@
+#!/bin/sh
+printf '%s\n' 'PFSENSE-ASSIGN-IF-ADD-WITNESS' > /oracle/PFSENSE-ASSIGN-IF-ADD-WITNESS

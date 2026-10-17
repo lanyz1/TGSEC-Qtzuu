@@ -69,4 +69,10 @@ websocket-security
 - `tgt-a-example-redacted` — `case-lessons/tgt-a-example-redacted.md`（全文已撤库）
 - `183-179-252-26` — `case-lessons/183-179-252-26.md`（全文已撤库）
 - `werkzeug-rce-proof` — `case-lessons/werkzeug-rce-proof.md`（全文已撤库）
+
+## 2026-10-17 增量（靶场）
+
+- `labs/`（新目录）7 靶场：**open-redirect-labs** · **xss-labs** · **403-bypass-lab** · **payment-bypass-lab** · **xss-lab** · **bac-lab**（断权访问）· **xss-pdf-credential-harvesting**（PDF 凭据收割）
+- 账本：[`../0day-exploits/INGEST-20261017-INDEX.md`](../0day-exploits/INGEST-20261017-INDEX.md)
+
 @TGSEC社区 · @TGSEC-Qtzuu 整理

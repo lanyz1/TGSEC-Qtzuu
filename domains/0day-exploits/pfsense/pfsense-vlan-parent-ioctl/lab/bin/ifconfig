@@ -1,0 +1,12 @@
+#!/bin/sh
+{
+	printf 'argc=%s argv=%s\n' "$#" "$*"
+} >> /oracle/ifconfig-calls
+prev=""
+for arg in "$@"; do
+	if [ "$prev" = "vlandev" ] && [ "$arg" = "em1" ]; then
+		printf '%s\n' 'PFSENSE-VLAN-PARENT-IOCTL-WITNESS' > /oracle/PFSENSE-VLAN-PARENT-IOCTL-WITNESS
+	fi
+	prev="$arg"
+done
+exit 0

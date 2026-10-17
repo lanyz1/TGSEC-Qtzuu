@@ -1,0 +1,19 @@
+name: opnsense-captive-lastseen-roam
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: "no"
+    environment:
+      PYTHONUNBUFFERED: "1"
+      LABEL: opnsense-captive-lastseen-roam
+      WITNESS: OPNSENSE-CAPTIVE-LASTSEEN-ROAM-WITNESS
+    ports:
+      - "127.0.0.1:18820:18820"
+    volumes:
+      - ./oracle:/oracle
+    labels:
+      lab: opnsense-captive-lastseen-roam

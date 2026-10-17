@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab 12 - document.write() DOM XSS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-lg">
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">Lab 12</h1>
+      <p class="text-slate-500 mb-6">DOM XSS via document.write()</p>
+      <div class="p-4 bg-slate-50 rounded-lg">
+        <p class="text-sm text-slate-500 mb-2">Welcome</p>
+        <div id="output"></div>
+      </div>
+    </div>
+    <script>
+      const name =
+        new URLSearchParams(window.location.search).get("name") || "Guest";
+      document.write('<p class="text-slate-800">Hello, ' + name + "!</p>");
+    </script>
+  </body>
+</html>

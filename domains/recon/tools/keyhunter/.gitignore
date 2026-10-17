@@ -1,0 +1,25 @@
+# Rust build artifacts
+/target/
+
+# Config with real tokens
+config.toml
+
+# Results
+results/
+*.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local

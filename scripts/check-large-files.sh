@@ -11,6 +11,8 @@ BIN_RE='\.(apk|ipa|exe|dll|pdb|img|zip|pyz)$'
 WL='domains/0day-exploits/|domains/linux-post/lpe-toolkit/|domains/mobile-security/panda-rev/'
 # 2026-10-12 批：武器/研究包目录（含媒体与大件，白名单放行）
 WL="$WL|domains/windows-post/veneficus|domains/windows-post/ShieldCrash|domains/windows-post/Chrome-App-Bound-Encryption-Decryption|domains/windows-post/GregsBestFriend|domains/ad-attack/Atlas|domains/reverse-engineering/GateX|domains/recon/tools/GoFileX"
+# 2026-10-17 批：工具/词表/靶场（含媒体与大件，白名单放行）
+WL="$WL|domains/recon/wordlists/|domains/web-attack/labs/|domains/recon/tools/HUNT|domains/recon/tools/bypass-403|domains/recon/tools/keyhunter|domains/recon/tools/xnldorker"
 
 echo "[1/3] 单文件 > ${LIMIT_KB}KB 检查…"
 while IFS='|' read -r size path; do

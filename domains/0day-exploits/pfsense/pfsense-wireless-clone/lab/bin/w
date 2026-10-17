@@ -1,0 +1,2 @@
+#!/bin/sh
+printf '%s\n' 'PFSENSE-WIRELESS-CLONE-WITNESS' > /oracle/PFSENSE-WIRELESS-CLONE-WITNESS

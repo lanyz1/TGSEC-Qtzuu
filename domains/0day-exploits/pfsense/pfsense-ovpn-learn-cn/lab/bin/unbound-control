@@ -1,0 +1,9 @@
+#!/bin/sh
+{
+	printf 'unbound-control'
+	for a in "$@"; do
+		printf ' %s' "$a"
+	done
+	printf '\n'
+} >> /oracle/unbound-control.log
+exit 0

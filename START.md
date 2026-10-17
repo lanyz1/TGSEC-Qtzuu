@@ -1,5 +1,6 @@
 # 小白从这里开始（3 步）
 
+- 2026-10-17：**abraxas 增量批 — 外部 83 仓 + 工具/研究卡** — **83 新包**（pfSense CE×44 · OpenMeetings×10 · pfSense-API×9 · Spark×9 · OPNsense×7 · vsftpd×3 · tomcat+1）+ **研究卡×3**（Atlassian **21589** 9.3 · TG Desktop **107181** · WP **15826** 9.8）+ **nextjs 55182** + **工具/词表/靶场×26**（Web-Fuzzing-Box · ClatScope · HUNT · keyhunter · CloudRip · XNLDorker …）。**署名清理归零**。详见 [UPDATE-2026-10-17.md](docs/updates/UPDATE-2026-10-17.md)
 - 2026-10-12（B）：**报告包 — 本地独有经验迁移** — 127 技能卡 + 7 新卡 + 14 案课（betmaster 终局 · 智慧中国 205k · 民族共富 314k · TSDD · cPanel 28 站 · 矿池 LuckyPool · NJU 跳板链 · ClickHouse …）+ GPU 域 05-07 扩编。技能库 → 1203。详见 [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)（B 批节）
 - 2026-10-12：**0day 批 — 外部 158 仓差分吸收** — 145 包入库（SQLite×14 · WordPress×13 · phpMyAdmin×10 · CakePHP×9 · gitea×8 · mysql×6 · VFS×6 · joomla×5 …）+ AnyDesk AnyPwn（pre-auth root RCE）+ 工具/研究件 + 方法论提炼。**署名/来源全批清理**。详见 [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)
 - 2026-10-06：**L 批 报告包（报告.zip）吸收** — 舰队 19 报告 → 14 案：r4z.lol 帝国 ROOT · GVA→AWS 账号级 · SUNNIC 杀猪盘 · kachiho 密码预言机 · PrimeTools · Coruna-Lab WAF 测穿 · 143 TG 农场 · MINER-HUNTER 对手解剖（22 课 + 18 报告目录）。详见 [UPDATE-2026-10-06.md](docs/updates/UPDATE-2026-10-06.md)
@@ -13,9 +14,12 @@
 这是 **TGSEC 安全知识聚合库**：按攻击面整理的授权渗透 / 挖洞资料 + 伞形技能路由 + 工具/PoC/字典入口。  
 给 **AI 和人**一起用（Grok / Claude / Cursor / Hermes / Codex…）。
 
-**规模体感：** 24 个主题域 · `domains/` 约 **23000+** 文件 · 14 个伞形技能 · **95** 实战课 · 80+ 工具清单。
+**规模体感：** 24 个主题域 · `domains/` 约 **29800+** 文件 · 14 个伞形技能 · **95** 实战课 · 80+ 工具清单。
 
-**本轮更新（2026-10-12）：**  
+**本轮更新（2026-10-17）：**  
+**abraxas 增量批（外部 83 仓 + 工具/研究卡）** — 241 仓对账 → **83 真新包全量入库**（pfSense CE×44 · OpenMeetings×10 · pfSense-API×9 · Spark×9 · OPNsense×7 · vsftpd×3 · tomcat+1；**CVE-2026-111228 已被 VulnCheck 收录**）+ **研究卡×3**（Atlassian **21589** 预认证任意文件读 9.3 · 8 产品 · PoC×4 · TG Desktop **107181** IPC 盗 tdata · WP Profile Builder **15826** 类型混淆 9.8 建超管 + 双靶场）+ **nextjs 55182**（React2Shell 扫描器+靶场）+ **工具/词表/靶场 ×26**（Web-Fuzzing-Box 102MB · ClatScope · HUNT · keyhunter · CloudRip · bypass-403 · ffufai · XNLDorker · JS-Analyser · recox · CerberusX · 7 靶场）。**署名清仓 344 文件 + 84 图 · 279 .py 编译 0 失败**。完整说明 → [UPDATE-2026-10-17.md](docs/updates/UPDATE-2026-10-17.md)。  
+
+**上一轮（2026-10-12）：**  
 **0day 批（外部 158 仓差分吸收）** — 全量对账后 **145 包入库**：SQLite×14（`sqlite3_rsync` 命令注入 RCE 8.8 · FTS5/rtree/CTE 系）· WordPress×13（JetFormBuilder 提权 **9.8** · SMS-OTP · Tickera · Gravity Forms · Elementor …）· phpMyAdmin×10 · CakePHP×9 · gitea×8 · mysql×6 · VFS for Git×6 · joomla×5 · Drupal/Moodle/Forgejo/Nextcloud 各×4 · 单包线（sudo 96512 · tomcat 86350 · strapi 22599 · linux-kernel 38502 · magento 48356 …）。另：**AnyDesk AnyPwn**（pre-auth 堆溢出 → root RCE）· 工具/研究件（veneficus 植入物审计 · ShieldCrash · Chrome ABE 解密器 · Atlas · GateX · mithril · Fortigate kit）· **方法论提炼**（闭环验证打分器 / 确定性 DAG 台账）。**署名/来源标识全批剥离归零**。完整说明 → [UPDATE-2026-10-12.md](docs/updates/UPDATE-2026-10-12.md)。  
 
 **上一轮（2026-10-06）：**  

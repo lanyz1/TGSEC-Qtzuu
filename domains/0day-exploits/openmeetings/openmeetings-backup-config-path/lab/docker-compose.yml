@@ -1,0 +1,63 @@
+name: om-g10-backup
+
+services:
+  db:
+    image: mariadb:11.4
+    platform: linux/amd64
+    environment:
+      MYSQL_DATABASE: openmeetings
+      MYSQL_USER: om_admin
+      MYSQL_PASSWORD: "12345"
+      MYSQL_ROOT_PASSWORD: "12345"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max_allowed_packet=64M
+      - --skip-name-resolve
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 36
+      start_period: 20s
+    mem_limit: 512m
+    restart: "no"
+
+  openmeetings:
+    image: om-g10-backup:min-9.1.0-jre
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+    platform: linux/amd64
+    ports:
+      - "127.0.0.1:18160:5443"
+    environment:
+      OM_TYPE: min
+      OM_DB_TYPE: mysql
+      OM_DB_HOST: db
+      OM_DB_PORT: "3306"
+      OM_DB_NAME: openmeetings
+      OM_DB_USER: om_admin
+      OM_DB_PASS: "12345"
+      OM_USER: om_admin
+      OM_PASS: "1Q2w3e4r5t^y"
+      OM_DATA_DIR: /opt/omdata
+      OM_KURENTO_WS_URL: ws://127.0.0.1:9/kurento
+      SERVER_TZ: UTC
+      DAEMON_USER: nobody
+    volumes:
+      - ./entrypoint.sh:/opt/lab-entrypoint.sh:ro
+      - omdata:/opt/omdata
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "/opt/lab-entrypoint.sh"]
+    mem_limit: 2g
+    labels:
+      lab: OPENMEETINGS-BACKUP-CONFIG-PATH
+    restart: "no"
+
+volumes:
+  omdata:

@@ -71,4 +71,11 @@ tools
 - `quta-zhixin-mapping` — `case-lessons/quta-zhixin-mapping.md`（全文已撤库）
 - `recent-targets-digest-20260913` — `case-lessons/recent-targets-digest-20260913.md`（全文已撤库）
 - `multi-target-chain-20260803` — `case-lessons/multi-target-chain-20260803.md`（全文已撤库）
+
+## 2026-10-17 增量（词表/工具）
+
+- `wordlists/`（新目录）：**web-fuzzing-box**（全量 102MB：字典 + Payload 集）· **bugbounty-wordlists** · **dorkvault**（Dork 库）
+- `tools/` +16：**cerberusx**（XSS 扫描）· **domain-recon / netrecon / origin-recon / port-scanner / secure-crawl / subspectre**（侦察 ×6）· **js-analyser** · **recox** · **keyhunter**（密钥扫描）· **cloudrip**（CF 溯源）· **bypass-403** · **ffufai** · **xnldorker** · **HUNT**（Burp 套件）· **clatscope**（OSINT）
+- 账本：[`../0day-exploits/INGEST-20261017-INDEX.md`](../0day-exploits/INGEST-20261017-INDEX.md)
+
 @TGSEC社区 · @TGSEC-Qtzuu 整理

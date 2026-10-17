@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}XSS Lab - Home{% endblock %}
+
+{% block extra_css %}
+<style>
+    .lab-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+    }
+    .lab-box {
+        background: #161b22;
+        border: 2px solid #30363d;
+        border-radius: 8px;
+        padding: 25px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .lab-box:hover {
+        border-color: #58a6ff;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(88, 166, 255, 0.1);
+    }
+    .lab-number {
+        display: inline-block;
+        background: #238636;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+    .lab-title {
+        color: #f0f6fc;
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+    .lab-description {
+        color: #8b949e;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+    .lab-objectives {
+        background: #0d1117;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    .lab-objectives h4 {
+        color: #58a6ff;
+        font-size: 13px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+    }
+    .lab-objectives ul {
+        margin-left: 20px;
+        color: #c9d1d9;
+        font-size: 13px;
+    }
+    .lab-objectives li {
+        margin-bottom: 5px;
+    }
+    .start-btn {
+        width: 100%;
+        text-align: center;
+        display: block;
+        text-decoration: none;
+        margin-bottom: 10px;
+    }
+    .solution-btn {
+        width: 100%;
+        text-align: center;
+        display: block;
+        text-decoration: none;
+        background: #30363d;
+        color: #c9d1d9;
+    }
+    .solution-btn:hover {
+        background: #484f58;
+    }
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .severity-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #f85149;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>XSS Vulnerability Lab</h1>
+    <p style="font-size: 16px; color: #8b949e; margin-bottom: 30px;">
+        Welcome to the XSS Vulnerability Lab. This lab is based on real bug bounty reports and contains three different XSS vulnerabilities for educational purposes.
+    </p>
+    
+    <div class="vulnerability-info">
+        <h3>⚠️ Warning</h3>
+        <p>This lab contains intentionally vulnerable code. Do not use in production environments!</p>
+    </div>
+</div>
+
+<div class="lab-grid">
+    <!-- Lab 01 -->
+    <div class="lab-box">
+        <span class="severity-badge">MEDIUM</span>
+        <span class="lab-number">LAB 01</span>
+        <h2 class="lab-title">Stored XSS in Migration Title</h2>
+        <p class="lab-description">
+            Exploit a stored XSS vulnerability in the migration title field. A low-privileged user with "Migration Coordinator" role can inject malicious scripts that execute when other users view the migration.
+        </p>
+        <div class="lab-objectives">
+            <h4>Learning Objectives:</h4>
+            <ul>
+                <li>Understand stored XSS attacks</li>
+                <li>Learn to identify vulnerable input fields</li>
+                <li>Create XSS payloads for account takeover</li>
+                <li>Practice cookie stealing techniques</li>
+            </ul>
+        </div>
+        <div class="button-group">
+            <a href="/lab/1" class="btn start-btn">Start Solving Lab 01</a>
+            <a href="/solution/1" class="btn solution-btn">View Solution</a>
+        </div>
+    </div>
+
+    <!-- Lab 02 -->
+    <div class="lab-box">
+        <span class="severity-badge">MEDIUM</span>
+        <span class="lab-number">LAB 02</span>
+        <h2 class="lab-title">Stored XSS in Profile Name</h2>
+        <p class="lab-description">
+            Discover and exploit a stored XSS vulnerability in the profile name field. Malicious scripts execute when users log in or view their profile, potentially leading to account takeover.
+        </p>
+        <div class="lab-objectives">
+            <h4>Learning Objectives:</h4>
+            <ul>
+                <li>Identify stored XSS in user profiles</li>
+                <li>Understand session hijacking via XSS</li>
+                <li>Test XSS payloads in different contexts</li>
+                <li>Learn about API endpoint vulnerabilities</li>
+            </ul>
+        </div>
+        <div class="button-group">
+            <a href="/lab/2" class="btn start-btn">Start Solving Lab 02</a>
+            <a href="/solution/2" class="btn solution-btn">View Solution</a>
+        </div>
+    </div>
+
+    <!-- Lab 03 -->
+    <div class="lab-box">
+        <span class="severity-badge">MEDIUM</span>
+        <span class="lab-number">LAB 03</span>
+        <h2 class="lab-title">Reflected XSS in URL Parameter</h2>
+        <p class="lab-description">
+            Exploit a reflected XSS vulnerability where URL parameters are reflected directly in the page without sanitization. Perfect for understanding reflected XSS attacks.
+        </p>
+        <div class="lab-objectives">
+            <h4>Learning Objectives:</h4>
+            <ul>
+                <li>Understand reflected XSS attacks</li>
+                <li>Learn to craft malicious URLs</li>
+                <li>Test XSS in iframe contexts</li>
+                <li>Practice phishing attack scenarios</li>
+            </ul>
+        </div>
+        <div class="button-group">
+            <a href="/lab/3" class="btn start-btn">Start Solving Lab 03</a>
+            <a href="/solution/3" class="btn solution-btn">View Solution</a>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 30px; background: #1c2128;">
+    <h2 style="color: #58a6ff;">📚 Test Accounts</h2>
+    <p style="margin-bottom: 15px;">Use these accounts to test the vulnerabilities:</p>
+    <div class="code-block" style="margin: 0;">
+        <strong>Migration Coordinator:</strong> migration_coord / coord123<br>
+        <strong>Regular User (Victim):</strong> victim / victim123<br>
+        <strong>Admin:</strong> admin / admin123
+    </div>
+    <a href="/login" class="btn" style="display: inline-block; margin-top: 15px;">Login</a>
+</div>
+{% endblock %}
+

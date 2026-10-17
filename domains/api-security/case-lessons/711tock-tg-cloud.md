@@ -31,3 +31,14 @@ Header: content-type: text/plain; charset=UTF-8, token: <JWT>
 - 先读本卡片，再打开 Full report 复现细节
 
 @TGSEC社区 · @TGSEC-Qtzuu 整理
+
+## 2026-10-17 复读增量（同源分享包）
+
+- WASM oracle 补齐：不必逆 `main.wasm`，无头 Chromium 加载登录页直接调 `window.goEncrypt/goDecrypt`；请求体加 `{_ts,_nonce}` 即可全站脚本化（`typeof` 先判就绪）
+- 明文口令面：`/clienter/pageList` 直返 password 字段 50 条 → 横向独立域 chat 工作台（独立 token）
+- 数据面量级：`/account/pageList` 18,343 → `getDetail` 18,229（twoPasswd 16,490，90.5%，含 accessHash/dcId/设备）→ 可登录 session 363（.session 17 + authKey 346，含 2FA 85）
+- 限流指纹：约 3000 条触发 403（CF 1010），冷却 3–5 分钟；WASM 实例长跑 RangeError → reload
+- 负结果：`adminerUid/clienterUid` 跨租户 IDOR 被强制归属挡死（已排除，勿重复投入）
+- `/taskProtocolRecovery/precheck|create` 可对 SESSION_REVOKED 账号触发重登，成败取决于代理池
+
+@TGSEC社区 · @TGSEC-Qtzuu 整理
